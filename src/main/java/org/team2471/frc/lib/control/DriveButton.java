@@ -10,7 +10,7 @@ public interface DriveButton {
     return () -> function.apply(get());
   }
 
-  default DriveButton invert() {
+  default DriveButton withInvert() {
     return map(value -> !value);
   }
 }

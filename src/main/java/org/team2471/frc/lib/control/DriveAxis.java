@@ -10,7 +10,7 @@ public interface DriveAxis {
     return () -> function.apply(get());
   }
 
-  default DriveAxis applyDeadband(double tolerance, boolean scale) {
+  default DriveAxis withDeadband(double tolerance, boolean scale) {
     return map(value -> {
       value = Math.abs(value) < tolerance ? 0 : value;
       if(scale) {
@@ -20,15 +20,15 @@ public interface DriveAxis {
     });
   }
 
-  default DriveAxis applyDeadband(double tolerance) {
-    return applyDeadband(tolerance, false);
+  default DriveAxis withDeadband(double tolerance) {
+    return withDeadband(tolerance, false);
   }
 
-  default DriveAxis applyInvert() {
+  default DriveAxis withInvert() {
     return map(value -> -value);
   }
 
-  default DriveAxis applyExponentialScaling(int exponent) {
+  default DriveAxis withExponentialScaling(int exponent) {
     if(exponent % 2 == 0) {
       // even exponent
       return map(value -> Math.pow(value, exponent) * Math.signum(value));

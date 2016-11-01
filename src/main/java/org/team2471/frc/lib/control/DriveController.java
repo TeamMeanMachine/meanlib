@@ -22,6 +22,14 @@ public class DriveController {
     this(new Joystick(joystickPort));
   }
 
+  public DriveAxis getAxis(int axisId) {
+    return () -> joystick.getRawAxis(axisId);
+  }
+
+  public DriveButton getButton(int buttonId) {
+    return () -> joystick.getRawButton(buttonId);
+  }
+
   public DriveController withRunCommandOnButtonPressEvent(int buttonId, Command command) {
     buttons[buttonId].whenPressed(command);
     return this;
