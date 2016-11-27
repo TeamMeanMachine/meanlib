@@ -9,6 +9,11 @@ public class Vector2 {
     this.y = y;
   }
 
+  public void set(double x, double y) {
+    this.x = x;
+    this.y = y;
+  }
+
   public static Vector2 add(Vector2 firstVector, Vector2 secondVector) {
     return new Vector2(firstVector.x + secondVector.x, firstVector.y + secondVector.y);
   }
