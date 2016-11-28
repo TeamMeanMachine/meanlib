@@ -2,6 +2,8 @@ package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
 
+import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
+
 public class MotionKey {
     private Vector2 m_timeAndValue;
     private Vector2 m_prevAngleAndMagnitude;
@@ -18,6 +20,8 @@ public class MotionKey {
     private MotionCurve m_motionCurve;
     private MotionKey m_nextKey;
     private MotionKey m_prevKey;
+
+    private final double CLAMPTOLERANCE = 0.005;
 
     public MotionKey() {
         m_timeAndValue.set( 0, 0 );
@@ -36,7 +40,9 @@ public class MotionKey {
     }
     
     public double getTime() {return m_timeAndValue.x;}
+    public void setTime( double time ) { m_timeAndValue.x = time; }
     public double getValue() {return m_timeAndValue.y;}
+    public void setValue( double value ) { m_timeAndValue.y = value; }
     public boolean areTangentsDirty() {return m_bTangentsDirty;}
     public void setTangentsDirty(boolean bTangentsDirty) {m_bTangentsDirty = bTangentsDirty;}
     public Vector2 getTimeAndValue() {return m_timeAndValue;}
@@ -110,65 +116,62 @@ public class MotionKey {
                 break;
             case SLOPE_CLAMPED:
             {
-                float fClampTolerence = (GetMotionCurve()->GetMaxValue() - GetMotionCurve()->GetMinValue()) * CLAMPTOLERANCE;
-                if (pPrevKey && fabs(pPrevKey->GetValue() - GetValue()) <= fClampTolerence) // make Flat
-                    m_inTangent.Set( GetTime().GetSeconds()-pPrevKey->GetTime().GetSeconds(), 0.0f );
-                else if (pNextKey && fabs(pNextKey->GetValue() - GetValue()) <= fClampTolerence) // Make Flat
+                double fClampTolerence = (getMotionCurve().getMaxValue() - getMotionCurve().getMinValue()) * CLAMPTOLERANCE;
+                if (m_prevKey!=null && Math.abs(m_prevKey.getValue() - getValue()) <= fClampTolerence) // make Flat
+                    m_prevTangent.set( getTime()-m_prevKey.getTime(), 0.0f );
+                else if (m_nextKey!=null && Math.abs(m_nextKey.getValue() - getValue()) <= fClampTolerence) // Make Flat
                 {
-                    if (pPrevKey)
-                        m_inTangent.Set( GetTime().GetSeconds()-pPrevKey->GetTime().GetSeconds(), 0.0f );
+                    if (m_prevKey!=null)
+                        m_prevTangent.set( getTime()-m_prevKey.getTime(), 0.0f );
                     else
-                        m_inTangent.Set( 0.0f, 0.0f );
+                        m_prevTangent.set( 0.0f, 0.0f );
                 }
                 else
-                    bCalcSmoothIn = TRUE;
+                    bCalcSmoothPrev = true;
                 break;
             }
             case SLOPE_PLATEAU:
-                if (!pPrevKey || !pNextKey)
+                if (m_prevKey==null || m_nextKey==null)
                 {
-                    if (pPrevKey)
-                        m_inTangent.Set( GetTime().GetSeconds()-pPrevKey->GetTime().GetSeconds(), 0.0f ); // Make Flat
+                    if (m_prevKey!=null)
+                        m_prevTangent.set( getTime()-m_prevKey.getTime(), 0.0f ); // Make Flat
                     else
-                        m_inTangent.Set( 0.0f, 0.0f );
+                        m_prevTangent.set( 0.0f, 0.0f );
                 }
                 else // we have a prev and a next, lets see if both the prev's out tangent and the next's in tangent are both either greater or less than our value, if so lets make out tangent flat
                 {
-                    float fPrevTangentValue;
-                    if (pPrevKey->GetOutSlopeMethod() == SLOPE_PLATEAU)
-                        fPrevTangentValue = pPrevKey->GetValue(); // This way we don't get an infinite recursion
+                    double fPrevTangentValue;
+                    if (m_prevKey.getNextSlopeMethod() == SLOPE_PLATEAU)
+                        fPrevTangentValue = m_prevKey.getValue(); // This way we don't get an infinite recursion
                     else
                     {
-                        Vector2 vPrevPos( pPrevKey->GetTime().GetSeconds(), pPrevKey->GetValue() );
-                        Vector2 vPrevTangent = (pPrevKey->GetOutTangent() * 0.3333f) + vPrevPos;
-                        fPrevTangentValue = vPrevTangent.Y();
+                        Vector2 vPrevPos = m_prevKey.getTimeAndValue();
+                        Vector2 vPrevTangent = Vector2.add(Vector2.multiply(m_prevKey.getNextTangent(), 1.0/3.0), vPrevPos);
+                        fPrevTangentValue = vPrevTangent.y;
                     }
 
-                    float fNextTangentValue;
-                    if (pNextKey->GetInSlopeMethod() == SLOPE_PLATEAU)
-                        fNextTangentValue = pNextKey->GetValue(); // This way we don't get an infinite recursion
+                    double fNextTangentValue;
+                    if (m_nextKey.getPrevSlopeMethod() == SLOPE_PLATEAU)
+                        fNextTangentValue = m_nextKey.getValue(); // This way we don't get an infinite recursion
                     else
                     {
-                        Vector2 vNextPos( pNextKey->GetTime().GetSeconds(), pNextKey->GetValue() );
-                        Vector2 vNextTangent = vNextPos - (pNextKey->GetInTangent() * 0.3333f);
-                        fNextTangentValue = vNextTangent.Y();
+                        Vector2 vNextPos = m_nextKey.getTimeAndValue();
+                        Vector2 vNextTangent = Vector2.subtract(vNextPos, Vector2.multiply(m_nextKey.getPrevTangent(), 1.0/3.0));
+                        fNextTangentValue = vNextTangent.y;
                     }
 
-                    float fValue = GetValue();
+                    double fValue = getValue();
                     if (fPrevTangentValue > fValue && fNextTangentValue > fValue )
-                        m_inTangent.Set( GetTime().GetSeconds()-pPrevKey->GetTime().GetSeconds(), 0.0f ); // Make Flat
+                        m_prevTangent.set( getTime()-m_prevKey.getTime(), 0.0f ); // Make Flat
                     else if (fPrevTangentValue < fValue && fNextTangentValue < fValue)
-                        m_inTangent.Set( GetTime().GetSeconds()-pPrevKey->GetTime().GetSeconds(), 0.0f ); // Make Flat
+                        m_prevTangent.set( getTime()-m_prevKey.getTime(), 0.0f ); // Make Flat
                     else
-                        bCalcSmoothIn = TRUE;
+                        bCalcSmoothPrev = true;
                 }
-                break;
-            case SLOPE_SMOOTH:
-                bCalcSmoothIn = TRUE;
                 break;
             case SLOPE_STEPPED:
             case SLOPE_STEPPEDNEXT:
-                ASSERT( FALSE ); // Not a valid method for In Interp Method, it is an out only interp method
+                assert( false ); // Not a valid method for PREV Interp Method, it is only valid for NEXT key direction
                 break;
         }
 
@@ -192,61 +195,58 @@ public class MotionKey {
                 break;
             case SLOPE_CLAMPED:
             {
-                float fClampTolerence = (GetMotionCurve()->GetMaxValue() - GetMotionCurve()->GetMinValue()) * CLAMPTOLERANCE;
-                if (pPrevKey && fabs(pPrevKey->GetValue() - GetValue()) <= fClampTolerence) // make Flat
+                double fClampTolerence = (getMotionCurve().getMaxValue() - getMotionCurve().getMinValue()) * CLAMPTOLERANCE;
+                if (m_prevKey!=null && Math.abs(m_prevKey.getValue() - getValue()) <= fClampTolerence) // make Flat
                 {
-                    if (pNextKey)
-                        m_outTangent.Set( pNextKey->GetTime().GetSeconds() - GetTime().GetSeconds(), 0.0f );
+                    if (m_nextKey!=null)
+                        m_nextTangent.set( m_nextKey.getTime() - getTime(), 0.0f );
                     else
-                        m_outTangent.Set( 0.0f, 0.0f );
+                        m_nextTangent.set( 0.0f, 0.0f );
                 }
-                else if (pNextKey && fabs(pNextKey->GetValue() - GetValue()) <= fClampTolerence) // Make Flat
-                    m_outTangent.Set( pNextKey->GetTime().GetSeconds() - GetTime().GetSeconds(), 0.0f );
+                else if (m_nextKey!=null && Math.abs(m_nextKey.getValue() - getValue()) <= fClampTolerence) // Make Flat
+                    m_nextTangent.set( m_nextKey.getTime() - getTime(), 0.0f );
                 else
-                    bCalcSmoothOut = TRUE;
+                    bCalcSmoothNext = true;
                 break;
             }
             case SLOPE_PLATEAU:
-                if (!pPrevKey || !pNextKey)
+                if (m_prevKey==null || m_nextKey==null)
                 {
-                    if (pNextKey)
-                        m_outTangent.Set( pNextKey->GetTime().GetSeconds() - GetTime().GetSeconds(), 0.0f ); // Make it flat
+                    if (m_nextKey!=null)
+                        m_nextTangent.set( m_nextKey.getTime() - getTime(), 0.0f ); // Make it flat
                     else
-                        m_outTangent.Set( 0.0f, 0.0f );
+                        m_nextTangent.set( 0.0f, 0.0f );
                 }
                 else // we have a prev and a next, lets see if both the prev's out tangent and the next's in tangent are both either greater or less than our value, if so lets make out tangent flat
                 {
-                    float fPrevTangentValue;
-                    if (pPrevKey->GetOutSlopeMethod() == SLOPE_PLATEAU)
-                        fPrevTangentValue = pPrevKey->GetValue(); // This way we don't get an infinite recursion
+                    double fPrevTangentValue;
+                    if (m_prevKey.getNextSlopeMethod() == SLOPE_PLATEAU)
+                        fPrevTangentValue = m_prevKey.getValue(); // This way we don't get an infinite recursion
                     else
                     {
-                        Vector2 vPrevPos( pPrevKey->GetTime().GetSeconds(), pPrevKey->GetValue() );
-                        Vector2 vPrevTangent = (pPrevKey->GetOutTangent() * 0.3333f) + vPrevPos;
-                        fPrevTangentValue = vPrevTangent.Y();
+                        Vector2 vPrevPos = new Vector2( m_prevKey.getTime(), m_prevKey.getValue() );
+                        Vector2 vPrevTangent = Vector2.add(Vector2.multiply(m_prevKey.getNextTangent(), 1.0/3.0), vPrevPos);
+                        fPrevTangentValue = vPrevTangent.y;
                     }
 
-                    float fNextTangentValue;
-                    if (pNextKey->GetInSlopeMethod() == SLOPE_PLATEAU)
-                        fNextTangentValue = pNextKey->GetValue(); // This way we don't get an infinite recursion
+                    double fNextTangentValue;
+                    if (m_nextKey.getPrevSlopeMethod() == SLOPE_PLATEAU)
+                        fNextTangentValue = m_nextKey.getValue(); // This way we don't get an infinite recursion
                     else
                     {
-                        Vector2 vNextPos( pNextKey->GetTime().GetSeconds(), pNextKey->GetValue() );
-                        Vector2 vNextTangent = vNextPos - (pNextKey->GetInTangent() * 0.3333f);
-                        fNextTangentValue = vNextTangent.Y();
+                        Vector2 vNextPos = new Vector2( m_nextKey.getTime(), m_nextKey.getValue() );
+                        Vector2 vNextTangent = Vector2.subtract(vNextPos, Vector2.multiply(m_nextKey.getPrevTangent(), 1.0/3.0));
+                        fNextTangentValue = vNextTangent.y;
                     }
 
-                    float fValue = GetValue();
+                    double fValue = getValue();
                     if (fPrevTangentValue > fValue && fNextTangentValue > fValue )
-                        m_outTangent.Set( pNextKey->GetTime().GetSeconds() - GetTime().GetSeconds(), 0.0f ); // Make it flat
+                        m_nextTangent.set( m_nextKey.getTime() - getTime(), 0.0f ); // Make it flat
                     else if (fPrevTangentValue < fValue && fNextTangentValue < fValue)
-                        m_outTangent.Set( pNextKey->GetTime().GetSeconds() - GetTime().GetSeconds(), 0.0f ); // Make it flat
+                        m_nextTangent.set( m_nextKey.getTime() - getTime(), 0.0f ); // Make it flat
                     else
-                        bCalcSmoothOut = TRUE;
+                        bCalcSmoothNext = true;
                 }
-                break;
-            case SLOPE_SMOOTH:
-                bCalcSmoothOut = TRUE;
                 break;
             case SLOPE_STEPPED:
             case SLOPE_STEPPEDNEXT:

@@ -7,10 +7,14 @@ public class MotionCurve {
     private MotionKey m_tailKey;
 
     private double m_defaultValue;
+    private double m_minValue;
+    private double m_maxValue;
     private double m_lastValue;
     private double m_lastTime;
     private boolean m_bLastTimeValid;
     private MotionKey m_lastAccessedKey;
+
+    private final double MAXFRAMEERROR = 0.003;
 
     public enum ExtrapolationMethods { EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE };
     private ExtrapolationMethods m_preExtrapolation;
@@ -26,10 +30,28 @@ public class MotionCurve {
     public void setLastTimeValid(boolean lastTimeValid) { this.m_bLastTimeValid = lastTimeValid; }
     public double getDefaultValue() { return m_defaultValue; }
     public void setDefaultValue(double defaultValue) { this.m_defaultValue = defaultValue; }
+    public double getMinValue() {return m_minValue;}
+    public void setMinValue(double m_minValue) {this.m_minValue = m_minValue;}
+    public double getMaxValue() {return m_maxValue;}
+    public void setMaxValue(double m_maxValue) {this.m_maxValue = m_maxValue;}
     public MotionKey getLastAccessedKey() { return m_lastAccessedKey; }
     public void setLastAccessedKey(MotionKey m_lastAccessedKey) { this.m_lastAccessedKey = m_lastAccessedKey; }
 
-    void InsertKeyBefore( MotionKey atKey, MotionKey newKey )
+    public MotionCurve() {
+        m_headKey = null;
+        m_tailKey = null;
+        m_defaultValue = 0;
+        m_minValue = -Double.MAX_VALUE;
+        m_maxValue = Double.MAX_VALUE;
+        m_lastValue = 0;
+        m_lastTime = 0;
+        m_bLastTimeValid = false;
+        m_lastAccessedKey = null;
+        m_preExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
+        m_postExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
+    }
+
+    private void insertKeyBefore( MotionKey atKey, MotionKey newKey )
     {
         newKey.setMotionCurve( this );
 
@@ -55,7 +77,7 @@ public class MotionCurve {
         newKey.onPositionChanged();
     }
 
-    void InsertKeyAfter( MotionKey atKey, MotionKey newKey )
+    private void insertKeyAfter( MotionKey atKey, MotionKey newKey )
     {
         newKey.setMotionCurve( this );
 
@@ -78,17 +100,128 @@ public class MotionCurve {
         newKey.onPositionChanged();
     }
 
-    void AddKey( MotionKey newKey )  // adds the key to the end
+    void addKey( MotionKey newKey )  // adds the key to the end
     {
-        InsertKeyAfter( m_tailKey, newKey );
+        insertKeyAfter( m_tailKey, newKey );
     }
 
-    void OnKeyPositionChanged( MotionKey key )
+    private void onKeyPositionChanged( MotionKey key )
     {
         setLastTimeValid( false );
     }
 
-    double getValue( double time )
+    private MotionKey findClosestKey( double time )
+    {
+        MotionKey pKey;
+        if (m_lastAccessedKey!=null)
+            pKey = m_lastAccessedKey;
+        else
+            pKey = m_headKey;
+
+        if (pKey==null)
+            return null;
+
+        if (pKey.getTime() != time)
+        {
+            if (pKey.getTime() < time)
+            {
+                MotionKey pNextKey = pKey.getNextKey();
+                while (pNextKey!=null)
+                {
+                    if (pNextKey.getTime() > time)
+                        break;
+                    pKey = pNextKey;
+                    pNextKey = pKey.getNextKey();
+                }
+            }
+            else
+            {
+                MotionKey pPrevKey = pKey.getPrevKey();
+                while (pPrevKey!=null)
+                {
+                    pKey = pPrevKey;
+                    if (pKey.getTime() <= time)
+                        break;
+                    pPrevKey = pKey.getPrevKey();
+                }
+            }
+        }
+
+        m_lastAccessedKey = pKey;
+        m_bLastTimeValid = false;
+
+        return pKey;
+    }
+
+    public MotionKey getKey( double time )
+    {
+        MotionKey pKey;
+        if (m_lastAccessedKey!=null)
+            pKey = m_lastAccessedKey;
+        else
+            pKey = m_headKey;
+
+        if (pKey==null)
+            return null;
+
+        if (pKey.getTime() != time)
+        {
+            if (pKey.getTime() < time)
+            {
+                for (pKey=pKey.getNextKey(); pKey!=null && pKey.getTime()!=time; pKey=pKey.getNextKey())
+                    ;
+            }
+            else
+            {
+                for (pKey=pKey.getPrevKey(); pKey!=null && pKey.getTime()!=time; pKey=pKey.getPrevKey())
+                    ;
+            }
+        }
+
+        if (pKey!=null && m_lastAccessedKey!=pKey)
+        {
+            m_lastAccessedKey = pKey;
+            m_bLastTimeValid = false;
+        }
+
+        return pKey;
+    }
+
+    private MotionKey createMotionKey( double time )
+    {
+        MotionKey pKey = findClosestKey( time );
+        MotionKey pNewKey;
+        
+        if (pKey!=null && pKey.getTime() == time)
+            pNewKey = pKey;
+        else
+        {
+            pNewKey = new MotionKey();
+            pNewKey.setMotionCurve( this );
+            pNewKey.setTime( time );
+
+            if (pKey==null)
+                addKey( pNewKey );
+            else if (pKey.getTime() <= time)
+                insertKeyAfter( pKey, pNewKey );
+            else if (pKey.getTime() > time)
+                insertKeyBefore( pKey, pNewKey );
+        }
+
+        m_lastAccessedKey = pNewKey;
+        m_bLastTimeValid = false;
+
+        return pNewKey;
+    }
+
+    public MotionKey storeValue( double time, double value ) {
+        MotionKey motionKey = createMotionKey( time );
+        if (motionKey!=null)
+            motionKey.setValue( value );
+        return motionKey;
+    }
+
+    public double getValue( double time )
     {
         if (getHeadKey()==null)
             return getDefaultValue();
@@ -187,7 +320,7 @@ public class MotionCurve {
                 }
                 case EXTRAPOLATION_CYCLE_RELATIVE:
                 {
-                    double tStartdouble = getHeadKey(.getTime();
+                    double tStartdouble = getHeadKey().getTime();
                     double tEnddouble = getTailKey().getTime();
                     double tLength = tEnddouble - tStartdouble;
                     if (tLength!=0)
@@ -262,9 +395,9 @@ public class MotionCurve {
                 }
             }
         }
-	else
+	    else
         {
-            for (MotionKey key=getLastAccessedKey().getPrevKey(); key; key=key.getPrevKey())
+            for (MotionKey key=getLastAccessedKey().getPrevKey(); key!=null; key=key.getPrevKey())
             {
                 MotionKey nextKey = key.getNextKey();
                 if (key.getTime() == time)
@@ -293,7 +426,7 @@ public class MotionCurve {
         return m_lastValue;
     }
 
-    double InterpolateValue( double time, MotionKey pKey )
+    private double InterpolateValue( double time, MotionKey pKey )
     {
         MotionKey pNextKey = pKey.getNextKey();
 
@@ -323,7 +456,7 @@ public class MotionCurve {
             double pointcy = pKey.getNextTangent().y;
             double pointdy = pNextKey.getPrevTangent().y;
 
-            CubicCoefficients1D ycoeff( pointay, pointby, pointcy, pointdy );
+            CubicCoefficients1D ycoeff = new CubicCoefficients1D( pointay, pointby, pointcy, pointdy );
 
             // if the weights are default, then the x cubic is linear and there is no need to evaluate it
             if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
@@ -351,16 +484,16 @@ public class MotionCurve {
                 pointdy *= ratio;
             }
 
-            CubicCoefficients1D xcoeff( pointax, pointbx, pointcx, pointdx );
+            CubicCoefficients1D xcoeff = new CubicCoefficients1D( pointax, pointbx, pointcx, pointdx );  // may want to cache these constants in each MotionKey - save allocation and computation
 
             double diffx = evalx - xcoeff.Evaluate( guesst );
-            double error = fabs( diffx );
+            double error = Math.abs( diffx );
             double maxerror = MAXFRAMEERROR / 30.0f;
 
             if (error > maxerror)
             {
-                double positiveError = MAX_FLOAT;
-                double negativeError = -MAX_FLOAT;
+                double positiveError = Double.MAX_VALUE;
+                double negativeError = -Double.MAX_VALUE;
 
                 if (diffx > 0)
                     positiveError = diffx;
@@ -371,20 +504,20 @@ public class MotionCurve {
                 {
                     guesst = guesst + diffx / xcoeff.Derivative(guesst);
                     diffx = evalx - xcoeff.Evaluate( guesst );
-                    error = fabs( diffx );
+                    error = Math.abs( diffx );
 
                     if ((diffx>0 && diffx>positiveError) || (diffx<0 && diffx<negativeError))
                     {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP
-                        ASSERT( FALSE );
+                        assert( false );
                         maxerror = 1.0f / 100.0f;  // DON'T BE AS ACCURATE BECAUSE THIS IS MUCH SLOWER
                         int steps = (int)(xspan / maxerror);
-                        steps = min( steps, 1000 );
+                        steps = Math.min( steps, 1000 );
                         double deltat = 1.0f / steps;
                         xcoeff.InitFD( steps );
                         int i;
                         diffx = error;
                         for ( i=0, guesst=0.0; diffx>maxerror && i<steps; guesst+=deltat, i++ )
-                            diffx = fabs(evalx - xcoeff.BumpFD());
+                            diffx = Math.abs(evalx - xcoeff.BumpFD());
                         break;
                     }
 
