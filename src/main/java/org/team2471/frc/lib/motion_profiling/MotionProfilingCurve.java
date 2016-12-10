@@ -16,5 +16,9 @@ public class MotionProfilingCurve extends MotionCurve {
     m_PIDController.enable();
   }
 
+  public void stop() {
+    m_PIDController.disable();
+  }
+
   private PIDController m_PIDController;
 }

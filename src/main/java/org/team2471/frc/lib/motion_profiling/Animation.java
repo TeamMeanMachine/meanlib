@@ -37,5 +37,11 @@ public class Animation {
     }
   }
 
+  public void stop() {
+    for (MotionProfilingCurve curve : m_listMotionProfilingCurves) {
+      curve.stop();
+    }
+  }
+
   private ArrayList<MotionProfilingCurve> m_listMotionProfilingCurves;
 }
