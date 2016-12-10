@@ -36,6 +36,7 @@ public class MotionCurve {
     public void setMaxValue(double m_maxValue) {this.m_maxValue = m_maxValue;}
     public MotionKey getLastAccessedKey() { return m_lastAccessedKey; }
     public void setLastAccessedKey(MotionKey m_lastAccessedKey) { this.m_lastAccessedKey = m_lastAccessedKey; }
+    public double getLength() { return getTailKey()!=null ? getTailKey().getTime() : 0; }
 
     public MotionCurve() {
         m_headKey = null;
@@ -364,8 +365,7 @@ public class MotionCurve {
             if (isLastTimeValid() && time == getLastTime())
                 return m_lastTime; // if same as last time
         }
-        // if last key is not valid start from the beginning
-        else
+        else // if last key is not valid start from the beginning
         {
             setLastAccessedKey(getHeadKey());
         }
@@ -445,9 +445,9 @@ public class MotionCurve {
         }
         else
         {
-            double evalx = time;  // this one too
-            double pointax = pKey.getTime();  // should probably keep the x near the origin.  subtract first key
-            double pointbx = pNextKey.getTime();  // subtracting while still times would decrease number of required double creations.
+            double evalx = time;
+            double pointax = pKey.getTime();
+            double pointbx = pNextKey.getTime();
             double xspan = pointbx - pointax;
             double guesst = (evalx - pointax) / xspan;
 
@@ -456,13 +456,13 @@ public class MotionCurve {
             double pointcy = pKey.getNextTangent().y;
             double pointdy = pNextKey.getPrevTangent().y;
 
-            CubicCoefficients1D ycoeff = new CubicCoefficients1D( pointay, pointby, pointcy, pointdy );
+            CubicCoefficients1D ycoeff = new CubicCoefficients1D( pointay, pointby, pointcy, pointdy );    // may want to cache these constants in each MotionKey - save allocation and computation - compute them when the tangents change
 
             // if the weights are default, then the x cubic is linear and there is no need to evaluate it
             if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
                 return ycoeff.Evaluate( guesst );
 
-            // Spline
+            // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
             double pointcx = pKey.getNextTangent().x;
             double pointdx = pNextKey.getPrevTangent().x;
 
@@ -507,7 +507,7 @@ public class MotionCurve {
                     error = Math.abs( diffx );
 
                     if ((diffx>0 && diffx>positiveError) || (diffx<0 && diffx<negativeError))
-                    {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP
+                    {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
                         assert( false );
                         maxerror = 1.0f / 100.0f;  // DON'T BE AS ACCURATE BECAUSE THIS IS MUCH SLOWER
                         int steps = (int)(xspan / maxerror);
