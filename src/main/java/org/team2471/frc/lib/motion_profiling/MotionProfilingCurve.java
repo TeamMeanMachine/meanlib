@@ -7,14 +7,14 @@ import edu.wpi.first.wpilibj.PIDController;
  */
 public class MotionProfilingCurve extends MotionCurve {
 
-    public MotionProfilingCurve( PIDController pidController ) {
-        m_PIDController = pidController;
-    }
+  public MotionProfilingCurve(PIDController pidController) {
+    m_PIDController = pidController;
+  }
 
-    public void play( double time ) {
-        m_PIDController.setSetpoint( getValue(time) );
-        m_PIDController.enable();
-    }
+  public void play(double time) {
+    m_PIDController.setSetpoint(getValue(time));
+    m_PIDController.enable();
+  }
 
-    private PIDController m_PIDController;
+  private PIDController m_PIDController;
 }
