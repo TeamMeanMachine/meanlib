@@ -17,7 +17,6 @@ public class MotionKey {
     SLOPE_STEPPED, SLOPE_STEPPEDNEXT
   }
 
-  ;
   private SlopeMethod m_prevSlopeMethod;
   private SlopeMethod m_nextSlopeMethod;
 
@@ -154,7 +153,7 @@ public class MotionKey {
     return m_nextAngleAndMagnitude.y;
   }
 
-  void InsertBefore(MotionKey newKey) {
+  void insertBefore(MotionKey newKey) {
     m_prevKey = newKey.m_prevKey;
     if (newKey.m_prevKey != null)
       newKey.m_prevKey.m_nextKey = this;
@@ -162,7 +161,7 @@ public class MotionKey {
     m_nextKey = newKey;
   }
 
-  void InsertAfter(MotionKey newKey) {
+  void insertAfter(MotionKey newKey) {
     m_nextKey = newKey.m_nextKey;
     if (newKey.m_nextKey != null)
       newKey.m_nextKey.m_prevKey = this;
@@ -170,7 +169,7 @@ public class MotionKey {
     m_prevKey = newKey;
   }
 
-  void CalculateTangents() {
+  private void calculateTangents() {
     if (!areTangentsDirty())
       return;
 

@@ -18,7 +18,6 @@ public class MotionCurve {
 
   public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
 
-  ;
   private ExtrapolationMethods m_preExtrapolation;
   private ExtrapolationMethods m_postExtrapolation;
 
@@ -120,7 +119,7 @@ public class MotionCurve {
       if (newKey.getTime() > atKey.getTime()) {
         System.out.println("Out of order keys detected.");
       }
-      newKey.InsertBefore(atKey);
+      newKey.insertBefore(atKey);
     }
 
     newKey.onPositionChanged();
@@ -140,7 +139,7 @@ public class MotionCurve {
 
     if (atKey != null) {
       assert (newKey.getTime() >= atKey.getTime());
-      newKey.InsertAfter(atKey);
+      newKey.insertAfter(atKey);
     }
 
     newKey.onPositionChanged();
