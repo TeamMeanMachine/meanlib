@@ -9,17 +9,20 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class PlayAnimationCommand extends Command {
 
-  Animation m_animation;
-  double m_speed;
+  private Animation m_animation;
+  private double m_speed;
+
   double m_startTime;
   double m_playTime;
   double m_forwardTime;
   double m_animationLength;
 
+  public PlayAnimationCommand() {
+  }
+
   public PlayAnimationCommand(Animation animation, float speed) {
-    m_animation = animation;
+    setAnimation( animation );
     m_speed = speed;
-    m_animationLength = m_animation.getLength();
   }
 
   @Override
@@ -52,5 +55,22 @@ public class PlayAnimationCommand extends Command {
   @Override
   protected void interrupted() {
     end();
+  }
+
+  public Animation getAnimation() {
+    return m_animation;
+  }
+
+  public void setAnimation(Animation animation) {
+    m_animation = animation;
+    m_animationLength = m_animation.getLength();
+  }
+
+  public double getSpeed() {
+    return m_speed;
+  }
+
+  public void setSpeed(double speed) {
+    m_speed = speed;
   }
 }
