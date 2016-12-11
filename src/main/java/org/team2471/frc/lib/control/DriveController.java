@@ -22,6 +22,18 @@ public class DriveController {
     this(new Joystick(joystickPort));
   }
 
+  public String getName() {
+    return joystick.getName();
+  }
+
+  public void rumbleLeft(float strength) {
+    joystick.setRumble(Joystick.RumbleType.kLeftRumble, strength);
+  }
+
+  public void rumbleRight(float strength) {
+    joystick.setRumble(Joystick.RumbleType.kRightRumble, strength);
+  }
+
   public DriveAxis getAxis(int axisId) {
     return () -> joystick.getRawAxis(axisId);
   }
