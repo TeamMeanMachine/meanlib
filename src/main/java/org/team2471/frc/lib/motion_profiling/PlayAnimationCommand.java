@@ -30,7 +30,7 @@ public class PlayAnimationCommand extends Command {
   @Override
   protected void execute() {
     m_forwardTime = Utility.getFPGATime() - m_startTime;
-    if (m_speed < 0) {
+    if (m_speed < 0) {  // negative speed plays animation backwards
       m_playTime = m_animationLength - m_forwardTime;
     }
     else {
@@ -41,7 +41,7 @@ public class PlayAnimationCommand extends Command {
 
   @Override
   protected boolean isFinished() {
-    return m_forwardTime >= m_animationLength;
+    return m_forwardTime >= m_animationLength * Math.abs(m_speed);
   }
 
   @Override
