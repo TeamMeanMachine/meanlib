@@ -1,22 +1,22 @@
-package org.team2471.frc.lib.Spline;
+package org.team2471.frc.lib.spline;
 
 public class MotionCurve {
-  private MotionKey m_HeadKey;
-  private MotionKey m_TailKey;
+  private MotionKey headKey;
+  private MotionKey tailKey;
 
   public MotionKey getHeadKey() {
-    return m_HeadKey;
+    return headKey;
   }
 
   public void setHeadKey(MotionKey headKey) {
-    this.m_HeadKey = headKey;
+    this.headKey = headKey;
   }
 
   public MotionKey getTailKey() {
-    return m_TailKey;
+    return tailKey;
   }
 
   public void setTailKey(MotionKey tailKey) {
-    this.m_TailKey = tailKey;
+    this.tailKey = tailKey;
   }
 }
