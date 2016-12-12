@@ -13,8 +13,8 @@ public interface DriveAxis {
   default DriveAxis withDeadband(double tolerance, boolean scale) {
     return map(value -> {
       value = Math.abs(value) < tolerance ? 0 : value;
-      if(scale) {
-        value *= 1 - tolerance;
+      if(scale && value != 0) {
+        value = (value - tolerance * Math.signum(tolerance)) + (1 + tolerance);
       }
       return value;
     });

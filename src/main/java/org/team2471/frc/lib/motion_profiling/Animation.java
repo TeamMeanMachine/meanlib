@@ -2,9 +2,6 @@ package org.team2471.frc.lib.motion_profiling;
 
 import java.util.ArrayList;
 
-/**
- * Created by Bob on 12/9/2016.
- */
 public class Animation {
   public Animation() {
   }
