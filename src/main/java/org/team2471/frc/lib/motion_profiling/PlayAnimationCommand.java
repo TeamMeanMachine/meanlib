@@ -44,7 +44,8 @@ public class PlayAnimationCommand extends Command {
 
   @Override
   protected boolean isFinished() {
-    return m_forwardTime >= m_animationLength * Math.abs(m_speed);
+    return m_forwardTime >= m_animationLength * Math.abs(m_speed) &&
+            m_animation.onTarget();
   }
 
   @Override

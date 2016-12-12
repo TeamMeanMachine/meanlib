@@ -43,5 +43,13 @@ public class Animation {
     }
   }
 
+  public boolean onTarget() {
+    for (MotionProfilingCurve curve : m_listMotionProfilingCurves) {
+      if (!curve.onTarget())
+        return false;
+    }
+    return true;
+  }
+
   private ArrayList<MotionProfilingCurve> m_listMotionProfilingCurves;
 }
