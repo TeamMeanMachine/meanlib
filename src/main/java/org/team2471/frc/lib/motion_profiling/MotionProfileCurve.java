@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj.PIDController;
 /**
  * Created by Bob on 12/9/2016.
  */
-public class MotionProfilingCurve extends MotionCurve {
+public class MotionProfileCurve extends MotionCurve {
 
-  public MotionProfilingCurve(PIDController pidController) {
+  public MotionProfileCurve(PIDController pidController) {
     m_PIDController = pidController;
   }
 

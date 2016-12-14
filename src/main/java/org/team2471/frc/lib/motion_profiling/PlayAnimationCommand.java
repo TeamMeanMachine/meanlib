@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class PlayAnimationCommand extends Command {
 
-  private Animation m_animation;
+  private MotionProfileAnimation m_MotionProfile_animation;
   private double m_speed;
 
   double m_startTime;
@@ -20,8 +20,8 @@ public class PlayAnimationCommand extends Command {
   public PlayAnimationCommand() {
   }
 
-  public PlayAnimationCommand(Animation animation, float speed) {
-    setAnimation( animation );
+  public PlayAnimationCommand(MotionProfileAnimation motionProfileAnimation, float speed) {
+    setAnimation(motionProfileAnimation);
     m_speed = speed;
   }
 
@@ -39,18 +39,18 @@ public class PlayAnimationCommand extends Command {
     else {
       m_playTime = m_forwardTime;
     }
-    m_animation.play( m_playTime );
+    m_MotionProfile_animation.play( m_playTime );
   }
 
   @Override
   protected boolean isFinished() {
     return m_forwardTime >= m_animationLength * Math.abs(m_speed) &&
-            m_animation.onTarget();
+            m_MotionProfile_animation.onTarget();
   }
 
   @Override
   protected void end() {
-    m_animation.stop();
+    m_MotionProfile_animation.stop();
   }
 
   @Override
@@ -58,13 +58,13 @@ public class PlayAnimationCommand extends Command {
     end();
   }
 
-  public Animation getAnimation() {
-    return m_animation;
+  public MotionProfileAnimation getAnimation() {
+    return m_MotionProfile_animation;
   }
 
-  public void setAnimation(Animation animation) {
-    m_animation = animation;
-    m_animationLength = m_animation.getLength();
+  public void setAnimation(MotionProfileAnimation motionProfileAnimation) {
+    m_MotionProfile_animation = motionProfileAnimation;
+    m_animationLength = m_MotionProfile_animation.getLength();
   }
 
   public double getSpeed() {

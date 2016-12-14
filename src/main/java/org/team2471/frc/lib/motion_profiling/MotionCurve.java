@@ -420,7 +420,7 @@ public class MotionCurve {
 
     if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_STEPPED)
       return pKey.getValue();
-    else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_STEPPEDNEXT)
+    else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_STEPPED_NEXT)
       return pNextKey.getValue();
     else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR && prevSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR) {
       return pKey.getValue() + (time - pKey.getTime())

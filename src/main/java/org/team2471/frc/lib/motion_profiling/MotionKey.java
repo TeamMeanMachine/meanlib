@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
-
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
 
 public class MotionKey {
@@ -14,7 +13,7 @@ public class MotionKey {
 
   public enum SlopeMethod {
     SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
-    SLOPE_STEPPED, SLOPE_STEPPEDNEXT
+    SLOPE_STEPPED, SLOPE_STEPPED_NEXT
   }
 
   private SlopeMethod m_prevSlopeMethod;
@@ -27,6 +26,12 @@ public class MotionKey {
   private final double CLAMPTOLERANCE = 0.005;
 
   public MotionKey() {
+    m_timeAndValue = new Vector2(0,0);
+    m_prevAngleAndMagnitude = new Vector2(0,1);
+    m_nextAngleAndMagnitude = new Vector2(0,1);
+    m_prevTangent = new Vector2(0,0);
+    m_nextTangent = new Vector2(0,0);
+
     m_timeAndValue.set(0, 0);
     m_prevAngleAndMagnitude.set(0, 1);
     m_nextAngleAndMagnitude.set(0, 1);
@@ -245,7 +250,7 @@ public class MotionKey {
         }
         break;
       case SLOPE_STEPPED:
-      case SLOPE_STEPPEDNEXT:
+      case SLOPE_STEPPED_NEXT:
         assert (false); // Not a valid method for PREV Interp Method, it is only valid for NEXT key direction
         break;
     }
@@ -317,7 +322,7 @@ public class MotionKey {
         }
         break;
       case SLOPE_STEPPED:
-      case SLOPE_STEPPEDNEXT:
+      case SLOPE_STEPPED_NEXT:
         break; // nothing to do, no tangents
     }
 
