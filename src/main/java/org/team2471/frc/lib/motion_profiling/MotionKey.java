@@ -95,6 +95,9 @@ public class MotionKey {
   }
 
   public Vector2 getPrevTangent() {
+    if (areTangentsDirty())
+      calculateTangents();
+
     return m_prevTangent;
   }
 
@@ -103,10 +106,13 @@ public class MotionKey {
   }
 
   public Vector2 getNextTangent() {
+    if (areTangentsDirty())
+      calculateTangents();
+
     return m_nextTangent;
   }
 
-  public void setNextTangent(Vector2 m_NextTangent) {
+public void setNextTangent(Vector2 m_NextTangent) {
     this.m_nextTangent = m_NextTangent;
   }
 
