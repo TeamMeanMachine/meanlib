@@ -237,13 +237,17 @@ public class MotionCurve {
         insertKeyBefore(pKey, pNewKey);
     }
 
-    // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normal smooth
+    // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normally smooth
     if (pNewKey==m_headKey) {
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
+      if (pNewKey.getNextKey()!=null && pNewKey.getNextKey()!=m_tailKey) {  // the former head is not also the tail
+        pNewKey.getNextKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
+        pNewKey.getNextKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
+      }
     }
     else if (pNewKey==m_tailKey) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
-      if (pNewKey.getPrevKey()!=null && pNewKey.getPrevKey()!=m_headKey) {  // the tail is no longer the tail
+      if (pNewKey.getPrevKey()!=null && pNewKey.getPrevKey()!=m_headKey) {  // the former tail is not also the head
         pNewKey.getPrevKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getPrevKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
