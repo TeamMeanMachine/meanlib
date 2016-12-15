@@ -453,40 +453,12 @@ public class MotionCurve {
       double xspan = pointbx - pointax;
       double guesst = (evalx - pointax) / xspan;
 
-      double pointay = pKey.getValue();
-      double pointby = pNextKey.getValue();
-      double pointcy = pKey.getNextTangent().y;
-      double pointdy = pNextKey.getPrevTangent().y;
-
-      CubicCoefficients1D ycoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);    // may want to cache these constants in each MotionKey - save allocation and computation - compute them when the tangents change
-
       // if the weights are default, then the x cubic is linear and there is no need to evaluate it
       if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
-        return ycoeff.Evaluate(guesst);
+        return pKey.getYCoefficients().Evaluate(guesst);
 
       // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
-      double pointcx = pKey.getNextTangent().x;
-      double pointdx = pNextKey.getPrevTangent().x;
-
-      double xspan3 = xspan * 3;
-
-      // if c going beyond b limit
-      if (pointcx > xspan3) {
-        double ratio = xspan3 / pointcx;
-        pointcx = xspan3;
-        pointcy *= ratio;
-      }
-
-      // if d going beyond a limit
-      if (pointdx > xspan3) {
-        double ratio = xspan3 / pointdx;
-        pointdx = xspan3;
-        pointdy *= ratio;
-      }
-
-      CubicCoefficients1D xcoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);  // may want to cache these constants in each MotionKey - save allocation and computation
-
-      double diffx = evalx - xcoeff.Evaluate(guesst);
+      double diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
       double error = Math.abs(diffx);
       double maxerror = MAXFRAMEERROR / 30.0f;
 
@@ -500,8 +472,8 @@ public class MotionCurve {
           negativeError = diffx;
 
         while (error > maxerror) {
-          guesst = guesst + diffx / xcoeff.Derivative(guesst);
-          diffx = evalx - xcoeff.Evaluate(guesst);
+          guesst = guesst + diffx / pKey.getXCoefficients().Derivative(guesst);
+          diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
           error = Math.abs(diffx);
 
           if ((diffx > 0 && diffx > positiveError) || (diffx < 0 && diffx < negativeError)) {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
@@ -510,11 +482,11 @@ public class MotionCurve {
             int steps = (int) (xspan / maxerror);
             steps = Math.min(steps, 1000);
             double deltat = 1.0f / steps;
-            xcoeff.InitFD(steps);
+            pKey.getXCoefficients().InitFD(steps);
             int i;
             diffx = error;
             for (i = 0, guesst = 0.0; diffx > maxerror && i < steps; guesst += deltat, i++)
-              diffx = Math.abs(evalx - xcoeff.BumpFD());
+              diffx = Math.abs(evalx - pKey.getXCoefficients().BumpFD());
             break;
           }
 
@@ -525,7 +497,7 @@ public class MotionCurve {
         }
       }
 
-      return ycoeff.Evaluate(guesst);
+      return pKey.getYCoefficients().Evaluate(guesst);
     }
   }
 }

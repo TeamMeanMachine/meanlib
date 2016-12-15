@@ -10,6 +10,8 @@ public class MotionKey {
   private Vector2 m_prevTangent;
   private Vector2 m_nextTangent;
   private boolean m_bTangentsDirty;
+  private CubicCoefficients1D m_xCoeff;
+  private CubicCoefficients1D m_yCoeff;
 
   public enum SlopeMethod {
     SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
@@ -394,5 +396,52 @@ public void setNextTangent(Vector2 m_NextTangent) {
 
     m_prevTangent = Vector2.multiply(m_prevTangent, getPrevAngleAndMagnitude().y);
     m_nextTangent = Vector2.multiply(m_nextTangent, getNextAngleAndMagnitude().y);
+
+    calculateCoefficients();
+  }
+
+  public CubicCoefficients1D getXCoefficients() {
+    return m_xCoeff;
+  }
+
+  public CubicCoefficients1D getYCoefficients() {
+    return m_yCoeff;
+  }
+
+  private void calculateCoefficients() {
+    double pointax = getTime();
+    double pointbx = m_nextKey.getTime();
+    double xspan = pointbx - pointax;
+
+    double pointay = getValue();
+    double pointby = m_nextKey.getValue();
+    double pointcy = getNextTangent().y;
+    double pointdy = getPrevTangent().y;
+
+    m_yCoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);
+
+    // if the weights are default, then the x cubic is linear and there is no need to evaluate it
+    if (getNextMagnitude() == 1.0f && m_nextKey.getPrevMagnitude() == 1.0f)
+      return;
+
+    // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
+    double pointcx = getNextTangent().x;
+    double pointdx = m_nextKey.getPrevTangent().x;
+
+    double xspan3 = xspan * 3;
+
+    // if c going beyond b limit
+    if (pointcx > xspan3) {
+      double ratio = xspan3 / pointcx;
+      pointcx = xspan3;
+    }
+
+    // if d going beyond a limit
+    if (pointdx > xspan3) {
+      double ratio = xspan3 / pointdx;
+      pointdx = xspan3;
+    }
+
+    m_xCoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);
   }
 }
