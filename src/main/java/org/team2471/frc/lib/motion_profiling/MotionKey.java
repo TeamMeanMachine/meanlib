@@ -43,7 +43,24 @@ public class MotionKey {
     m_prevKey = null;
   }
 
-  void onPositionChanged() {
+  public void onPositionChanged() {
+    getMotionCurve().onKeyPositionChanged(this);  // tell the curve too
+
+    setTangentsDirty(true);
+
+    if (getPrevKey()!=null)
+    {
+      getPrevKey().setTangentsDirty(true);
+      if (getPrevKey().getPrevKey()!=null && getPrevKey().getPrevKey().getNextSlopeMethod() == SLOPE_PLATEAU) // Need to go two away if it is Plateau because they use Prev and Next Tangents
+        getPrevKey().getPrevKey().setTangentsDirty(true);
+    }
+
+    if (getNextKey()!=null)
+    {
+      getNextKey().setTangentsDirty(true);
+      if (getNextKey().getNextKey()!=null && getNextKey().getNextKey().getPrevSlopeMethod() == SLOPE_PLATEAU) // Need to go two away if it is Plateau because they use Prev and Next Tangents
+        getNextKey().getNextKey().setTangentsDirty(true);
+    }
   }
 
   public double getTime() {
@@ -52,6 +69,7 @@ public class MotionKey {
 
   public void setTime(double time) {
     m_timeAndValue.x = time;
+    onPositionChanged();
   }
 
   public double getValue() {
@@ -60,6 +78,7 @@ public class MotionKey {
 
   public void setValue(double value) {
     m_timeAndValue.y = value;
+    onPositionChanged();
   }
 
   public boolean areTangentsDirty() {

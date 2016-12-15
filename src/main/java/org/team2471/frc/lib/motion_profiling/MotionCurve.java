@@ -150,7 +150,7 @@ public class MotionCurve {
     insertKeyAfter(m_tailKey, newKey);
   }
 
-  private void onKeyPositionChanged(MotionKey key) {
+  public void onKeyPositionChanged(MotionKey key) {
     setLastTimeValid(false);
   }
 
