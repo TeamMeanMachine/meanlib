@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class PlayAnimationCommand extends Command {
 
-  private MotionProfileAnimation m_MotionProfile_animation;
+  private MotionProfileAnimation m_MotionProfileAnimation;
   private double m_speed;
 
   double m_startTime;
@@ -39,18 +39,18 @@ public class PlayAnimationCommand extends Command {
     else {
       m_playTime = m_forwardTime;
     }
-    m_MotionProfile_animation.play( m_playTime );
+    m_MotionProfileAnimation.play( m_playTime );
   }
 
   @Override
   protected boolean isFinished() {
     return m_forwardTime >= m_animationLength * Math.abs(m_speed) &&
-            m_MotionProfile_animation.onTarget();
+            m_MotionProfileAnimation.onTarget();
   }
 
   @Override
   protected void end() {
-    m_MotionProfile_animation.stop();
+    m_MotionProfileAnimation.stop();
   }
 
   @Override
@@ -59,12 +59,12 @@ public class PlayAnimationCommand extends Command {
   }
 
   public MotionProfileAnimation getAnimation() {
-    return m_MotionProfile_animation;
+    return m_MotionProfileAnimation;
   }
 
   public void setAnimation(MotionProfileAnimation motionProfileAnimation) {
-    m_MotionProfile_animation = motionProfileAnimation;
-    m_animationLength = m_MotionProfile_animation.getLength();
+    m_MotionProfileAnimation = motionProfileAnimation;
+    m_animationLength = m_MotionProfileAnimation.getLength();
   }
 
   public double getSpeed() {

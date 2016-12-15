@@ -45,6 +45,4 @@ public class Vector2 {
     public static Vector2 normalize(Vector2 vector) {
         return divide(vector, length(vector));
     }
-
-
 }

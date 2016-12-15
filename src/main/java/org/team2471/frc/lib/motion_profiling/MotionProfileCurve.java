@@ -17,7 +17,7 @@ public class MotionProfileCurve extends MotionCurve {
   }
 
   public void stop() {
-    m_PIDController.disable();
+    // m_PIDController.disable();  // by removing this, we can hold our position once the animation is done.
   }
 
   public boolean onTarget() {
