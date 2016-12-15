@@ -10,6 +10,7 @@ public class MotionKey {
   private Vector2 m_prevTangent;
   private Vector2 m_nextTangent;
   private boolean m_bTangentsDirty;
+  private boolean m_bCoefficientsDirty;
   private CubicCoefficients1D m_xCoeff;
   private CubicCoefficients1D m_yCoeff;
 
@@ -28,16 +29,17 @@ public class MotionKey {
   private final double CLAMPTOLERANCE = 0.005;
 
   public MotionKey() {
-    m_timeAndValue = new Vector2(0,0);
-    m_prevAngleAndMagnitude = new Vector2(0,1);
-    m_nextAngleAndMagnitude = new Vector2(0,1);
-    m_prevTangent = new Vector2(0,0);
-    m_nextTangent = new Vector2(0,0);
+    m_timeAndValue = new Vector2(0, 0);
+    m_prevAngleAndMagnitude = new Vector2(0, 1);
+    m_nextAngleAndMagnitude = new Vector2(0, 1);
+    m_prevTangent = new Vector2(0, 0);
+    m_nextTangent = new Vector2(0, 0);
 
     m_timeAndValue.set(0, 0);
     m_prevAngleAndMagnitude.set(0, 1);
     m_nextAngleAndMagnitude.set(0, 1);
     m_bTangentsDirty = true;
+    m_bCoefficientsDirty = true;
     m_prevSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
     m_nextSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
     m_motionCurve = null;
@@ -49,19 +51,23 @@ public class MotionKey {
     getMotionCurve().onKeyPositionChanged(this);  // tell the curve too
 
     setTangentsDirty(true);
+    setCoefficientsDirty(true);
 
-    if (getPrevKey()!=null)
-    {
+    if (getPrevKey() != null) {
       getPrevKey().setTangentsDirty(true);
-      if (getPrevKey().getPrevKey()!=null && getPrevKey().getPrevKey().getNextSlopeMethod() == SLOPE_PLATEAU) // Need to go two away if it is Plateau because they use Prev and Next Tangents
+      getPrevKey().setCoefficientsDirty(true);
+      if (getPrevKey().getPrevKey() != null && getPrevKey().getPrevKey().getNextSlopeMethod() == SLOPE_PLATEAU) {  // Need to go two away if it is Plateau because they use Prev and Next Tangents
         getPrevKey().getPrevKey().setTangentsDirty(true);
+        getPrevKey().getPrevKey().setCoefficientsDirty(true);
+      }
     }
 
-    if (getNextKey()!=null)
-    {
+    if (getNextKey() != null) {
       getNextKey().setTangentsDirty(true);
-      if (getNextKey().getNextKey()!=null && getNextKey().getNextKey().getPrevSlopeMethod() == SLOPE_PLATEAU) // Need to go two away if it is Plateau because they use Prev and Next Tangents
+      if (getNextKey().getNextKey() != null && getNextKey().getNextKey().getPrevSlopeMethod() == SLOPE_PLATEAU) {  // Need to go two away if it is Plateau because they use Prev and Next Tangents
         getNextKey().getNextKey().setTangentsDirty(true);
+        getNextKey().setCoefficientsDirty(true);
+      }
     }
   }
 
@@ -89,6 +95,14 @@ public class MotionKey {
 
   public void setTangentsDirty(boolean bTangentsDirty) {
     m_bTangentsDirty = bTangentsDirty;
+  }
+
+  public boolean areCoefficientsDirty() {
+    return m_bCoefficientsDirty;
+  }
+
+  public void setCoefficientsDirty(boolean bCoefficientsDirty) {
+    m_bCoefficientsDirty = bCoefficientsDirty;
   }
 
   public Vector2 getTimeAndValue() {
@@ -202,9 +216,6 @@ public void setNextTangent(Vector2 m_NextTangent) {
   }
 
   private void calculateTangents() {
-    if (!areTangentsDirty())
-      return;
-
     setTangentsDirty(false);
 
     boolean bCalcSmoothPrev = false;
@@ -396,19 +407,25 @@ public void setNextTangent(Vector2 m_NextTangent) {
 
     m_prevTangent = Vector2.multiply(m_prevTangent, getPrevAngleAndMagnitude().y);
     m_nextTangent = Vector2.multiply(m_nextTangent, getNextAngleAndMagnitude().y);
-
-    calculateCoefficients();
   }
 
   public CubicCoefficients1D getXCoefficients() {
+    if (areCoefficientsDirty()) {
+      calculateCoefficients();
+    }
     return m_xCoeff;
   }
 
   public CubicCoefficients1D getYCoefficients() {
+    if (areCoefficientsDirty()) {
+      calculateCoefficients();
+    }
     return m_yCoeff;
   }
 
   private void calculateCoefficients() {
+    setCoefficientsDirty(false);
+
     double pointax = getTime();
     double pointbx = m_nextKey.getTime();
     double xspan = pointbx - pointax;
