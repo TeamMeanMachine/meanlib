@@ -416,7 +416,7 @@ public void setNextTangent(Vector2 m_NextTangent) {
     double pointay = getValue();
     double pointby = m_nextKey.getValue();
     double pointcy = getNextTangent().y;
-    double pointdy = getPrevTangent().y;
+    double pointdy = m_nextKey.getPrevTangent().y;
 
     m_yCoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);
 
