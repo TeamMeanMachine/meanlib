@@ -43,27 +43,27 @@ public class DriveController {
   }
 
   public DriveController withRunCommandOnButtonPressEvent(int buttonId, Command command) {
-    buttons[buttonId].whenPressed(command);
+    buttons[buttonId - 1].whenPressed(command);
     return this;
   }
 
   public DriveController withRunCommandOnButtonReleaseEvent(int buttonId, Command command) {
-    buttons[buttonId].whenReleased(command);
+    buttons[buttonId - 1].whenReleased(command);
     return this;
   }
 
   public DriveController withRunCommandWhileButtonHoldEvent(int buttonId, Command command) {
-    buttons[buttonId].whileHeld(command);
+    buttons[buttonId - 1].whileHeld(command);
     return this;
   }
 
   public DriveController withToggleCommandOnButtonPressEvent(int buttonId, Command command) {
-    buttons[buttonId].toggleWhenPressed(command);
+    buttons[buttonId - 1].toggleWhenPressed(command);
     return this;
   }
 
   public DriveController withCancelCommandOnButtonPressEvent(int buttonId, Command command) {
-    buttons[buttonId].cancelWhenPressed(command);
+    buttons[buttonId - 1].cancelWhenPressed(command);
     return this;
   }
 }
