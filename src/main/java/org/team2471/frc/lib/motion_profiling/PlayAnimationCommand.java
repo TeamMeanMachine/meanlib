@@ -45,7 +45,6 @@ public class PlayAnimationCommand extends Command {
   @Override
   protected boolean isFinished() {
     return m_forwardTime >= m_animationLength * Math.abs(m_speed);
-            //&& m_MotionProfileAnimation.onTarget();  // no need for this
   }
 
   @Override
@@ -73,5 +72,13 @@ public class PlayAnimationCommand extends Command {
 
   public void setSpeed(double speed) {
     m_speed = speed;
+  }
+
+  public double getTime() {  // how much time has passed since the start
+    return m_forwardTime;
+  }
+
+  public double getLength() {
+    return m_animationLength;
   }
 }

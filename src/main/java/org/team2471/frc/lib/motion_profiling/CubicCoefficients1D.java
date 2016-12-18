@@ -27,6 +27,10 @@ public class CubicCoefficients1D {
     return t * (3 * a * t + 2 * b) + c;
   }
 
+  double SecondDerivative(double t) {
+    return 3 * a * t + 2 * b;
+  }
+
   double InitFD(int steps) {
     //   fda     0          0          0     1       a
     //   fdb  =  delta**3   delta**2   delta 0   *   b
