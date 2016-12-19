@@ -3,10 +3,6 @@ package org.team2471.frc.lib.motion_profiling;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
 
-/**
- * Created by Bob on 12/10/2016.
- */
-
 public class PlayAnimationCommand extends Command {
 
   private MotionProfileAnimation m_MotionProfileAnimation;
