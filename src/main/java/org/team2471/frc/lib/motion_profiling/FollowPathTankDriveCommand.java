@@ -12,6 +12,8 @@ public class FollowPathTankDriveCommand extends Command {
   private double m_playTime;
   private double m_forwardTime;
   private double m_pathMaxTime;
+  private double m_leftDistance;
+  private double m_rightDistance;
   private PIDController m_leftController;
   private PIDController m_rightController;
 
@@ -27,6 +29,8 @@ public class FollowPathTankDriveCommand extends Command {
   @Override
   protected void initialize() {
     m_startTime = Utility.getFPGATime();
+    m_leftController.enable();
+    m_rightController.enable();
   }
 
   @Override
@@ -34,11 +38,16 @@ public class FollowPathTankDriveCommand extends Command {
     m_forwardTime = (Utility.getFPGATime() - m_startTime) / 1.0e6 * Math.abs(m_speed);
     if (m_speed < 0) {  // negative speed plays the path backwards
       m_playTime = m_pathMaxTime - m_forwardTime;
-    } else {
+    }
+    else {
       m_playTime = m_forwardTime;
     }
 
-    // time to set the controller's position set points
+    // time to set the controller's position set-points
+    m_leftDistance += m_path.getLeftPositionDelta( m_playTime );
+    m_rightDistance += m_path.getRightPositionDelta( m_playTime );
+    m_leftController.setSetpoint(m_leftDistance);
+    m_rightController.setSetpoint(m_rightDistance);
   }
 
   @Override
@@ -48,6 +57,8 @@ public class FollowPathTankDriveCommand extends Command {
 
   @Override
   protected void end() {
+    m_leftController.disable();
+    m_rightController.disable();
   }
 
   @Override
