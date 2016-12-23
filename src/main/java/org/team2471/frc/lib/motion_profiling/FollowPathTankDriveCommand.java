@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.motion_profiling;
 
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDInterface;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -14,8 +15,8 @@ public class FollowPathTankDriveCommand extends Command {
   private double m_pathMaxTime;
   private double m_leftDistance;
   private double m_rightDistance;
-  private PIDController m_leftController;
-  private PIDController m_rightController;
+  private PIDInterface m_leftController;
+  private PIDInterface m_rightController;
 
   public FollowPathTankDriveCommand() {
     m_speed = 1.0;
@@ -91,19 +92,19 @@ public class FollowPathTankDriveCommand extends Command {
     return m_pathMaxTime;
   }
 
-  public PIDController getLeftController() {
+  public PIDInterface getLeftController() {
     return m_leftController;
   }
 
-  public void setLeftController(PIDController leftController) {
+  public void setLeftController(PIDInterface leftController) {
     m_leftController = leftController;
   }
 
-  public PIDController getRightController() {
+  public PIDInterface getRightController() {
     return m_rightController;
   }
 
-  public void setRightController(PIDController rightController) {
+  public void setRightController(PIDInterface rightController) {
     m_rightController = rightController;
   }
 }
