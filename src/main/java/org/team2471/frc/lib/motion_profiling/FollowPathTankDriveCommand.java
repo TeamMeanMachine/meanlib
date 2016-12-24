@@ -1,9 +1,12 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDInterface;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
+import org.team2471.frc.lib.sensors.CANController;
+import org.team2471.frc.lib.vector.Vector2;
 
 public class FollowPathTankDriveCommand extends Command {
 
@@ -15,8 +18,10 @@ public class FollowPathTankDriveCommand extends Command {
   private double m_pathMaxTime;
   private double m_leftDistance;
   private double m_rightDistance;
-  private PIDInterface m_leftController;
-  private PIDInterface m_rightController;
+  private double m_leftDistanceOffset;
+  private double m_rightDistanceOffset;
+  private CANController m_leftController;
+  private CANController m_rightController;
 
   public FollowPathTankDriveCommand() {
     m_speed = 1.0;
@@ -32,6 +37,14 @@ public class FollowPathTankDriveCommand extends Command {
     m_startTime = Utility.getFPGATime();
     m_leftController.enable();
     m_rightController.enable();
+    m_leftController.changeControlMode(CANTalon.TalonControlMode.Position);
+    m_rightController.changeControlMode(CANTalon.TalonControlMode.Position);
+    m_leftDistanceOffset = m_leftController.getPosition();
+    m_rightDistanceOffset = m_rightController.getPosition();
+    System.out.println( "Offsets L, R: " + m_leftDistanceOffset + ", " + m_rightDistanceOffset );
+    m_leftDistance = 0;
+    m_rightDistance = 0;
+    m_path.reset();
   }
 
   @Override
@@ -47,8 +60,21 @@ public class FollowPathTankDriveCommand extends Command {
     // time to set the controller's position set-points
     m_leftDistance += m_path.getLeftPositionDelta( m_playTime );
     m_rightDistance += m_path.getRightPositionDelta( m_playTime );
-    m_leftController.setSetpoint(m_leftDistance);
-    m_rightController.setSetpoint(m_rightDistance);
+
+    m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
+    m_rightController.setSetpoint(-m_rightDistance + m_rightDistanceOffset);
+
+    System.out.print("Time: " + m_playTime);
+    System.out.print("\t Left SetPoint: " + m_leftController.getSetpoint());
+    System.out.print("\t Left Position: " + m_leftController.getPosition());
+    System.out.println("\t Left Error: " + m_leftController.getError());
+
+/*
+    System.out.print("Time: " + m_playTime);
+    System.out.print("\t Right SetPoint: " + m_rightController.getSetpoint());
+    System.out.print("\t Right Position: " + m_rightController.getPosition());
+    System.out.println("\t Right Error: " + m_rightController.getError());
+*/
   }
 
   @Override
@@ -60,6 +86,8 @@ public class FollowPathTankDriveCommand extends Command {
   protected void end() {
     m_leftController.disable();
     m_rightController.disable();
+    m_leftController.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    m_rightController.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
   }
 
   @Override
@@ -92,19 +120,19 @@ public class FollowPathTankDriveCommand extends Command {
     return m_pathMaxTime;
   }
 
-  public PIDInterface getLeftController() {
+  public CANController getLeftController() {
     return m_leftController;
   }
 
-  public void setLeftController(PIDInterface leftController) {
+  public void setLeftController(CANController leftController) {
     m_leftController = leftController;
   }
 
-  public PIDInterface getRightController() {
+  public CANController getRightController() {
     return m_rightController;
   }
 
-  public void setRightController(PIDInterface rightController) {
+  public void setRightController(CANController rightController) {
     m_rightController = rightController;
   }
 }

@@ -16,6 +16,12 @@ public class Path2D {
     m_yCurve = new MotionCurve();
   }
 
+  public void reset() {
+    m_prevCenterPosition = null;
+    m_prevLeftPosition = null;
+    m_prevRightPosition = null;
+  }
+
   public void AddVector2( double time, Vector2 point ) {
     AddPoint( time, point.x, point.y );
   }
@@ -34,52 +40,64 @@ public class Path2D {
   }
 
   public Vector2 getSidePosition( double time, double xOffset ) {  // offset can be positive or negative (half the width of the robot)
-    m_prevCenterPosition = getPosition( time );  // this could compute the position for a specific offset vector on the robot
+    Vector2 centerPosition = getPosition( time );  // this could compute the position for a specific offset vector on the robot
     Vector2 tangent = getTangent( time );
     tangent = Vector2.normalize( tangent );
     tangent = Vector2.perpendicular( tangent );
     tangent = Vector2.multiply( tangent, xOffset );
-    Vector2 sidePosition = Vector2.add( m_prevCenterPosition, tangent );
+    Vector2 sidePosition = Vector2.add( centerPosition, tangent );
     return sidePosition;
   }
 
   public Vector2 getLeftPosition( double time ) {
-    m_prevLeftPosition = getSidePosition( time, -m_robotWidth / 2.0 );
-    return m_prevLeftPosition;
+    return getSidePosition( time, -m_robotWidth / 2.0 );
   }
 
   public Vector2 getRightPosition( double time ) {
-    m_prevRightPosition =  getSidePosition( time, m_robotWidth / 2.0 );
-    return m_prevRightPosition;
+    return getSidePosition( time, m_robotWidth / 2.0 );
   }
 
   public double getLeftPositionDelta( double time ) {
     if (m_prevLeftPosition == null) {
-      getLeftPosition( time );
+      m_prevCenterPosition = getPosition( time );
+      m_prevLeftPosition = getLeftPosition( time );
       return 0.0;
     }
+
+    Vector2 centerPosition = getPosition(time);
+    Vector2 leftPosition = getLeftPosition(time);
     Vector2 deltaCenter = Vector2.subtract( getPosition(time), m_prevCenterPosition );
     Vector2 deltaLeft = Vector2.subtract( getLeftPosition(time), m_prevLeftPosition );
-    if (Vector2.dot(deltaCenter, deltaLeft) < 0) {
-      return -Vector2.length(deltaLeft);
+    m_prevCenterPosition = centerPosition;
+    m_prevLeftPosition = leftPosition;
+
+    if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
+      return Vector2.length(deltaLeft);
     }
     else {
-      return Vector2.length(deltaLeft);
+      return -Vector2.length(deltaLeft);
     }
   }
 
   public double getRightPositionDelta( double time ) {
     if (m_prevRightPosition == null) {
-      getRightPosition( time );
+      m_prevCenterPosition = getPosition( time );
+      m_prevRightPosition = getRightPosition( time );
       return 0.0;
     }
+
+    Vector2 centerPosition = getPosition(time);
+    Vector2 RightPosition = getRightPosition(time);
     Vector2 deltaCenter = Vector2.subtract( getPosition(time), m_prevCenterPosition );
-    Vector2 deltaRight = Vector2.subtract( getLeftPosition(time), m_prevRightPosition );
-    if (Vector2.dot(deltaCenter, deltaRight) < 0) {
-      return -Vector2.length(deltaRight);
+    Vector2 deltaRight = Vector2.subtract( getRightPosition(time), m_prevRightPosition );
+    m_prevCenterPosition = centerPosition;
+    m_prevRightPosition = RightPosition;
+
+    if (Vector2.dot(deltaCenter, deltaRight) > 0) {
+      return Vector2.length(deltaRight);
     }
     else {
-      return Vector2.length(deltaRight);
+      return -Vector2.length(deltaRight);
     }
   }
 

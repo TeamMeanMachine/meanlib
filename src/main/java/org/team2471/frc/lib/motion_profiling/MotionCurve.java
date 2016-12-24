@@ -510,6 +510,8 @@ public class MotionCurve {
     if (getLastAccessedKey().getTime() <= time) {
       for (MotionKey key = getLastAccessedKey(); key != null; key = key.getNextKey()) {
         MotionKey nextKey = key.getNextKey();
+        if (nextKey==null)
+          return m_lastDerivative;
         if (key.getTime() == time) {
           Vector2 tangent = key.getNextTangent();
           m_lastDerivative = tangent.y / tangent.x;
@@ -526,6 +528,8 @@ public class MotionCurve {
     } else {
       for (MotionKey key = getLastAccessedKey().getPrevKey(); key != null; key = key.getPrevKey()) {
         MotionKey nextKey = key.getNextKey();
+        if (nextKey==null)
+          return m_lastDerivative;
         if (key.getTime() == time) {
           Vector2 tangent = key.getNextTangent();
           m_lastDerivative = tangent.y / tangent.x;
