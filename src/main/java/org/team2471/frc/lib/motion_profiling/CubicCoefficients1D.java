@@ -1,9 +1,5 @@
 package org.team2471.frc.lib.motion_profiling;
 
-/**
- * Created by Bob on 11/27/2016.
- */
-
 public class CubicCoefficients1D {
   private double a, b, c, d;          // CUBIC COEFFICIENTS f(t) = a*t^3 + b*t^2 + c*t + d
   private double fda, fdb, fdc, fdd;  // BUMP FD COEFFICIENTS

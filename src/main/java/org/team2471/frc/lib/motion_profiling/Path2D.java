@@ -4,16 +4,16 @@ import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
 
-  private MotionCurve m_xCurve;
-  private MotionCurve m_yCurve;
-  private double m_robotWidth = 28.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
+  private MotionCurve m_yxCurve;  // positive y is forward in robot space, and positive x is to the robot's right
+  private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
+  private double m_robotWidth = 24.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
   private Vector2 m_prevCenterPosition;
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
 
   public Path2D() {
-    m_xCurve = new MotionCurve();
-    m_yCurve = new MotionCurve();
+    m_yxCurve = new MotionCurve();
+    m_easeCurve = new MotionCurve();
   }
 
   public void reset() {
@@ -22,17 +22,20 @@ public class Path2D {
     m_prevRightPosition = null;
   }
 
-  public void AddVector2( double time, Vector2 point ) {
-    AddPoint( time, point.x, point.y );
+  public void addVector2( Vector2 point ) {
+    addPoint( point.x, point.y );
   }
 
-  public void AddPoint( double time, double x, double y ) {
-    m_xCurve.storeValue( time, x );
-    m_yCurve.storeValue( time, y );
+  public void addPoint( double x, double y ) {
+    m_yxCurve.storeValue( y, x );  // we store y then x so that 0 slope key generates a dx/dy = 0, which is how we want to start
+  }
+
+  public void addEasePoint( double time, double value ) {
+    m_easeCurve.storeValue( time, value );
   }
 
   public Vector2 getPosition( double time ) {
-    return new Vector2( m_xCurve.getValue(time), m_yCurve.getValue(time));
+    return new Vector2( m_xCurve.getValue(time), m_yCurve.getValue(time) );
   }
 
   public Vector2 getTangent( double time ) {
