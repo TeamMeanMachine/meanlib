@@ -101,7 +101,6 @@ public class FollowPathTankDriveCommand extends Command {
 
   public void setPath(Path2D path) {
     m_path = path;
-    m_pathMaxTime = path.getMaxTime();
   }
 
   public double getSpeed() {

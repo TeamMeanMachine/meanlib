@@ -4,15 +4,16 @@ import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
 
-  private MotionCurve m_yxCurve;  // positive y is forward in robot space, and positive x is to the robot's right
+  private Path2DCurve m_xyCurve;         // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
+
   private double m_robotWidth = 24.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
   private Vector2 m_prevCenterPosition;
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
 
   public Path2D() {
-    m_yxCurve = new MotionCurve();
+    m_xyCurve = new Path2DCurve();
     m_easeCurve = new MotionCurve();
   }
 
@@ -27,7 +28,11 @@ public class Path2D {
   }
 
   public void addPoint( double x, double y ) {
-    m_yxCurve.storeValue( y, x );  // we store y then x so that 0 slope key generates a dx/dy = 0, which is how we want to start
+    m_xyCurve.addPointToEnd( x, y );
+  }
+
+  public void addPointAndTangent( double x, double y, double xTangent, double yTangent ) {
+    m_xyCurve.addPointToEnd( x, y, xTangent, yTangent );
   }
 
   public void addEasePoint( double time, double value ) {
@@ -35,11 +40,21 @@ public class Path2D {
   }
 
   public Vector2 getPosition( double time ) {
-    return new Vector2( m_xCurve.getValue(time), m_yCurve.getValue(time) );
+    return getPositionAtEase( m_easeCurve.getValue(time) );
   }
 
   public Vector2 getTangent( double time ) {
-    return new Vector2( m_xCurve.getDerivative(time), m_yCurve.getDerivative(time));
+    return getTangentAtEase( m_easeCurve.getValue(time) );
+  }
+
+  public Vector2 getPositionAtEase( double ease ) {
+    double totalDistance = m_xyCurve.getLength();
+    return m_xyCurve.getPositionAtDistance( ease * totalDistance );
+  }
+
+  public Vector2 getTangentAtEase( double ease ) {
+    double totalDistance = m_xyCurve.getLength();
+    return m_xyCurve.getTangentAtDistance( ease * totalDistance );
   }
 
   public Vector2 getSidePosition( double time, double xOffset ) {  // offset can be positive or negative (half the width of the robot)
@@ -112,7 +127,7 @@ public class Path2D {
     m_robotWidth = robotWidth;
   }
 
-  public double getMaxTime() {
-    return Math.max( m_xCurve.getLength(), m_yCurve.getLength());
+  public double getPathLength() {
+    return m_xyCurve.getLength();
   }
 }

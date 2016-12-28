@@ -457,10 +457,10 @@ public class MotionCurve {
 
       // if the weights are default, then the x cubic is linear and there is no need to evaluate it
       if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
-        return pKey.getYCoefficients().Evaluate(guesst);
+        return pKey.getYCoefficients().evaluate(guesst);
 
       // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
-      double diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+      double diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
       double error = Math.abs(diffx);
       double maxerror = MAXFRAMEERROR / 30.0f;
 
@@ -474,8 +474,8 @@ public class MotionCurve {
           negativeError = diffx;
 
         while (error > maxerror) {
-          guesst = guesst + diffx / pKey.getXCoefficients().Derivative(guesst);
-          diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+          guesst = guesst + diffx / pKey.getXCoefficients().derivative(guesst);
+          diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
           error = Math.abs(diffx);
 
           if ((diffx > 0 && diffx > positiveError) || (diffx < 0 && diffx < negativeError)) {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
@@ -484,11 +484,11 @@ public class MotionCurve {
             int steps = (int) (xspan / maxerror);
             steps = Math.min(steps, 1000);
             double deltat = 1.0f / steps;
-            pKey.getXCoefficients().InitFD(steps);
+            pKey.getXCoefficients().initFD(steps);
             int i;
             diffx = error;
             for (i = 0, guesst = 0.0; diffx > maxerror && i < steps; guesst += deltat, i++)
-              diffx = Math.abs(evalx - pKey.getXCoefficients().BumpFD());
+              diffx = Math.abs(evalx - pKey.getXCoefficients().bumpFD());
             break;
           }
 
@@ -499,7 +499,7 @@ public class MotionCurve {
         }
       }
 
-      return pKey.getYCoefficients().Evaluate(guesst);
+      return pKey.getYCoefficients().evaluate(guesst);
     }
   }
 
@@ -570,10 +570,10 @@ public class MotionCurve {
 
       // if the weights are default, then the x cubic is linear and there is no need to evaluate it
       if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
-        return pKey.getYCoefficients().Derivative(guesst);
+        return pKey.getYCoefficients().derivative(guesst);
 
       // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
-      double diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+      double diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
       double error = Math.abs(diffx);
       double maxerror = MAXFRAMEERROR / 30.0f;
 
@@ -587,8 +587,8 @@ public class MotionCurve {
           negativeError = diffx;
 
         while (error > maxerror) {
-          guesst = guesst + diffx / pKey.getXCoefficients().Derivative(guesst);
-          diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+          guesst = guesst + diffx / pKey.getXCoefficients().derivative(guesst);
+          diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
           error = Math.abs(diffx);
 
           if ((diffx > 0 && diffx > positiveError) || (diffx < 0 && diffx < negativeError)) {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
@@ -597,11 +597,11 @@ public class MotionCurve {
             int steps = (int) (xspan / maxerror);
             steps = Math.min(steps, 1000);
             double deltat = 1.0f / steps;
-            pKey.getXCoefficients().InitFD(steps);
+            pKey.getXCoefficients().initFD(steps);
             int i;
             diffx = error;
             for (i = 0, guesst = 0.0; diffx > maxerror && i < steps; guesst += deltat, i++)
-              diffx = Math.abs(evalx - pKey.getXCoefficients().BumpFD());
+              diffx = Math.abs(evalx - pKey.getXCoefficients().bumpFD());
             break;
           }
 
@@ -612,7 +612,7 @@ public class MotionCurve {
         }
       }
 
-      return pKey.getYCoefficients().Derivative(guesst);
+      return pKey.getYCoefficients().derivative(guesst);
     }
   }
 }

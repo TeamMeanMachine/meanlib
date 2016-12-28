@@ -15,19 +15,19 @@ public class CubicCoefficients1D {
     d = p1;
   }
 
-  double Evaluate(double t) {
+  double evaluate(double t) {
     return t * (t * (a * t + b) + c) + d;
   }
 
-  double Derivative(double t) {
+  double derivative(double t) {
     return t * (3 * a * t + 2 * b) + c;
   }
 
-  double SecondDerivative(double t) {
+  double secondDerivative(double t) {
     return 3 * a * t + 2 * b;
   }
 
-  double InitFD(int steps) {
+  double initFD(int steps) {
     //   fda     0          0          0     1       a
     //   fdb  =  delta**3   delta**2   delta 0   *   b
     //   fdc     6*delta**3 2*delta**2 0     0       c
@@ -44,14 +44,14 @@ public class CubicCoefficients1D {
     return fda;
   }
 
-  double BumpFD() {
+  double bumpFD() {
     fda += fdb;
     fdb += fdc;
     fdc += fdd;
     return fda;
   }
 
-  double GetFDValue() {
+  double getFDValue() {
     return fda;
   }
 }
