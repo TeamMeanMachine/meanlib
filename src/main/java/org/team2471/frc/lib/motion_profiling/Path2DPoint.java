@@ -28,7 +28,7 @@ public class Path2DPoint {
   private Path2DPoint m_nextPoint;
   private Path2DPoint m_prevPoint;
 
-  private final int STEPS = 50;
+  private final int STEPS = 75;
 
   public Path2DPoint() {
     init();
@@ -41,8 +41,8 @@ public class Path2DPoint {
 
   private void init() {
     m_position = new Vector2(0, 0);
-    m_prevAngleAndMagnitude = new Vector2(0, 1.75);
-    m_nextAngleAndMagnitude = new Vector2(0, 1.75);
+    m_prevAngleAndMagnitude = new Vector2(0, 1.9);
+    m_nextAngleAndMagnitude = new Vector2(0, 1.9);
     m_prevTangent = new Vector2(0, 0);
     m_nextTangent = new Vector2(0, 0);
 
@@ -121,7 +121,7 @@ public class Path2DPoint {
 
   public void setPrevTangent(Vector2 m_PrevTangent) {
     this.m_prevTangent = m_PrevTangent;
-    m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
+    m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
     setNextAngleAndMagnitude(new Vector2(0,1));
   }
 

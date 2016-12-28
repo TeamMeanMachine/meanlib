@@ -84,8 +84,6 @@ public class FollowPathTankDriveCommand extends Command {
 
   @Override
   protected void end() {
-    m_leftController.disable();
-    m_rightController.disable();
     m_leftController.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     m_rightController.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
   }
@@ -101,6 +99,7 @@ public class FollowPathTankDriveCommand extends Command {
 
   public void setPath(Path2D path) {
     m_path = path;
+    m_pathMaxTime = m_path.getDuration();
   }
 
   public double getSpeed() {

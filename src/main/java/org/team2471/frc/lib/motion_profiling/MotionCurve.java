@@ -38,22 +38,6 @@ public class MotionCurve {
     this.m_tailKey = tailKey;
   }
 
-  public double getLastTime() {
-    return m_lastTime;
-  }
-
-  public void setLastTime(double m_lastTime) {
-    this.m_lastTime = m_lastTime;
-  }
-
-  public boolean isLastTimeValid() {
-    return m_bLastTimeValid;
-  }
-
-  public void setLastTimeValid(boolean lastTimeValid) {
-    this.m_bLastTimeValid = lastTimeValid;
-  }
-
   public double getDefaultValue() {
     return m_defaultValue;
   }
@@ -153,7 +137,7 @@ public class MotionCurve {
   }
 
   public void onKeyPositionChanged(MotionKey key) {
-    setLastTimeValid(false);
+    m_bLastTimeValid = false;
   }
 
   private MotionKey findClosestKey(double time) {
@@ -241,6 +225,7 @@ public class MotionCurve {
 
     // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normally smooth
     if (pNewKey==m_headKey) {
+      pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       if (pNewKey.getNextKey()!=null && pNewKey.getNextKey()!=m_tailKey) {  // the former head is not also the tail
         pNewKey.getNextKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
@@ -249,6 +234,7 @@ public class MotionCurve {
     }
     else if (pNewKey==m_tailKey) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
+      pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       if (pNewKey.getPrevKey()!=null && pNewKey.getPrevKey()!=m_headKey) {  // the former tail is not also the head
         pNewKey.getPrevKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getPrevKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
@@ -386,7 +372,7 @@ public class MotionCurve {
     }
 
     if (getLastAccessedKey() != null) {
-      if (isLastTimeValid() && time == getLastTime())
+      if (m_bLastTimeValid && time == m_lastTime)
         return m_lastValue; // if same as last time
     } else // if last key is not valid start from the beginning
     {
@@ -429,8 +415,8 @@ public class MotionCurve {
       }
     }
 
-    setLastTime(time);
-    setLastTimeValid(true);
+    m_lastTime = time;
+    m_bLastTimeValid = true;
     return m_lastValue;
   }
 

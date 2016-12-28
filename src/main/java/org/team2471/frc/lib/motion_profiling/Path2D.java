@@ -130,4 +130,12 @@ public class Path2D {
   public double getPathLength() {
     return m_xyCurve.getLength();
   }
+
+  public double getDuration() {
+    return m_easeCurve.getLength();
+  }
+
+  public MotionCurve getEaseCurve() {
+    return m_easeCurve;
+  }
 }
