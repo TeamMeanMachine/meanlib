@@ -28,7 +28,7 @@ public class Path2DPoint {
   private Path2DPoint m_nextPoint;
   private Path2DPoint m_prevPoint;
 
-  private final int STEPS = 75;
+  private final int STEPS = 600;
 
   public Path2DPoint() {
     init();

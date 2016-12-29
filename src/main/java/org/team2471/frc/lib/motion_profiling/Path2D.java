@@ -7,14 +7,17 @@ public class Path2D {
   private Path2DCurve m_xyCurve;         // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-  private double m_robotWidth = 24.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
+  private double m_robotWidth = 27.5
+          / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
   private Vector2 m_prevCenterPosition;
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
+  private double travelDirection;
 
   public Path2D() {
     m_xyCurve = new Path2DCurve();
     m_easeCurve = new MotionCurve();
+    travelDirection = 1.0;
   }
 
   public void reset() {
@@ -90,10 +93,10 @@ public class Path2D {
     m_prevLeftPosition = leftPosition;
 
     if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
-      return Vector2.length(deltaLeft);
+      return travelDirection * Vector2.length(deltaLeft);
     }
     else {
-      return -Vector2.length(deltaLeft);
+      return -travelDirection * Vector2.length(deltaLeft);
     }
   }
 
@@ -112,10 +115,10 @@ public class Path2D {
     m_prevRightPosition = RightPosition;
 
     if (Vector2.dot(deltaCenter, deltaRight) > 0) {
-      return Vector2.length(deltaRight);
+      return travelDirection * Vector2.length(deltaRight);
     }
     else {
-      return -Vector2.length(deltaRight);
+      return -travelDirection * Vector2.length(deltaRight);
     }
   }
 
@@ -137,5 +140,13 @@ public class Path2D {
 
   public MotionCurve getEaseCurve() {
     return m_easeCurve;
+  }
+
+  public double getTravelDirection() {
+    return travelDirection;
+  }
+
+  public void setTravelDirection(double travelDirection) {
+    this.travelDirection = travelDirection;
   }
 }

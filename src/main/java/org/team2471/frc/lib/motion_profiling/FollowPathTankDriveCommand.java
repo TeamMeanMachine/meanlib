@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDInterface;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team2471.frc.lib.sensors.CANController;
 import org.team2471.frc.lib.vector.Vector2;
 
@@ -67,7 +68,10 @@ public class FollowPathTankDriveCommand extends Command {
     System.out.print("Time: " + m_playTime);
     System.out.print("\t Left SetPoint: " + m_leftController.getSetpoint());
     System.out.print("\t Left Position: " + m_leftController.getPosition());
-    System.out.println("\t Left Error: " + m_leftController.getError());
+    double error = m_leftController.getPosition() - m_leftController.getSetpoint();
+    System.out.println("\t Left Error: " + error );
+
+    SmartDashboard.putNumber("Left Error", error );
 
 /*
     System.out.print("Time: " + m_playTime);
@@ -79,7 +83,7 @@ public class FollowPathTankDriveCommand extends Command {
 
   @Override
   protected boolean isFinished() {
-    return m_forwardTime >= m_pathMaxTime * Math.abs(m_speed);
+    return m_forwardTime >= m_pathMaxTime;
   }
 
   @Override
