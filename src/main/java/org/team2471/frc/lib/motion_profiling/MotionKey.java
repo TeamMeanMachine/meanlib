@@ -40,8 +40,8 @@ public class MotionKey {
     m_nextAngleAndMagnitude.set(0, 1);
     m_bTangentsDirty = true;
     m_bCoefficientsDirty = true;
-    m_prevSlopeMethod = SlopeMethod.SLOPE_FLAT;
-    m_nextSlopeMethod = SlopeMethod.SLOPE_FLAT;
+    m_prevSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
+    m_nextSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
     m_motionCurve = null;
     m_nextKey = null;
     m_prevKey = null;
@@ -188,7 +188,7 @@ public void setNextTangent(Vector2 m_NextTangent) {
   }
 
   public void setNextSlopeMethod(SlopeMethod slopeMethod) {
-    m_prevSlopeMethod = slopeMethod;
+    m_nextSlopeMethod = slopeMethod;
   }
 
   public double getPrevMagnitude() {
