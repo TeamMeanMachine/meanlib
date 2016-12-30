@@ -15,6 +15,7 @@ public class Path2DPoint {
   private CubicCoefficients1D m_xCoeff;
   private CubicCoefficients1D m_yCoeff;
   private double m_segmentLength;
+  private double partialLength, prevPartialLength;
 
   public enum SlopeMethod {
     SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_SMOOTH, SLOPE_TANGENT_SPECIFIED
@@ -53,6 +54,7 @@ public class Path2DPoint {
     m_nextPoint = null;
     m_prevPoint = null;
     m_segmentLength = 0;
+    partialLength = -1;
   }
 
   public void onPositionChanged() {
@@ -324,7 +326,7 @@ public class Path2DPoint {
     prevPos.set(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
 
     for (int i = 0; i < STEPS; i++) {
-      pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
+      pos.set(m_xCoeff.bumpFDFaster(), m_yCoeff.bumpFDFaster());
       m_segmentLength += Vector2.length( Vector2.subtract( pos, prevPos ));
       prevPos.set( pos.x, pos.y );
     }
@@ -339,15 +341,44 @@ public class Path2DPoint {
 
   public Vector2 getPositionAtDistance( double distance ) {
 
-    double interpolatedT = distance / m_segmentLength;
+    Vector2 pos = new Vector2(0,0);
+    Vector2 prevPos = new Vector2(0,0);
 
-    return new Vector2( m_xCoeff.evaluate(interpolatedT), m_yCoeff.evaluate(interpolatedT));
+    if (partialLength<0 || partialLength>distance) {
+      m_xCoeff.initFD(STEPS);
+      m_yCoeff.initFD(STEPS);
+      partialLength = 0;
+    }
+
+    while (partialLength <= distance) {
+      pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
+      prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
+      prevPartialLength = partialLength;
+      partialLength += Vector2.length( Vector2.subtract( pos, prevPos ));
+    }
+
+    double intoSegment = (distance-prevPartialLength) / (partialLength-prevPartialLength);  // linearly interpolate t based on distance of the surrounding steps
+
+    return Vector2.add( Vector2.multiply(prevPos, 1.0f - intoSegment), Vector2.multiply(pos, intoSegment));
   }
 
   public Vector2 getTangentAtDistance( double distance ) {
+    Vector2 pos = new Vector2(0,0);
+    Vector2 prevPos = new Vector2(0,0);
 
-    double interpolatedT = distance / m_segmentLength;
+    if (partialLength<0 || partialLength>distance) {
+      m_xCoeff.initFD(STEPS);
+      m_yCoeff.initFD(STEPS);
+      partialLength = 0;
+    }
 
-    return new Vector2 ( m_xCoeff.derivative(interpolatedT), m_yCoeff.derivative(interpolatedT));
+    while (partialLength <= distance) {
+      pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
+      prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
+      prevPartialLength = partialLength;
+      partialLength += Vector2.length( Vector2.subtract( pos, prevPos ));
+    }
+
+    return Vector2.subtract(pos, prevPos);
   }
 }
