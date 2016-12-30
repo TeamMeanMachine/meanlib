@@ -88,7 +88,7 @@ public class Path2DCurve {
 
   private Path2DPoint getPointBefore( double distance ) {
     double length = 0;
-    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint()!=null; point = point.getNextPoint()) {
+    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint()!=null; point = point.getNextPoint()) {  // should make this incremental
       length += point.getSegmentLength();
       if (length > distance) {
         length -= point.getSegmentLength();
