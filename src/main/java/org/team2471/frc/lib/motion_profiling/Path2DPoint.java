@@ -2,7 +2,6 @@ package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
 
-import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_TANGENT_SPECIFIED;
 
 public class Path2DPoint {
@@ -289,33 +288,31 @@ public class Path2DPoint {
 
   public CubicCoefficients1D getXCoefficients() {
     if (areCoefficientsDirty()) {
-      calculateCoefficients();
+      calculateCoefficientsAndLength();
     }
     return m_xCoeff;
   }
 
   public CubicCoefficients1D getYCoefficients() {
     if (areCoefficientsDirty()) {
-      calculateCoefficients();
+      calculateCoefficientsAndLength();
     }
     return m_yCoeff;
   }
 
-  private void calculateCoefficients() {
+  private void calculateCoefficientsAndLength() {
     setCoefficientsDirty(false);
 
     double pointax = getPosition().x;
     double pointbx = m_nextPoint.getPosition().x;
     double pointcx = getNextTangent().x;
     double pointdx = m_nextPoint.getPrevTangent().x;
-
     m_xCoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);
 
     double pointay = getPosition().y;
     double pointby = m_nextPoint.getPosition().y;
     double pointcy = getNextTangent().y;
     double pointdy = m_nextPoint.getPrevTangent().y;
-
     m_yCoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);
 
     // calculate segment length
@@ -335,49 +332,22 @@ public class Path2DPoint {
 
   public double getSegmentLength() {
     if (areCoefficientsDirty()) {
-      calculateCoefficients();
+      calculateCoefficientsAndLength();
     }
     return m_segmentLength;
   }
 
-  public Vector2 getPositionAtDistance( double distance) {
+  public Vector2 getPositionAtDistance( double distance ) {
 
-    Vector2 pos = new Vector2(0,0);
-    Vector2 prevPos = new Vector2(0,0);
-    m_xCoeff.initFD( STEPS );
-    m_yCoeff.initFD( STEPS );
-    double length = 0;
-    prevPos.set(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
+    double interpolatedT = distance / m_segmentLength;
 
-    for (int i = 0; i < STEPS; i++) {
-      pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
-      length += Vector2.length( Vector2.subtract( pos, prevPos ));
-      if (length > distance) {
-        return pos;
-      }
-      prevPos.set( pos.x, pos.y );
-    }
-    return pos;
+    return new Vector2( m_xCoeff.evaluate(interpolatedT), m_yCoeff.evaluate(interpolatedT));
   }
 
-  public Vector2 getTangentAtDistance( double distance) {
+  public Vector2 getTangentAtDistance( double distance ) {
 
-    Vector2 pos = new Vector2(0,0);
-    Vector2 prevPos = new Vector2(0,0);
-    m_xCoeff.initFD( STEPS );
-    m_yCoeff.initFD( STEPS );
-    double length = 0;
-    prevPos.set(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
+    double interpolatedT = distance / m_segmentLength;
 
-    for (int i = 0; i < STEPS; i++) {
-      pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
-      length += Vector2.length( Vector2.subtract( pos, prevPos ));
-      if (length > distance) {
-        double t = (double)i / STEPS;
-        return new Vector2( m_xCoeff.derivative(t), m_yCoeff.derivative(t));
-      }
-      prevPos.set( pos.x, pos.y );
-    }
-    return getNextPoint().getNextTangent();
+    return new Vector2 ( m_xCoeff.derivative(interpolatedT), m_yCoeff.derivative(interpolatedT));
   }
 }
