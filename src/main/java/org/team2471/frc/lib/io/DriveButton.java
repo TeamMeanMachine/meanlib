@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.control;
+package org.team2471.frc.lib.io;
 
 import java.util.function.Function;
 
