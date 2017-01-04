@@ -10,12 +10,16 @@ public class MotionProfileCurve extends MotionCurve {
     m_PIDController = pidController;
   }
 
+  public MotionProfileCurve(PIDController pidController, MotionProfileAnimation animation) {
+    m_PIDController = pidController;
+    animation.addMotionProfileCurve( this );
+  }
+
   public void play(double time) {
     m_PIDController.setSetpoint(getValue(time));
   }
 
   public void stop() {
-    // m_PIDController.disable();  // by removing this, we can hold our position once the animation is done.
   }
 
   public boolean onTarget() {

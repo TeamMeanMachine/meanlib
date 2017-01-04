@@ -3,18 +3,15 @@ package org.team2471.frc.lib.motion_profiling;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
 
-/**
- * Created by Bob on 12/10/2016.
- */
-
 public class PlayAnimationCommand extends Command {
+
+  private MotionProfileAnimation m_MotionProfileAnimation;
+  private double m_speed;
 
   double m_startTime;
   double m_playTime;
   double m_forwardTime;
   double m_animationLength;
-  private MotionProfileAnimation m_MotionProfileAnimation;
-  private double m_speed;
 
   public PlayAnimationCommand() {
   }
@@ -27,23 +24,24 @@ public class PlayAnimationCommand extends Command {
   @Override
   protected void initialize() {
     m_startTime = Utility.getFPGATime();
+    System.out.println("Start Time: " + m_startTime);
   }
 
   @Override
   protected void execute() {
-    m_forwardTime = (Utility.getFPGATime() - m_startTime) / 1.0e6 * Math.abs(m_speed);
+    m_forwardTime = ((Utility.getFPGATime() - m_startTime) / 1.0e6) * Math.abs(m_speed);
     if (m_speed < 0) {  // negative speed plays animation backwards
       m_playTime = m_animationLength - m_forwardTime;
-    } else {
+    }
+    else {
       m_playTime = m_forwardTime;
     }
-    m_MotionProfileAnimation.play(m_playTime);
+    m_MotionProfileAnimation.play( m_playTime );
   }
 
   @Override
   protected boolean isFinished() {
-    return m_forwardTime >= m_animationLength * Math.abs(m_speed);
-    //&& m_MotionProfileAnimation.onTarget();  // no need for this
+    return m_forwardTime >= m_animationLength;
   }
 
   @Override
@@ -71,5 +69,13 @@ public class PlayAnimationCommand extends Command {
 
   public void setSpeed(double speed) {
     m_speed = speed;
+  }
+
+  public double getTime() {  // how much time has passed since the start
+    return m_forwardTime;
+  }
+
+  public double getLength() {
+    return m_animationLength;
   }
 }

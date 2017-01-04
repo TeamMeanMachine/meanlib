@@ -182,7 +182,7 @@ public class MotionKey {
   }
 
   public void setNextSlopeMethod(SlopeMethod slopeMethod) {
-    m_prevSlopeMethod = slopeMethod;
+    m_nextSlopeMethod = slopeMethod;
   }
 
   public double getPrevMagnitude() {

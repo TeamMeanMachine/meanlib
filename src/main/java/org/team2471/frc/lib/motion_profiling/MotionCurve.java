@@ -3,31 +3,24 @@ package org.team2471.frc.lib.motion_profiling;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class MotionCurve {
-  private final double MAXFRAMEERROR = 0.003;
   private MotionKey m_headKey;
   private MotionKey m_tailKey;
+
   private double m_defaultValue;
   private double m_minValue;
   private double m_maxValue;
   private double m_lastValue;
+  private double m_lastDerivative;
   private double m_lastTime;
   private boolean m_bLastTimeValid;
   private MotionKey m_lastAccessedKey;
+
+  private final double MAXFRAMEERROR = 0.003;
+
+  public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
+
   private ExtrapolationMethods m_preExtrapolation;
   private ExtrapolationMethods m_postExtrapolation;
-  public MotionCurve() {
-    m_headKey = null;
-    m_tailKey = null;
-    m_defaultValue = 0;
-    m_minValue = -Double.MAX_VALUE;
-    m_maxValue = Double.MAX_VALUE;
-    m_lastValue = 0;
-    m_lastTime = 0;
-    m_bLastTimeValid = false;
-    m_lastAccessedKey = null;
-    m_preExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
-    m_postExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
-  }
 
   public MotionKey getHeadKey() {
     return m_headKey;
@@ -43,22 +36,6 @@ public class MotionCurve {
 
   public void setTailKey(MotionKey tailKey) {
     this.m_tailKey = tailKey;
-  }
-
-  public double getLastTime() {
-    return m_lastTime;
-  }
-
-  public void setLastTime(double m_lastTime) {
-    this.m_lastTime = m_lastTime;
-  }
-
-  public boolean isLastTimeValid() {
-    return m_bLastTimeValid;
-  }
-
-  public void setLastTimeValid(boolean lastTimeValid) {
-    this.m_bLastTimeValid = lastTimeValid;
   }
 
   public double getDefaultValue() {
@@ -95,6 +72,21 @@ public class MotionCurve {
 
   public double getLength() {
     return getTailKey() != null ? getTailKey().getTime() : 0;
+  }
+
+  public MotionCurve() {
+    m_headKey = null;
+    m_tailKey = null;
+    m_defaultValue = 0;
+    m_minValue = -Double.MAX_VALUE;
+    m_maxValue = Double.MAX_VALUE;
+    m_lastValue = 0;
+    m_lastDerivative = 0;
+    m_lastTime = 0;
+    m_bLastTimeValid = false;
+    m_lastAccessedKey = null;
+    m_preExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
+    m_postExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
   }
 
   private void insertKeyBefore(MotionKey atKey, MotionKey newKey) {
@@ -145,7 +137,7 @@ public class MotionCurve {
   }
 
   public void onKeyPositionChanged(MotionKey key) {
-    setLastTimeValid(false);
+    m_bLastTimeValid = false;
   }
 
   private MotionKey findClosestKey(double time) {
@@ -232,19 +224,23 @@ public class MotionCurve {
     }
 
     // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normally smooth
-    if (pNewKey == m_headKey) {
+    if (pNewKey==m_headKey) {
+      pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
-      if (pNewKey.getNextKey() != null && pNewKey.getNextKey() != m_tailKey) {  // the former head is not also the tail
+      if (pNewKey.getNextKey()!=null && pNewKey.getNextKey()!=m_tailKey) {  // the former head is not also the tail
         pNewKey.getNextKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getNextKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
-    } else if (pNewKey == m_tailKey) {
+    }
+    else if (pNewKey==m_tailKey) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
-      if (pNewKey.getPrevKey() != null && pNewKey.getPrevKey() != m_headKey) {  // the former tail is not also the head
+      pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
+      if (pNewKey.getPrevKey()!=null && pNewKey.getPrevKey()!=m_headKey) {  // the former tail is not also the head
         pNewKey.getPrevKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getPrevKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
-    } else {
+    }
+    else {
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
     }
@@ -376,8 +372,8 @@ public class MotionCurve {
     }
 
     if (getLastAccessedKey() != null) {
-      if (isLastTimeValid() && time == getLastTime())
-        return m_lastTime; // if same as last time
+      if (m_bLastTimeValid && time == m_lastTime)
+        return m_lastValue; // if same as last time
     } else // if last key is not valid start from the beginning
     {
       setLastAccessedKey(getHeadKey());
@@ -391,7 +387,7 @@ public class MotionCurve {
           m_lastValue = key.getValue();
           break;
         } else if (nextKey.getTime() == time) {
-          setLastAccessedKey(key);
+          setLastAccessedKey(nextKey);
           m_lastValue = nextKey.getValue();
           break;
         } else if (nextKey.getTime() > time) {
@@ -408,7 +404,7 @@ public class MotionCurve {
           m_lastValue = key.getValue();
           break;
         } else if (nextKey.getTime() == time) {
-          setLastAccessedKey(key);
+          setLastAccessedKey(nextKey);
           m_lastValue = nextKey.getValue();
           break;
         } else if (key.getTime() < time) {
@@ -419,8 +415,8 @@ public class MotionCurve {
       }
     }
 
-    setLastTime(time);
-    setLastTimeValid(true);
+    m_lastTime = time;
+    m_bLastTimeValid = true;
     return m_lastValue;
   }
 
@@ -436,8 +432,8 @@ public class MotionCurve {
       return pNextKey.getValue();
     else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR && prevSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR) {
       return pKey.getValue() + (time - pKey.getTime())
-          / (pNextKey.getTime() - pKey.getTime())
-          * (pNextKey.getValue() - pKey.getValue());
+              / (pNextKey.getTime() - pKey.getTime())
+              * (pNextKey.getValue() - pKey.getValue());
     } else {
       double evalx = time;
       double pointax = pKey.getTime();
@@ -447,10 +443,10 @@ public class MotionCurve {
 
       // if the weights are default, then the x cubic is linear and there is no need to evaluate it
       if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
-        return pKey.getYCoefficients().Evaluate(guesst);
+        return pKey.getYCoefficients().evaluate(guesst);
 
       // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
-      double diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+      double diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
       double error = Math.abs(diffx);
       double maxerror = MAXFRAMEERROR / 30.0f;
 
@@ -464,8 +460,8 @@ public class MotionCurve {
           negativeError = diffx;
 
         while (error > maxerror) {
-          guesst = guesst + diffx / pKey.getXCoefficients().Derivative(guesst);
-          diffx = evalx - pKey.getXCoefficients().Evaluate(guesst);
+          guesst = guesst + diffx / pKey.getXCoefficients().derivative(guesst);
+          diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
           error = Math.abs(diffx);
 
           if ((diffx > 0 && diffx > positiveError) || (diffx < 0 && diffx < negativeError)) {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
@@ -474,11 +470,11 @@ public class MotionCurve {
             int steps = (int) (xspan / maxerror);
             steps = Math.min(steps, 1000);
             double deltat = 1.0f / steps;
-            pKey.getXCoefficients().InitFD(steps);
+            pKey.getXCoefficients().initFD(steps);
             int i;
             diffx = error;
             for (i = 0, guesst = 0.0; diffx > maxerror && i < steps; guesst += deltat, i++)
-              diffx = Math.abs(evalx - pKey.getXCoefficients().BumpFD());
+              diffx = Math.abs(evalx - pKey.getXCoefficients().bumpFD());
             break;
           }
 
@@ -489,9 +485,120 @@ public class MotionCurve {
         }
       }
 
-      return pKey.getYCoefficients().Evaluate(guesst);
+      return pKey.getYCoefficients().evaluate(guesst);
     }
   }
 
-  public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
+  public double getDerivative(double time) {
+    if (getHeadKey() == null || getHeadKey()==getTailKey())
+      return 0;
+
+    if (getLastAccessedKey().getTime() <= time) {
+      for (MotionKey key = getLastAccessedKey(); key != null; key = key.getNextKey()) {
+        MotionKey nextKey = key.getNextKey();
+        if (nextKey==null)
+          return m_lastDerivative;
+        if (key.getTime() == time) {
+          Vector2 tangent = key.getNextTangent();
+          m_lastDerivative = tangent.y / tangent.x;
+          break;
+        } else if (nextKey.getTime() == time) {
+          Vector2 tangent = nextKey.getPrevTangent();
+          m_lastDerivative = tangent.y / tangent.x;
+          break;
+        } else if (nextKey.getTime() > time) {
+          m_lastDerivative = derivative(time, key);
+          break;
+        }
+      }
+    } else {
+      for (MotionKey key = getLastAccessedKey().getPrevKey(); key != null; key = key.getPrevKey()) {
+        MotionKey nextKey = key.getNextKey();
+        if (nextKey==null)
+          return m_lastDerivative;
+        if (key.getTime() == time) {
+          Vector2 tangent = key.getNextTangent();
+          m_lastDerivative = tangent.y / tangent.x;
+          break;
+        } else if (nextKey.getTime() == time) {
+          Vector2 tangent = nextKey.getPrevTangent();
+          m_lastDerivative = tangent.y / tangent.x;
+          break;
+        } else if (key.getTime() < time) {
+          m_lastDerivative = derivative(time, key);
+          break;
+        }
+      }
+    }
+
+    return m_lastDerivative;
+  }
+
+  private double derivative(double time, MotionKey pKey) {
+    MotionKey pNextKey = pKey.getNextKey();
+
+    MotionKey.SlopeMethod nextSlopeMethod = pKey.getNextSlopeMethod();
+    MotionKey.SlopeMethod prevSlopeMethod = pNextKey.getPrevSlopeMethod();
+
+    if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_STEPPED)
+      return 0;
+    else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_STEPPED_NEXT)
+      return 0;
+    else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR && prevSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR) {
+      return (pNextKey.getValue() - pKey.getValue()) / (pNextKey.getTime() - pKey.getTime());
+    }
+    else {
+      double evalx = time;
+      double pointax = pKey.getTime();
+      double pointbx = pNextKey.getTime();
+      double xspan = pointbx - pointax;
+      double guesst = (evalx - pointax) / xspan;
+
+      // if the weights are default, then the x cubic is linear and there is no need to evaluate it
+      if (pKey.getNextMagnitude() == 1.0f && pNextKey.getPrevMagnitude() == 1.0f)
+        return pKey.getYCoefficients().derivative(guesst);
+
+      // Spline - non default tangents means that we need a second parametric cubic for x as a function of t
+      double diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
+      double error = Math.abs(diffx);
+      double maxerror = MAXFRAMEERROR / 30.0f;
+
+      if (error > maxerror) {
+        double positiveError = Double.MAX_VALUE;
+        double negativeError = -Double.MAX_VALUE;
+
+        if (diffx > 0)
+          positiveError = diffx;
+        else
+          negativeError = diffx;
+
+        while (error > maxerror) {
+          guesst = guesst + diffx / pKey.getXCoefficients().derivative(guesst);
+          diffx = evalx - pKey.getXCoefficients().evaluate(guesst);
+          error = Math.abs(diffx);
+
+          if ((diffx > 0 && diffx > positiveError) || (diffx < 0 && diffx < negativeError)) {  // NOT CONVERGING, PROBABLY BOGUS CHANNEL DATA, WALK USING BUMP FD
+            assert (false);
+            maxerror = 1.0f / 100.0f;  // DON'T BE AS ACCURATE BECAUSE THIS IS MUCH SLOWER
+            int steps = (int) (xspan / maxerror);
+            steps = Math.min(steps, 1000);
+            double deltat = 1.0f / steps;
+            pKey.getXCoefficients().initFD(steps);
+            int i;
+            diffx = error;
+            for (i = 0, guesst = 0.0; diffx > maxerror && i < steps; guesst += deltat, i++)
+              diffx = Math.abs(evalx - pKey.getXCoefficients().bumpFD());
+            break;
+          }
+
+          if (diffx > 0)
+            positiveError = diffx;
+          else
+            negativeError = diffx;
+        }
+      }
+
+      return pKey.getYCoefficients().derivative(guesst);
+    }
+  }
 }

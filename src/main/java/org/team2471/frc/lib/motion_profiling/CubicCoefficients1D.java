@@ -1,12 +1,10 @@
 package org.team2471.frc.lib.motion_profiling;
 
-/**
- * Created by Bob on 11/27/2016.
- */
-
 public class CubicCoefficients1D {
   private double a, b, c, d;          // CUBIC COEFFICIENTS f(t) = a*t^3 + b*t^2 + c*t + d
   private double fda, fdb, fdc, fdd;  // BUMP FD COEFFICIENTS
+  private int fdSteps;                // BUMP FD memory
+  private double fdPrevValue;
 
   CubicCoefficients1D(double p1, double p4, double r1, double r4) {  // construct from two values and two tangents (slope)
     //   a     2 -2  1  1   p1
@@ -19,20 +17,25 @@ public class CubicCoefficients1D {
     d = p1;
   }
 
-  double Evaluate(double t) {
+  double evaluate(double t) {
     return t * (t * (a * t + b) + c) + d;
   }
 
-  double Derivative(double t) {
+  double derivative(double t) {
     return t * (3 * a * t + 2 * b) + c;
   }
 
-  double InitFD(int steps) {
+  double secondDerivative(double t) {
+    return 3 * a * t + 2 * b;
+  }
+
+  double initFD(int steps) {
+    fdSteps = steps;
     //   fda     0          0          0     1       a
     //   fdb  =  delta**3   delta**2   delta 0   *   b
     //   fdc     6*delta**3 2*delta**2 0     0       c
     //   fdd     6*delta**3 0          0     0       d
-    double fd12 = 1.0f / steps;
+    double fd12 = 1.0 / steps;
     double fd11 = fd12 * fd12;
     double fd10 = fd12 * fd11;
     double fd20 = 6.0f * fd10;
@@ -44,14 +47,30 @@ public class CubicCoefficients1D {
     return fda;
   }
 
-  double BumpFD() {
+  double bumpFD() {
+    fdPrevValue = fda;
     fda += fdb;
     fdb += fdc;
     fdc += fdd;
     return fda;
   }
 
-  double GetFDValue() {
+  double bumpFDFaster() {
+    fda += fdb;
+    fdb += fdc;
+    fdc += fdd;
     return fda;
+  }
+
+  double getFDValue() {
+    return fda;
+  }
+
+  public int getFdSteps() {
+    return fdSteps;
+  }
+
+  public double getFdPrevValue() {
+    return fdPrevValue;
   }
 }
