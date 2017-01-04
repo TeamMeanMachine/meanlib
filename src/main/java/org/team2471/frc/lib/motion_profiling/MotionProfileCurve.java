@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.PIDController;
 
 public class MotionProfileCurve extends MotionCurve {
 
+  private PIDController m_PIDController;
+
   public MotionProfileCurve(PIDController pidController) {
     m_PIDController = pidController;
   }
@@ -19,6 +21,4 @@ public class MotionProfileCurve extends MotionCurve {
   public boolean onTarget() {
     return m_PIDController.onTarget();
   }
-
-  private PIDController m_PIDController;
 }

@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 
 @FunctionalInterface
 public interface RatePIDSource extends PIDSource {
-  @Override
-  default void setPIDSourceType(PIDSourceType pidSourceType) {
+  static RatePIDSource of(DoubleSupplier supplier) {
+    return supplier::getAsDouble;
   }
 
   @Override
@@ -16,7 +16,7 @@ public interface RatePIDSource extends PIDSource {
     return PIDSourceType.kRate;
   }
 
-  static RatePIDSource of(DoubleSupplier supplier) {
-    return supplier::getAsDouble;
+  @Override
+  default void setPIDSourceType(PIDSourceType pidSourceType) {
   }
 }

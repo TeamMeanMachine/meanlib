@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 
 @FunctionalInterface
 public interface DisplacementPIDSource extends PIDSource {
-  @Override
-  default void setPIDSourceType(PIDSourceType pidSourceType) {
+  static DisplacementPIDSource of(DoubleSupplier supplier) {
+    return supplier::getAsDouble;
   }
 
   @Override
@@ -16,7 +16,7 @@ public interface DisplacementPIDSource extends PIDSource {
     return PIDSourceType.kDisplacement;
   }
 
-  static DisplacementPIDSource of(DoubleSupplier supplier) {
-    return supplier::getAsDouble;
+  @Override
+  default void setPIDSourceType(PIDSourceType pidSourceType) {
   }
 }

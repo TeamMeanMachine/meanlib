@@ -1,9 +1,11 @@
 package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
+
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
 
 public class MotionKey {
+  private final double CLAMPTOLERANCE = 0.005;
   private Vector2 m_timeAndValue;
   private Vector2 m_prevAngleAndMagnitude;
   private Vector2 m_nextAngleAndMagnitude;
@@ -13,20 +15,12 @@ public class MotionKey {
   private boolean m_bCoefficientsDirty;
   private CubicCoefficients1D m_xCoeff;
   private CubicCoefficients1D m_yCoeff;
-
-  public enum SlopeMethod {
-    SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
-    SLOPE_STEPPED, SLOPE_STEPPED_NEXT
-  }
-
   private SlopeMethod m_prevSlopeMethod;
   private SlopeMethod m_nextSlopeMethod;
 
   private MotionCurve m_motionCurve;
   private MotionKey m_nextKey;
   private MotionKey m_prevKey;
-
-  private final double CLAMPTOLERANCE = 0.005;
 
   public MotionKey() {
     m_timeAndValue = new Vector2(0, 0);
@@ -147,7 +141,7 @@ public class MotionKey {
     return m_nextTangent;
   }
 
-public void setNextTangent(Vector2 m_NextTangent) {
+  public void setNextTangent(Vector2 m_NextTangent) {
     this.m_nextTangent = m_NextTangent;
   }
 
@@ -460,5 +454,10 @@ public void setNextTangent(Vector2 m_NextTangent) {
     }
 
     m_xCoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);
+  }
+
+  public enum SlopeMethod {
+    SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
+    SLOPE_STEPPED, SLOPE_STEPPED_NEXT
   }
 }

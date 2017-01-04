@@ -9,13 +9,12 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class PlayAnimationCommand extends Command {
 
-  private MotionProfileAnimation m_MotionProfileAnimation;
-  private double m_speed;
-
   double m_startTime;
   double m_playTime;
   double m_forwardTime;
   double m_animationLength;
+  private MotionProfileAnimation m_MotionProfileAnimation;
+  private double m_speed;
 
   public PlayAnimationCommand() {
   }
@@ -35,17 +34,16 @@ public class PlayAnimationCommand extends Command {
     m_forwardTime = (Utility.getFPGATime() - m_startTime) / 1.0e6 * Math.abs(m_speed);
     if (m_speed < 0) {  // negative speed plays animation backwards
       m_playTime = m_animationLength - m_forwardTime;
-    }
-    else {
+    } else {
       m_playTime = m_forwardTime;
     }
-    m_MotionProfileAnimation.play( m_playTime );
+    m_MotionProfileAnimation.play(m_playTime);
   }
 
   @Override
   protected boolean isFinished() {
     return m_forwardTime >= m_animationLength * Math.abs(m_speed);
-            //&& m_MotionProfileAnimation.onTarget();  // no need for this
+    //&& m_MotionProfileAnimation.onTarget();  // no need for this
   }
 
   @Override

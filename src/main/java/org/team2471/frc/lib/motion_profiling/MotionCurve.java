@@ -3,9 +3,9 @@ package org.team2471.frc.lib.motion_profiling;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class MotionCurve {
+  private final double MAXFRAMEERROR = 0.003;
   private MotionKey m_headKey;
   private MotionKey m_tailKey;
-
   private double m_defaultValue;
   private double m_minValue;
   private double m_maxValue;
@@ -13,13 +13,21 @@ public class MotionCurve {
   private double m_lastTime;
   private boolean m_bLastTimeValid;
   private MotionKey m_lastAccessedKey;
-
-  private final double MAXFRAMEERROR = 0.003;
-
-  public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
-
   private ExtrapolationMethods m_preExtrapolation;
   private ExtrapolationMethods m_postExtrapolation;
+  public MotionCurve() {
+    m_headKey = null;
+    m_tailKey = null;
+    m_defaultValue = 0;
+    m_minValue = -Double.MAX_VALUE;
+    m_maxValue = Double.MAX_VALUE;
+    m_lastValue = 0;
+    m_lastTime = 0;
+    m_bLastTimeValid = false;
+    m_lastAccessedKey = null;
+    m_preExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
+    m_postExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
+  }
 
   public MotionKey getHeadKey() {
     return m_headKey;
@@ -87,20 +95,6 @@ public class MotionCurve {
 
   public double getLength() {
     return getTailKey() != null ? getTailKey().getTime() : 0;
-  }
-
-  public MotionCurve() {
-    m_headKey = null;
-    m_tailKey = null;
-    m_defaultValue = 0;
-    m_minValue = -Double.MAX_VALUE;
-    m_maxValue = Double.MAX_VALUE;
-    m_lastValue = 0;
-    m_lastTime = 0;
-    m_bLastTimeValid = false;
-    m_lastAccessedKey = null;
-    m_preExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
-    m_postExtrapolation = ExtrapolationMethods.EXTRAPOLATION_CONSTANT;
   }
 
   private void insertKeyBefore(MotionKey atKey, MotionKey newKey) {
@@ -238,21 +232,19 @@ public class MotionCurve {
     }
 
     // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normally smooth
-    if (pNewKey==m_headKey) {
+    if (pNewKey == m_headKey) {
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
-      if (pNewKey.getNextKey()!=null && pNewKey.getNextKey()!=m_tailKey) {  // the former head is not also the tail
+      if (pNewKey.getNextKey() != null && pNewKey.getNextKey() != m_tailKey) {  // the former head is not also the tail
         pNewKey.getNextKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getNextKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
-    }
-    else if (pNewKey==m_tailKey) {
+    } else if (pNewKey == m_tailKey) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
-      if (pNewKey.getPrevKey()!=null && pNewKey.getPrevKey()!=m_headKey) {  // the former tail is not also the head
+      if (pNewKey.getPrevKey() != null && pNewKey.getPrevKey() != m_headKey) {  // the former tail is not also the head
         pNewKey.getPrevKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getPrevKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
-    }
-    else {
+    } else {
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
     }
@@ -444,8 +436,8 @@ public class MotionCurve {
       return pNextKey.getValue();
     else if (nextSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR && prevSlopeMethod == MotionKey.SlopeMethod.SLOPE_LINEAR) {
       return pKey.getValue() + (time - pKey.getTime())
-              / (pNextKey.getTime() - pKey.getTime())
-              * (pNextKey.getValue() - pKey.getValue());
+          / (pNextKey.getTime() - pKey.getTime())
+          * (pNextKey.getValue() - pKey.getValue());
     } else {
       double evalx = time;
       double pointax = pKey.getTime();
@@ -500,4 +492,6 @@ public class MotionCurve {
       return pKey.getYCoefficients().Evaluate(guesst);
     }
   }
+
+  public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
 }
