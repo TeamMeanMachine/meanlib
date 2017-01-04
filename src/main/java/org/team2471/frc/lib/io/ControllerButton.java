@@ -3,14 +3,14 @@ package org.team2471.frc.lib.io;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface DriveButton {
+public interface ControllerButton {
   boolean get();
 
-  default DriveButton map(Function<Boolean, Boolean> function) {
+  default ControllerButton map(Function<Boolean, Boolean> function) {
     return () -> function.apply(get());
   }
 
-  default DriveButton withInvert() {
+  default ControllerButton withInvert() {
     return map(value -> !value);
   }
 }

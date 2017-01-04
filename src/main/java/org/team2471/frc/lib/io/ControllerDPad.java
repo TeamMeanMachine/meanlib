@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.io;
 
 @FunctionalInterface
-public interface DriveDPad {
+public interface ControllerDPad {
   double get();
 
   default boolean isIdle() {
