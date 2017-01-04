@@ -12,7 +12,7 @@ public class MotionProfileCurve extends MotionCurve {
 
   public MotionProfileCurve(PIDController pidController, MotionProfileAnimation animation) {
     m_PIDController = pidController;
-    animation.addMotionProfileCurve( this );
+    animation.addMotionProfileCurve(this);
   }
 
   public void play(double time) {

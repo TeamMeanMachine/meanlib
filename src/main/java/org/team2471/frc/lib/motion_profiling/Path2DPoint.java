@@ -5,6 +5,7 @@ import org.team2471.frc.lib.vector.Vector2;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_TANGENT_SPECIFIED;
 
 public class Path2DPoint {
+  private final int STEPS = 600;
   private Vector2 m_position;
   private Vector2 m_prevAngleAndMagnitude;
   private Vector2 m_nextAngleAndMagnitude;
@@ -16,19 +17,12 @@ public class Path2DPoint {
   private CubicCoefficients1D m_yCoeff;
   private double m_segmentLength;
   private double partialLength, prevPartialLength;
-
-  public enum SlopeMethod {
-    SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_SMOOTH, SLOPE_TANGENT_SPECIFIED
-  }
-
   private SlopeMethod m_prevSlopeMethod;
   private SlopeMethod m_nextSlopeMethod;
 
   private Path2DCurve m_path2DCurve;
   private Path2DPoint m_nextPoint;
   private Path2DPoint m_prevPoint;
-
-  private final int STEPS = 600;
 
   public Path2DPoint() {
     init();
@@ -123,7 +117,7 @@ public class Path2DPoint {
   public void setPrevTangent(Vector2 m_PrevTangent) {
     this.m_prevTangent = m_PrevTangent;
     m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
-    setNextAngleAndMagnitude(new Vector2(0,1));
+    setNextAngleAndMagnitude(new Vector2(0, 1));
   }
 
   public Vector2 getNextTangent() {
@@ -136,7 +130,7 @@ public class Path2DPoint {
   public void setNextTangent(Vector2 m_NextTangent) {
     this.m_nextTangent = m_NextTangent;
     m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
-    setNextAngleAndMagnitude(new Vector2(0,1));
+    setNextAngleAndMagnitude(new Vector2(0, 1));
   }
 
   public Path2DCurve getPath2DCurve() {
@@ -318,17 +312,17 @@ public class Path2DPoint {
     m_yCoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);
 
     // calculate segment length
-    Vector2 pos = new Vector2(0,0);
-    Vector2 prevPos = new Vector2(0,0);
-    m_xCoeff.initFD( STEPS );
-    m_yCoeff.initFD( STEPS );
+    Vector2 pos = new Vector2(0, 0);
+    Vector2 prevPos = new Vector2(0, 0);
+    m_xCoeff.initFD(STEPS);
+    m_yCoeff.initFD(STEPS);
     m_segmentLength = 0;
     prevPos.set(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
 
     for (int i = 0; i < STEPS; i++) {
       pos.set(m_xCoeff.bumpFDFaster(), m_yCoeff.bumpFDFaster());
-      m_segmentLength += Vector2.length( Vector2.subtract( pos, prevPos ));
-      prevPos.set( pos.x, pos.y );
+      m_segmentLength += Vector2.length(Vector2.subtract(pos, prevPos));
+      prevPos.set(pos.x, pos.y);
     }
   }
 
@@ -339,12 +333,12 @@ public class Path2DPoint {
     return m_segmentLength;
   }
 
-  public Vector2 getPositionAtDistance( double distance ) {
+  public Vector2 getPositionAtDistance(double distance) {
 
-    Vector2 pos = new Vector2(0,0);
-    Vector2 prevPos = new Vector2(0,0);
+    Vector2 pos = new Vector2(0, 0);
+    Vector2 prevPos = new Vector2(0, 0);
 
-    if (partialLength<0 || partialLength>distance) {
+    if (partialLength < 0 || partialLength > distance) {
       m_xCoeff.initFD(STEPS);
       m_yCoeff.initFD(STEPS);
       partialLength = 0;
@@ -354,19 +348,19 @@ public class Path2DPoint {
       pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
       prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
       prevPartialLength = partialLength;
-      partialLength += Vector2.length( Vector2.subtract( pos, prevPos ));
+      partialLength += Vector2.length(Vector2.subtract(pos, prevPos));
     }
 
-    double intoSegment = (distance-prevPartialLength) / (partialLength-prevPartialLength);  // linearly interpolate t based on distance of the surrounding steps
+    double intoSegment = (distance - prevPartialLength) / (partialLength - prevPartialLength);  // linearly interpolate t based on distance of the surrounding steps
 
-    return Vector2.add( Vector2.multiply(prevPos, 1.0f - intoSegment), Vector2.multiply(pos, intoSegment));
+    return Vector2.add(Vector2.multiply(prevPos, 1.0f - intoSegment), Vector2.multiply(pos, intoSegment));
   }
 
-  public Vector2 getTangentAtDistance( double distance ) {
-    Vector2 pos = new Vector2(0,0);
-    Vector2 prevPos = new Vector2(0,0);
+  public Vector2 getTangentAtDistance(double distance) {
+    Vector2 pos = new Vector2(0, 0);
+    Vector2 prevPos = new Vector2(0, 0);
 
-    if (partialLength<0 || partialLength>distance) {
+    if (partialLength < 0 || partialLength > distance) {
       m_xCoeff.initFD(STEPS);
       m_yCoeff.initFD(STEPS);
       partialLength = 0;
@@ -376,9 +370,13 @@ public class Path2DPoint {
       pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
       prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
       prevPartialLength = partialLength;
-      partialLength += Vector2.length( Vector2.subtract( pos, prevPos ));
+      partialLength += Vector2.length(Vector2.subtract(pos, prevPos));
     }
 
     return Vector2.subtract(pos, prevPos);
+  }
+
+  public enum SlopeMethod {
+    SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_SMOOTH, SLOPE_TANGENT_SPECIFIED
   }
 }

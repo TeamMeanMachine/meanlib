@@ -1,13 +1,11 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import org.team2471.frc.lib.sensors.CANController;
+
 import edu.wpi.first.wpilibj.CANTalon;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDInterface;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import org.team2471.frc.lib.sensors.CANController;
-import org.team2471.frc.lib.vector.Vector2;
 
 public class FollowPathTankDriveCommand extends Command {
 
@@ -42,7 +40,7 @@ public class FollowPathTankDriveCommand extends Command {
     m_rightController.changeControlMode(CANTalon.TalonControlMode.Position);
     m_leftDistanceOffset = m_leftController.getPosition();
     m_rightDistanceOffset = m_rightController.getPosition();
-    System.out.println( "Offsets L, R: " + m_leftDistanceOffset + ", " + m_rightDistanceOffset );
+    System.out.println("Offsets L, R: " + m_leftDistanceOffset + ", " + m_rightDistanceOffset);
     m_leftDistance = 0;
     m_rightDistance = 0;
     m_path.reset();
@@ -53,14 +51,13 @@ public class FollowPathTankDriveCommand extends Command {
     m_forwardTime = (Utility.getFPGATime() - m_startTime) / 1.0e6 * Math.abs(m_speed);
     if (m_speed < 0) {  // negative speed plays the path backwards
       m_playTime = m_pathMaxTime - m_forwardTime;
-    }
-    else {
+    } else {
       m_playTime = m_forwardTime;
     }
 
     // time to set the controller's position set-points
-    m_leftDistance += m_path.getLeftPositionDelta( m_playTime );
-    m_rightDistance += m_path.getRightPositionDelta( m_playTime );
+    m_leftDistance += m_path.getLeftPositionDelta(m_playTime);
+    m_rightDistance += m_path.getRightPositionDelta(m_playTime);
 
     m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
     m_rightController.setSetpoint(-m_rightDistance + m_rightDistanceOffset);
@@ -69,9 +66,9 @@ public class FollowPathTankDriveCommand extends Command {
     System.out.print("\t Left SetPoint: " + m_leftController.getSetpoint());
     System.out.print("\t Left Position: " + m_leftController.getPosition());
     double error = m_leftController.getPosition() - m_leftController.getSetpoint();
-    System.out.println("\t Left Error: " + error );
+    System.out.println("\t Left Error: " + error);
 
-    SmartDashboard.putNumber("Left Error", error );
+    SmartDashboard.putNumber("Left Error", error);
 
 /*
     System.out.print("Time: " + m_playTime);

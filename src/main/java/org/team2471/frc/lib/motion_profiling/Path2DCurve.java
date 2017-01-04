@@ -9,7 +9,7 @@ public class Path2DCurve {
   private Path2DPoint m_lastAccessedPoint;
   private double m_cachedLength;
   private double m_lengthRemaining;
-  
+
   public Path2DCurve() {
     m_headPoint = null;
     m_tailPoint = null;
@@ -37,7 +37,7 @@ public class Path2DCurve {
   }
 
   private void insertPointAfter(Path2DPoint atPoint, Path2DPoint newPoint) {
-    
+
     newPoint.setPath2DCurve(this);
 
     if (atPoint == m_tailPoint) {
@@ -58,37 +58,37 @@ public class Path2DCurve {
 
   void addPointToEnd(double x, double y)  // adds a path point to the end
   {
-    Path2DPoint path2DPoint = new Path2DPoint( x, y );
-    insertPointAfter(m_tailPoint, path2DPoint );
+    Path2DPoint path2DPoint = new Path2DPoint(x, y);
+    insertPointAfter(m_tailPoint, path2DPoint);
   }
 
   public void addPointToEnd(double x, double y, double xTangent, double yTangent) {
-    Path2DPoint path2DPoint = new Path2DPoint( x, y );
-    insertPointAfter(m_tailPoint, path2DPoint );
-    Vector2 tangent = new Vector2( xTangent, yTangent );
-    path2DPoint.setNextTangent( tangent );
-    path2DPoint.setPrevTangent( tangent );
+    Path2DPoint path2DPoint = new Path2DPoint(x, y);
+    insertPointAfter(m_tailPoint, path2DPoint);
+    Vector2 tangent = new Vector2(xTangent, yTangent);
+    path2DPoint.setNextTangent(tangent);
+    path2DPoint.setPrevTangent(tangent);
   }
 
-  public Vector2 getPositionAtDistance( double distance ) {
-    Path2DPoint point = getPointBefore( distance );
-    if (point==null) {  // distance exceeds path length
+  public Vector2 getPositionAtDistance(double distance) {
+    Path2DPoint point = getPointBefore(distance);
+    if (point == null) {  // distance exceeds path length
       return m_tailPoint.getPosition();
     }
-    return point.getPositionAtDistance( m_lengthRemaining );
+    return point.getPositionAtDistance(m_lengthRemaining);
   }
 
-  public Vector2 getTangentAtDistance( double distance ) {
-    Path2DPoint point = getPointBefore( distance );
-    if (point==null) {  // distance exceeds path length
+  public Vector2 getTangentAtDistance(double distance) {
+    Path2DPoint point = getPointBefore(distance);
+    if (point == null) {  // distance exceeds path length
       return m_tailPoint.getNextTangent();
     }
-    return point.getTangentAtDistance( m_lengthRemaining );
+    return point.getTangentAtDistance(m_lengthRemaining);
   }
 
-  private Path2DPoint getPointBefore( double distance ) {
+  private Path2DPoint getPointBefore(double distance) {
     double length = 0;
-    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint()!=null; point = point.getNextPoint()) {  // should make this incremental
+    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint() != null; point = point.getNextPoint()) {  // should make this incremental
       length += point.getSegmentLength();
       if (length > distance) {
         length -= point.getSegmentLength();
@@ -103,9 +103,9 @@ public class Path2DCurve {
     if (m_cachedLength > 0) {
       return m_cachedLength;
     }
-    
+
     m_cachedLength = 0;
-    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint()!=null; point = point.getNextPoint()) {
+    for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint() != null; point = point.getNextPoint()) {
       m_cachedLength += point.getSegmentLength();
     }
     return m_cachedLength;

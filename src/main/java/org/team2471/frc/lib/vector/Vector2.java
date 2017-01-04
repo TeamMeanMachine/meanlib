@@ -9,11 +9,6 @@ public class Vector2 {
     this.y = y;
   }
 
-  public void set(double x, double y) {
-    this.x = x;
-    this.y = y;
-  }
-
   public static Vector2 add(Vector2 firstVector, Vector2 secondVector) {
     return new Vector2(firstVector.x + secondVector.x, firstVector.y + secondVector.y);
   }
@@ -35,7 +30,7 @@ public class Vector2 {
   }
 
   public static double length(Vector2 vector) {
-    return Math.sqrt(dot( vector, vector ));
+    return Math.sqrt(dot(vector, vector));
   }
 
   public static double angle(Vector2 vector) {
@@ -48,5 +43,10 @@ public class Vector2 {
 
   public static double dot(Vector2 vecA, Vector2 vecB) {
     return vecA.x * vecB.x + vecA.y * vecB.y;
+  }
+
+  public void set(double x, double y) {
+    this.x = x;
+    this.y = y;
   }
 }
