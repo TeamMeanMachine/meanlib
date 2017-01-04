@@ -1,5 +1,5 @@
 group 'org.team2471.frc.lib'
-version '0.1.0'
+version '1.0.0'
 
 buildscript {
 
