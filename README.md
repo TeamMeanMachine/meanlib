@@ -108,7 +108,11 @@ running `gradlew.bat assemble` on windows, or `./gradlew assemble` on Linux and 
 The assembled jar will appear in the `build/libs` folder.
 Official instructions for installing third-party libraries can be found [here](https://wpilib.screenstepslive.com/s/4485/m/13503/l/682619-3rd-party-libraries).
 
+## Documentation
+
+Full-featured javadocs are a work in progress, and they will be posted here when complete.
+
 ## Contact us
 
-If you are having any issues building or using meanlib, you found a bug, or you have a suggestion, you are absolutely welcome to 
-open an issue! We will get back to you quickly.
+If you are having any issues building or using meanlib, you found a bug, you have a question, or you have a suggestion, you are 
+absolutely welcome to open an issue! We will get back to you quickly.
