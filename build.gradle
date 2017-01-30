@@ -20,6 +20,8 @@ repositories {
 }
 
 dependencies {
-  compile "edu.wpi.first.wpilibj:wpilibJavaFinal:+"
+  compile "edu.wpi.first.wpilibj:athena-jni:+"
+  compile "edu.wpi.first.wpilibj:athena:+"
+  compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:arm"
   testCompile group: 'junit', name: 'junit', version: '4.11'
 }
