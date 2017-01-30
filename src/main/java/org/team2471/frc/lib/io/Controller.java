@@ -1,43 +1,41 @@
 package org.team2471.frc.lib.io;
 
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 
-// TODO: Update to match 2017 wpilib Joystick api
 public class Controller {
-  private final Joystick joystick;
+  private final GenericHID controller;
 
-  public Controller(Joystick joystick) {
-    this.joystick = joystick;
-
-    int buttonCount = joystick.getButtonCount();
+  public Controller(GenericHID controller) {
+    this.controller = controller;
   }
 
-  public Controller(int joystickPort) {
-    this(new Joystick(joystickPort));
+  public Controller(int hidPort) {
+    this(new XboxController(hidPort));
   }
 
   public String getName() {
-    return joystick.getName();
+    return controller.getName();
   }
 
   public void rumbleLeft(float strength) {
-    joystick.setRumble(Joystick.RumbleType.kLeftRumble, strength);
+    controller.setRumble(GenericHID.RumbleType.kLeftRumble, strength);
   }
 
   public void rumbleRight(float strength) {
-    joystick.setRumble(Joystick.RumbleType.kRightRumble, strength);
+    controller.setRumble(GenericHID.RumbleType.kRightRumble, strength);
   }
 
   public ControllerAxis getAxis(int axisId) {
-    return () -> joystick.getRawAxis(axisId);
+    return () -> controller.getRawAxis(axisId);
   }
 
   public ControllerButton getButton(int buttonId) {
-    return () -> joystick.getRawButton(buttonId);
+    return () -> controller.getRawButton(buttonId);
   }
 
   public ControllerDPad getDPad(int pov) {
-    return () -> joystick.getPOV(pov);
+    return () -> controller.getPOV(pov);
   }
 
   public ControllerDPad getDPad() {
