@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import edu.wpi.first.wpilibj.Timer;
 import org.team2471.frc.lib.sensors.CANController;
 
 import edu.wpi.first.wpilibj.CANTalon;
@@ -11,6 +12,7 @@ public class FollowPathTankDriveCommand extends Command {
 
   private Path2D m_path;
   private double m_speed;
+  private boolean m_mirrorPath;
   private double m_startTime;
   private double m_playTime;
   private double m_forwardTime;
@@ -29,11 +31,18 @@ public class FollowPathTankDriveCommand extends Command {
   public FollowPathTankDriveCommand(Path2D path, double speed) {
     setPath(path);
     m_speed = speed;
+    m_mirrorPath = false;
+  }
+
+  public FollowPathTankDriveCommand(Path2D path, double speed, boolean mirrorPath) {
+    setPath(path);
+    m_speed = speed;
+    m_mirrorPath = mirrorPath;
   }
 
   @Override
   protected void initialize() {
-    m_startTime = Utility.getFPGATime();
+    m_startTime = Timer.getFPGATimestamp();
     m_leftController.enable();
     m_rightController.enable();
     m_leftController.changeControlMode(CANTalon.TalonControlMode.Position);
@@ -48,8 +57,8 @@ public class FollowPathTankDriveCommand extends Command {
 
   @Override
   protected void execute() {
-    m_forwardTime = (Utility.getFPGATime() - m_startTime) / 1.0e6 * Math.abs(m_speed);
-    if (m_speed < 0) {  // negative speed plays the path backwards
+    m_forwardTime = (Timer.getFPGATimestamp() - m_startTime) * Math.abs(m_speed);
+    if (m_speed < 0) {  // negative travels along the path backwards
       m_playTime = m_pathMaxTime - m_forwardTime;
     } else {
       m_playTime = m_forwardTime;
@@ -59,17 +68,24 @@ public class FollowPathTankDriveCommand extends Command {
     m_leftDistance += m_path.getLeftPositionDelta(m_playTime);
     m_rightDistance += m_path.getRightPositionDelta(m_playTime);
 
-    m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
-    m_rightController.setSetpoint(-m_rightDistance + m_rightDistanceOffset);
+    // maybe we could mark the right encoder as inverted, but instead, for now, we just negate the right side values.
 
+    if (m_mirrorPath) {
+      m_leftController.setSetpoint(m_rightDistance + m_leftDistanceOffset);
+      m_rightController.setSetpoint(-m_leftDistance + m_rightDistanceOffset);
+    }
+    else {
+      m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
+      m_rightController.setSetpoint(-m_rightDistance + m_rightDistanceOffset);
+    }
+/*
     System.out.print("Time: " + m_playTime);
     System.out.print("\t Left SetPoint: " + m_leftController.getSetpoint());
     System.out.print("\t Left Position: " + m_leftController.getPosition());
     double error = m_leftController.getPosition() - m_leftController.getSetpoint();
     System.out.println("\t Left Error: " + error);
-
     SmartDashboard.putNumber("Left Error", error);
-
+*/
 /*
     System.out.print("Time: " + m_playTime);
     System.out.print("\t Right SetPoint: " + m_rightController.getSetpoint());
