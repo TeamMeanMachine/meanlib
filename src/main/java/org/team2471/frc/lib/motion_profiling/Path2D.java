@@ -124,14 +124,14 @@ public class Path2D {
     if (travelDirection>0)
       return privateGetLeftPositionDelta(time);
     else
-      return privateGetRightPositionDelta(time);
+      return -privateGetRightPositionDelta(time);
   }
 
   public double getRightPositionDelta(double time) {
     if (travelDirection>0)
       return privateGetRightPositionDelta(time);
     else
-      return privateGetLeftPositionDelta(time);
+      return -privateGetLeftPositionDelta(time);
   }
 
   public double getRobotWidth() {
