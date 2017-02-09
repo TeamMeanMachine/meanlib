@@ -1,8 +1,5 @@
 package org.team2471.frc.lib.io.maps;
 
-import java.util.function.IntSupplier;
-
-// TODO: update values
 public final class XboxMap {
   public static final class Buttons {
     public static final int A = 1;
@@ -17,7 +14,7 @@ public final class XboxMap {
     public static final int RIGHT_THUMBSTICK = 10;
   }
 
-  public static final class Axises {
+  public static final class Axes {
     public static final int LEFT_THUMBSTICK_X = 0;
     public static final int LEFT_THUMBSTICK_Y = 1;
     public static final int LEFT_TRIGGER = 2;
@@ -26,3 +23,4 @@ public final class XboxMap {
     public static final int RIGHT_THUMBSTICK_Y = 5;
   }
 }
+
