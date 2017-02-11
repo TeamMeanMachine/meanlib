@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class Controller {
-  private final GenericHID controller;
+  private final XboxController controller;
 
   public Controller(GenericHID controller) {
     this.controller = controller;
