@@ -3,7 +3,7 @@ package org.team2471.frc.lib.motion_profiling;
 import edu.wpi.first.wpilibj.Timer;
 import org.team2471.frc.lib.control.MeanMotorController;
 
-import edu.wpi.first.wpilibj.CANTalon;
+import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;

@@ -1,6 +1,10 @@
 package org.team2471.frc.lib.control;
 
-import edu.wpi.first.wpilibj.*;
+import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDInterface;
+import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // A Motor controller that can switch from controlling on the roborio using WPILib PIDController or on board the Talon SRX
@@ -14,7 +18,7 @@ public class MeanMotorController extends CANTalon implements PIDInterface {
 
   private MeanMode meanMode = MeanMode.WPI_CLOSED_LOOP_VELOCITY;
 
-  public MeanMotorController( int canBusID, MeanMode meanModeParam, double Kp, double Ki, double Kd, double KfParam ) {
+  public MeanMotorController(int canBusID, MeanMode meanModeParam, double Kp, double Ki, double Kd, double KfParam ) {
     super( canBusID );
 
     Kf = KfParam;
