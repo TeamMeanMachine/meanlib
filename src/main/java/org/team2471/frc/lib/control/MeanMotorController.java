@@ -18,11 +18,11 @@ public class MeanMotorController extends CANTalon implements PIDInterface {
 
   private MeanMode meanMode = MeanMode.WPI_CLOSED_LOOP_VELOCITY;
 
-  public MeanMotorController(int canBusID, MeanMode meanModeParam, double Kp, double Ki, double Kd, double KfParam ) {
+  public MeanMotorController( int canBusID ) {
     super( canBusID );
 
-    Kf = KfParam;
-    pidController = new PIDController(Kp, Ki, Kd, new PIDSource() {
+    Kf = 0.0;
+    pidController = new PIDController(0.0, 0.0, 0.0, new PIDSource() {
       @Override
       public void setPIDSourceType(PIDSourceType pidSource) {
       }
@@ -49,6 +49,16 @@ public class MeanMotorController extends CANTalon implements PIDInterface {
       }
     }, 0.001 );  // 1000 hz
 
+    setPID( 0.0, 0.0, 0.0 );
+    setF( 0.0 );
+    setMeanMode( MeanMode.OPEN_LOOP );
+  }
+
+  public MeanMotorController(int canBusID, MeanMode meanModeParam, double Kp, double Ki, double Kd, double KfParam ) {
+
+    this(canBusID);
+    Kf = KfParam;
+    pidController.setPID(Kp, Ki, Kd);
     setPID( Kp, Ki, Kd );
     setF( Kf );
     setMeanMode( meanModeParam );
