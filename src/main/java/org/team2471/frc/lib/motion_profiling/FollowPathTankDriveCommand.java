@@ -6,7 +6,6 @@ import org.team2471.frc.lib.control.MeanMotorController;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowPathTankDriveCommand extends Command {
 
@@ -31,13 +30,13 @@ public class FollowPathTankDriveCommand extends Command {
   public FollowPathTankDriveCommand(Path2D path, double speed) {
     setPath(path);
     m_speed = speed;
-    m_mirrorPath = false;
+    setMirrorPath(false);
   }
 
   public FollowPathTankDriveCommand(Path2D path, double speed, boolean mirrorPath) {
     setPath(path);
     m_speed = speed;
-    m_mirrorPath = mirrorPath;
+    setMirrorPath(mirrorPath);
   }
 
   @Override
@@ -71,8 +70,8 @@ public class FollowPathTankDriveCommand extends Command {
     // maybe we could mark the right encoder as inverted, but instead, for now, we just negate the right side values.
 
     if (m_mirrorPath) {
-      m_leftController.setSetpoint(m_rightDistance + m_leftDistanceOffset);
-      m_rightController.setSetpoint(-m_leftDistance + m_rightDistanceOffset);
+      m_leftController.setSetpoint(-m_rightDistance + m_leftDistanceOffset);
+      m_rightController.setSetpoint(m_leftDistance + m_rightDistanceOffset);
     }
     else {
       m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
@@ -149,5 +148,13 @@ public class FollowPathTankDriveCommand extends Command {
 
   public void setRightController(MeanMotorController rightController) {
     m_rightController = rightController;
+  }
+
+  public boolean isMirrorPath() {
+    return m_mirrorPath;
+  }
+
+  public void setMirrorPath(boolean m_mirrorPath) {
+    this.m_mirrorPath = m_mirrorPath;
   }
 }
