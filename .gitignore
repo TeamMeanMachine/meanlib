@@ -67,3 +67,6 @@ gradle-app.setting
 
 # Vim
 *.swp
+
+# Allow jar files in libs folder
+!libs/*.jar
