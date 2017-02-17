@@ -107,7 +107,7 @@ public class Logger {
     log(LogLevel.FATAL, message);
   }
 
-  private void log(LogLevel level, String message) {
+  public void log(LogLevel level, String message) {
     // Not sure if this is more performant, but I'm gonna use a StringBuilder just in case.
     @SuppressWarnings("StringBufferReplaceableByString")
     StringBuilder messageBuilder = new StringBuilder();
