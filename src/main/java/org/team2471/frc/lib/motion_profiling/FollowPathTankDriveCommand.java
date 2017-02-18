@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.motion_profiling;
 
 import edu.wpi.first.wpilibj.Timer;
+import org.team2471.frc.lib.control.CANController;
 import org.team2471.frc.lib.control.MeanMotorController;
 
 import com.ctre.CANTalon;
@@ -20,8 +21,8 @@ public class FollowPathTankDriveCommand extends Command {
   private double m_rightDistance;
   private double m_leftDistanceOffset;
   private double m_rightDistanceOffset;
-  private MeanMotorController m_leftController;
-  private MeanMotorController m_rightController;
+  private CANController m_leftController;
+  private CANController m_rightController;
 
   public FollowPathTankDriveCommand() {
     m_speed = 1.0;
@@ -134,19 +135,19 @@ public class FollowPathTankDriveCommand extends Command {
     return m_pathMaxTime;
   }
 
-  public MeanMotorController getLeftController() {
+  public CANController getLeftController() {
     return m_leftController;
   }
 
-  public void setLeftController(MeanMotorController leftController) {
+  public void setLeftController(CANController leftController) {
     m_leftController = leftController;
   }
 
-  public MeanMotorController getRightController() {
+  public CANController getRightController() {
     return m_rightController;
   }
 
-  public void setRightController(MeanMotorController rightController) {
+  public void setRightController(CANController rightController) {
     m_rightController = rightController;
   }
 

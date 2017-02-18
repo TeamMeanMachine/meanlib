@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // A Motor controller that can switch from controlling on the roborio using WPILib PIDController or on board the Talon SRX
 
-public class MeanMotorController extends CANTalon implements PIDInterface {
+public class MeanMotorController extends CANController {
   private PIDController pidController;
   private double Kf;
   private double accumulatePower;
