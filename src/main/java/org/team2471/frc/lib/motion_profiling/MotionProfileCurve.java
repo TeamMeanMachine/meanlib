@@ -1,28 +1,34 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDInterface;
 
 public class MotionProfileCurve extends MotionCurve {
 
-  private PIDController m_PIDController;
+  private PIDInterface pidInterface;
+  private double offset = 0.0;
 
-  public MotionProfileCurve(PIDController pidController) {
-    m_PIDController = pidController;
+  public MotionProfileCurve(PIDInterface pidInterface) {
+    this.pidInterface = pidInterface;
   }
 
-  public MotionProfileCurve(PIDController pidController, MotionProfileAnimation animation) {
-    m_PIDController = pidController;
+  public MotionProfileCurve(PIDInterface pidInterface, MotionProfileAnimation animation) {
+    this.pidInterface = pidInterface;
     animation.addMotionProfileCurve(this);
   }
 
   public void play(double time) {
-    m_PIDController.setSetpoint(getValue(time));
+    pidInterface.setSetpoint(getValue(time)+offset);
+    System.out.println( "Time: " + time + " Value: " + getValue(time) );
   }
 
   public void stop() {
   }
 
-  public boolean onTarget() {
-    return m_PIDController.onTarget();
+  public double getOffset() {
+    return offset;
+  }
+
+  public void setOffset(double offset) {
+    this.offset = offset;
   }
 }

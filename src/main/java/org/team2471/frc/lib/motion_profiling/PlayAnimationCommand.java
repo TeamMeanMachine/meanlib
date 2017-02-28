@@ -1,45 +1,55 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import edu.wpi.first.wpilibj.Utility;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 public class PlayAnimationCommand extends Command {
 
-  double m_startTime;
-  double m_playTime;
-  double m_forwardTime;
+  double m_prevTime;  // the previous clock
+  double m_playTime;  // the current animation play time
   double m_animationLength;
   private MotionProfileAnimation m_MotionProfileAnimation;
   private double m_speed;
+  private boolean backwards = false;
 
   public PlayAnimationCommand() {
+    m_speed = 1.0;
+    backwards = false;
+    m_playTime = 0.0;
   }
 
   public PlayAnimationCommand(MotionProfileAnimation motionProfileAnimation, float speed) {
     setAnimation(motionProfileAnimation);
     m_speed = speed;
+    backwards = (speed<0.0);
+    m_playTime = 0.0;
   }
 
   @Override
   protected void initialize() {
-    m_startTime = Utility.getFPGATime();
-    System.out.println("Start Time: " + m_startTime);
+    m_prevTime = Timer.getFPGATimestamp();
+    if (backwards)
+      m_playTime = m_animationLength;
+    else
+      m_playTime = 0.0;
   }
 
   @Override
   protected void execute() {
-    m_forwardTime = ((Utility.getFPGATime() - m_startTime) / 1.0e6) * Math.abs(m_speed);
-    if (m_speed < 0) {  // negative speed plays animation backwards
-      m_playTime = m_animationLength - m_forwardTime;
-    } else {
-      m_playTime = m_forwardTime;
-    }
+    double currTime = Timer.getFPGATimestamp();
+    m_playTime += (currTime - m_prevTime) * m_speed;
     m_MotionProfileAnimation.play(m_playTime);
+    m_prevTime = currTime;
   }
 
   @Override
   protected boolean isFinished() {
-    return m_forwardTime >= m_animationLength;
+    if (backwards) {
+      return m_playTime <= 0.0;
+    }
+    else {
+      return m_playTime >= m_animationLength;
+    }
   }
 
   @Override
@@ -59,6 +69,16 @@ public class PlayAnimationCommand extends Command {
   public void setAnimation(MotionProfileAnimation motionProfileAnimation) {
     m_MotionProfileAnimation = motionProfileAnimation;
     m_animationLength = m_MotionProfileAnimation.getLength();
+    if (backwards) {
+      m_playTime = m_animationLength;
+    }
+  }
+
+  public void setBackwards(boolean backwards) {
+    this.backwards = backwards;
+    if (backwards) {
+      m_playTime = m_animationLength;
+    }
   }
 
   public double getSpeed() {
@@ -70,7 +90,7 @@ public class PlayAnimationCommand extends Command {
   }
 
   public double getTime() {  // how much time has passed since the start
-    return m_forwardTime;
+    return m_playTime;
   }
 
   public double getLength() {

@@ -43,12 +43,4 @@ public class MotionProfileAnimation {
       curve.stop();
     }
   }
-
-  public boolean onTarget() {
-    for (MotionProfileCurve curve : m_listMotionProfileCurves) {
-      if (!curve.onTarget())
-        return false;
-    }
-    return true;
-  }
 }
