@@ -13,12 +13,19 @@ public class MeanMotorController extends CANController {
   private PIDController pidController;
   private double Kf;
   private double accumulatePower;
+  private boolean reversePower;
+  private boolean reverseEncoder;
 
   public enum MeanMode {WPI_CLOSED_LOOP_VELOCITY, SRX_CLOSED_LOOP_VELOCITY, OPEN_LOOP, WPI_CLOSED_LOOP_POSITION, SRX_CLOSED_LOOP_POSITION };
 
   private MeanMode meanMode = MeanMode.WPI_CLOSED_LOOP_VELOCITY;
 
-  public MeanMotorController( int canBusID ) {
+  @Override
+  public void set(double outputValue) {
+    super.set(outputValue * (reversePower ? -1.0 : 1.0));
+  }
+
+  public MeanMotorController(int canBusID ) {
     super( canBusID );
 
     Kf = 0.0;
@@ -35,9 +42,9 @@ public class MeanMotorController extends CANController {
       @Override
       public double pidGet() {
         if (meanMode == MeanMode.WPI_CLOSED_LOOP_POSITION)
-          return getPosition();
+          return getPosition() * (reverseEncoder ? -1.0 : 1.0);
         else  // MeanMode.WPI_CLOSED_LOOP_VELOCITY
-          return getSpeed();
+          return getSpeed() * (reverseEncoder ? -1.0 : 1.0);
       }
     }, output -> {
       if (meanMode == MeanMode.WPI_CLOSED_LOOP_POSITION)
@@ -47,7 +54,7 @@ public class MeanMotorController extends CANController {
         double power = Kf * getSetpoint() + accumulatePower;
         set(power);
       }
-    }, 0.001 );  // 1000 hz
+    }, 0.01 );  // 100 hz
 
     setPID( 0.0, 0.0, 0.0 );
     setF( 0.0 );
@@ -216,7 +223,7 @@ public class MeanMotorController extends CANController {
       case SRX_CLOSED_LOOP_POSITION:
         return super.getError();
       case OPEN_LOOP:
-        return getSetpoint() - getSpeed();  // hack and somewhat meaningless.  getSetpoint() - getPosition() ?
+        return 0.0; // getSetpoint() - getSpeed();  // hack and somewhat meaningless.  getSetpoint() - getPosition() ?
     }
     return 0;
   }
@@ -246,6 +253,7 @@ public class MeanMotorController extends CANController {
       case WPI_CLOSED_LOOP_VELOCITY:
       case WPI_CLOSED_LOOP_POSITION:
         pidController.disable();
+        set(0.0);
         break;
       case SRX_CLOSED_LOOP_VELOCITY:
       case SRX_CLOSED_LOOP_POSITION:
@@ -292,5 +300,21 @@ public class MeanMotorController extends CANController {
         setF( getOutput() / getSetpoint());  // this one may need scaled to native units (1023.0) ?
         break;
     }
+  }
+
+  public boolean isReversePower() {
+    return reversePower;
+  }
+
+  public void setReversePower(boolean reversePower) {
+    this.reversePower = reversePower;
+  }
+
+  public boolean isReverseEncoder() {
+    return reverseEncoder;
+  }
+
+  public void setReverseEncoder(boolean reverseEncoder) {
+    this.reverseEncoder = reverseEncoder;
   }
 }
