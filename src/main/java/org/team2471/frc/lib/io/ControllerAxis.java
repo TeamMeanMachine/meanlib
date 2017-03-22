@@ -25,14 +25,14 @@ public interface ControllerAxis {
   }
 
   default ControllerAxis withInvert() {
-    return map(value -> -value);
+    return map(value -> - value);
   }
 
   default ControllerAxis withExponentialScaling(int exponent) {
     return map(value -> Math.pow(value, exponent) * Math.signum(value));
   }
 
-  default ControllerAxis withLinearScaling(int factor) {
+  default ControllerAxis withLinearScaling(double factor) {
     return map(value -> value * factor);
   }
 }
