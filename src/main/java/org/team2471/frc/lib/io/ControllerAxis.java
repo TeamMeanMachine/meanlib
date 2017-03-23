@@ -35,4 +35,8 @@ public interface ControllerAxis {
   default ControllerAxis withLinearScaling(double factor) {
     return map(value -> value * factor);
   }
+
+  default ControllerButton asButton(double threshold) {
+    return () -> Math.abs(get()) > threshold;
+  }
 }
