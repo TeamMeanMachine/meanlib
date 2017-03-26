@@ -3,10 +3,6 @@ package org.team2471.frc.lib.motion_profiling;
 import org.team2471.frc.lib.control.CANController;
 import org.team2471.frc.lib.motion_profiling.FollowPathTankDriveCommand;
 import org.team2471.frc.lib.motion_profiling.Path2D;
-import org.team2471.frc.steamworks.HardwareMap;
-
-import static org.team2471.frc.steamworks.HardwareMap.DriveMap.shiftPTO;
-import static org.team2471.frc.steamworks.Robot.drive;
 
 public class DriveTwoPointCurve extends FollowPathTankDriveCommand {
 

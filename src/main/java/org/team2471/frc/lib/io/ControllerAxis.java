@@ -14,7 +14,7 @@ public interface ControllerAxis {
     return map(value -> {
       value = Math.abs(value) < tolerance ? 0 : value;
       if (scale && value != 0) {
-        value = (value - tolerance * Math.signum(tolerance)) + (1 + tolerance);
+        value = (value - tolerance) * (1 / (1 - tolerance));
       }
       return value;
     });
@@ -25,16 +25,18 @@ public interface ControllerAxis {
   }
 
   default ControllerAxis withInvert() {
-    return map(value -> -value);
+    return map(value -> - value);
   }
 
   default ControllerAxis withExponentialScaling(int exponent) {
-    if (exponent % 2 == 0) {
-      // even exponent
-      return map(value -> Math.pow(value, exponent) * Math.signum(value));
-    } else {
-      // odd exponent: no signum required
-      return map(value -> Math.pow(value, exponent));
-    }
+    return map(value -> Math.pow(value, exponent) * Math.signum(value));
+  }
+
+  default ControllerAxis withLinearScaling(double factor) {
+    return map(value -> value * factor);
+  }
+
+  default ControllerButton asButton(double threshold) {
+    return () -> Math.abs(get()) > threshold;
   }
 }
