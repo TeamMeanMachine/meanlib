@@ -14,7 +14,7 @@ public interface ControllerAxis {
     return map(value -> {
       value = Math.abs(value) < tolerance ? 0 : value;
       if (scale && value != 0) {
-        value = (value - tolerance) * (1 / (1 - tolerance));
+        value = (value - Math.signum(value)*tolerance) / (1 - tolerance);
       }
       return value;
     });
