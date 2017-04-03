@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.io;
 
+import org.team2471.frc.lib.control.CommandTrigger;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
@@ -21,5 +23,9 @@ public interface ControllerButton {
 
   default ControllerButton or(BooleanSupplier condition) {
     return map(bool -> bool || condition.getAsBoolean());
+  }
+
+  default CommandTrigger asTrigger() {
+    return new CommandTrigger(this::get);
   }
 }
