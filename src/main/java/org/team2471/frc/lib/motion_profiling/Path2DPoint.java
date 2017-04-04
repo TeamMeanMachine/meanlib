@@ -97,6 +97,7 @@ public class Path2DPoint {
 
   public void setPrevAngleAndMagnitude(Vector2 m_prevAngleAndMagnitude) {
     this.m_prevAngleAndMagnitude = m_prevAngleAndMagnitude;
+    setTangentsDirty(true);
   }
 
   public Vector2 getNextAngleAndMagnitude() {
@@ -105,6 +106,7 @@ public class Path2DPoint {
 
   public void setNextAngleAndMagnitude(Vector2 m_nextAngleAndMagnitude) {
     this.m_nextAngleAndMagnitude = m_nextAngleAndMagnitude;
+    setTangentsDirty(true);
   }
 
   public Vector2 getPrevTangent() {

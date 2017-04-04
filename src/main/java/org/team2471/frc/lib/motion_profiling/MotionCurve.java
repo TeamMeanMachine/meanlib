@@ -16,6 +16,7 @@ public class MotionCurve {
   private MotionKey m_lastAccessedKey;
   private ExtrapolationMethods m_preExtrapolation;
   private ExtrapolationMethods m_postExtrapolation;
+
   public MotionCurve() {
     m_headKey = null;
     m_tailKey = null;
@@ -218,14 +219,14 @@ public class MotionCurve {
     }
 
     // for motion profiling, we want the first and last keys to be 0 slope, but all others to be normally smooth
-    if (pNewKey == m_headKey) {
+    if (pNewKey == m_headKey && pNewKey.isMarkbeginOrEndKeysToZeroSlope()) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       if (pNewKey.getNextKey() != null && pNewKey.getNextKey() != m_tailKey) {  // the former head is not also the tail
         pNewKey.getNextKey().setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
         pNewKey.getNextKey().setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_SMOOTH);
       }
-    } else if (pNewKey == m_tailKey) {
+    } else if (pNewKey == m_tailKey && pNewKey.isMarkbeginOrEndKeysToZeroSlope()) {
       pNewKey.setPrevSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       pNewKey.setNextSlopeMethod(MotionKey.SlopeMethod.SLOPE_FLAT);
       if (pNewKey.getPrevKey() != null && pNewKey.getPrevKey() != m_headKey) {  // the former tail is not also the head
@@ -247,6 +248,17 @@ public class MotionCurve {
     MotionKey motionKey = createMotionKey(time);
     if (motionKey != null)
       motionKey.setValue(value);
+    return motionKey;
+  }
+
+  public MotionKey storeValueSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
+    MotionKey motionKey = createMotionKey(time);
+    if (motionKey != null) {
+      motionKey.setValue(value);
+      Vector2 angleAndMagnitude = new Vector2(Math.atan(slope), magnitude);
+      motionKey.setNextAngleAndMagnitude(angleAndMagnitude);
+      motionKey.setPrevAngleAndMagnitude(angleAndMagnitude);
+    }
     return motionKey;
   }
 

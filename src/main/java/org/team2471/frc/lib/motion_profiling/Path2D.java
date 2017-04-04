@@ -37,8 +37,16 @@ public class Path2D {
     m_xyCurve.addPointToEnd(x, y, xTangent, yTangent);
   }
 
+  public void addPointAngleAndMagnitude(double x, double y, double angle, double magnitude) {
+    m_xyCurve.addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
+  }
+
   public void addEasePoint(double time, double value) {
     m_easeCurve.storeValue(time, value);
+  }
+
+  public void addEasePointSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
+    m_easeCurve.storeValueSlopeAndMagnitude(time, value, slope, magnitude);
   }
 
   public Vector2 getPosition(double time) {

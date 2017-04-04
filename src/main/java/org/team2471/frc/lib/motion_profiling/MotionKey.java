@@ -17,6 +17,7 @@ public class MotionKey {
   private CubicCoefficients1D m_yCoeff;
   private SlopeMethod m_prevSlopeMethod;
   private SlopeMethod m_nextSlopeMethod;
+  private boolean m_markBeginOrEndKeysToZeroSlope;
 
   private MotionCurve m_motionCurve;
   private MotionKey m_nextKey;
@@ -36,6 +37,7 @@ public class MotionKey {
     m_bCoefficientsDirty = true;
     m_prevSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
     m_nextSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
+    m_markBeginOrEndKeysToZeroSlope = true;
     m_motionCurve = null;
     m_nextKey = null;
     m_prevKey = null;
@@ -113,6 +115,7 @@ public class MotionKey {
 
   public void setPrevAngleAndMagnitude(Vector2 m_prevAngleAndMagnitude) {
     this.m_prevAngleAndMagnitude = m_prevAngleAndMagnitude;
+    setTangentsDirty(true);
   }
 
   public Vector2 getNextAngleAndMagnitude() {
@@ -121,6 +124,7 @@ public class MotionKey {
 
   public void setNextAngleAndMagnitude(Vector2 m_nextAngleAndMagnitude) {
     this.m_nextAngleAndMagnitude = m_nextAngleAndMagnitude;
+    setTangentsDirty(true);
   }
 
   public Vector2 getPrevTangent() {
@@ -399,8 +403,8 @@ public class MotionKey {
       }
     }
 
-    m_prevTangent = Vector2.multiply(m_prevTangent, getPrevAngleAndMagnitude().y);
-    m_nextTangent = Vector2.multiply(m_nextTangent, getNextAngleAndMagnitude().y);
+    m_prevTangent = Vector2.multiply(m_prevTangent, getPrevAngleAndMagnitude().y / 3.0);
+    m_nextTangent = Vector2.multiply(m_nextTangent, getNextAngleAndMagnitude().y / 3.0);
   }
 
   public CubicCoefficients1D getXCoefficients() {
@@ -454,6 +458,14 @@ public class MotionKey {
     }
 
     m_xCoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);
+  }
+
+  public boolean isMarkbeginOrEndKeysToZeroSlope() {
+    return m_markBeginOrEndKeysToZeroSlope;
+  }
+
+  public void setMarkBeginOrEndKeysToZeroSlope(boolean m_setBeginOrEndKeysToZeroSlope) {
+    this.m_markBeginOrEndKeysToZeroSlope = m_setBeginOrEndKeysToZeroSlope;
   }
 
   public enum SlopeMethod {
