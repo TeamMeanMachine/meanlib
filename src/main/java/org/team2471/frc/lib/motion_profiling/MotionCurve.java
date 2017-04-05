@@ -259,6 +259,7 @@ public class MotionCurve {
       motionKey.setNextAngleAndMagnitude(angleAndMagnitude);
       motionKey.setPrevAngleAndMagnitude(angleAndMagnitude);
     }
+    motionKey.setMarkBeginOrEndKeysToZeroSlope(false);
     return motionKey;
   }
 
