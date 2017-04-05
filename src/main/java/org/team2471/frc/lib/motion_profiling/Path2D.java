@@ -8,7 +8,8 @@ public class Path2D {
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
   private double m_robotWidth = 36.5 / 12.0;  // average FRC robots are 28 inches wide, converted to feet.
-  private Vector2 m_prevCenterPosition;
+  private Vector2 m_prevCenterPositionForLeft;
+  private Vector2 m_prevCenterPositionForRight;
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
   private double travelDirection;
@@ -20,7 +21,8 @@ public class Path2D {
   }
 
   public void reset() {
-    m_prevCenterPosition = null;
+    m_prevCenterPositionForLeft = null;
+    m_prevCenterPositionForRight = null;
     m_prevLeftPosition = null;
     m_prevRightPosition = null;
   }
@@ -87,16 +89,16 @@ public class Path2D {
 
   private double privateGetLeftPositionDelta(double time) {
     if (m_prevLeftPosition == null) {
-      m_prevCenterPosition = getPosition(time);
+      m_prevCenterPositionForLeft = getPosition(time);
       m_prevLeftPosition = getLeftPosition(time);
       return 0.0;
     }
 
     Vector2 centerPosition = getPosition(time);
     Vector2 leftPosition = getLeftPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPosition);
+    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPositionForLeft);
     Vector2 deltaLeft = Vector2.subtract(getLeftPosition(time), m_prevLeftPosition);
-    m_prevCenterPosition = centerPosition;
+    m_prevCenterPositionForLeft = centerPosition;
     m_prevLeftPosition = leftPosition;
 
     if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
@@ -108,16 +110,16 @@ public class Path2D {
 
   private double privateGetRightPositionDelta(double time) {
     if (m_prevRightPosition == null) {
-      m_prevCenterPosition = getPosition(time);
+      m_prevCenterPositionForRight = getPosition(time);
       m_prevRightPosition = getRightPosition(time);
       return 0.0;
     }
 
     Vector2 centerPosition = getPosition(time);
     Vector2 RightPosition = getRightPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPosition);
+    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPositionForRight);
     Vector2 deltaRight = Vector2.subtract(getRightPosition(time), m_prevRightPosition);
-    m_prevCenterPosition = centerPosition;
+    m_prevCenterPositionForRight = centerPosition;
     m_prevRightPosition = RightPosition;
 
     if (Vector2.dot(deltaCenter, deltaRight) > 0) {
