@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import org.team2471.frc.lib.control.CANController;
 import org.team2471.frc.lib.control.MeanMotorController;
 
@@ -25,7 +25,7 @@ public class FollowPathTankDriveCommand extends Command {
   private double m_rightDistanceOffset;
   private CANController m_leftController;
   private CANController m_rightController;
-  private GyroBase m_gyro;
+  private Gyro m_gyro;
   private double m_startGyro;
   private double m_startPathHeading;
 
@@ -186,11 +186,11 @@ public class FollowPathTankDriveCommand extends Command {
     this.m_mirrorPath = m_mirrorPath;
   }
 
-  public GyroBase getGyro() {
+  public Gyro getGyro() {
     return m_gyro;
   }
 
-  public void setGyro(GyroBase gyro) {
+  public void setGyro(Gyro gyro) {
     this.m_gyro = gyro;
   }
 }
