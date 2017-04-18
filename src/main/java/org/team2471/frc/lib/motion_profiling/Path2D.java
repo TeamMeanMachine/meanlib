@@ -100,9 +100,9 @@ public class Path2D {
     m_prevLeftPosition = leftPosition;
 
     if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
-      return Vector2.length(deltaLeft);
-    } else {
       return -Vector2.length(deltaLeft);
+    } else {
+      return Vector2.length(deltaLeft);
     }
   }
 
@@ -121,24 +121,24 @@ public class Path2D {
     m_prevRightPosition = RightPosition;
 
     if (Vector2.dot(deltaCenter, deltaRight) > 0) {
-      return Vector2.length(deltaRight);
-    } else {
       return -Vector2.length(deltaRight);
+    } else {
+      return Vector2.length(deltaRight);
     }
   }
 
   public double getLeftPositionDelta(double time) {
     if (travelDirection>0)
-      return privateGetLeftPositionDelta(time);
+      return -privateGetLeftPositionDelta(time);
     else
-      return -privateGetRightPositionDelta(time);
+      return privateGetRightPositionDelta(time);
   }
 
   public double getRightPositionDelta(double time) {
     if (travelDirection>0)
-      return privateGetRightPositionDelta(time);
+      return -privateGetRightPositionDelta(time);
     else
-      return -privateGetLeftPositionDelta(time);
+      return privateGetLeftPositionDelta(time);
   }
 
   public double getRobotWidth() {
