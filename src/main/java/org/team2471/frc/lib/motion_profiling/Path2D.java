@@ -96,15 +96,15 @@ public class Path2D {
 
     Vector2 centerPosition = getPosition(time);
     Vector2 leftPosition = getLeftPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPositionForLeft);
-    Vector2 deltaLeft = Vector2.subtract(getLeftPosition(time), m_prevLeftPosition);
+    Vector2 deltaCenter = Vector2.subtract(centerPosition, m_prevCenterPositionForLeft);
+    Vector2 deltaLeft = Vector2.subtract(leftPosition, m_prevLeftPosition);
     m_prevCenterPositionForLeft = centerPosition;
     m_prevLeftPosition = leftPosition;
 
     if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
-      return -Vector2.length(deltaLeft);
-    } else {
       return Vector2.length(deltaLeft);
+    } else {
+      return -Vector2.length(deltaLeft);
     }
   }
 
@@ -116,31 +116,31 @@ public class Path2D {
     }
 
     Vector2 centerPosition = getPosition(time);
-    Vector2 RightPosition = getRightPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(getPosition(time), m_prevCenterPositionForRight);
-    Vector2 deltaRight = Vector2.subtract(getRightPosition(time), m_prevRightPosition);
+    Vector2 rightPosition = getRightPosition(time);
+    Vector2 deltaCenter = Vector2.subtract(centerPosition, m_prevCenterPositionForRight);
+    Vector2 deltaRight = Vector2.subtract(rightPosition, m_prevRightPosition);
     m_prevCenterPositionForRight = centerPosition;
-    m_prevRightPosition = RightPosition;
+    m_prevRightPosition = rightPosition;
 
     if (Vector2.dot(deltaCenter, deltaRight) > 0) {
-      return -Vector2.length(deltaRight);
-    } else {
       return Vector2.length(deltaRight);
+    } else {
+      return -Vector2.length(deltaRight);
     }
   }
 
   public double getLeftPositionDelta(double time) {
     if (travelDirection>0)
-      return -privateGetLeftPositionDelta(time);
+      return privateGetLeftPositionDelta(time);
     else
-      return privateGetRightPositionDelta(time);
+      return -privateGetRightPositionDelta(time);
   }
 
   public double getRightPositionDelta(double time) {
     if (travelDirection>0)
-      return -privateGetRightPositionDelta(time);
+      return privateGetRightPositionDelta(time);
     else
-      return privateGetLeftPositionDelta(time);
+      return -privateGetLeftPositionDelta(time);
   }
 
   public double getRobotWidth() {

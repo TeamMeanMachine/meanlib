@@ -98,12 +98,12 @@ public class FollowPathTankDriveCommand extends Command {
     // we should mark the right encoder as inverted, but instead, for now, we just negate the right side values.
 
     if (m_mirrorPath) {
-      m_leftController.setSetpoint(-m_rightDistance + m_leftDistanceOffset);
+      m_leftController.setSetpoint(m_rightDistance + m_leftDistanceOffset);
       m_rightController.setSetpoint(m_leftDistance + m_rightDistanceOffset);
     }
     else {
       m_leftController.setSetpoint(m_leftDistance + m_leftDistanceOffset);
-      m_rightController.setSetpoint(-m_rightDistance + m_rightDistanceOffset);
+      m_rightController.setSetpoint(m_rightDistance + m_rightDistanceOffset);
     }
 /*
     System.out.print("Time: " + m_playTime);
@@ -111,15 +111,14 @@ public class FollowPathTankDriveCommand extends Command {
     System.out.print("\t Left Position: " + m_leftController.getPosition());
     double error = m_leftController.getPosition() - m_leftController.getSetpoint();
     System.out.println("\t Left Error: " + error);
-    SmartDashboard.putNumber("Left Error", error);
-*/
-/*
+    //SmartDashboard.putNumber("Left Error", error);
+
     System.out.print("Time: " + m_playTime);
     System.out.print("\t Right SetPoint: " + m_rightController.getSetpoint());
     System.out.print("\t Right Position: " + m_rightController.getPosition());
-    System.out.println("\t Right Error: " + m_rightController.getError());
+    System.out.println("\t Left Error: " + (m_rightController.getPosition() - m_rightController.getSetpoint()));
 */
-  }
+}
 
   @Override
   protected boolean isFinished() {
