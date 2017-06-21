@@ -68,7 +68,7 @@ public class FollowPathTankDriveCommand extends Command {
         m_playTime = 0.0;
       }
       Vector2 tangent = m_path.getTangent(m_playTime);
-      m_startPathHeading = Math.atan2(tangent.x, tangent.y) / Math.PI * 180.0;
+      m_startPathHeading = -Math.toDegrees(Math.atan2(tangent.x, tangent.y));
     }
   }
 
@@ -88,11 +88,12 @@ public class FollowPathTankDriveCommand extends Command {
     double gyroCorrection = 0.0;
     if (m_gyro!=null) {
       Vector2 tangent = m_path.getTangent(m_playTime);
-      double pathHeading = Math.atan2(tangent.x, tangent.y) / Math.PI * 180.0;
-      double headingError = (m_gyro.getAngle() - m_startGyro) - (pathHeading - m_startPathHeading);
-      gyroCorrection = Math.tan( headingError / 180.0 * Math.PI ) * m_path.getRobotWidth() * (m_mirrorPath ? -1.0 : 1.0);
+      double pathHeading = -Math.toDegrees(Math.atan2(tangent.x, tangent.y));
+      double headingError = (pathHeading - m_startPathHeading) - (m_gyro.getAngle() - m_startGyro);
+      gyroCorrection = Math.tan(Math.toRadians(headingError)) * (m_path.getRobotWidth() / 2) * (m_mirrorPath ? -1.0 : 1.0);
       m_leftDistance += gyroCorrection;
       m_rightDistance -= gyroCorrection;
+      System.out.println("Gyro Correction: " + gyroCorrection + ", " + headingError);
     }
 
     // we should mark the right encoder as inverted, but instead, for now, we just negate the right side values.
