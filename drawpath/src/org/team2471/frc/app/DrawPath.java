@@ -32,13 +32,13 @@ public class DrawPath extends JFrame {
     if (m_path == null) {
       m_path = new Path2D();
 
-      double size = 2.0;
+      double size = 4.0;
       double tangent = 4.0;
       m_path.addPointAndTangent(0.0, 0.0, 0.0, tangent);
       m_path.addPointAndTangent(size, size, tangent, 0.0);
 
       m_path.addEasePoint(0.0, 0.0);
-      m_path.addEasePoint(2.0, 1.0);
+      m_path.addEasePoint(8.0, 1.0);
 
 /*
       m_path.addPointAndTangent( 0.0,  0.0, 0.0, 1.0 );
@@ -112,7 +112,7 @@ public class DrawPath extends JFrame {
       double rightSpeed = Vector2.length(Vector2.subtract(rightPos, prevRightPos)) / deltaT / MAX_SPEED;
       rightSpeed = Math.min(1.0, rightSpeed);
       double rightDelta = m_path.getRightPositionDelta(t);
-      System.out.println("Right: " + rightDelta);
+      System.out.println("Right: " + rightPos);
       if (rightDelta>0)
         g2.setColor(new Color((int) ((1.0 - rightSpeed) * 255), (int) (rightSpeed * 255), 0));
       else {
