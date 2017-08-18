@@ -384,6 +384,13 @@ public class Path2DPoint {
 
   public String toString() {
     String rValue = "";
+    rValue += m_position.toString();
+    rValue += m_prevAngleAndMagnitude.toString();
+    rValue += m_nextAngleAndMagnitude.toString();
+    rValue += m_prevTangent.toString();
+    rValue += m_nextTangent.toString();
+    rValue += m_prevSlopeMethod.toString();
+    rValue += m_nextSlopeMethod.toString();
     return rValue;
   }
 }
