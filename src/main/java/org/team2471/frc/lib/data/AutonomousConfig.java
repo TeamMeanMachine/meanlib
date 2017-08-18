@@ -13,10 +13,6 @@ public class AutonomousConfig {
     this.name = name;
   }
 
-  public String getName() {
-    return name;
-  }
-
   public void putPath(String name, Path2D path) {
     paths.put(name, path);
   }
@@ -31,5 +27,10 @@ public class AutonomousConfig {
 
   public void renamePath(String prevName, String newName) {
     paths.put(newName, paths.remove(prevName));
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }
