@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -13,6 +14,8 @@ public class Path2D {
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
   private double travelDirection;
+  private boolean m_mirrored;
+  private String name;
 
   public Path2D() {
     m_xyCurve = new Path2DCurve();
@@ -169,5 +172,31 @@ public class Path2D {
 
   public void setTravelDirection(double travelDirection) {
     this.travelDirection = travelDirection;
+  }
+
+  public boolean isMirrored() {
+    return m_mirrored;
+  }
+
+  public void setMirrored(boolean mirrored) {
+    this.m_mirrored = mirrored;
+  }
+
+  public void writeToNetworkTable() {
+    NetworkTable table = NetworkTable.getTable("PathVisualizer");
+    table.putString( name, toString() );
+  }
+
+  public void readFromNetworkTable() {
+    NetworkTable table = NetworkTable.getTable("PathVisualizer");
+    String pathString = table.getString( name, "" );
+  }
+
+  public String toString() {
+    String rValue = "";
+    for (Path2DPoint point = m_xyCurve.getHeadPoint(); point != null; point = point.getNextPoint()) {
+      rValue += point.toString();
+    }
+    return rValue;
   }
 }

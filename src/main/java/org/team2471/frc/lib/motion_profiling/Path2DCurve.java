@@ -125,4 +125,7 @@ public class Path2DCurve {
     m_cachedLength = -1.0;
   }
 
+  public Path2DPoint getHeadPoint() {
+    return m_headPoint;
+  }
 }

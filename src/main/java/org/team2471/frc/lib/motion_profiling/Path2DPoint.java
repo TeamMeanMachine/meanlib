@@ -381,4 +381,9 @@ public class Path2DPoint {
   public enum SlopeMethod {
     SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_SMOOTH, SLOPE_TANGENT_SPECIFIED
   }
+
+  public String toString() {
+    String rValue = "";
+    return rValue;
+  }
 }

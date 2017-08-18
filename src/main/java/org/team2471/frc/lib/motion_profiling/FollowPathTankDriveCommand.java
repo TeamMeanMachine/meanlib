@@ -14,7 +14,6 @@ public class FollowPathTankDriveCommand extends Command {
 
   private Path2D m_path;
   private double m_speed;
-  private boolean m_mirrorPath;
   private double m_startTime;
   private double m_playTime;
   private double m_forwardTime;
@@ -90,14 +89,14 @@ public class FollowPathTankDriveCommand extends Command {
       Vector2 tangent = m_path.getTangent(m_playTime);
       double pathHeading = Math.atan2(tangent.x, tangent.y) / Math.PI * 180.0;
       double headingError = (m_gyro.getAngle() - m_startGyro) - (pathHeading - m_startPathHeading);
-      gyroCorrection = Math.tan( headingError / 180.0 * Math.PI ) * m_path.getRobotWidth() * (m_mirrorPath ? -1.0 : 1.0);
+      gyroCorrection = Math.tan( headingError / 180.0 * Math.PI ) * m_path.getRobotWidth() * (m_path.isMirrored() ? -1.0 : 1.0);
       m_leftDistance += gyroCorrection;
       m_rightDistance -= gyroCorrection;
     }
 
     // we should mark the right encoder as inverted, but instead, for now, we just negate the right side values.
 
-    if (m_mirrorPath) {
+    if (m_path.isMirrored()) {
       m_leftController.setSetpoint(m_rightDistance + m_leftDistanceOffset);
       m_rightController.setSetpoint(m_leftDistance + m_rightDistanceOffset);
     }
@@ -178,11 +177,11 @@ public class FollowPathTankDriveCommand extends Command {
   }
 
   public boolean isMirrorPath() {
-    return m_mirrorPath;
+    return m_path.isMirrored();
   }
 
   public void setMirrorPath(boolean m_mirrorPath) {
-    this.m_mirrorPath = m_mirrorPath;
+    m_path.setMirrored(m_mirrorPath);
   }
 
   public Gyro getGyro() {
