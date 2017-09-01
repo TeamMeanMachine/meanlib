@@ -2,13 +2,18 @@ group 'org.team2471.frc.lib'
 version '2017.1.1'
 
 buildscript {
+  ext.kotlin_version = '1.1.4-3'
 
   repositories {
     mavenCentral()
   }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.8
 
@@ -25,4 +30,15 @@ dependencies {
   compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:arm"
   compile fileTree(dir: 'libs', include: ['*.jar'])
   testCompile group: 'junit', name: 'junit', version: '4.11'
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+}
+compileKotlin {
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
+}
+compileTestKotlin {
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
 }
