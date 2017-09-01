@@ -128,4 +128,5 @@ public class Path2DCurve {
   public Path2DPoint getHeadPoint() {
     return m_headPoint;
   }
+
 }

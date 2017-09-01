@@ -199,4 +199,8 @@ public class Path2D {
     }
     return rValue;
   }
+
+  public Path2DCurve getXYCurve() {
+    return m_xyCurve;
+  }
 }
