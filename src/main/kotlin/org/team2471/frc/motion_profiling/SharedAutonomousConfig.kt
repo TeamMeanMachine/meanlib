@@ -46,6 +46,10 @@ private fun Path2D.dumpToTable(table: ITable) {
       point -> point.toString()
     }.toTypedArray()
   })
+
+  // make sure all values are persistent
+  table.setPersistent("XyCurvePoints")
+  table.setPersistent("EaseCurveKeys")
 }
 
 
