@@ -60,10 +60,15 @@ public class Path2DPoint {
     if (getPrevPoint() != null) {
       getPrevPoint().setTangentsDirty(true);
       getPrevPoint().setCoefficientsDirty(true);
+
+      if (getNextPoint()==null && getPrevPoint().getPrevPoint()!=null) {
+        getPrevPoint().getPrevPoint().setCoefficientsDirty(true);  // coefficients two back need recalculated
+      }
     }
 
     if (getNextPoint() != null) {
       getNextPoint().setTangentsDirty(true);
+      getNextPoint().setCoefficientsDirty(true);
     }
   }
 
@@ -89,6 +94,7 @@ public class Path2DPoint {
 
   public void setPosition(Vector2 position) {
     this.m_position = position;
+    onPositionChanged();
   }
 
   public Vector2 getPrevAngleAndMagnitude() {
@@ -120,6 +126,7 @@ public class Path2DPoint {
     this.m_prevTangent = m_PrevTangent;
     m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
     setNextAngleAndMagnitude(new Vector2(0, 1));
+    onPositionChanged();
   }
 
   public Vector2 getNextTangent() {
@@ -133,6 +140,7 @@ public class Path2DPoint {
     this.m_nextTangent = m_NextTangent;
     m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
     setNextAngleAndMagnitude(new Vector2(0, 1));
+    onPositionChanged();
   }
 
   public Path2DCurve getPath2DCurve() {
@@ -205,6 +213,8 @@ public class Path2DPoint {
     boolean bCalcSmoothPrev = false;
     boolean bCalcSmoothNext = false;
 
+    final double defaultSplineDivisor = 2.0;
+
     switch (getPrevSlopeMethod()) {
       case SLOPE_MANUAL:
         m_prevTangent.set(Math.cos(getPrevAngleAndMagnitude().x), Math.sin(getPrevAngleAndMagnitude().x));
@@ -242,7 +252,8 @@ public class Path2DPoint {
     if (bCalcSmoothPrev || bCalcSmoothNext) {
       if (m_prevPoint != null && m_nextPoint != null) {
         Vector2 delta = Vector2.subtract(m_nextPoint.getPosition(), m_prevPoint.getPosition());
-        double weight = Math.abs(delta.x);
+        //double weight = Math.abs(delta.x);  // Bug for paths:  just works for 2d channels I think
+        double weight = Vector2.length(delta);
         if (weight == 0) // if points are on top of one another (no tangents)
         {
           if (bCalcSmoothPrev)
@@ -253,29 +264,35 @@ public class Path2DPoint {
           delta = Vector2.divide(delta, weight);
 
           if (bCalcSmoothPrev) {
-            double prevWeight = Vector2.length(Vector2.subtract(getPosition(), m_prevPoint.getPosition()));
+            double prevWeight = Vector2.length(Vector2.subtract(getPosition(), m_prevPoint.getPosition()))/defaultSplineDivisor;
             m_prevTangent = Vector2.multiply(delta, prevWeight);
           }
           if (bCalcSmoothNext) {
-            double nextWeight = Vector2.length(Vector2.subtract(m_nextPoint.getPosition(), getPosition()));
+            double nextWeight = Vector2.length(Vector2.subtract(m_nextPoint.getPosition(), getPosition()))/defaultSplineDivisor;
             m_nextTangent = Vector2.multiply(delta, nextWeight);
           }
         }
       } else {
         if (m_nextPoint != null) {
-          if (bCalcSmoothPrev)
+          if (bCalcSmoothPrev) {
             m_prevTangent = Vector2.subtract(m_nextPoint.getPosition(), getPosition());
-
-          if (bCalcSmoothNext)
+            m_prevTangent = Vector2.multiply(m_prevTangent, 1.0 / defaultSplineDivisor);
+          }
+          if (bCalcSmoothNext) {
             m_nextTangent = Vector2.subtract(m_nextPoint.getPosition(), getPosition());
+            m_nextTangent = Vector2.multiply(m_nextTangent, 1.0 / defaultSplineDivisor);
+          }
         }
 
         if (m_prevPoint != null) {
-          if (bCalcSmoothPrev)
+          if (bCalcSmoothPrev) {
             m_prevTangent = Vector2.subtract(getPosition(), m_prevPoint.getPosition());
-
-          if (bCalcSmoothNext)
+            m_prevTangent = Vector2.multiply(m_prevTangent, 1.0 / defaultSplineDivisor);
+          }
+          if (bCalcSmoothNext) {
             m_nextTangent = Vector2.subtract(getPosition(), m_prevPoint.getPosition());
+            m_nextTangent = Vector2.multiply(m_nextTangent, 1.0 / defaultSplineDivisor);
+          }
         }
       }
     }
@@ -299,6 +316,11 @@ public class Path2DPoint {
   }
 
   private void calculateCoefficientsAndLength() {
+    if (areTangentsDirty())
+      calculateTangents();
+    if (getNextPoint()!=null && getNextPoint().areTangentsDirty())
+      getNextPoint().calculateTangents();
+
     setCoefficientsDirty(false);
 
     double pointax = getPosition().x;
