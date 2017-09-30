@@ -50,6 +50,13 @@ public class Vector2 {
     this.y = y;
   }
 
+  public void rotateRadians(double radians)
+  {
+    double c = Math.cos(radians);
+    double s = Math.sin(radians);
+    set( x * c - y * s, x * s + y * c );
+ }
+
   @Override
   public String toString() {
     return "<" + x + ", " + y + ">";

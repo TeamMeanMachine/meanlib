@@ -122,10 +122,15 @@ public class Path2DPoint {
     return m_prevTangent;
   }
 
-  public void setPrevTangent(Vector2 m_PrevTangent) {
-    this.m_prevTangent = m_PrevTangent;
-    m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
-    setNextAngleAndMagnitude(new Vector2(0, 1));
+  public void setPrevTangent(Vector2 prevTangent) {
+    setPrevAngleAndMagnitude(new Vector2(0, 1));
+    calculateTangents();  // determine the default tangents
+    double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.y, m_prevTangent.x));
+    double goalAngle = Math.toDegrees(Math.atan2(prevTangent.y, prevTangent.x));
+    double angle = goalAngle - defaultAngle;
+    double magnitude = Vector2.length(prevTangent) / Vector2.length(m_prevTangent);
+    setPrevAngleAndMagnitude(new Vector2(angle, magnitude));
+    setNextAngleAndMagnitude(new Vector2(angle, getNextMagnitude()));
     onPositionChanged();
   }
 
@@ -136,10 +141,15 @@ public class Path2DPoint {
     return m_nextTangent;
   }
 
-  public void setNextTangent(Vector2 m_NextTangent) {
-    this.m_nextTangent = m_NextTangent;
-    m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
+  public void setNextTangent(Vector2 nextTangent) {
     setNextAngleAndMagnitude(new Vector2(0, 1));
+    calculateTangents();  // determine the default tangents
+    double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.y, m_nextTangent.x));
+    double goalAngle = Math.toDegrees(Math.atan2(nextTangent.y, nextTangent.x));
+    double angle = goalAngle - defaultAngle;
+    double magnitude = Vector2.length(nextTangent) / Vector2.length(m_nextTangent);
+    setNextAngleAndMagnitude(new Vector2(angle, magnitude));
+    setPrevAngleAndMagnitude(new Vector2(angle, getPrevMagnitude()));
     onPositionChanged();
   }
 
@@ -183,6 +193,14 @@ public class Path2DPoint {
     m_prevSlopeMethod = slopeMethod;
   }
 
+  public double getPrevAngle() {
+    return m_prevAngleAndMagnitude.x;
+  }
+
+  public double getNextAngle() {
+        return m_nextAngleAndMagnitude.x;
+  }
+
   public double getPrevMagnitude() {
     return m_prevAngleAndMagnitude.y;
   }
@@ -190,7 +208,6 @@ public class Path2DPoint {
   public double getNextMagnitude() {
     return m_nextAngleAndMagnitude.y;
   }
-
   void insertBefore(Path2DPoint newPoint) {
     m_prevPoint = newPoint.m_prevPoint;
     if (newPoint.m_prevPoint != null)
@@ -216,11 +233,6 @@ public class Path2DPoint {
     final double defaultSplineDivisor = 2.0;
 
     switch (getPrevSlopeMethod()) {
-      case SLOPE_MANUAL:
-        m_prevTangent.set(Math.cos(getPrevAngleAndMagnitude().x), Math.sin(getPrevAngleAndMagnitude().x));
-        if (m_prevPoint != null)
-          Vector2.multiply(m_prevTangent, getPosition().x - m_prevPoint.getPosition().x);
-        break;
       case SLOPE_LINEAR:
         if (m_prevPoint != null)
           m_prevTangent = Vector2.subtract(getPosition(), m_prevPoint.getPosition());
@@ -233,11 +245,6 @@ public class Path2DPoint {
     }
 
     switch (getNextSlopeMethod()) {
-      case SLOPE_MANUAL:
-        m_nextTangent.set(Math.cos(getNextAngleAndMagnitude().x), Math.sin(getNextAngleAndMagnitude().x));
-        if (m_nextPoint != null)
-          Vector2.multiply(m_nextTangent, m_nextPoint.getPosition().x - getPosition().x);
-        break;
       case SLOPE_LINEAR:
         if (m_nextPoint != null)
           m_nextTangent = Vector2.subtract(m_nextPoint.getPosition(), getPosition());
@@ -264,12 +271,12 @@ public class Path2DPoint {
           delta = Vector2.divide(delta, weight);
 
           if (bCalcSmoothPrev) {
-            double prevWeight = Vector2.length(Vector2.subtract(getPosition(), m_prevPoint.getPosition()))/defaultSplineDivisor;
-            m_prevTangent = Vector2.multiply(delta, prevWeight);
+            double prevLength = Vector2.length(Vector2.subtract(getPosition(), m_prevPoint.getPosition()))/defaultSplineDivisor;
+            m_prevTangent = Vector2.multiply(delta, prevLength);
           }
           if (bCalcSmoothNext) {
-            double nextWeight = Vector2.length(Vector2.subtract(m_nextPoint.getPosition(), getPosition()))/defaultSplineDivisor;
-            m_nextTangent = Vector2.multiply(delta, nextWeight);
+            double nextLength = Vector2.length(Vector2.subtract(m_nextPoint.getPosition(), getPosition()))/defaultSplineDivisor;
+            m_nextTangent = Vector2.multiply(delta, nextLength);
           }
         }
       } else {
@@ -297,8 +304,11 @@ public class Path2DPoint {
       }
     }
 
-    m_prevTangent = Vector2.multiply(m_prevTangent, getPrevAngleAndMagnitude().y);
-    m_nextTangent = Vector2.multiply(m_nextTangent, getNextAngleAndMagnitude().y);
+    m_prevTangent = Vector2.multiply(m_prevTangent, getPrevMagnitude());
+    m_nextTangent = Vector2.multiply(m_nextTangent, getNextMagnitude());
+
+    m_prevTangent.rotateRadians( Math.toRadians(getPrevAngle()));
+    m_nextTangent.rotateRadians( Math.toRadians(getNextAngle()));
   }
 
   public CubicCoefficients1D getXCoefficients() {
