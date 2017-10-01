@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
 
+import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_TANGENT_SPECIFIED;
 
 public class Path2DPoint {
@@ -101,18 +102,32 @@ public class Path2DPoint {
     return m_prevAngleAndMagnitude;
   }
 
-  public void setPrevAngleAndMagnitude(Vector2 m_prevAngleAndMagnitude) {
-    this.m_prevAngleAndMagnitude = m_prevAngleAndMagnitude;
-    setTangentsDirty(true);
+  public void setPrevAngleAndMagnitude(Vector2 prevAngleAndMagnitude) {  // this one takes the angle in world space - stored as an offset
+    m_prevAngleAndMagnitude = new Vector2(0, 1);
+    calculateTangents();  // determine the default tangents
+    double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.y, m_prevTangent.x));
+    double goalAngle = prevAngleAndMagnitude.x;
+    double angle = goalAngle - defaultAngle;
+    double magnitude = prevAngleAndMagnitude.y / Vector2.length(m_prevTangent);
+    m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+    m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+    onPositionChanged();
   }
 
   public Vector2 getNextAngleAndMagnitude() {
     return m_nextAngleAndMagnitude;
   }
 
-  public void setNextAngleAndMagnitude(Vector2 m_nextAngleAndMagnitude) {
-    this.m_nextAngleAndMagnitude = m_nextAngleAndMagnitude;
-    setTangentsDirty(true);
+  public void setNextAngleAndMagnitude(Vector2 nextAngleAndMagnitude) {
+    m_nextAngleAndMagnitude = new Vector2(0, 1);
+    calculateTangents();  // determine the default tangents
+    double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.y, m_nextTangent.x));
+    double goalAngle = nextAngleAndMagnitude.x;
+    double angle = goalAngle - defaultAngle;
+    double magnitude = nextAngleAndMagnitude.y / Vector2.length(m_nextTangent);
+    m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+    m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+    onPositionChanged();
   }
 
   public Vector2 getPrevTangent() {
@@ -123,14 +138,16 @@ public class Path2DPoint {
   }
 
   public void setPrevTangent(Vector2 prevTangent) {
-    setPrevAngleAndMagnitude(new Vector2(0, 1));
+    m_prevAngleAndMagnitude = new Vector2(0, 1);
     calculateTangents();  // determine the default tangents
     double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.y, m_prevTangent.x));
     double goalAngle = Math.toDegrees(Math.atan2(prevTangent.y, prevTangent.x));
     double angle = goalAngle - defaultAngle;
     double magnitude = Vector2.length(prevTangent) / Vector2.length(m_prevTangent);
-    setPrevAngleAndMagnitude(new Vector2(angle, magnitude));
-    setNextAngleAndMagnitude(new Vector2(angle, getNextMagnitude()));
+    m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+    m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
+    m_nextSlopeMethod = SLOPE_SMOOTH;
+    m_prevSlopeMethod = SLOPE_SMOOTH;
     onPositionChanged();
   }
 
@@ -142,15 +159,25 @@ public class Path2DPoint {
   }
 
   public void setNextTangent(Vector2 nextTangent) {
-    setNextAngleAndMagnitude(new Vector2(0, 1));
-    calculateTangents();  // determine the default tangents
-    double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.y, m_nextTangent.x));
-    double goalAngle = Math.toDegrees(Math.atan2(nextTangent.y, nextTangent.x));
-    double angle = goalAngle - defaultAngle;
-    double magnitude = Vector2.length(nextTangent) / Vector2.length(m_nextTangent);
-    setNextAngleAndMagnitude(new Vector2(angle, magnitude));
-    setPrevAngleAndMagnitude(new Vector2(angle, getPrevMagnitude()));
-    onPositionChanged();
+    if (getNextPoint()!=null) {
+      m_nextAngleAndMagnitude = new Vector2(0, 1);
+      calculateTangents();  // determine the default tangents
+      double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.y, m_nextTangent.x));
+      double goalAngle = Math.toDegrees(Math.atan2(nextTangent.y, nextTangent.x));
+      double angle = goalAngle - defaultAngle;
+      double magnitude = Vector2.length(nextTangent) / Vector2.length(m_nextTangent);
+      m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+      m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
+      m_nextSlopeMethod = SLOPE_SMOOTH;
+      m_prevSlopeMethod = SLOPE_SMOOTH;
+      onPositionChanged();
+    }
+    else {
+      m_nextTangent = new Vector2(nextTangent.x, nextTangent.y);
+      m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
+      m_prevTangent = new Vector2(nextTangent.x, nextTangent.y);
+      m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
+    }
   }
 
   public Path2DCurve getPath2DCurve() {
@@ -302,13 +329,12 @@ public class Path2DPoint {
           }
         }
       }
+      m_prevTangent = Vector2.multiply(m_prevTangent, getPrevMagnitude());
+      m_nextTangent = Vector2.multiply(m_nextTangent, getNextMagnitude());
+
+      m_prevTangent.rotateRadians( Math.toRadians(getPrevAngle()));
+      m_nextTangent.rotateRadians( Math.toRadians(getNextAngle()));
     }
-
-    m_prevTangent = Vector2.multiply(m_prevTangent, getPrevMagnitude());
-    m_nextTangent = Vector2.multiply(m_nextTangent, getNextMagnitude());
-
-    m_prevTangent.rotateRadians( Math.toRadians(getPrevAngle()));
-    m_nextTangent.rotateRadians( Math.toRadians(getNextAngle()));
   }
 
   public CubicCoefficients1D getXCoefficients() {

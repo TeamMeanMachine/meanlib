@@ -5,7 +5,7 @@ import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
 
-  private Path2DCurve m_xyCurve;         // positive y is forward in robot space, and positive x is to the robot's right
+  private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
   private double m_robotWidth = 36.5 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
