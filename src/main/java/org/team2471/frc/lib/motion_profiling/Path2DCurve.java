@@ -67,7 +67,6 @@ public class Path2DCurve {
     insertPointAfter(m_tailPoint, path2DPoint);
     Vector2 tangent = new Vector2(xTangent, yTangent);
     path2DPoint.setNextTangent(tangent);
-    path2DPoint.setPrevTangent(tangent);
   }
 
   public void addPointAngleAndMagnitudeToEnd(double x, double y, double angle, double magnitude) {
