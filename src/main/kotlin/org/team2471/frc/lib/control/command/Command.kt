@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.control.command
 
-import java.util.LinkedList
+import java.util.*
 
 abstract class Subsystem {
     internal var defaultCommand: Command? = null
@@ -26,7 +26,7 @@ abstract class Command(vararg internal val requirements: Subsystem) {
 object Scheduler {
     private val commands: MutableList<Command> = LinkedList()
 
-    fun runCommand(command: Command){
+    fun runCommand(command: Command) {
         interruptCommand(command)
 
         commands.add(command)
@@ -34,7 +34,7 @@ object Scheduler {
     }
 
     fun interruptCommand(command: Command) {
-        if(command !in commands) return
+        if (command !in commands) return
 
         command.interrupted()
         removeCommand(command)
@@ -44,9 +44,9 @@ object Scheduler {
 
     fun tick() {
         // handle commands
-        for(command in commands) {
+        for (command in commands) {
             command.execute()
-            if(command.isFinished()) {
+            if (command.isFinished()) {
                 command.end()
                 removeCommand(command)
             }
@@ -57,7 +57,7 @@ object Scheduler {
     }
 
     private fun removeCommand(command: Command) {
-        if(commands.remove(command)) {
+        if (commands.remove(command)) {
             command.requirements
                     .mapNotNull { it.defaultCommand }
                     .forEach { runCommand(it) }

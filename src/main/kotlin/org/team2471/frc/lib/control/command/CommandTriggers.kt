@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.control.command
 
-import java.util.LinkedList
+import java.util.*
 
 internal val triggerFunctions = LinkedList<() -> Unit>()
 
@@ -9,7 +9,7 @@ fun runCommandWhen(command: Command, condition: () -> Boolean) {
 
     triggerFunctions.add {
         val state = condition()
-        if(state && !previousState)
+        if (state && !previousState)
             Scheduler.runCommand(command)
         previousState = state
     }
@@ -21,8 +21,8 @@ fun toggleCommandWhen(command: Command, condition: () -> Boolean) {
     triggerFunctions.add {
         val state = condition()
 
-        if(state && !previousState) {
-            if(!Scheduler.isRunningCommand(command)) {
+        if (state && !previousState) {
+            if (!Scheduler.isRunningCommand(command)) {
                 Scheduler.runCommand(command)
             } else {
                 Scheduler.interruptCommand(command)
@@ -39,9 +39,9 @@ fun runCommandWhile(command: Command, condition: () -> Boolean) {
     triggerFunctions.add {
         val state = condition()
 
-        if(state && !previousState) {
+        if (state && !previousState) {
             Scheduler.runCommand(command)
-        } else if(!state && previousState) {
+        } else if (!state && previousState) {
             Scheduler.interruptCommand(command)
         }
 
