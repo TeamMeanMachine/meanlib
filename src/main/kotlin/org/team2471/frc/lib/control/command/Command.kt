@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.control.command
 
 import java.util.*
+import kotlin.collections.HashMap
 
 abstract class Subsystem {
     internal var defaultCommand: Command? = null
@@ -24,16 +25,23 @@ abstract class Command(vararg internal val requirements: Subsystem) {
 
     fun run() = Scheduler.runCommand(this)
 
+    fun interrupt() = Scheduler.interruptCommand(this)
+
     operator fun invoke() = run()
 }
 
 object Scheduler {
     private val commands: MutableList<Command> = LinkedList()
+    private val requirements: MutableMap<Subsystem, Command> = HashMap()
 
     fun runCommand(command: Command) {
         interruptCommand(command)
 
         commands.add(command)
+        for (subsystem in command.requirements) {
+            requirements[subsystem]?.interrupt()
+            requirements[subsystem] = command
+        }
         command.initialize()
     }
 
@@ -62,9 +70,10 @@ object Scheduler {
 
     private fun removeCommand(command: Command) {
         if (commands.remove(command)) {
-            command.requirements
-                    .mapNotNull { it.defaultCommand }
-                    .forEach { runCommand(it) }
+            for(subsystem in command.requirements) {
+                requirements.remove(subsystem)
+                subsystem.defaultCommand?.run()
+            }
         }
     }
 }
