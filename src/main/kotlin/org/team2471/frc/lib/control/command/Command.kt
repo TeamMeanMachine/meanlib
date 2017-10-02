@@ -6,7 +6,7 @@ import kotlin.collections.HashMap
 abstract class Subsystem {
     internal var defaultCommand: Command? = null
 
-    fun setDefaultCommand(command: Command) {
+    protected fun setDefaultCommand(command: Command) {
         defaultCommand = command
         Scheduler.runCommand(command)
     }
