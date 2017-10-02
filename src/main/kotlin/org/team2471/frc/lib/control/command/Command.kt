@@ -2,11 +2,12 @@ package org.team2471.frc.lib.control.command
 
 import java.util.LinkedList
 
-abstract class Subsystem(internal val defaultCommand: Command? = null) {
-    init {
-        if (defaultCommand != null) {
-            Scheduler.runCommand(defaultCommand)
-        }
+abstract class Subsystem {
+    internal var defaultCommand: Command? = null
+
+    fun setDefaultCommand(command: Command) {
+        defaultCommand = command
+        Scheduler.runCommand(command)
     }
 }
 
@@ -57,11 +58,9 @@ object Scheduler {
 
     private fun removeCommand(command: Command) {
         if(commands.remove(command)) {
-            command.requirements.forEach { subsystem ->
-                subsystem.defaultCommand?.let { defaultCommand ->
-                    runCommand(defaultCommand)
-                }
-            }
+            command.requirements
+                    .mapNotNull { it.defaultCommand }
+                    .forEach { runCommand(it) }
         }
     }
 }
