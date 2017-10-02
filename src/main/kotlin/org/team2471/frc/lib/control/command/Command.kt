@@ -2,9 +2,15 @@ package org.team2471.frc.lib.control.command
 
 import java.util.LinkedList
 
-abstract class Subsystem(internal val defaultCommand: Command? = null)
+abstract class Subsystem(internal val defaultCommand: Command? = null) {
+    init {
+        if (defaultCommand != null) {
+            Scheduler.runCommand(defaultCommand)
+        }
+    }
+}
 
-abstract class Command(internal val requirements: List<Subsystem> = emptyList()) {
+abstract class Command(vararg internal val requirements: Subsystem) {
     open fun initialize() = Unit
 
     open fun execute() = Unit
