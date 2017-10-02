@@ -21,6 +21,10 @@ abstract class Command(vararg internal val requirements: Subsystem) {
     open fun end() = Unit
 
     open fun interrupted() = Unit
+
+    fun run() = Scheduler.runCommand(this)
+
+    operator fun invoke() = run()
 }
 
 object Scheduler {
