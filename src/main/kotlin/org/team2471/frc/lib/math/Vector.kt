@@ -5,7 +5,9 @@ data class Vector2D(val x: Double, val y: Double) {
 
     val angle: Double get() = Math.atan2(x, y)
 
-    operator fun unaryMinus() = Vector2D(-x, -y)
+    operator fun unaryPlus() = this * 1.0
+
+    operator fun unaryMinus() = this * -1.0
 
     operator fun plus(b: Vector2D) = Vector2D(x + b.x, y + b.y)
 
