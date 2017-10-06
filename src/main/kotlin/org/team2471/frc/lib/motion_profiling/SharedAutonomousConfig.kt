@@ -31,14 +31,14 @@ private fun MotionKey.remainingKeys(): List<MotionKey> {
 
 private fun Path2D.dumpToTable(table: ITable) {
     table.putStringArray("XyCurvePoints", when (this.xyCurve.headPoint) {
-        null -> arrayOf() // empty array
+        null -> emptyArray()
         else -> this.xyCurve.headPoint.remainingPoints().map { point ->
             point.toString()
         }.toTypedArray()
     })
 
     table.putStringArray("EaseCurveKeys", when (this.easeCurve.headKey) {
-        null -> arrayOf() // empty array
+        null -> emptyArray()
         else -> this.easeCurve.headKey.remainingKeys().map { point ->
             point.toString()
         }.toTypedArray()
