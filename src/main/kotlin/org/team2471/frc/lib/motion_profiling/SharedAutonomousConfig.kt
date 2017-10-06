@@ -53,16 +53,17 @@ internal val pathVisualizerTable = NetworkTable.getTable("PathVisualizer")
 
 class SharedAutonomousConfig(val name: String) {
     companion object {
+        private val configTable = pathVisualizerTable.getSubTable("Configs")
+
         val configNames: Set<String>
-            get() = pathVisualizerTable.subTables
+            get() = configTable.subTables
                     .filterNotNull()
-                    .filter { it.startsWith("Config_" ) }
-                    .map { it.substring(7) } // after Config_
                     .toSet()
     }
 
     private val paths: MutableMap<String, Path2D> = HashMap()
-    private val table = pathVisualizerTable.getSubTable("Config_" + name)
+    private val table = configTable.getSubTable(name)
+    private val pathsTable = table.getSubTable("Paths")
 
     fun putPath(pathName: String, path: Path2D) = paths.put(pathName, path)
 
@@ -74,7 +75,7 @@ class SharedAutonomousConfig(val name: String) {
 
     fun updatePath(pathName: String) {
         val path = getPath(pathName)!!
-        val pathTable = table.getSubTable("Path_" + pathName)
+        val pathTable = pathsTable.getSubTable(pathName)
         path.dumpToTable(pathTable)
     }
 }
