@@ -3,10 +3,8 @@ package org.team2471.frc.lib.motion_profiling;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import org.team2471.frc.lib.control.CANController;
-import org.team2471.frc.lib.control.MeanMotorController;
 
-import com.ctre.CANTalon;
-import edu.wpi.first.wpilibj.Utility;
+import com.ctre.MotorControl.CANTalon;
 import edu.wpi.first.wpilibj.command.Command;
 import org.team2471.frc.lib.vector.Vector2;
 

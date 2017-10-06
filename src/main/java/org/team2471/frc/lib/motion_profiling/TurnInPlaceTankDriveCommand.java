@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import com.ctre.CANTalon;
+import com.ctre.MotorControl.CANTalon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 import org.team2471.frc.lib.control.CANController;
