@@ -25,4 +25,7 @@ data class Point2D(val x: Double, val y: Double) {
     fun distance(b: Point2D): Double = Math.sqrt(
             Math.pow(b.x - this.x, 2.0) + Math.pow(b.y - this.y, 2.0)
     )
+
+    fun vectorTo(b: Point2D): Vector2D = Vector2D(b.x - this.x, b.y - this.y)
 }
+
