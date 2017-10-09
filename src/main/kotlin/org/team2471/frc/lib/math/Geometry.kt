@@ -1,5 +1,9 @@
 package org.team2471.frc.lib.math
 
+import java.lang.Math.abs
+import java.lang.Math.sqrt
+
+
 data class Point2D(val x: Double, val y: Double) {
     companion object {
         @JvmStatic
@@ -29,3 +33,36 @@ data class Point2D(val x: Double, val y: Double) {
     fun vectorTo(b: Point2D): Vector2D = Vector2D(b.x - this.x, b.y - this.y)
 }
 
+data class Line2D(val pointA: Point2D, val pointB: Point2D) {
+    val slope = (pointB.y - pointA.y) / (pointB.x - pointA.x)
+    val intercept = pointA.y
+
+    fun get(x: Double): Double = slope * x + intercept
+}
+
+data class Circle(val center: Point2D, val radius: Double) {
+    // see: http://mathworld.wolfram.com/Circle-LineIntersection.html
+    fun intersectingPoints(line: Line2D): List<Point2D> {
+        val (point1, point2) = line
+        val (dx, dy) = point2 - point1
+        val dr = sqrt(square(dx) + square(dy))
+
+        val determinate = point1.x * point2.y + point2.x * point1.y
+        val discriminant = square(radius) * square(dr) - square(determinate)
+
+        fun sgn(x: Double): Double = if (x < 0) -1.0 else 1.0
+        return when {
+            discriminant > 0.0 -> // two intersections
+                listOf(
+                        Point2D((determinate * dy + sgn(dy) * dx * sqrt(discriminant)) / square(dr),
+                                (-determinate * dx + abs(dy) * sqrt(discriminant)) / square(dr)),
+                        Point2D((determinate * dy - sgn(dy) * dx * sqrt(discriminant)) / square(dr),
+                                (-determinate * dx - abs(dy) * sqrt(discriminant)) / square(dr)))
+            discriminant == 0.0 -> // tangent line, one intersection
+                listOf(Point2D(
+                        (determinate * dy + sgn(dy)) / square(dr),
+                        (-determinate * dx + abs(dy)) / square(dr)))
+            else -> emptyList() // no intersections
+        }
+    }
+}
