@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.math
 
-import java.lang.Math.abs
-import java.lang.Math.sqrt
+import java.lang.Math.*
 
 
 data class Point2D(val x: Double, val y: Double) {
@@ -26,9 +25,7 @@ data class Point2D(val x: Double, val y: Double) {
 
     operator fun div(scalar: Double) = Point2D(x / scalar, y / scalar)
 
-    fun distance(b: Point2D): Double = Math.sqrt(
-            Math.pow(b.x - this.x, 2.0) + Math.pow(b.y - this.y, 2.0)
-    )
+    fun distance(b: Point2D): Double = sqrt(pow(b.x - this.x, 2.0) + pow(b.y - this.y, 2.0))
 
     fun vectorTo(b: Point2D): Vector2D = Vector2D(b.x - this.x, b.y - this.y)
 }

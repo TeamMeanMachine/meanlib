@@ -3,7 +3,7 @@ package org.team2471.frc.lib.math
 data class Vector2D(val x: Double, val y: Double) {
     val length: Double get() = Math.sqrt(dot(this))
 
-    val angle: Double get() = Math.atan2(y, x)
+    val angle: Double get() = Math.atan2(x, y)
 
     operator fun unaryPlus() = this * 1.0
 
