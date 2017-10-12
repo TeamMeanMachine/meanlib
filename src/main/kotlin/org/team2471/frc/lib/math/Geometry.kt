@@ -43,6 +43,9 @@ data class Line2D(val pointA: Point2D, val pointB: Point2D) {
     fun get(x: Double): Double = slope * x + intercept
 
     fun inLine(point: Point2D) = point == Point2D(point.x, get(point.x))
+
+    fun betweenPoints(point: Point2D) =
+            inLine(point) && point.distance(pointA) + point.distance(pointB) == pointA.distance(pointB)
 }
 
 data class Circle(val center: Point2D, val radius: Double) {
