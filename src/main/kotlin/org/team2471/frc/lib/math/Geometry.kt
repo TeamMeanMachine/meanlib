@@ -28,6 +28,12 @@ data class Point2D(val x: Double, val y: Double) {
     fun distance(b: Point2D): Double = sqrt(pow(b.x - this.x, 2.0) + pow(b.y - this.y, 2.0))
 
     fun vectorTo(b: Point2D): Vector2D = Vector2D(b.x - this.x, b.y - this.y)
+
+    fun closestPoint(firstPoint: Point2D, vararg additionalPoints: Point2D): Point2D =
+            additionalPoints.fold(firstPoint) { result, next ->
+                if(distance(next) < distance(result)) next
+                else result
+            }
 }
 
 data class Line2D(val pointA: Point2D, val pointB: Point2D) {
@@ -35,6 +41,8 @@ data class Line2D(val pointA: Point2D, val pointB: Point2D) {
     val intercept = -slope * pointA.x + pointA.y
 
     fun get(x: Double): Double = slope * x + intercept
+
+    fun inLine(point: Point2D) = point == Point2D(point.x, get(point.x))
 }
 
 data class Circle(val center: Point2D, val radius: Double) {
