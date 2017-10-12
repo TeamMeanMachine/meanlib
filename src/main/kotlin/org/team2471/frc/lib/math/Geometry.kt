@@ -32,7 +32,7 @@ data class Point2D(val x: Double, val y: Double) {
 
 data class Line2D(val pointA: Point2D, val pointB: Point2D) {
     val slope = (pointB.y - pointA.y) / (pointB.x - pointA.x)
-    val intercept = pointA.y
+    val intercept = -slope * pointA.x + pointA.y
 
     fun get(x: Double): Double = slope * x + intercept
 }
