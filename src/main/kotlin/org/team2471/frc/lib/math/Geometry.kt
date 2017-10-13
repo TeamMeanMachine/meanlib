@@ -40,9 +40,9 @@ data class Line2D(val pointA: Point2D, val pointB: Point2D) {
     val slope = (pointB.y - pointA.y) / (pointB.x - pointA.x)
     val intercept = -slope * pointA.x + pointA.y
 
-    fun get(x: Double): Double = slope * x + intercept
+    operator fun get(x: Double): Double = slope * x + intercept
 
-    fun pointInLine(point: Point2D): Boolean = point == Point2D(point.x, get(point.x))
+    fun pointInLine(point: Point2D): Boolean = point.y == this[point.x]
 
     fun pointInSegment(point: Point2D): Boolean =
             pointInLine(point) && point.distance(pointA) + point.distance(pointB) == pointA.distance(pointB)

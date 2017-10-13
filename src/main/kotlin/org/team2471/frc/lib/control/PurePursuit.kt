@@ -29,7 +29,7 @@ class PurePursuitController(private val lookahead: Double,
     private var lookaheadPoint: Point2D = currentWaypoint.point
 
     private val error: Double
-        get() = (heading % 360) - toDegrees(position.vectorTo(lookaheadPoint).angle)
+        get() = (heading - toDegrees(position.vectorTo(lookaheadPoint).angle)) % 360
 
     fun getCurvature(deltaVector: Vector2D): Double {
         // update robot pose
@@ -43,8 +43,14 @@ class PurePursuitController(private val lookahead: Double,
         }
 
         // update lookahead point
+        val waypointLine = Line2D(lastWaypoint.point, currentWaypoint.point)
         val lookaheadPoints = Circle(position, lookahead)
-                .intersectingPoints(Line2D(lastWaypoint.point, currentWaypoint.point))
+                .intersectingPoints(waypointLine)
+                .map { point ->
+                    // limit the points to be between the waypoints. this is necessary because Line2Ds are infinite.
+                    if (!waypointLine.pointInSegment(point)) point.closestPoint(waypointLine.pointA, waypointLine.pointB)
+                    else point
+                }
 
         lookaheadPoint = when (lookaheadPoints.size) {
             1 -> lookaheadPoints[0]
