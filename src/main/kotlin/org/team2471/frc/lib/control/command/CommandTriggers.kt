@@ -22,10 +22,10 @@ fun toggleCommandWhen(command: Command, condition: () -> Boolean) {
         val state = condition()
 
         if (state && !previousState) {
-            if (!Scheduler.isRunningCommand(command)) {
-                Scheduler.runCommand(command)
-            } else {
+            if (command in Scheduler) {
                 Scheduler.interruptCommand(command)
+            } else {
+                Scheduler.runCommand(command)
             }
         }
 
