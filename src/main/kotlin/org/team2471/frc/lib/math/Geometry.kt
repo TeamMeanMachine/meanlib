@@ -42,6 +42,10 @@ data class Line2D(val pointA: Point2D, val pointB: Point2D) {
 
     operator fun get(x: Double): Double = slope * x + intercept
 
+    operator fun plus(vec: Vector2D) = Line2D(pointA + vec, pointB + vec)
+
+    operator fun minus(vec: Vector2D) = Line2D(pointA - vec, pointB - vec)
+
     fun pointInLine(point: Point2D): Boolean = point.y == this[point.x]
 
     fun pointInSegment(point: Point2D): Boolean =
@@ -78,4 +82,12 @@ data class Circle(val center: Point2D, val radius: Double) {
             else -> emptyList() // no intersections
         }
     }
+
+    operator fun plus(vec: Vector2D) = Circle(center + vec, radius)
+
+    operator fun minus(vec: Vector2D) = Circle(center - vec, radius)
+
+    operator fun times(scalar: Double) = Circle(center, radius * scalar)
+
+    operator fun div(scalar: Double) = Circle(center, radius / scalar)
 }
