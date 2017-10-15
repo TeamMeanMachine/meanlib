@@ -12,7 +12,9 @@ abstract class Subsystem {
     }
 }
 
-abstract class Command(vararg internal val requirements: Subsystem) {
+abstract class Command(vararg requirements: Subsystem) {
+    internal val requirements = mutableSetOf(*requirements)
+
     open val interruptable = true
 
     open fun initialize() = Unit
@@ -57,11 +59,17 @@ object Scheduler {
         removeCommand(command)
     }
 
-    fun isRunningCommand(command: Command) = command in commands
+    operator fun contains(command: Command) = command in commands
+
+    fun clear() {
+        commands.forEach { interruptCommand(it) }
+    }
 
     fun tick() {
         // handle commands
-        for (command in commands) {
+        val iterator = commands.iterator()
+        while (iterator.hasNext()) {
+            val command = iterator.next()
             command.execute()
             if (command.isFinished()) {
                 command.end()
