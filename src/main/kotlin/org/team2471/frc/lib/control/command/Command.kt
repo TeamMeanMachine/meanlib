@@ -13,6 +13,8 @@ abstract class Subsystem {
 }
 
 abstract class Command(vararg internal val requirements: Subsystem) {
+    open val interruptable = true
+
     open fun initialize() = Unit
 
     open fun execute() = Unit
@@ -21,7 +23,7 @@ abstract class Command(vararg internal val requirements: Subsystem) {
 
     open fun end() = Unit
 
-    open fun interrupted() = Unit
+    open fun interrupted() = end()
 
     fun run() = Scheduler.runCommand(this)
 
@@ -35,6 +37,9 @@ object Scheduler {
     private val requirements: MutableMap<Subsystem, Command> = HashMap()
 
     fun runCommand(command: Command) {
+        // don't run command if any of it's requirements cannot be interrupted
+        if(command.requirements.any { requirements[it]?.interruptable == false }) return
+
         interruptCommand(command)
 
         commands.add(command)
