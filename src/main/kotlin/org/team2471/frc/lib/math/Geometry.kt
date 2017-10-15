@@ -49,6 +49,11 @@ data class Line2D(val pointA: Point2D, val pointB: Point2D) {
 }
 
 data class Circle(val center: Point2D, val radius: Double) {
+    companion object {
+        @JvmStatic
+        val unit = Circle(Point2D.origin, 1.0)
+    }
+
     // see: http://mathworld.wolfram.com/Circle-LineIntersection.html
     fun intersectingPoints(line: Line2D): List<Point2D> {
         val (point1, point2) = line
