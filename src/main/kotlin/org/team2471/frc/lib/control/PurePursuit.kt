@@ -1,19 +1,19 @@
 package org.team2471.frc.lib.control
 
 import org.team2471.frc.lib.math.Circle
-import org.team2471.frc.lib.math.Line2D
-import org.team2471.frc.lib.math.Point2D
-import org.team2471.frc.lib.math.Vector2D
+import org.team2471.frc.lib.math.Line
+import org.team2471.frc.lib.math.Point
+import org.team2471.frc.lib.math.Vector
 import java.lang.Math.toDegrees
 
-data class Waypoint(val point: Point2D,
+data class Waypoint(val point: Point,
                     val radialTolerance: Double,
                     val maxSpeed: Double = Double.MAX_VALUE,
                     val name: String? = null)
 
 // see: http://www.dtic.mil/get-tr-doc/pdf?AD=ADA599492
 class PurePursuitController(private val lookahead: Double,
-                            private var position: Point2D,
+                            private var position: Point,
                             private var heading: Double,
                             vararg waypoints: Waypoint) {
     var finished = false
@@ -26,12 +26,12 @@ class PurePursuitController(private val lookahead: Double,
     private val lastWaypoint get() = waypoints[waypointsPassed]
     val currentWaypoint get() = waypoints[waypointsPassed + 1]
 
-    private var lookaheadPoint: Point2D = currentWaypoint.point
+    private var lookaheadPoint: Point = currentWaypoint.point
 
     private val error: Double
         get() = (heading - toDegrees(position.vectorTo(lookaheadPoint).angle)) % 360
 
-    fun getCurvature(deltaVector: Vector2D): Double {
+    fun getCurvature(deltaVector: Vector): Double {
         // update robot pose
         position += deltaVector
         heading += toDegrees(deltaVector.angle)
@@ -43,7 +43,7 @@ class PurePursuitController(private val lookahead: Double,
         }
 
         // update lookahead point
-        val waypointLine = Line2D(lastWaypoint.point, currentWaypoint.point)
+        val waypointLine = Line(lastWaypoint.point, currentWaypoint.point)
         val lookaheadPoints = Circle(position, lookahead)
                 .intersectingPoints(waypointLine)
                 .map { point ->

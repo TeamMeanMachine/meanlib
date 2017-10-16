@@ -1,68 +1,65 @@
 package org.team2471.frc.lib.math
 
 import java.lang.Math.*
-import java.util.Arrays.asList
 
 
-
-
-data class Point2D(val x: Double, val y: Double) {
+data class Point(val x: Double, val y: Double) {
     companion object {
         @JvmStatic
-        val origin: Point2D = Point2D(0.0, 0.0)
+        val ORIGIN: Point = Point(0.0, 0.0)
     }
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus() = Point2D(-x, -y)
+    operator fun unaryMinus() = Point(-x, -y)
 
-    operator fun plus(b: Point2D) = Point2D(x + b.x, y + b.y)
+    operator fun plus(b: Point) = Point(x + b.x, y + b.y)
 
-    operator fun plus(vec: Vector2D) = Point2D(x + vec.x, y + vec.y)
+    operator fun plus(vec: Vector) = Point(x + vec.x, y + vec.y)
 
-    operator fun minus(b: Point2D) = Point2D(x - b.x, y - b.y)
+    operator fun minus(b: Point) = Point(x - b.x, y - b.y)
 
-    operator fun minus(vec: Vector2D) = Point2D(x - vec.x, y - vec.y)
+    operator fun minus(vec: Vector) = Point(x - vec.x, y - vec.y)
 
-    operator fun times(scalar: Double) = Point2D(x * scalar, y * scalar)
+    operator fun times(scalar: Double) = Point(x * scalar, y * scalar)
 
-    operator fun div(scalar: Double) = Point2D(x / scalar, y / scalar)
+    operator fun div(scalar: Double) = Point(x / scalar, y / scalar)
 
-    fun distance(b: Point2D): Double = sqrt(pow(b.x - this.x, 2.0) + pow(b.y - this.y, 2.0))
+    fun distance(b: Point): Double = sqrt(pow(b.x - this.x, 2.0) + pow(b.y - this.y, 2.0))
 
-    fun vectorTo(b: Point2D): Vector2D = Vector2D(b.x - this.x, b.y - this.y)
+    fun vectorTo(b: Point): Vector = Vector(b.x - this.x, b.y - this.y)
 
-    fun closestPoint(firstPoint: Point2D, vararg additionalPoints: Point2D): Point2D =
+    fun closestPoint(firstPoint: Point, vararg additionalPoints: Point): Point =
             additionalPoints.fold(firstPoint) { result, next ->
                 if (distance(next) < distance(result)) next
                 else result
             }
 }
 
-data class Line2D(val pointA: Point2D, val pointB: Point2D) {
+data class Line(val pointA: Point, val pointB: Point) {
     val slope = (pointB.y - pointA.y) / (pointB.x - pointA.x)
     val intercept = -slope * pointA.x + pointA.y
 
     operator fun get(x: Double): Double = slope * x + intercept
 
-    operator fun plus(vec: Vector2D) = Line2D(pointA + vec, pointB + vec)
+    operator fun plus(vec: Vector) = Line(pointA + vec, pointB + vec)
 
-    operator fun minus(vec: Vector2D) = Line2D(pointA - vec, pointB - vec)
+    operator fun minus(vec: Vector) = Line(pointA - vec, pointB - vec)
 
-    fun pointInLine(point: Point2D): Boolean = point.y == this[point.x]
+    fun pointInLine(point: Point): Boolean = point.y == this[point.x]
 
-    fun pointInSegment(point: Point2D): Boolean =
+    fun pointInSegment(point: Point): Boolean =
             pointInLine(point) && point.distance(pointA) + point.distance(pointB) == pointA.distance(pointB)
 }
 
-data class Circle(val center: Point2D, val radius: Double) {
+data class Circle(val center: Point, val radius: Double) {
     companion object {
         @JvmStatic
-        val unit = Circle(Point2D.origin, 1.0)
+        val UNIT = Circle(Point.ORIGIN, 1.0)
     }
 
     // adapted from: https://stackoverflow.com/a/13055116
-    fun intersectingPoints(line: Line2D): Array<Point2D> {
+    fun intersectingPoints(line: Line): Array<Point> {
         val (pointA, pointB) = line
 
         val baX = pointB.x - pointA.x
@@ -86,17 +83,17 @@ data class Circle(val center: Point2D, val radius: Double) {
         val abScalingFactor1 = -pBy2 + tmpSqrt
         val abScalingFactor2 = -pBy2 - tmpSqrt
 
-        val p1 = Point2D(pointA.x - baX * abScalingFactor1, pointA.y - baY * abScalingFactor1)
+        val p1 = Point(pointA.x - baX * abScalingFactor1, pointA.y - baY * abScalingFactor1)
         if (disc == 0.0) { // abScalingFactor1 == abScalingFactor2
             return arrayOf(p1)
         }
-        val p2 = Point2D(pointA.x - baX * abScalingFactor2, pointA.y - baY * abScalingFactor2)
+        val p2 = Point(pointA.x - baX * abScalingFactor2, pointA.y - baY * abScalingFactor2)
         return arrayOf(p1, p2)
     }
 
-    operator fun plus(vec: Vector2D) = Circle(center + vec, radius)
+    operator fun plus(vec: Vector) = Circle(center + vec, radius)
 
-    operator fun minus(vec: Vector2D) = Circle(center - vec, radius)
+    operator fun minus(vec: Vector) = Circle(center - vec, radius)
 
     operator fun times(scalar: Double) = Circle(center, radius * scalar)
 
