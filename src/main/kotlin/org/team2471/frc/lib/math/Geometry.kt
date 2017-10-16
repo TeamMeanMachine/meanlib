@@ -1,6 +1,9 @@
 package org.team2471.frc.lib.math
 
 import java.lang.Math.*
+import java.util.Arrays.asList
+
+
 
 
 data class Point2D(val x: Double, val y: Double) {
@@ -58,29 +61,37 @@ data class Circle(val center: Point2D, val radius: Double) {
         val unit = Circle(Point2D.origin, 1.0)
     }
 
-    // see: http://mathworld.wolfram.com/Circle-LineIntersection.html
-    fun intersectingPoints(line: Line2D): List<Point2D> {
-        val (point1, point2) = line
-        val (dx, dy) = point2 - point1
-        val dr = sqrt(square(dx) + square(dy))
+    // adapted from: https://stackoverflow.com/a/13055116
+    fun intersectingPoints(line: Line2D): Array<Point2D> {
+        val (pointA, pointB) = line
 
-        val determinate = point1.x * point2.y + point2.x * point1.y
-        val discriminant = square(radius) * square(dr) - square(determinate)
+        val baX = pointB.x - pointA.x
+        val baY = pointB.y - pointA.y
+        val caX = center.x - pointA.x
+        val caY = center.y - pointA.y
 
-        fun sgn(x: Double): Double = if (x < 0) -1.0 else 1.0
-        return when {
-            discriminant > 0.0 -> // two intersections
-                listOf(
-                        Point2D((determinate * dy + sgn(dy) * dx * sqrt(discriminant)) / square(dr),
-                                (-determinate * dx + abs(dy) * sqrt(discriminant)) / square(dr)),
-                        Point2D((determinate * dy - sgn(dy) * dx * sqrt(discriminant)) / square(dr),
-                                (-determinate * dx - abs(dy) * sqrt(discriminant)) / square(dr)))
-            discriminant == 0.0 -> // tangent line, one intersection
-                listOf(Point2D(
-                        (determinate * dy + sgn(dy)) / square(dr),
-                        (-determinate * dx + abs(dy)) / square(dr)))
-            else -> emptyList() // no intersections
+        val a = baX * baX + baY * baY
+        val bBy2 = baX * caX + baY * caY
+        val c = caX * caX + caY * caY - radius * radius
+
+        val pBy2 = bBy2 / a
+        val q = c / a
+
+        val disc = pBy2 * pBy2 - q
+        if (disc < 0) {
+            return emptyArray()
         }
+        // if disc == 0 ... dealt with later
+        val tmpSqrt = Math.sqrt(disc)
+        val abScalingFactor1 = -pBy2 + tmpSqrt
+        val abScalingFactor2 = -pBy2 - tmpSqrt
+
+        val p1 = Point2D(pointA.x - baX * abScalingFactor1, pointA.y - baY * abScalingFactor1)
+        if (disc == 0.0) { // abScalingFactor1 == abScalingFactor2
+            return arrayOf(p1)
+        }
+        val p2 = Point2D(pointA.x - baX * abScalingFactor2, pointA.y - baY * abScalingFactor2)
+        return arrayOf(p1, p2)
     }
 
     operator fun plus(vec: Vector2D) = Circle(center + vec, radius)
