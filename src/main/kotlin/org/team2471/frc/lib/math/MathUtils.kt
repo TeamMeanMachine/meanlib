@@ -15,3 +15,7 @@ fun fitToRange(value: Int, min: Int, max: Int): Int = when {
 }
 
 fun square(x: Double): Double = pow(x, 2.0)
+
+fun average(vararg x: Double) = x.sum() / x.size
+
+fun lerp(min: Double, max: Double, k: Double) = min + (max - min) * k
