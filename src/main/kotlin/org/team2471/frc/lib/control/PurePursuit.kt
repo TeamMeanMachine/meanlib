@@ -3,7 +3,6 @@ package org.team2471.frc.lib.control
 import org.team2471.frc.lib.math.Circle
 import org.team2471.frc.lib.math.Line
 import org.team2471.frc.lib.math.Point
-import org.team2471.frc.lib.math.Vector
 import java.lang.Math.toDegrees
 
 data class Waypoint(val point: Point,
@@ -31,10 +30,10 @@ class PurePursuitController(private val lookahead: Double,
     private val error: Double
         get() = (heading - toDegrees(position.vectorTo(lookaheadPoint).angle)) % 360
 
-    fun getCurvature(deltaVector: Vector): Double {
+    fun getCurvature(position: Point, heading: Double): Double {
         // update robot pose
-        position += deltaVector
-        heading += toDegrees(deltaVector.angle)
+        this.position = position
+        this.heading = heading
 
         // check if current waypoint reached
         if (position.distance(currentWaypoint.point) <= currentWaypoint.radialTolerance) {
