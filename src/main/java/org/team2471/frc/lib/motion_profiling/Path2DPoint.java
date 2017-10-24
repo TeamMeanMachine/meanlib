@@ -118,7 +118,7 @@ public class Path2DPoint {
     return m_nextAngleAndMagnitude;
   }
 
-  public void setNextAngleAndMagnitude(Vector2 nextAngleAndMagnitude) {
+  public void setNextAngleAndMagnitude(Vector2 nextAngleAndMagnitude) {  // this one takes the angle in world space - stored as an offset
     m_nextAngleAndMagnitude = new Vector2(0, 1);
     calculateTangents();  // determine the default tangents
     double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.y, m_nextTangent.x));
