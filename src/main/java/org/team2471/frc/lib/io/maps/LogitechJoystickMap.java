@@ -8,7 +8,7 @@ public final class LogitechJoystickMap {
     public static final int TOP_LOWER_RIGHT = 4;
     public static final int TOP_UPPER_LEFT = 5;
     public static final int TOP_UPPER_RIGHT = 6;
-    /* THE FOLLOWING NUMBERS ARE PROBABLY WRONG */
+
     public static final int BASE_UPPER_LEFT = 7;
     public static final int BASE_UPPER_RIGHT = 8;
     public static final int BASE_MIDDLE_LEFT = 9;
