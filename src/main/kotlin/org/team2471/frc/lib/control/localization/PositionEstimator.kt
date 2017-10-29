@@ -1,26 +1,27 @@
 package org.team2471.frc.lib.control.localization
 
-import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.Utility
 import org.team2471.frc.lib.math.Point
 import org.team2471.frc.lib.math.average
 import java.lang.Math.*
 
 class PositionEstimator(private var position: Point, private var heading: Double,
-                        time: Double = Timer.getFPGATimestamp()) {
+                        time: Long = Utility.getFPGATime()) {
     private var lastTimestamp = time
 
     /**
-     * Update the estimated [position] based on given values
+     * Updates and returns the estimated [position] based on given values.
      *
-     * @param leftVelocity The current left side drive train velocity
-     * @param rightVelocity The current right side drive train velocity
-     * @param heading The current heading in degrees between 0 and 360
+     * @param leftVelocity The current left side drive train velocity in units/second.
+     * @param rightVelocity The current right side drive train velocity in units/second.
+     * @param heading The current continuous heading in degrees.
+     * @param time The current time in milliseconds. Defaults to [Utility.getFPGATime].
      */
     fun getUpdatedPosition(leftVelocity: Double, rightVelocity: Double, heading: Double,
-                           time: Double = Timer.getFPGATimestamp()): Point {
-        val dt = time - lastTimestamp
+                           time: Long = Utility.getFPGATime()): Point {
+        val dt = (time - lastTimestamp) / 1000.0 // convert to seconds
         val avgVelocity = average(leftVelocity, rightVelocity)
-        val deltaHeading = (Math.toRadians(heading - this.heading))
+        val deltaHeading = Math.toRadians(heading - this.heading) // convert to radians for trig functions below
         position += Point(
                 avgVelocity * sin(deltaHeading),
                 avgVelocity * cos(deltaHeading)) * dt
