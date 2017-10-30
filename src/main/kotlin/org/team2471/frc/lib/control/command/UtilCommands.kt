@@ -19,14 +19,14 @@ class ParallelCommand(vararg private val commands: Command) : Command() {
         while(iterator.hasNext()) {
             val command = iterator.next()
             command.execute()
-            if(command.isFinished()) {
+            if(command.isFinished) {
                 command.end()
                 activeCommands.remove(command)
             }
         }
     }
 
-    override fun isFinished(): Boolean = activeCommands.size == 0
+    override val isFinished: Boolean get() = activeCommands.size == 0
 
     override fun interrupted() = activeCommands.forEach { it.interrupted() }
 }
@@ -48,13 +48,13 @@ class SequentialCommand(vararg private val commands: Command) : Command() {
 
     override fun execute() {
         activeCommand.execute()
-        if(activeCommand.isFinished()) {
+        if(activeCommand.isFinished) {
             activeCommand.end()
             activeIndex++
         }
     }
 
-    override fun isFinished(): Boolean = activeIndex == commands.size
+    override val isFinished: Boolean get() = activeIndex == commands.size
 
     override fun interrupted() = commands.drop(activeIndex).forEach { it.interrupted() }
 }
@@ -77,14 +77,14 @@ class RunUntilCommand(private val backgroundCommand: Command, private val mainCo
         mainCommand.execute()
         if(!backgroundFinished) {
             backgroundCommand.execute()
-            if(backgroundCommand.isFinished()) {
+            if(backgroundCommand.isFinished) {
                 backgroundCommand.end()
                 backgroundFinished = true
             }
         }
     }
 
-    override fun isFinished() = mainCommand.isFinished()
+    override val isFinished get() = mainCommand.isFinished
 
     override fun end() {
         mainCommand.end()
@@ -105,7 +105,7 @@ class DoWhileCommand(private val command: Command, private val condition: () -> 
 
     override fun execute() = command.execute()
 
-    override fun isFinished(): Boolean = condition()
+    override val isFinished: Boolean get() = condition()
 
     override fun end() = command.end()
 
@@ -115,7 +115,7 @@ class DoWhileCommand(private val command: Command, private val condition: () -> 
 class InstantCommand(private val body: () -> Unit, vararg requirements: Subsystem) : Command(*requirements) {
     override fun initialize() = body()
 
-    override fun isFinished(): Boolean = true
+    override val isFinished: Boolean get() = true
 }
 
 // factory functions for convenience

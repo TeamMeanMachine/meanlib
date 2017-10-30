@@ -139,7 +139,7 @@ class CountingCommand : Command() {
         executeCount++
     }
 
-    override fun isFinished(): Boolean {
+    override val isFinished: Boolean get() {
         isFinishedCount++
         return finished
     }

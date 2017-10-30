@@ -21,7 +21,7 @@ abstract class Command(vararg requirements: Subsystem) {
 
     open fun execute() = Unit
 
-    abstract fun isFinished(): Boolean
+    abstract val isFinished: Boolean
 
     open fun end() = Unit
 
@@ -71,7 +71,7 @@ object Scheduler {
         while (iterator.hasNext()) {
             val command = iterator.next()
             command.execute()
-            if (command.isFinished()) {
+            if (command.isFinished) {
                 command.end()
                 removeCommand(command)
             }
