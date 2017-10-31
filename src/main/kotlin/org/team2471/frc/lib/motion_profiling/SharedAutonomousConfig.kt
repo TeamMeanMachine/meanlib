@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling
 
 import edu.wpi.first.wpilibj.networktables.NetworkTable
 import edu.wpi.first.wpilibj.tables.ITable
+import java.util.*
 
 private fun Path2DPoint.remainingPoints(): List<Path2DPoint> {
     val result = ArrayList<Path2DPoint>()
@@ -55,15 +56,21 @@ class SharedAutonomousConfig(val name: String) {
     companion object {
         private val configTable = pathVisualizerTable.getSubTable("Configs")
 
-        val configNames: Set<String>
+        val configNames: Array<String>
             get() = configTable.subTables
                     .filterNotNull()
-                    .toSet()
+                    .toTypedArray()
     }
 
     private val paths: MutableMap<String, Path2D> = HashMap()
     private val table = configTable.getSubTable(name)
     private val pathsTable = table.getSubTable("Paths")
+
+
+    val pathNames: Array<String>
+        get() = pathsTable.subTables
+                .filterNotNull()
+                .toTypedArray()
 
     fun putPath(pathName: String, path: Path2D) = paths.put(pathName, path)
 
