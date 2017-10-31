@@ -10,7 +10,7 @@ object CommandSpec : Spek({
     given("a command") {
         val command = CountingCommand()
 
-        on("run") {
+        on("schedule") {
             command.reset()
             Scheduler.clear()
 
@@ -31,21 +31,21 @@ object CommandSpec : Spek({
 
 
             Scheduler.tick()
-            it("should not have run initialize()") {
+            it("should not have schedule initialize()") {
                 assertThat(command.initCount).isEqualTo(0)
             }
-            it("should have run execute()") {
+            it("should have schedule execute()") {
                 assertThat(command.executeCount).isEqualTo(1)
             }
 
-            it("should have run isFinished()") {
+            it("should have schedule isFinished()") {
                 assertThat(command.isFinishedCount).isEqualTo(1)
             }
 
-            it("should not have run end()") {
+            it("should not have schedule end()") {
                 assertThat(command.endCount).isEqualTo(0)
             }
-            it("should not have run interrupted()") {
+            it("should not have schedule interrupted()") {
                 assertThat(command.interruptedCount).isEqualTo(0)
             }
 
@@ -61,21 +61,21 @@ object CommandSpec : Spek({
             command.finished = true
             Scheduler.tick()
 
-            it("should not have run initialize()") {
+            it("should not have schedule initialize()") {
                 assertThat(command.initCount).isEqualTo(0)
             }
-            it("should have run execute()") {
+            it("should have schedule execute()") {
                 assertThat(command.executeCount).isEqualTo(1)
             }
 
-            it("should have run isFinished()") {
+            it("should have schedule isFinished()") {
                 assertThat(command.isFinishedCount).isEqualTo(1)
             }
 
-            it("should have run end()") {
+            it("should have schedule end()") {
                 assertThat(command.endCount).isEqualTo(1)
             }
-            it("should not have run interrupted()") {
+            it("should not have schedule interrupted()") {
                 assertThat(command.interruptedCount).isEqualTo(0)
             }
             it("should have been removed from scheduler") {
@@ -83,28 +83,28 @@ object CommandSpec : Spek({
             }
         }
 
-        on("interrupt") {
+        on("cancel") {
             Scheduler.clear()
             command()
             command.reset()
 
-            command.interrupt()
+            command.cancel()
 
-            it("should not have run initialize()") {
+            it("should not have schedule initialize()") {
                 assertThat(command.initCount).isEqualTo(0)
             }
-            it("should not have run execute()") {
+            it("should not have schedule execute()") {
                 assertThat(command.executeCount).isEqualTo(0)
             }
 
-            it("should not have run isFinished()") {
+            it("should not have schedule isFinished()") {
                 assertThat(command.isFinishedCount).isEqualTo(0)
             }
 
-            it("should not have run end()") {
+            it("should not have schedule end()") {
                 assertThat(command.endCount).isEqualTo(0)
             }
-            it("should have run interrupted()") {
+            it("should have schedule interrupted()") {
                 assertThat(command.interruptedCount).isEqualTo(1)
             }
             it("should have been removed from scheduler") {
@@ -139,7 +139,7 @@ class CountingCommand : Command() {
         executeCount++
     }
 
-    override fun isFinished(): Boolean {
+    override val isFinished: Boolean get() {
         isFinishedCount++
         return finished
     }
