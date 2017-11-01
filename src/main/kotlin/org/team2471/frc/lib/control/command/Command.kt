@@ -21,15 +21,17 @@ abstract class Command(vararg requirements: Subsystem) {
 
     open fun interrupted() = end()
 
-    fun schedule(parent: Command? = null) = Scheduler.runCommand(this, parent)
+    fun schedule() = Scheduler.runCommand(this)
 
     fun cancel() = Scheduler.interruptCommand(this)
 
-    operator fun invoke(parent: Command? = null) = schedule(parent)
+    operator fun invoke() = schedule()
 }
 
 abstract class DefaultCommand(subsystem: Subsystem) : Command(subsystem) {
     fun register() = Scheduler.registerDefaultCommand(this)
+
+    override val interruptable = true
 
     override val isFinished: Boolean = false
 }
@@ -38,16 +40,14 @@ object Scheduler {
     private val commands: LinkedList<Command> = LinkedList()
     private val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
     private val requirements: MutableMap<Subsystem, Command> = HashMap()
-    private val parents: MutableMap<Command, Command> = HashMap()
 
-    fun runCommand(command: Command, parentCommand: Command?) {
+    fun runCommand(command: Command) {
         // don't schedule command if any of it's requirements cannot be interrupted
         if(command.requirements.any { requirements[it]?.interruptable == false }) return
 
         interruptCommand(command)
 
         commands.addFirst(command)
-        if(parentCommand != null) parents[command] = parentCommand
         for (subsystem in command.requirements) {
             requirements[subsystem]?.cancel()
             requirements[subsystem] = command
@@ -60,13 +60,18 @@ object Scheduler {
 
         command.interrupted()
         removeCommand(command)
-        parents[command]?.cancel()
     }
 
     operator fun contains(command: Command) = command in commands
 
-    fun clear() {
+    fun interruptAllCommands() {
         commands.forEach { interruptCommand(it) }
+    }
+
+    fun clearAllState() {
+        commands.clear()
+        defaultCommands.clear()
+        requirements.clear()
     }
 
     internal fun registerDefaultCommand(defaultCommand: DefaultCommand) {
@@ -95,7 +100,7 @@ object Scheduler {
         if (commands.remove(command)) {
             for(subsystem in command.requirements) {
                 requirements.remove(subsystem)
-                defaultCommands[command]?.schedule()
+                defaultCommands[subsystem]?.schedule()
             }
         }
     }
