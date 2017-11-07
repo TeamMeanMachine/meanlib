@@ -30,19 +30,19 @@ abstract class Subsystem {
         else if (action == null) return
 
         action!!.run()
-        if (action!!.isFinished) reset()
+        if (action!!.isFinished) clearAction()
     }
 
     @Synchronized
     fun changeAction(action: Action) {
-        this.action?.stop()
+        clearAction()
         action.start()
         action.isRunning = true
         this.action = action
     }
 
     @Synchronized
-    fun reset() {
+    fun clearAction() {
         action?.stop()
         action?.isRunning = false
         action = null
@@ -74,7 +74,7 @@ class Command(vararg requirements: Subsystem, private val body: suspend Command.
             actions.forEach { it() }
 
             while (!terminateCondition()) delay(20)
-            actions.forEach { it.subsystem.reset() }
+            actions.forEach { it.subsystem.clearAction() }
         }
 
         suspend fun executeWithTimeout(vararg actions: Action, timeout: Double) {
@@ -85,7 +85,7 @@ class Command(vararg requirements: Subsystem, private val body: suspend Command.
 
     operator fun invoke() = launch {
         synchronized(this) {
-            subsystems.forEach { it.isAcquired = true; it.reset() }
+            subsystems.forEach { it.isAcquired = true; it.clearAction() }
             body(Body())
             subsystems.forEach { it.isAcquired = false }
             subsystems.clear()
