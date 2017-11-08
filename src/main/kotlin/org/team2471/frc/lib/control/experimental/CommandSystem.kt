@@ -71,9 +71,14 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
     }
 
     /**
-     * Cancel current job, if present.
+     * Cancel current job if present.
      */
     fun cancel() = coroutine?.cancel()
+
+    /**
+     * Cancel current job if present, and suspend until cancellation completes.
+     */
+    suspend fun cancelAndJoin() = coroutine?.cancelAndJoin()
 
     /**
      * Receiver class for command instances.
