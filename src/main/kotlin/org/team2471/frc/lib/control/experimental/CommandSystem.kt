@@ -1,94 +1,108 @@
 package org.team2471.frc.lib.control.experimental
 
-import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.Utility
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
 import java.util.concurrent.TimeUnit
 
-abstract class Subsystem {
-    private var action: Action? = null
-    @Volatile internal var isAcquired = false
-    protected open val defaultAction: Action? = null
+// anything can be a subsystem!
+typealias Subsystem = Any
 
-    init {
+/**
+ * Registers the given [command] as the subsystem's default command.
+ *
+ * When a command that requires a subsystem terminates, the subsystem's default command will be started if present.
+ *
+ * If a command is not running that requires the calling subsystem, the provided command will be started.
+ */
+fun Subsystem.registerDefaultCommand(command: Command) {
+    if(this !in command.requirements)
+        throw IllegalArgumentException("A subsystem cannot register a default command that doesn't require it!")
+    else if(command.requirements.size != 1)
+        throw IllegalArgumentException("A default command must require exactly one subsystem!")
+
+    Command.defaultCommands.put(this, command)
+    if(Command.activeRequirements[command] == null) command.invoke()
+}
+
+class Command(vararg internal val requirements: Subsystem, private val isInterruptible: Boolean = true,
+              private val body: suspend Command.Scope.() -> Unit) {
+    internal companion object {
+        val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
+        val activeRequirements: MutableMap<Subsystem, Command> = HashMap()
+    }
+
+    /**
+     * Returns `true` if the command has a running coroutine.
+     */
+    val isRunning get() = coroutine?.isCompleted == true
+
+    private var coroutine: Job? = null
+
+    /**
+     * Attempts to start the command inside a coroutine.
+     *
+     * If the command is running or one if it's required subsystems cannot be acquired, the command will not be started.
+     *
+     * A subsystem cannot be acquired if it's current command is not interrupible.
+     *
+     * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
+     */
+    operator fun invoke() {
+        if(isRunning) return
+
+        val conflictingCommands = requirements.mapNotNull { activeRequirements[it] }
+        if(conflictingCommands.any { !it.isInterruptible }) return
+
         launch {
-            var startTime = Utility.getFPGATime()
-            while(true) {
-                run()
-                val time = Utility.getFPGATime()
-                delay((action?.period ?: 20) * 1000 - (time - startTime), TimeUnit.NANOSECONDS)
-                action?.useDt((time - startTime).toInt())
-                startTime = time
+            try {
+                // cancel conflicting commands
+                conflictingCommands.forEach { it.cancel() }
+                // suspend until conflicting commands have finished cancelling
+                conflictingCommands.mapNotNull{ it.coroutine }.forEach { it.join() }
+
+                requirements.forEach { activeRequirements[it] = this@Command }
+                body(Scope(this))
+            } finally {
+                requirements.forEach { activeRequirements.remove(it) }
+                // restart default commands
+                requirements.forEach { defaultCommands[it]?.invoke() }
             }
         }
     }
 
-    @Synchronized
-    private fun run() {
-        if (action == null && defaultAction != null && !isAcquired) changeAction(defaultAction!!)
-        else if (action == null) return
+    /**
+     * Cancel current job, if present.
+     */
+    fun cancel() = coroutine?.cancel()
 
-        action!!.run()
-        if (action!!.isFinished) clearAction()
-    }
+    /**
+     * Receiver class for command instances.
+     */
+    class Scope internal constructor(scope: CoroutineScope) : CoroutineScope by scope {
+        val startTime = Utility.getFPGATime()
+        val elapsedTime get() = Utility.getFPGATime() - startTime
 
-    @Synchronized
-    fun changeAction(action: Action) {
-        clearAction()
-        action.start()
-        action.isRunning = true
-        this.action = action
-    }
-
-    @Synchronized
-    fun clearAction() {
-        action?.stop()
-        action?.isRunning = false
-        action = null
-    }
-}
-
-abstract class Action(internal val subsystem: Subsystem, internal val period: Int = 20) {
-    @Volatile internal var isRunning = false
-
-    open internal fun start() = Unit
-
-    open internal fun run() = Unit
-
-    abstract internal val isFinished: Boolean
-
-    open internal fun stop() = Unit
-
-    operator fun invoke() = subsystem.changeAction(this)
-
-    open fun useDt(dt: Int) = Unit
-}
-
-class Command(vararg requirements: Subsystem, private val body: suspend Command.Body.() -> Unit) {
-    private val subsystems = hashSetOf(*requirements)
-
-    class Body internal constructor() {
-        suspend fun execute(vararg actions: Action,
-                            terminateCondition: () -> Boolean = { actions.all { !it.isRunning } }) {
-            actions.forEach { it() }
-
-            while (!terminateCondition()) delay(20)
-            actions.forEach { it.subsystem.clearAction() }
+        /**
+         * Runs the provided [body] of code periodically per [period] ms.
+         *
+         * The [period] parameter defaults to 20ms.
+         *
+         * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
+         * of the command coroutine.
+         */
+        suspend fun periodic(period: Int = 20, condition: () -> Boolean = { true }, body: () -> Unit) {
+            while(condition()) {
+                body()
+                delay(elapsedTime % (period * 1000), TimeUnit.NANOSECONDS)
+            }
         }
 
-        suspend fun executeWithTimeout(vararg actions: Action, timeout: Double) {
-            val startTime = Timer.getFPGATimestamp()
-            execute(*actions) { Timer.getFPGATimestamp() - startTime > timeout }
-        }
-    }
-
-    operator fun invoke() = launch {
-        synchronized(this) {
-            subsystems.forEach { it.isAcquired = true; it.clearAction() }
-            body(Body())
-            subsystems.forEach { it.isAcquired = false }
-            subsystems.clear()
+        /**
+         * Runs all provided [bodies] as their own coroutines in parallel,
+         * and suspends until all coroutines are finished.
+         */
+        suspend fun parallel(vararg bodies: suspend Command.Scope.() -> Unit) {
+            bodies.map { launch(coroutineContext) { it(Scope(this)) } }.forEach { it.join() }
         }
     }
 }
