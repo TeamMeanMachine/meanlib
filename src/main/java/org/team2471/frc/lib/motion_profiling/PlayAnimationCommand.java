@@ -89,7 +89,7 @@ public class PlayAnimationCommand extends Command {
     m_speed = speed;
   }
 
-  public double getTime() {  // how much time has passed since the start
+  public double getTime() {  // how much time has passed since the schedule
     return m_playTime;
   }
 

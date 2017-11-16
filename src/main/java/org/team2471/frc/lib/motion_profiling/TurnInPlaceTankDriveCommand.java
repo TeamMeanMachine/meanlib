@@ -87,7 +87,7 @@ public class TurnInPlaceTankDriveCommand extends Command {
     end();
   }
 
-  public double getTime() {  // how much time has passed since the start
+  public double getTime() {  // how much time has passed since the schedule
     return m_playTime;
   }
 

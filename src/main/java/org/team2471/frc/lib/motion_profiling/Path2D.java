@@ -23,6 +23,13 @@ public class Path2D {
     travelDirection = 1.0;
   }
 
+  public Path2D(String name) {
+    this.name = name;
+    m_xyCurve = new Path2DCurve();
+    m_easeCurve = new MotionCurve();
+    travelDirection = 1.0;
+  }
+
   public void reset() {
     m_prevCenterPositionForLeft = null;
     m_prevCenterPositionForRight = null;
@@ -202,5 +209,13 @@ public class Path2D {
 
   public Path2DCurve getXYCurve() {
     return m_xyCurve;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

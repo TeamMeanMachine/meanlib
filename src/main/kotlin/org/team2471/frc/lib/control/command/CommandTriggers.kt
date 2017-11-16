@@ -10,7 +10,7 @@ fun runCommandWhen(command: Command, condition: () -> Boolean) {
     triggerFunctions.add {
         val state = condition()
         if (state && !previousState)
-            Scheduler.runCommand(command)
+            command.schedule()
         previousState = state
     }
 }
@@ -23,9 +23,9 @@ fun toggleCommandWhen(command: Command, condition: () -> Boolean) {
 
         if (state && !previousState) {
             if (command in Scheduler) {
-                Scheduler.interruptCommand(command)
+                command.cancel()
             } else {
-                Scheduler.runCommand(command)
+                command.schedule()
             }
         }
 
@@ -40,9 +40,9 @@ fun runCommandWhile(command: Command, condition: () -> Boolean) {
         val state = condition()
 
         if (state && !previousState) {
-            Scheduler.runCommand(command)
+            command.schedule()
         } else if (!state && previousState) {
-            Scheduler.interruptCommand(command)
+            command.cancel()
         }
 
         previousState = state
