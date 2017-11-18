@@ -1,10 +1,12 @@
 package org.team2471.frc.lib.control.experimental
 
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.system.measureTimeMillis
 
 // anything can be a subsystem!
 typealias Subsystem = Any
@@ -126,7 +128,11 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
         suspend fun periodic(period: Int = 20, unit: TimeUnit = TimeUnit.MILLISECONDS,
                              condition: () -> Boolean = { true }, body: () -> Unit) {
             while (condition()) {
-                body()
+                val time = measureTimeMillis {
+                    body()
+                }
+                if (time > period) DriverStation.reportWarning("Periodic loop went over expected time. " +
+                        "Got: ${time}ms, expected: <${period}ms", true)
                 delay(elapsedTime % (period * 1000), TimeUnit.NANOSECONDS)
             }
         }
