@@ -2,6 +2,7 @@ package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.*
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -15,27 +16,31 @@ typealias Subsystem = Any
  *
  * If a command is not running that requires the calling subsystem, the provided command will be started.
  */
-fun Subsystem.registerDefaultCommand(command: Command) {
+fun Subsystem.registerDefaultCommand(context: CoroutineContext, command: Command) {
     if (this !in command.requirements)
-        throw IllegalArgumentException("A subsystem cannot register a default command that doesn't require it!")
+        throw IllegalArgumentException("A subsystem cannot register a default command that doesn't require it.")
     else if (command.requirements.size != 1)
-        throw IllegalArgumentException("A default command must require exactly one subsystem!")
+        throw IllegalArgumentException("A default command must require exactly one subsystem.")
 
-    Command.defaultCommands.put(this, command)
-    if (Command.activeRequirements[command] == null) launch { command(CommonPool) }
+    Command.defaultCommands.put(this, command to context)
+    if (command !in Command.activeRequirements) command(context)
 }
 
 class Command(vararg internal val requirements: Subsystem, private val isInterruptible: Boolean = true,
               private val body: suspend Command.Scope.() -> Unit) {
-    internal companion object {
-        val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
-        val activeRequirements: MutableMap<Subsystem, Command> = HashMap()
+    companion object {
+        internal val defaultCommands: MutableMap<Subsystem, Pair<Command, CoroutineContext>> = HashMap()
+        internal val activeRequirements: MutableMap<Subsystem, Command> = HashMap()
+
+        private object InvokeMutex
     }
 
     /**
      * Returns `true` if the command has a running coroutine.
      */
     val isRunning get() = coroutine?.isCompleted == true
+
+    val isCanceled get() = coroutine?.isCancelled == true
 
     private var coroutine: Job? = null
 
@@ -48,48 +53,60 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
      *
      * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
      */
-    operator fun invoke(context: CoroutineContext) {
-        if (isRunning) return
+    // TODO: Use an actor to eliminate shared mutable state
+    operator fun invoke(context: CoroutineContext): Boolean {
+        // Only one command may be invoked at a time.
+        // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
+        synchronized(InvokeMutex) {
+            if (isRunning) return false
 
-        val conflictingCommands = requirements.mapNotNull { activeRequirements[it] }
-
-        if (conflictingCommands.any { !it.isInterruptible }) return
-
-        coroutine = launch(context) {
-            try {
-                requirements.forEach { activeRequirements[it] = this@Command }
-
-                // cancel conflicting commands
-                conflictingCommands.forEach { it.cancel() }
-                // wait for conflicting commands to complete cancellation
-                conflictingCommands.forEach { it.join() }
-                // suspend until conflicting commands have finished cancelling
-                conflictingCommands.mapNotNull { it.coroutine }.forEach { it.join() }
-
-
-                body(Scope(this))
-            } finally {
-                requirements.forEach { activeRequirements.remove(it) }
-                // restart default commands
-                requirements.forEach { defaultCommands[it]?.invoke(CommonPool) }
+            // Only use requirements if the given coroutine context does not have an active job.
+            // This is expected to be the case if the context is an executor such as a ThreadPoolDispatcher or the CommonPool,
+            // but not if the context comes from an already running command.
+            val conflictingCommands = if (context[Job] == null) {
+                requirements.mapNotNull { activeRequirements[it] }
+            } else {
+                emptyList()
             }
+
+            if (conflictingCommands.any { !it.isInterruptible }) return false
+
+            // sanity check to make sure another command hasn't
+            if (conflictingCommands.any { !it.isCanceled }) {
+
+            }
+            // cancel conflicting commands
+            conflictingCommands.forEach { it.cancel() }
+
+            // take over requirements
+            requirements.forEach { activeRequirements[it] = this }
+
+            coroutine = launch(context) {
+                try {
+                    // suspend until conflicting commands have finished cancelling
+                    conflictingCommands.forEach { it.coroutine?.join() }
+
+                    // execute body
+                    body(Scope(this@launch))
+                } finally {
+                    // clean up
+                    requirements.filter { activeRequirements[it] == this@Command }.forEach {
+                        activeRequirements.remove(it)
+                        // restart default command if it exists
+
+                        val (defaultCommand, defaultCommandContext) = defaultCommands[it] ?: return@forEach
+                        defaultCommand(defaultCommandContext)
+                    }
+                }
+            }
+            return true
         }
     }
 
     /**
      * Cancel current job if present.
      */
-    fun cancel() = coroutine?.cancel()
-
-    /**
-     * Suspend until coroutine completes, if present.
-     */
-    suspend fun join() = coroutine?.join()
-
-    /**
-     * Cancel current job if present, and suspend until cancellation completes.
-     */
-    suspend fun cancelAndJoin() = coroutine?.cancelAndJoin()
+    fun cancel() = coroutine?.cancel() ?: false
 
     /**
      * Receiver class for command instances.
@@ -106,36 +123,12 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
          * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
          * of the command coroutine.
          */
-        suspend fun periodic(period: Int = 20, condition: () -> Boolean = { true }, body: () -> Unit) {
+        suspend fun periodic(period: Int = 20, unit: TimeUnit = TimeUnit.MILLISECONDS,
+                             condition: () -> Boolean = { true }, body: () -> Unit) {
             while (condition()) {
                 body()
                 delay(elapsedTime % (period * 1000), TimeUnit.NANOSECONDS)
             }
-
-        }
-
-
-        /**
-         * Runs all provided [bodies] as their own coroutines in parallel,
-         * and suspends until all coroutines are finished.
-         */
-        suspend fun parallel(vararg bodies: suspend () -> Unit) {
-            bodies.map { launch(coroutineContext) { it() } }.forEach { it.join() }
-        }
-
-        suspend fun fork(command: Command) {
-
         }
     }
-}
-
-val test = Command {
-    parallel({
-        if(System.getenv()["COMPETITION"] == "1") {
-
-        }
-
-    }, {
-
-    })
 }
