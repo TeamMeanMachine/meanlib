@@ -56,7 +56,7 @@ public class Path2DCurve {
     newPoint.onPositionChanged();
   }
 
-  void addPointToEnd(double x, double y)  // adds a path point to the end
+  public void addPointToEnd(double x, double y)  // adds a path point to the end
   {
     Path2DPoint path2DPoint = new Path2DPoint(x, y);
     insertPointAfter(m_tailPoint, path2DPoint);
