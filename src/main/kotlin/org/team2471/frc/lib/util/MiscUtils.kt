@@ -10,3 +10,11 @@ fun measureTimeFPGA(body: () -> Unit): Double {
     body()
     return Timer.getFPGATimestamp() - start
 }
+
+fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
+    0.0
+} else {
+    this * (1+tolerance) - tolerance // scale
+}
+
+fun Double.squaredWithSign() = Math.copySign(this * this, this)

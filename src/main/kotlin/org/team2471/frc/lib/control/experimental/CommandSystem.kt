@@ -3,6 +3,7 @@ package org.team2471.frc.lib.control.experimental
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.*
+import org.team2471.frc.lib.util.measureTimeFPGA
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.CoroutineContext
@@ -125,14 +126,14 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
          * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
          * of the command coroutine.
          */
-        suspend fun periodic(period: Int = 20, unit: TimeUnit = TimeUnit.MILLISECONDS,
+        suspend fun periodic(period: Int = 20,
                              condition: () -> Boolean = { true }, body: () -> Unit) {
             while (condition()) {
-                val time = measureTimeMillis {
+                val time = measureTimeFPGA {
                     body()
                 }
-                if (time > period) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                        "Got: ${time}ms, expected: <${period}ms", true)
+                if (time > period*1000) DriverStation.reportWarning("Periodic loop went over expected time. " +
+                        "Got: ${time/1000}ms, expected: <${period}ms", true)
                 delay(elapsedTime % (period * 1000), TimeUnit.NANOSECONDS)
             }
         }
