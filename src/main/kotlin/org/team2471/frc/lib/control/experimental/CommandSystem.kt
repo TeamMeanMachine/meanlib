@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.*
 import org.team2471.frc.lib.util.measureTimeFPGA
@@ -117,6 +118,10 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
     class Scope internal constructor(scope: CoroutineScope) : CoroutineScope by scope {
         val startTime = Utility.getFPGATime()
         val elapsedTime get() = Utility.getFPGATime() - startTime
+
+        val startTimeSeconds = Timer.getFPGATimestamp()
+        val elapsedTimeSeconds get() = Timer.getFPGATimestamp() - startTime
+
 
         /**
          * Runs the provided [body] of code periodically per [period] ms.
