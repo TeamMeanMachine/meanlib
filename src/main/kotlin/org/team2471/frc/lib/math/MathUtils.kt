@@ -2,19 +2,21 @@ package org.team2471.frc.lib.math
 
 import java.lang.Math.pow
 
-fun fitToRange(value: Double, min: Double, max: Double): Double = when {
-    value < min -> min
-    value > max -> max
-    else -> value
+fun Double.fitToRange(min: Double, max: Double): Double = when {
+    this < min -> min
+    this > max -> max
+    else -> this
 }
 
-fun fitToRange(value: Int, min: Int, max: Int): Int = when {
-    value < min -> min
-    value > max -> max
-    else -> value
+fun Int.fitToRange(min: Int, max: Int): Int = when {
+    this < min -> min
+    this > max -> max
+    else -> this
 }
 
 fun square(x: Double): Double = pow(x, 2.0)
+
+fun Double.squareWithSign() = Math.copySign(this * this, this)
 
 fun average(vararg x: Double) = x.sum() / x.size
 

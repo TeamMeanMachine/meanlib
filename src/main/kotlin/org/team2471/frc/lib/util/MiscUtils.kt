@@ -17,4 +17,3 @@ fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
     this * (1+tolerance) - tolerance // scale
 }
 
-fun Double.squaredWithSign() = Math.copySign(this * this, this)
