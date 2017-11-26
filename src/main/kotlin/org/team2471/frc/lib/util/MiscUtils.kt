@@ -14,6 +14,6 @@ fun measureTimeFPGA(body: () -> Unit): Double {
 fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
     0.0
 } else {
-    this * (1+tolerance) - tolerance // scale
+    this
 }
 
