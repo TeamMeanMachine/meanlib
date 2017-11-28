@@ -8,7 +8,6 @@ import org.team2471.frc.lib.util.measureTimeFPGA
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.system.measureTimeMillis
 
 // anything can be a subsystem!
 typealias Subsystem = Any
@@ -57,17 +56,16 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
      *
      * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
      */
-    // TODO: Use an actor to eliminate shared mutable state
     operator fun invoke(context: CoroutineContext): Boolean {
         // Only one command may be invoked at a time.
         // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
         synchronized(InvokeMutex) {
             if (isRunning) return false
 
-            // Only use requirements if the given coroutine context does not have an active job.
-            // This is expected to be the case if the context is an executor such as a ThreadPoolDispatcher or the CommonPool,
-            // but not if the context comes from an already running command.
-            val conflictingCommands = if (context[Job] == null) {
+            // Only use requirements if the provided coroutine context is a dispatcher such as a CommonPool.
+            // This also means that commands must include all requirements in it's constructor, even if the
+            // subsystem is required by a child command. TODO: define child command
+            val conflictingCommands = if (context is CoroutineDispatcher) {
                 requirements.mapNotNull { activeRequirements[it] }
             } else {
                 emptyList()
@@ -75,10 +73,8 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
 
             if (conflictingCommands.any { !it.isInterruptible }) return false
 
-            // sanity check to make sure another command hasn't
-            if (conflictingCommands.any { !it.isCanceled }) {
 
-            }
+            println("Running command with ${conflictingCommands.size} conflicting commands and job ${context[Job]}")
             // cancel conflicting commands
             conflictingCommands.forEach { it.cancel() }
 
@@ -107,6 +103,13 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
         }
     }
 
+    suspend fun invokeAndJoin(context: CoroutineContext) {
+        invoke(context)
+        coroutine?.join()
+    }
+
+    suspend fun join() = coroutine?.join()
+
     /**
      * Cancel current job if present.
      */
@@ -115,13 +118,12 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
     /**
      * Receiver class for command instances.
      */
-    class Scope internal constructor(scope: CoroutineScope) : CoroutineScope by scope {
-        val startTime = Utility.getFPGATime()
-        val elapsedTime get() = Utility.getFPGATime() - startTime
+    class Scope internal constructor(private val scope: CoroutineScope) : CoroutineScope by scope {
+        val startTimeNanos = Utility.getFPGATime()
+        val elapsedTimeNanos get() = Utility.getFPGATime() - startTimeNanos
 
         val startTimeSeconds = Timer.getFPGATimestamp()
-        val elapsedTimeSeconds get() = Timer.getFPGATimestamp() - startTime
-
+        val elapsedTimeSeconds get() = Timer.getFPGATimestamp() - startTimeSeconds
 
         /**
          * Runs the provided [body] of code periodically per [period] ms.
@@ -137,10 +139,15 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
                 val time = measureTimeFPGA {
                     body()
                 }
-                if (time > period*1000) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                        "Got: ${time/1000}ms, expected: <${period}ms", true)
-                delay(elapsedTime % (period * 1000), TimeUnit.NANOSECONDS)
+                if (time > period * 1000) DriverStation.reportWarning("Periodic loop went over expected time. " +
+                        "Got: ${time / 1000}ms, expected: <${period}ms", true)
+                delay(elapsedTimeNanos % (period * 1000), TimeUnit.NANOSECONDS)
             }
         }
+
+        suspend fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean) {
+            while(!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
+        }
+
     }
 }
