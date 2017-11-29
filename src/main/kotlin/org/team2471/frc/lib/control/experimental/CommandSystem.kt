@@ -7,6 +7,7 @@ import kotlinx.coroutines.experimental.*
 import org.team2471.frc.lib.util.measureTimeFPGA
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.experimental.CoroutineContext
 
 // anything can be a subsystem!
@@ -29,12 +30,11 @@ fun Subsystem.registerDefaultCommand(command: Command) {
     if (command !in Command.activeRequirements) command()
 }
 
-class Command(vararg requirements: Subsystem, private val isInterruptible: Boolean = true,
+class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
               private val body: suspend Command.Scope.() -> Unit) {
     companion object {
         internal val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
         internal val activeRequirements: MutableMap<Subsystem, Command> = HashMap()
-        private object InvokeMutex
 
         private var contextInstance: CoroutineContext? = null
         val Context: CoroutineContext by lazy {
@@ -49,6 +49,9 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
         }
     }
 
+    val isCancelable: Boolean = isCancelable
+        get() = field && uncancelableChildren.get() == 0
+
     /**
      * Returns `true` if the command has a running coroutine.
      */
@@ -59,6 +62,7 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
     internal val requirements: Set<Subsystem> = hashSetOf(*requirements)
 
     private var coroutine: Job? = null
+    private var uncancelableChildren = AtomicInteger(0)
 
     /**
      * Attempts to start the command inside a coroutine.
@@ -78,14 +82,20 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
     suspend fun join() = coroutine?.join()
 
     /**
-     * Cancel current job if present.
+     * Cancel current command if it is running.
+     *
+     * Returns true if the command was canceled as a result of this call.
      */
-    fun cancel() = coroutine?.cancel() ?: false
+    fun cancel(cause: Throwable? = null): Boolean = if (isCancelable) {
+        coroutine?.cancel(cause) ?: false
+    } else {
+        false
+    }
 
     private operator fun invoke(parentCommand: Command?): Boolean {
         // Only one command may be invoked at a time.
         // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
-        synchronized(InvokeMutex) {
+        synchronized(Command) {
             if (isRunning) return false
 
             val conflictingCommands = if (parentCommand == null) {
@@ -94,8 +104,12 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
                 requirements - parentCommand.requirements
             }.mapNotNull { activeRequirements[it] }
 
-            conflictingCommands.forEach { it.cancel() }
+            if (conflictingCommands.any { !isCancelable }) return false
 
+            if (!isCancelable) parentCommand?.uncancelableChildren?.incrementAndGet()
+
+
+            conflictingCommands.forEach { it.cancel() }
             // take over requirements
             requirements.forEach { activeRequirements[it] = this }
 
@@ -107,14 +121,17 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
                     // execute body
                     body(Scope(this@Command, this@launch))
                 } finally {
+                    println("Cleaning up $this@Command")
                     // clean up
-                    requirements.filter { activeRequirements[it] == this@Command }.forEach {
-                        activeRequirements.remove(it)
-                        // restart default command if it exists
-
-                        val defaultCommand = defaultCommands[it] ?: return@forEach
-                        defaultCommand()
+                    synchronized(Command) {
+                        requirements.forEach { activeRequirements.remove(it) }
+                        parentCommand?.uncancelableChildren?.decrementAndGet()
                     }
+
+                    // invoke default command if it exists
+                    requirements.filter { activeRequirements[it] == this@Command }
+                            .forEach { defaultCommands[it]?.invoke() }
+                    coroutine = null
                 }
             }
             return true
@@ -153,11 +170,11 @@ class Command(vararg requirements: Subsystem, private val isInterruptible: Boole
         }
 
         suspend fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean) {
-            while(!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
+            while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
         }
 
         suspend fun fork(childCommand: Command) {
-            if(childCommand.invoke(command)) childCommand.join()
+            if (childCommand.invoke(command)) childCommand.join()
         }
     }
 }
