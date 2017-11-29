@@ -19,23 +19,34 @@ typealias Subsystem = Any
  *
  * If a command is not running that requires the calling subsystem, the provided command will be started.
  */
-fun Subsystem.registerDefaultCommand(context: CoroutineContext, command: Command) {
+fun Subsystem.registerDefaultCommand(command: Command) {
     if (this !in command.requirements)
         throw IllegalArgumentException("A subsystem cannot register a default command that doesn't require it.")
     else if (command.requirements.size != 1)
         throw IllegalArgumentException("A default command must require exactly one subsystem.")
 
-    Command.defaultCommands.put(this, command to context)
-    if (command !in Command.activeRequirements) command(context)
+    Command.defaultCommands.put(this, command)
+    if (command !in Command.activeRequirements) command()
 }
 
-class Command(vararg internal val requirements: Subsystem, private val isInterruptible: Boolean = true,
+class Command(vararg requirements: Subsystem, private val isInterruptible: Boolean = true,
               private val body: suspend Command.Scope.() -> Unit) {
     companion object {
-        internal val defaultCommands: MutableMap<Subsystem, Pair<Command, CoroutineContext>> = HashMap()
+        internal val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
         internal val activeRequirements: MutableMap<Subsystem, Command> = HashMap()
-
         private object InvokeMutex
+
+        private var contextInstance: CoroutineContext? = null
+        val Context: CoroutineContext by lazy {
+            contextInstance ?: throw IllegalStateException("The command context was accessed before it was initialized. " +
+                    "Command.initCoroutineContext is either being called too late or not being called at all.")
+        }
+
+        fun initCoroutineContext(commandContext: CoroutineContext) {
+            if (contextInstance != null)
+                throw IllegalStateException("The command context can only be initialized once.")
+            contextInstance = commandContext
+        }
     }
 
     /**
@@ -44,6 +55,8 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
     val isRunning get() = coroutine?.isCompleted == true
 
     val isCanceled get() = coroutine?.isCancelled == true
+
+    internal val requirements: Set<Subsystem> = hashSetOf(*requirements)
 
     private var coroutine: Job? = null
 
@@ -56,56 +69,10 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
      *
      * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
      */
-    operator fun invoke(context: CoroutineContext): Boolean {
-        // Only one command may be invoked at a time.
-        // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
-        synchronized(InvokeMutex) {
-            if (isRunning) return false
+    operator fun invoke() = invoke(null)
 
-            // Only use requirements if the provided coroutine context is a dispatcher such as a CommonPool.
-            // This also means that commands must include all requirements in it's constructor, even if the
-            // subsystem is required by a child command. TODO: define child command
-            val conflictingCommands = if (context is CoroutineDispatcher) {
-                requirements.mapNotNull { activeRequirements[it] }
-            } else {
-                emptyList()
-            }
-
-            if (conflictingCommands.any { !it.isInterruptible }) return false
-
-
-            println("Running command with ${conflictingCommands.size} conflicting commands and job ${context[Job]}")
-            // cancel conflicting commands
-            conflictingCommands.forEach { it.cancel() }
-
-            // take over requirements
-            requirements.forEach { activeRequirements[it] = this }
-
-            coroutine = launch(context) {
-                try {
-                    // suspend until conflicting commands have finished cancelling
-                    conflictingCommands.forEach { it.coroutine?.join() }
-
-                    // execute body
-                    body(Scope(this@launch))
-                } finally {
-                    // clean up
-                    requirements.filter { activeRequirements[it] == this@Command }.forEach {
-                        activeRequirements.remove(it)
-                        // restart default command if it exists
-
-                        val (defaultCommand, defaultCommandContext) = defaultCommands[it] ?: return@forEach
-                        defaultCommand(defaultCommandContext)
-                    }
-                }
-            }
-            return true
-        }
-    }
-
-    suspend fun invokeAndJoin(context: CoroutineContext) {
-        invoke(context)
-        coroutine?.join()
+    suspend fun invokeAndJoin() {
+        if (invoke()) coroutine?.join()
     }
 
     suspend fun join() = coroutine?.join()
@@ -115,10 +82,50 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
      */
     fun cancel() = coroutine?.cancel() ?: false
 
+    private operator fun invoke(parentCommand: Command?): Boolean {
+        // Only one command may be invoked at a time.
+        // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
+        synchronized(InvokeMutex) {
+            if (isRunning) return false
+
+            val conflictingCommands = if (parentCommand == null) {
+                requirements
+            } else {
+                requirements - parentCommand.requirements
+            }.mapNotNull { activeRequirements[it] }
+
+            conflictingCommands.forEach { it.cancel() }
+
+            // take over requirements
+            requirements.forEach { activeRequirements[it] = this }
+
+            coroutine = launch(Context) {
+                try {
+                    // suspend until conflicting commands have finished cancelling
+                    conflictingCommands.forEach { it.coroutine?.join() }
+
+                    // execute body
+                    body(Scope(this@Command, this@launch))
+                } finally {
+                    // clean up
+                    requirements.filter { activeRequirements[it] == this@Command }.forEach {
+                        activeRequirements.remove(it)
+                        // restart default command if it exists
+
+                        val defaultCommand = defaultCommands[it] ?: return@forEach
+                        defaultCommand()
+                    }
+                }
+            }
+            return true
+        }
+    }
+
     /**
      * Receiver class for command instances.
      */
-    class Scope internal constructor(private val scope: CoroutineScope) : CoroutineScope by scope {
+    class Scope internal constructor(private val command: Command, private val scope: CoroutineScope) :
+            CoroutineScope by scope {
         val startTimeNanos = Utility.getFPGATime()
         val elapsedTimeNanos get() = Utility.getFPGATime() - startTimeNanos
 
@@ -149,5 +156,8 @@ class Command(vararg internal val requirements: Subsystem, private val isInterru
             while(!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
         }
 
+        suspend fun fork(childCommand: Command) {
+            if(childCommand.invoke(command)) childCommand.join()
+        }
     }
 }
