@@ -1,13 +1,9 @@
 package org.team2471.frc.lib.control.experimental
 
-import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.*
-import org.team2471.frc.lib.util.measureTimeFPGA
 import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.experimental.CoroutineContext
 
 // anything can be a subsystem!
@@ -30,7 +26,7 @@ fun Subsystem.registerDefaultCommand(command: Command) {
     if (command !in Command.activeRequirements) command()
 }
 
-class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
+class Command(val name: String, vararg requirements: Subsystem, val isCancelable: Boolean = true,
               private val body: suspend Command.Scope.() -> Unit) {
     companion object {
         internal val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
@@ -49,9 +45,6 @@ class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
         }
     }
 
-    val isCancelable: Boolean = isCancelable
-        get() = field && uncancelableChildren.get() == 0
-
     /**
      * Returns `true` if the command has a running coroutine.
      */
@@ -62,18 +55,6 @@ class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
     internal val requirements: Set<Subsystem> = hashSetOf(*requirements)
 
     private var coroutine: Job? = null
-    private var uncancelableChildren = AtomicInteger(0)
-
-    /**
-     * Attempts to start the command inside a coroutine.
-     *
-     * If the command is running or one if it's required subsystems cannot be acquired, the command will not be started.
-     *
-     * A subsystem cannot be acquired if it's current command is not interrupible.
-     *
-     * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
-     */
-    operator fun invoke() = invoke(null)
 
     suspend fun invokeAndJoin() {
         if (invoke()) coroutine?.join()
@@ -92,22 +73,26 @@ class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
         false
     }
 
-    private operator fun invoke(parentCommand: Command?): Boolean {
+    /**
+     * Attempts to start the command inside a coroutine.
+     *
+     * If the command is running or one if it's required subsystems cannot be acquired, the command will not be started.
+     *
+     * A subsystem cannot be acquired if it's current command is not interrupible.
+     *
+     * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
+     */
+    operator fun invoke(): Boolean {
         // Only one command may be invoked at a time.
         // This prevents race conditions where commands with overlapping requirements are invoked in parallel.
         synchronized(Command) {
             if (isRunning) return false
 
-            val conflictingCommands = if (parentCommand == null) {
-                requirements
-            } else {
-                requirements - parentCommand.requirements
-            }.mapNotNull { activeRequirements[it] }
+            val conflictingCommands = requirements.mapNotNull { activeRequirements[it] }
 
             if (conflictingCommands.any { !isCancelable }) return false
 
-            if (!isCancelable) parentCommand?.uncancelableChildren?.incrementAndGet()
-
+            requirements.forEach { println("Requirement: $it") }
 
             conflictingCommands.forEach { it.cancel() }
             // take over requirements
@@ -116,23 +101,25 @@ class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
             coroutine = launch(Context) {
                 try {
                     // suspend until conflicting commands have finished cancelling
-                    conflictingCommands.forEach { it.coroutine?.join() }
+                    println("Running command $name with ${conflictingCommands.size} conflicting commands")
 
                     // execute body
                     body(Scope(this@Command, this@launch))
+                } catch (_: Throwable) {
+                    println("Command $name interrupted")
+                    return@launch
                 } finally {
-                    println("Cleaning up $this@Command")
-                    // clean up
-                    synchronized(Command) {
-                        requirements.forEach { activeRequirements.remove(it) }
-                        parentCommand?.uncancelableChildren?.decrementAndGet()
-                    }
-
-                    // invoke default command if it exists
-                    requirements.filter { activeRequirements[it] == this@Command }
-                            .forEach { defaultCommands[it]?.invoke() }
+                    println("Cleaning up command $name")
                     coroutine = null
+                    synchronized(Command) {
+                        requirements.filter { activeRequirements[it] == this@Command }
+                                .forEach { activeRequirements.remove(it) }
+                    }
                 }
+                println("Command $name finished")
+
+                // invoke default command if it exists
+                requirements.forEach { defaultCommands[it]?.invoke() }
             }
             return true
         }
@@ -148,33 +135,5 @@ class Command(vararg requirements: Subsystem, isCancelable: Boolean = true,
 
         val startTimeSeconds = Timer.getFPGATimestamp()
         val elapsedTimeSeconds get() = Timer.getFPGATimestamp() - startTimeSeconds
-
-        /**
-         * Runs the provided [body] of code periodically per [period] ms.
-         *
-         * The [period] parameter defaults to 20ms.
-         *
-         * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
-         * of the command coroutine.
-         */
-        suspend fun periodic(period: Int = 20,
-                             condition: () -> Boolean = { true }, body: () -> Unit) {
-            while (condition()) {
-                val time = measureTimeFPGA {
-                    body()
-                }
-                if (time > period * 1000) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                        "Got: ${time / 1000}ms, expected: <${period}ms", true)
-                delay(elapsedTimeNanos % (period * 1000), TimeUnit.NANOSECONDS)
-            }
-        }
-
-        suspend fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean) {
-            while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
-        }
-
-        suspend fun fork(childCommand: Command) {
-            if (childCommand.invoke(command)) childCommand.join()
-        }
     }
 }
