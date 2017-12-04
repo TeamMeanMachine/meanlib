@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit
  * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
  * of the command coroutine.
  */
-suspend fun periodic(period: Int = 20,
-                     condition: () -> Boolean = { true }, body: () -> Unit) {
+suspend inline fun periodic(period: Int = 20,
+                     condition: () -> Boolean = { true }, crossinline body: () -> Unit) {
     while (condition()) {
         val time = measureTimeFPGA {
             body()
