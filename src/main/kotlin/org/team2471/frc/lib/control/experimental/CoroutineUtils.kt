@@ -26,6 +26,6 @@ suspend fun periodic(period: Int = 20,
     }
 }
 
-suspend fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean) {
+suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean) {
     while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
 }
