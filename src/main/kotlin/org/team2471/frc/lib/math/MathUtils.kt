@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.math
 
+import java.lang.Math.floor
 import java.lang.Math.pow
 
 fun Double.fitToRange(min: Double, max: Double): Double = when {
@@ -28,3 +29,4 @@ fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
     (this - Math.copySign(tolerance, this)) / (1.0 - tolerance)
 }
 
+infix fun Double.floorMod (n: Double) = this - n * floor(this / n)
