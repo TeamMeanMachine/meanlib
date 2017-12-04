@@ -29,4 +29,9 @@ fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
     (this - Math.copySign(tolerance, this)) / (1.0 - tolerance)
 }
 
-infix fun Double.floorMod (n: Double) = this - n * floor(this / n)
+// doesn't work with negative values of n
+infix fun Double.mod(n: Double) = if (this < 0) {
+    (this % n + n) % n
+} else {
+    this % n
+}

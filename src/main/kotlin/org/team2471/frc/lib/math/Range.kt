@@ -14,5 +14,5 @@ data class Range(val min: Double, val max: Double) {
         else -> num
     }
 
-    fun wrap(num: Double) = (num - min) floorMod delta + min
+    fun wrap(num: Double) = (num - min) mod delta + min
 }
