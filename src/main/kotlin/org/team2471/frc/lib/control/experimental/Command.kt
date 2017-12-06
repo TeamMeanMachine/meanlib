@@ -8,7 +8,7 @@ import kotlinx.coroutines.experimental.Job
 class Command(val name: String, vararg requirements: Subsystem, val isCancelable: Boolean = true,
               internal val body: suspend Command.Scope.() -> Unit) {
 
-    val isRunning get() = job?.isCompleted == false
+    val isRunning get() = job?.isActive == true
 
     val isCanceled get() = job?.isCancelled == true
 

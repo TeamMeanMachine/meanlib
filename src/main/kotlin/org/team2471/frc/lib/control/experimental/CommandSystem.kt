@@ -24,7 +24,7 @@ object CommandSystem {
 
     var isEnabled = false
         set(value) = synchronized(this) {
-            if (field != value) return
+            if (field == value) return
             field = value
             if (value) startDefaultCommands() else cancelAllCommands()
         }
@@ -87,12 +87,13 @@ object CommandSystem {
     }
 
     private fun cleanupCommand(command: Command) = synchronized(this) {
+        println("Cleaning up command ${command.name}")
         activeCommands.remove(command)
         command.job = null
         // remove requirements that haven't been been overtaken
         command.requirements.filter { requirementsMap[it] == command }.forEach { subsystem ->
             requirementsMap.remove(command)
-            defaultCommands[subsystem]?.invoke()
+            if (isEnabled) defaultCommands[subsystem]?.invoke()
         }
     }
 }

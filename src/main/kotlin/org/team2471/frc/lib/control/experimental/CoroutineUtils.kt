@@ -1,9 +1,9 @@
 package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.delay
-import org.team2471.frc.lib.util.measureTimeFPGA
+import org.team2471.frc.lib.util.measureNanoTimeFPGA
+import java.lang.Long.min
 import java.util.concurrent.TimeUnit
 
 /**
@@ -16,13 +16,14 @@ import java.util.concurrent.TimeUnit
  */
 suspend inline fun periodic(period: Int = 20,
                      condition: () -> Boolean = { true }, crossinline body: () -> Unit) {
+    val nanoPeriod = period * 1000L
     while (condition()) {
-        val time = measureTimeFPGA {
+        val time = measureNanoTimeFPGA {
             body()
         }
-        if (time > period * 1000) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time / 1000}ms, expected: <${period}ms", true)
-        delay(Utility.getFPGATime() % (period * 1000), TimeUnit.NANOSECONDS)
+        if (time > nanoPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
+                "Got: ${time / 1000.0}ms, expected: <${period}ms", false)
+        delay(nanoPeriod - min(time, nanoPeriod), TimeUnit.NANOSECONDS)
     }
 }
 
