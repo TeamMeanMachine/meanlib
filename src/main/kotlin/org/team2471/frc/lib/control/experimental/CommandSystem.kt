@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.control.experimental
 
+import edu.wpi.first.wpilibj.networktables.NetworkTable
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import java.util.*
 import kotlin.coroutines.experimental.CoroutineContext
@@ -18,8 +20,22 @@ object CommandSystem {
     private var contextInstance: CoroutineContext? = null
 
     val Context: CoroutineContext by lazy {
-        contextInstance ?: throw IllegalStateException("The command context was accessed before it was initialized. " +
+        val instance = contextInstance ?: throw IllegalStateException("The command context was accessed before it was initialized. " +
                 "Command.initCoroutineContext is either being called too late or not being called at all.")
+        launch(instance) {
+            val table = NetworkTable.getTable("Command System")
+            while(true) {
+                synchronized(this@CommandSystem) {
+                    table.putNumber("Command count", activeCommands.size.toDouble())
+                    table.putStringArray("Commands", activeCommands.map { it.name }.toTypedArray())
+                    table.putStringArray("Requirements",
+                            requirementsMap.map { (s, c) ->  "${s::class.simpleName}: $c" }.toTypedArray())
+                }
+                delay(500)
+            }
+        }
+
+        instance
     }
 
     var isEnabled = false
@@ -70,6 +86,7 @@ object CommandSystem {
 
         val conflictingCommands = command.requirements.mapNotNull { requirementsMap[it] }
         if (conflictingCommands.any { !it.isCancelable }) return false
+        println("Starting command ${command.name} with ${conflictingCommands.size} conflicting commands")
 
         command.requirements.forEach { requirementsMap[it] = command }
         activeCommands.add(command)
@@ -79,8 +96,11 @@ object CommandSystem {
         command.job = launch(Context) {
             // wait for canceled commands to finish
             conflictingCommands.forEach { it.join() }
-            command.body(Command.Scope(command, this@launch))
-            cleanupCommand(command)
+            try {
+                command.body(this@launch)
+            } finally {
+                cleanupCommand(command)
+            }
         }
 
         return true
@@ -88,12 +108,15 @@ object CommandSystem {
 
     private fun cleanupCommand(command: Command) = synchronized(this) {
         println("Cleaning up command ${command.name}")
-        activeCommands.remove(command)
-        command.job = null
-        // remove requirements that haven't been been overtaken
-        command.requirements.filter { requirementsMap[it] == command }.forEach { subsystem ->
-            requirementsMap.remove(command)
-            if (isEnabled) defaultCommands[subsystem]?.invoke()
+
+        synchronized(this) {
+            activeCommands.remove(command)
+            command.job = null
+            // remove requirements that haven't been been overtaken
+            command.requirements.filter { requirementsMap[it] == command }.forEach { subsystem ->
+                requirementsMap.remove(command)
+                if (isEnabled) defaultCommands[subsystem]?.invoke()
+            }
         }
     }
 }

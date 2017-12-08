@@ -6,7 +6,7 @@ import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
 
 class Command(val name: String, vararg requirements: Subsystem, val isCancelable: Boolean = true,
-              internal val body: suspend Command.Scope.() -> Unit) {
+              internal val body: suspend CoroutineScope.() -> Unit) {
 
     val isRunning get() = job?.isActive == true
 
@@ -43,16 +43,4 @@ class Command(val name: String, vararg requirements: Subsystem, val isCancelable
      * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
      */
     operator fun invoke(): Boolean = CommandSystem.startCommand(this)
-
-    /**
-     * Receiver class for command instances.
-     */
-    class Scope internal constructor(private val command: Command, private val scope: CoroutineScope) :
-            CoroutineScope by scope {
-        val startTimeNanos = Utility.getFPGATime()
-        val elapsedTimeNanos get() = Utility.getFPGATime() - startTimeNanos
-
-        val startTimeSeconds = Timer.getFPGATimestamp()
-        val elapsedTimeSeconds get() = Timer.getFPGATimestamp() - startTimeSeconds
-    }
 }

@@ -21,8 +21,8 @@ suspend inline fun periodic(period: Int = 20,
         val time = measureNanoTimeFPGA {
             body()
         }
-        if (time > nanoPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time / 1000.0}ms, expected: <${period}ms", false)
+//        if (time > nanoPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
+//                "Got: ${time / 1000.0}ms, expected: <${period}ms", false)
         delay(nanoPeriod - min(time, nanoPeriod), TimeUnit.NANOSECONDS)
     }
 }
