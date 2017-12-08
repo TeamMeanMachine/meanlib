@@ -23,9 +23,9 @@ object CommandSystem {
     }
 
     var isEnabled = false
-        set(value) = synchronized(this) {
+        set(value)  {
             if (field == value) return
-            field = value
+            synchronized(this) { field = value }
             if (value) startDefaultCommands() else cancelAllCommands()
         }
 
