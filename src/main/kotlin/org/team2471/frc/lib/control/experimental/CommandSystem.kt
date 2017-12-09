@@ -1,21 +1,22 @@
 package org.team2471.frc.lib.control.experimental
 
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.networktables.NetworkTable
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import java.util.*
 import kotlin.coroutines.experimental.CoroutineContext
 
-// anything can be a subsystem
 typealias Subsystem = Any
 
 /**
  * All global state related to the command system is kept and managed here.
  */
 object CommandSystem {
-    private val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
-    private val requirementsMap: MutableMap<Subsystem, Command> = HashMap()
-    private val activeCommands: MutableSet<Command> = HashSet()
+    internal val defaultCommands: MutableMap<Subsystem, Command> = HashMap()
+    internal val requirementsMap: MutableMap<Subsystem, Command> = HashMap()
+    internal val activeCommands: MutableSet<Command> = HashSet()
 
     private var contextInstance: CoroutineContext? = null
 
@@ -26,10 +27,9 @@ object CommandSystem {
             val table = NetworkTable.getTable("Command System")
             while(true) {
                 synchronized(this@CommandSystem) {
-                    table.putNumber("Command count", activeCommands.size.toDouble())
-                    table.putStringArray("Commands", activeCommands.map { it.name }.toTypedArray())
-                    table.putStringArray("Requirements",
-                            requirementsMap.map { (s, c) ->  "${s::class.simpleName}: $c" }.toTypedArray())
+                    table.putNumber("Commands running", commandsRunning.toDouble())
+                    table.putStringArray("Commands", commands)
+                    table.putStringArray("Requirements", requirements)
                 }
                 delay(500)
             }
@@ -40,14 +40,27 @@ object CommandSystem {
 
     var isEnabled = false
         set(value)  {
-            if (field == value) return
-            synchronized(this) { field = value }
-            if (value) startDefaultCommands() else cancelAllCommands()
+            synchronized(this) {
+                field = value
+                if (value) {
+                    println("Command system enabled. Starting default commands...")
+                    startDefaultCommands()
+                } else {
+                    println("Command system disabled. Cancelling all commands...")
+                    cancelAllCommands()
+                }
+            }
         }
 
+    val commandsRunning get() = activeCommands.size
+    val commands get() = activeCommands.map { it.label }.toTypedArray()
+    val requirements get() = requirementsMap.map { (subsystem, command) ->
+        "${subsystem::class.simpleName}: $command" }.toTypedArray()
+
     fun initCoroutineContext(commandContext: CoroutineContext) {
-        if (contextInstance != null)
-            throw IllegalStateException("The command context can only be initialized once.")
+        if (contextInstance != null) {
+            return DriverStation.reportWarning("The command context was initialized more than once. This call will be ignored.", true)
+        }
         contextInstance = commandContext
     }
 
@@ -68,7 +81,9 @@ object CommandSystem {
     }
 
     private fun cancelAllCommands() = synchronized(this) {
-        activeCommands.forEach { it.cancel() }
+        activeCommands.forEach {
+            println("Command ${it.label} canceled: ${it.job?.cancel()}")
+        }
     }
 
     private fun startDefaultCommands() = synchronized(this) {
@@ -81,12 +96,23 @@ object CommandSystem {
         if (command !in activeCommands) command()
     }
 
-    internal fun startCommand(command: Command): Boolean = synchronized(this) {
-        if (!isEnabled || command.isRunning) return false
+    internal fun dispatchCommand(command: Command): Boolean = synchronized(this) {
+        if (!isEnabled) {
+            println("Command ${command.label} could not be started because the command system is disabled")
+            return false
+        }
+
+        if (command.isRunning) {
+            println("Command ${command.label} could not be started because it is already running")
+            return false
+        }
 
         val conflictingCommands = command.requirements.mapNotNull { requirementsMap[it] }
-        if (conflictingCommands.any { !it.isCancelable }) return false
-        println("Starting command ${command.name} with ${conflictingCommands.size} conflicting commands")
+        if (conflictingCommands.any { !it.isCancelable }) {
+            println("Command ${command.label} could not be started because of an un cancellable conflict")
+            return false
+        }
+        println("Starting command ${command.label} with ${conflictingCommands.size} conflicting commands")
 
         command.requirements.forEach { requirementsMap[it] = command }
         activeCommands.add(command)
@@ -97,26 +123,32 @@ object CommandSystem {
             // wait for canceled commands to finish
             conflictingCommands.forEach { it.join() }
             try {
+                println("Starting command ${command.label}")
                 command.body(this@launch)
+                println("Command ${command.label} completed gracefully.")
             } finally {
-                cleanupCommand(command)
+                synchronized(this) {
+                    println("Cleaning up command ${command.label}")
+                    activeCommands.remove(command)
+                    command.job = null
+                    // remove requirements that haven't been been overtaken
+                    command.requirements.filter { requirementsMap[it] == command }.forEach { subsystem ->
+                        requirementsMap.remove(command)
+                        if (isEnabled) defaultCommands[subsystem]?.invoke()
+                    }
+                }
             }
         }
 
         return true
     }
 
-    private fun cleanupCommand(command: Command) = synchronized(this) {
-        println("Cleaning up command ${command.name}")
-
-        synchronized(this) {
-            activeCommands.remove(command)
-            command.job = null
-            // remove requirements that haven't been been overtaken
-            command.requirements.filter { requirementsMap[it] == command }.forEach { subsystem ->
-                requirementsMap.remove(command)
-                if (isEnabled) defaultCommands[subsystem]?.invoke()
-            }
-        }
+    // for testing
+    @Synchronized internal fun clearAllState() {
+        isEnabled = false
+        runBlocking { activeCommands.forEach { println("Joining command..."); it.join() } }
+        defaultCommands.clear()
+        activeCommands.clear()
+        requirementsMap.clear()
     }
 }

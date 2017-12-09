@@ -1,12 +1,11 @@
 package org.team2471.frc.lib.control.experimental
 
-import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.Utility
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
 
 class Command(val name: String, vararg requirements: Subsystem, val isCancelable: Boolean = true,
               internal val body: suspend CoroutineScope.() -> Unit) {
+    val label = "$name@${hashCode()}"
 
     val isRunning get() = job?.isActive == true
 
@@ -42,5 +41,5 @@ class Command(val name: String, vararg requirements: Subsystem, val isCancelable
      *
      * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
      */
-    operator fun invoke(): Boolean = CommandSystem.startCommand(this)
+    operator fun invoke(): Boolean = CommandSystem.dispatchCommand(this)
 }
