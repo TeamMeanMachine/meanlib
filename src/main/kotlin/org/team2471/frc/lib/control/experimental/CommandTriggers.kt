@@ -6,24 +6,24 @@ import java.util.concurrent.TimeUnit
 
 private const val POLLING_RATE = 200L
 
-fun Command.runWhen(condition: () -> Boolean) = launch(CommandSystem.Context) {
+fun Command.runWhen(condition: () -> Boolean) = launch(CommandSystem.dispatcher) {
     var previousState = condition()
     while (isActive) {
         val state = condition()
 
-        if (state && !previousState) invoke()
+        if (state && !previousState) launch()
 
         delay(POLLING_RATE, TimeUnit.MILLISECONDS)
         previousState = state
     }
 }
 
-fun Command.runWhile(condition: () -> Boolean) = launch(CommandSystem.Context) {
+fun Command.runWhile(condition: () -> Boolean) = launch(CommandSystem.dispatcher) {
     var previousState = condition()
     while (isActive) {
         val state = condition()
 
-        if (state && !previousState) invoke()
+        if (state && !previousState) launch()
         else if (previousState && !state) cancel()
 
         delay(POLLING_RATE, TimeUnit.MILLISECONDS)
@@ -31,13 +31,13 @@ fun Command.runWhile(condition: () -> Boolean) = launch(CommandSystem.Context) {
     }
 }
 
-fun Command.toggleWhen(condition: () -> Boolean) = launch(CommandSystem.Context) {
+fun Command.toggleWhen(condition: () -> Boolean) = launch(CommandSystem.dispatcher) {
     var previousState = condition()
     while (isActive) {
         val state = condition()
 
         if (state && !previousState) {
-            if (!isRunning) invoke()
+            if (!isActive) launch()
             else cancel()
         }
 

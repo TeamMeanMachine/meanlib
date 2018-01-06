@@ -1,45 +1,59 @@
 package org.team2471.frc.lib.control.experimental
 
+import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
+import kotlin.coroutines.experimental.AbstractCoroutineContextElement
+import kotlin.coroutines.experimental.CoroutineContext
 
-class Command(val name: String, vararg requirements: Subsystem, val isCancelable: Boolean = true,
-              internal val body: suspend CoroutineScope.() -> Unit) {
-    val label = "$name@${hashCode()}"
+typealias Subsystem = Any
 
-    val isRunning get() = job?.isActive == true
-
-    val isCanceled get() = job?.isCancelled == true
-
+class Command(val name: String,
+              vararg requirements: Subsystem,
+              internal val isCancellable: Boolean = true,
+              private val body: suspend CoroutineScope.() -> Unit) {
     internal val requirements: Set<Subsystem> = hashSetOf(*requirements)
 
-    internal var job: Job? = null
+    private var coroutine: Job? = null
 
-    suspend fun invokeAndJoin() {
-        if (invoke()) job?.join()
+    operator suspend fun invoke(context: CoroutineContext, join: Boolean = true) {
+        val parentRequirements: Set<Subsystem> = context[Requirements] ?: emptySet()
+        val ourRequirements = requirements - parentRequirements
+
+        if (!CommandSystem.acquireSubsystems(this, ourRequirements)) {
+            println("Command $name failed to acquire it's requirements.")
+            return
+        }
+
+        coroutine = launch(context + Requirements(parentRequirements + ourRequirements)) {
+            println("Starting command $name")
+            body(this@launch)
+            CommandSystem.cleanCommand(this@Command)
+        }
+
+        if(join) coroutine?.join()
     }
 
-    suspend fun join() = job?.join()
-
-    /**
-     * Cancel current command if it is running.
-     *
-     * Returns true if the command was canceled as a result of this call.
-     */
-    fun cancel(cause: Throwable? = null): Boolean = if (isCancelable) {
-        job?.cancel(cause) ?: false
-    } else {
-        false
+    fun launch(dispatcher: CoroutineDispatcher = CommandSystem.dispatcher) {
+        launch(dispatcher) { invoke(coroutineContext, false) }
     }
 
+    fun cancel(cause: Throwable? = null) = coroutine?.cancel(cause)
+
+    suspend fun join() = coroutine?.join()
+
+    val isActive get() = coroutine?.isActive == true
+}
+
+internal class Requirements(requirements: Set<Subsystem>) :
+        AbstractCoroutineContextElement(Key),
+        Set<Subsystem> by requirements {
+
+    companion object Key : CoroutineContext.Key<Requirements>
+
     /**
-     * Attempts to start the command inside a job.
-     *
-     * If the command is running or one if it's required subsystems cannot be acquired, the command will not be started.
-     *
-     * A subsystem cannot be acquired if it's current command is not interrupible.
-     *
-     * If all subsystems can be acquired, commands requiring the subsystems will be canceled if present.
+     * A key of this coroutine context element.
      */
-    operator fun invoke(): Boolean = CommandSystem.dispatchCommand(this)
+    override val key: CoroutineContext.Key<*> get() = Key
 }

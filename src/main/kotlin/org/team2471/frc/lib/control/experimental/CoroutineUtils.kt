@@ -2,6 +2,7 @@ package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.sync.Mutex
 import org.team2471.frc.lib.util.measureNanoTimeFPGA
 import java.lang.Long.min
 import java.util.concurrent.TimeUnit
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * of the command coroutine.
  */
 suspend inline fun periodic(period: Int = 20,
-                     condition: () -> Boolean = { true }, crossinline body: () -> Unit) {
+                     condition: () -> Boolean = { true }, body: () -> Unit) {
     val nanoPeriod = period * 1000L
     while (condition()) {
         val time = measureNanoTimeFPGA {
