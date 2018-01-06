@@ -23,20 +23,20 @@ internal object CommandSystem {
         processDefaultCommands(command.requirements)
     }
 
-    internal suspend fun acquireSubsystems(command: Command, subsystems: Set<Subsystem>): Boolean {
+    internal suspend fun acquireSubsystems(command: Command, subsystems: Set<Subsystem>): Set<Command>? {
         subsystems.forEach {
             println("Command ${command.name} attempting to acquire subsystem ${it::class.simpleName}")
         }
 
-        lateinit var conflictingCommands: List<Command>
+        lateinit var conflictingCommands: Set<Command>
         mutex.withLock {
-            conflictingCommands = subsystems.mapNotNull { activeRequirementsMap[it] }
+            conflictingCommands = subsystems.mapNotNull { activeRequirementsMap[it] }.toSet()
             println("${conflictingCommands.size} conflicting commands found for command ${command.name}")
 
             // verify that all conflicting commands may be interrupted
             if (conflictingCommands.any { !it.isCancellable }) {
                 println("Uninterruptible requirement found when starting ${command.name}")
-                return false
+                return null
             }
 
             // start cancellation process
@@ -52,8 +52,7 @@ internal object CommandSystem {
             processDefaultCommands(subsystems)
         }
 
-        conflictingCommands.forEach { it.join() }
-        return true
+        return conflictingCommands
     }
 
     fun registerDefaultCommand(subsystem: Subsystem, defaultCommand: Command) {

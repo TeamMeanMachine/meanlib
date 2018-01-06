@@ -21,12 +21,17 @@ class Command(val name: String,
         val parentRequirements: Set<Subsystem> = context[Requirements] ?: emptySet()
         val ourRequirements = requirements - parentRequirements
 
-        if (!CommandSystem.acquireSubsystems(this, ourRequirements)) {
+        val conflictingCommands = CommandSystem.acquireSubsystems(this, ourRequirements) ?: run {
             println("Command $name failed to acquire it's requirements.")
             return
         }
 
         coroutine = launch(context + Requirements(parentRequirements + ourRequirements)) {
+            if (conflictingCommands.isNotEmpty()) {
+                println("Command $name waiting for conflicts to resolve...")
+                conflictingCommands.forEach { it.join() }
+            }
+
             println("Starting command $name")
             body(this@launch)
             CommandSystem.cleanCommand(this@Command)
