@@ -6,7 +6,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock
 
-internal object CommandSystem {
+object CommandSystem {
     private val mutex = Mutex()
 
     // stores all registered default commands
@@ -57,12 +57,13 @@ internal object CommandSystem {
 
     fun registerDefaultCommand(subsystem: Subsystem, defaultCommand: Command) {
         if (subsystem !in defaultCommand.requirements) {
-            throw IllegalStateException("A default command must require it's subsystem.")
+            throw IllegalArgumentException("A default command must require it's subsystem.")
         }
 
         runBlocking(dispatcher) {
             mutex.withLock {
                 defaultCommandsMap[subsystem] = defaultCommand
+                processDefaultCommands(setOf(subsystem))
             }
         }
     }
@@ -83,7 +84,7 @@ internal object CommandSystem {
     internal val commandsRunning get() = activeCommands.size
 
     internal fun clearAllState() {
-        runBlocking {
+        runBlocking(dispatcher) {
             mutex.withLock {
                 defaultCommandsMap.clear()
                 activeCommands.forEach { it.cancel() }

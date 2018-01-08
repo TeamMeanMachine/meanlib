@@ -4,6 +4,8 @@ import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.sync.Mutex
+import kotlinx.coroutines.experimental.sync.withLock
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -13,6 +15,8 @@ class Command(val name: String,
               vararg requirements: Subsystem,
               internal val isCancellable: Boolean = true,
               private val body: suspend CoroutineScope.() -> Unit) {
+    private val mutex = Mutex()
+
     internal val requirements: Set<Subsystem> = hashSetOf(*requirements)
 
     private var coroutine: Job? = null
@@ -21,20 +25,22 @@ class Command(val name: String,
         val parentRequirements: Set<Subsystem> = context[Requirements] ?: emptySet()
         val ourRequirements = requirements - parentRequirements
 
-        val conflictingCommands = CommandSystem.acquireSubsystems(this, ourRequirements) ?: run {
-            println("Command $name failed to acquire it's requirements.")
-            return
-        }
-
-        coroutine = launch(context + Requirements(parentRequirements + ourRequirements)) {
-            if (conflictingCommands.isNotEmpty()) {
-                println("Command $name waiting for conflicts to resolve...")
-                conflictingCommands.forEach { it.join() }
+        mutex.withLock {
+            val conflictingCommands = CommandSystem.acquireSubsystems(this, ourRequirements) ?: run {
+                println("Command $name failed to acquire it's requirements.")
+                return
             }
 
-            println("Starting command $name")
-            body(this@launch)
-            CommandSystem.cleanCommand(this@Command)
+            coroutine = launch(context + Requirements(parentRequirements + ourRequirements)) {
+                if (conflictingCommands.isNotEmpty()) {
+                    println("Command $name waiting for conflicts to resolve...")
+                    conflictingCommands.forEach { it.join() }
+                }
+
+                println("Starting command $name")
+                body(this@launch)
+                CommandSystem.cleanCommand(this@Command)
+            }
         }
 
         if(join) coroutine?.join()
