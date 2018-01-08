@@ -1,9 +1,8 @@
 package org.team2471.frc.lib.control
 
-import com.ctre.MotorControl.CANTalon
-import com.ctre.MotorControl.SmartMotorController.TalonControlMode
+import com.ctre.phoenix.motorcontrol.ControlMode
+import com.ctre.phoenix.motorcontrol.can.TalonSRX
 
-operator fun CANTalon.plus(slave: CANTalon): CANTalon = apply {
-    slave.changeControlMode(TalonControlMode.Follower)
-    slave.set(this.deviceID.toDouble())
+operator fun TalonSRX.plus(slave: TalonSRX): TalonSRX = apply {
+    slave.set(ControlMode.Follower, deviceID.toDouble())
 }
