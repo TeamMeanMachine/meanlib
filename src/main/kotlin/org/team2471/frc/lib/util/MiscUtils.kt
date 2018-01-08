@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.util
 
 import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.Utility
+import edu.wpi.first.wpilibj.RobotController
 
 /**
  * Executes the given block and returns elapsed time in seconds.
@@ -16,7 +16,7 @@ inline fun measureTimeFPGA(body: () -> Unit): Double {
  * Executes the given block and returns elapsed time in nanoseconds.
  */
 inline fun measureTimeFPGAMillis(body: () -> Unit): Long {
-    val start = Utility.getFPGATime()
+    val start = RobotController.getFPGATime()
     body()
-    return Utility.getFPGATime() - start
+    return RobotController.getFPGATime() - start
 }
