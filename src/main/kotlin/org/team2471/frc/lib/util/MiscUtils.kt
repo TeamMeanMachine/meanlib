@@ -15,7 +15,7 @@ inline fun measureTimeFPGA(body: () -> Unit): Double {
 /**
  * Executes the given block and returns elapsed time in nanoseconds.
  */
-inline fun measureNanoTimeFPGA(body: () -> Unit): Long {
+inline fun measureTimeFPGAMillis(body: () -> Unit): Long {
     val start = Utility.getFPGATime()
     body()
     return Utility.getFPGATime() - start
