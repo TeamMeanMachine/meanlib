@@ -69,3 +69,66 @@ kotlin {
         coroutines "enable"
     }
 }
+
+// Task to generate sources JAR
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.java.srcDirs
+}
+
+// Use tasks above to define artifacts
+artifacts {
+    archives sourcesJar
+}
+
+// So that we can define publication
+project.apply plugin: 'maven-publish'
+
+publishing {
+    // By passing -Pcustom_local=/some/path and running the
+    // publishLibraryPublicationToCustomLocalRepository task you can publish this library to a
+    // custom maven repository location on your machine.
+    repositories {
+        maven {
+            name 'CustomLocal'
+            url uri(project.hasProperty('custom_local') ? project.getProperty('custom_local') : '/tmp/')
+        }
+    }
+
+    repositories {
+        maven {
+            name 'BuildLocal'
+            url "$buildDir/repo"
+        }
+    }
+}
+
+publishing {
+    publications {
+        "${project.name}"(MavenPublication) {
+
+            groupId "org.team2471.frc.lib"
+            artifactId project.name
+            version "2018.0.1"
+
+            artifact "$buildDir/libs/${project.name}.jar"
+            artifact sourcesJar
+
+            pom.withXml {
+                // Dependencies
+                def dependenciesNode = asNode().getAt("dependencies")[0]
+                if (dependenciesNode == null) {
+                    dependenciesNode = asNode().appendNode("dependencies")
+                }
+
+                // Add all that are 'compile'
+                configurations.compile.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+            }
+        }
+    }
+}
