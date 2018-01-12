@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.control.experimental
 
-import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
@@ -46,8 +45,8 @@ class Command(val name: String,
         if(join) coroutine?.join()
     }
 
-    fun launch(dispatcher: CoroutineDispatcher = CommandSystem.dispatcher) {
-        launch(dispatcher) { invoke(coroutineContext, false) }
+    fun launch() {
+        launch { invoke(coroutineContext, false) }
     }
 
     fun cancel(cause: Throwable? = null) = coroutine?.cancel(cause)

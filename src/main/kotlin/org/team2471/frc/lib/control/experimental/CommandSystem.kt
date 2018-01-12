@@ -16,8 +16,6 @@ object CommandSystem {
     // serves as a lookup table for requirements
     private val activeRequirementsMap: MutableMap<Subsystem, Command> = HashMap()
 
-    var dispatcher: CoroutineDispatcher = CommonPool
-
     internal suspend fun cleanCommand(command: Command) = mutex.withLock {
         removeCommand(command)
         processDefaultCommands(command.requirements)
@@ -60,7 +58,7 @@ object CommandSystem {
             throw IllegalArgumentException("A default command must require it's subsystem.")
         }
 
-        runBlocking(dispatcher) {
+        runBlocking {
             mutex.withLock {
                 defaultCommandsMap[subsystem] = defaultCommand
                 processDefaultCommands(setOf(subsystem))
@@ -84,7 +82,7 @@ object CommandSystem {
     internal val commandsRunning get() = activeCommands.size
 
     internal fun clearAllState() {
-        runBlocking(dispatcher) {
+        runBlocking {
             mutex.withLock {
                 defaultCommandsMap.clear()
                 activeCommands.forEach { it.cancel() }
