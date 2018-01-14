@@ -23,7 +23,7 @@ suspend inline fun periodic(period: Int = 20,
             body()
         }
         if (time > microPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time}ms, expected less than ${period}ms", false)
+                "Got: ${time/1000}ms, expected less than ${period}ms", false)
         delay(microPeriod - min(time, microPeriod), TimeUnit.MICROSECONDS)
     }
 }

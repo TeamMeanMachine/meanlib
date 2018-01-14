@@ -39,12 +39,14 @@ repositories {
 dependencies {
     compile "edu.wpi.first.wpilibj:wpilibj-java:+"
     compile "edu.wpi.first.wpilibj:wpilibj-jni:+"
+    compile "edu.wpi.first.ntcore:ntcore-java:+"
     compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:arm"
     compile "openrio.mirror.third.ctre:CTRE-phoenix-java:+"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     compile "org.jetbrains.kotlin:kotlin-reflect"
+
 
 
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
