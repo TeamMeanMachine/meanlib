@@ -21,6 +21,11 @@ class Command(val name: String,
     private var coroutine: Job? = null
 
     operator suspend fun invoke(context: CoroutineContext, join: Boolean = true) {
+        if (isActive) {
+            println("Command $name could not start because it is already running.")
+            return
+        }
+
         val parentRequirements: Set<Subsystem> = context[Requirements] ?: emptySet()
         val ourRequirements = requirements - parentRequirements
 
