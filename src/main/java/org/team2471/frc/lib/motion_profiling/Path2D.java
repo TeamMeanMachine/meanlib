@@ -37,12 +37,22 @@ public class Path2D {
     m_prevRightPosition = null;
   }
 
-  public void addVector2(Vector2 point) {
-    addPoint(point.x, point.y);
+  public boolean hasPoints()
+  {
+    return m_xyCurve.getHeadPoint()!=null;
   }
 
-  public void addPoint(double x, double y) {
-    m_xyCurve.addPointToEnd(x, y);
+  public Path2DPoint addVector2(Vector2 point) {
+    return addPoint(point.x, point.y);
+  }
+
+  public Path2DPoint addVector2After(Vector2 point, Path2DPoint after)
+  {
+    return m_xyCurve.addPointAfter(point, after);
+  }
+
+  public Path2DPoint addPoint(double x, double y) {
+    return m_xyCurve.addPointToEnd(x, y);
   }
 
   public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
@@ -53,8 +63,16 @@ public class Path2D {
     m_xyCurve.addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
   }
 
+  public void removePoint( Path2DPoint path2DPoint ) {
+    m_xyCurve.removePoint( path2DPoint );
+  }
+
   public void addEasePoint(double time, double value) {
     m_easeCurve.storeValue(time, value);
+  }
+
+  public void removeAllEasePoints() {
+    m_easeCurve.removeAllPoints();
   }
 
   public void addEasePointSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
@@ -62,7 +80,10 @@ public class Path2D {
   }
 
   public Vector2 getPosition(double time) {
-    return getPositionAtEase(m_easeCurve.getValue(time));
+    if (m_xyCurve.getHeadPoint()!=null)
+      return getPositionAtEase(m_easeCurve.getValue(time));
+    else
+      return new Vector2(0.0, 0.0);
   }
 
   public Vector2 getTangent(double time) {

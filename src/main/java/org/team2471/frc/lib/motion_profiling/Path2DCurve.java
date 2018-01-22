@@ -56,10 +56,18 @@ public class Path2DCurve {
     newPoint.onPositionChanged();
   }
 
-  public void addPointToEnd(double x, double y)  // adds a path point to the end
+  public Path2DPoint addPointAfter(Vector2 vec, Path2DPoint after)
+  {
+    Path2DPoint path2DPoint = new Path2DPoint(vec.x, vec.y);
+    insertPointAfter(after, path2DPoint);
+    return path2DPoint;
+  }
+
+  public Path2DPoint addPointToEnd(double x, double y)  // adds a path point to the end
   {
     Path2DPoint path2DPoint = new Path2DPoint(x, y);
     insertPointAfter(m_tailPoint, path2DPoint);
+    return path2DPoint;
   }
 
   public void addPointToEnd(double x, double y, double xTangent, double yTangent) {
@@ -77,6 +85,23 @@ public class Path2DCurve {
     Vector2 angleAndMagnitude = new Vector2(angle, magnitude);
     path2DPoint.setNextAngleAndMagnitude(angleAndMagnitude);
     path2DPoint.setPrevAngleAndMagnitude(angleAndMagnitude);
+  }
+
+  public void removePoint( Path2DPoint path2DPoint )
+  {
+    if (path2DPoint.getPrevPoint()!=null) {
+      path2DPoint.getPrevPoint().setNextPoint(path2DPoint.getNextPoint());
+    }
+    else {
+      m_headPoint = path2DPoint.getNextPoint();
+    }
+
+    if (path2DPoint.getNextPoint()!=null) {
+      path2DPoint.getNextPoint().setPrevPoint(path2DPoint.getPrevPoint());
+    }
+    else {
+      m_tailPoint = path2DPoint.getPrevPoint();
+    }
   }
 
   public Vector2 getPositionAtDistance(double distance) {
