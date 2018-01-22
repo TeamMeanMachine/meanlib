@@ -83,7 +83,7 @@ public class Path2D {
     if (m_xyCurve.getHeadPoint()!=null)
       return getPositionAtEase(m_easeCurve.getValue(time));
     else
-      return new Vector2(0.0, 0.0);
+      return getPositionAtEase(time/5.0);  // take 5 seconds to finish path (linear motion)
   }
 
   public Vector2 getTangent(double time) {

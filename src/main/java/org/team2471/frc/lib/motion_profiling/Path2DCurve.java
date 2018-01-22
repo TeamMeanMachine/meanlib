@@ -91,6 +91,7 @@ public class Path2DCurve {
   {
     if (path2DPoint.getPrevPoint()!=null) {
       path2DPoint.getPrevPoint().setNextPoint(path2DPoint.getNextPoint());
+      path2DPoint.getPrevPoint().onPositionChanged();
     }
     else {
       m_headPoint = path2DPoint.getNextPoint();
@@ -98,6 +99,7 @@ public class Path2DCurve {
 
     if (path2DPoint.getNextPoint()!=null) {
       path2DPoint.getNextPoint().setPrevPoint(path2DPoint.getPrevPoint());
+      path2DPoint.getNextPoint().onPositionChanged();
     }
     else {
       m_tailPoint = path2DPoint.getPrevPoint();
