@@ -2,7 +2,7 @@ package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.experimental.delay
-import org.team2471.frc.lib.util.measureTimeFPGAMillis
+import org.team2471.frc.lib.util.measureTimeFPGAMicros
 import java.lang.Long.min
 import java.util.concurrent.TimeUnit
 
@@ -14,15 +14,17 @@ import java.util.concurrent.TimeUnit
  * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
  * of the command coroutine.
  */
-suspend inline fun periodic(period: Long = 20,
+suspend inline fun periodic(period: Int = 20,
                      condition: () -> Boolean = { true }, body: () -> Unit) {
     while (condition()) {
-        val time = measureTimeFPGAMillis {
+        val microPeriod = period * 1000L
+
+        val time = measureTimeFPGAMicros {
             body()
         }
-        if (time > period) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time}ms, expected less than ${period}ms", false)
-        delay(period - min(time, period))
+        if (time > microPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
+                "Got: ${time/1000}ms, expected less than ${period}ms", false)
+        delay(microPeriod - min(time, microPeriod), TimeUnit.MICROSECONDS)
     }
 }
 

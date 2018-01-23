@@ -1,7 +1,5 @@
 package org.team2471.frc.lib.control.experimental
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock
@@ -16,9 +14,8 @@ object CommandSystem {
     // serves as a lookup table for requirements
     private val activeRequirementsMap: MutableMap<Subsystem, Command> = HashMap()
 
-    var dispatcher: CoroutineDispatcher = CommonPool
-
     internal suspend fun cleanCommand(command: Command) = mutex.withLock {
+        println("Cleaning command ${command.name}")
         removeCommand(command)
         processDefaultCommands(command.requirements)
     }
@@ -40,9 +37,10 @@ object CommandSystem {
             }
 
             // start cancellation process
-            conflictingCommands.forEach {
-                it.cancel()
-                removeCommand(it)
+            conflictingCommands.forEach { conflict ->
+                println("Cancelling command ${conflict.name}")
+                conflict.cancel()
+                removeCommand(conflict)
             }
 
             // update state
@@ -60,7 +58,7 @@ object CommandSystem {
             throw IllegalArgumentException("A default command must require it's subsystem.")
         }
 
-        runBlocking(dispatcher) {
+        runBlocking {
             mutex.withLock {
                 defaultCommandsMap[subsystem] = defaultCommand
                 processDefaultCommands(setOf(subsystem))
@@ -81,10 +79,10 @@ object CommandSystem {
     }
 
     // for testing
-    internal val commandsRunning get() = activeCommands.size
+    val commandsRunning get() = activeCommands
 
     internal fun clearAllState() {
-        runBlocking(dispatcher) {
+        runBlocking {
             mutex.withLock {
                 defaultCommandsMap.clear()
                 activeCommands.forEach { it.cancel() }
