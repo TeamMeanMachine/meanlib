@@ -7,8 +7,8 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import java.lang.Math.sqrt
 
-object GeometrySpec : Spek({
-    given("the UNIT circle") {
+object GeometryTest : Spek({
+    given("the unit circle") {
         val unitCircle = Circle.UNIT
 
         on("finding intersecting points with line y=x") {

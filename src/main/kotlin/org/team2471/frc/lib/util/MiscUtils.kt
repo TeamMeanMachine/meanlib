@@ -1,20 +1,22 @@
 package org.team2471.frc.lib.util
 
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.RobotController
 
 /**
  * Executes the given block and returns elapsed time in seconds.
  */
-fun measureTimeFPGA(body: () -> Unit): Double {
+inline fun measureTimeFPGA(body: () -> Unit): Double {
     val start = Timer.getFPGATimestamp()
     body()
     return Timer.getFPGATimestamp() - start
 }
 
-fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
-    0.0
-} else {
-    this * (1+tolerance) - tolerance // scale
+/**
+ * Executes the given block and returns elapsed time in nanoseconds.
+ */
+inline fun measureTimeFPGAMicros(body: () -> Unit): Long {
+    val start = RobotController.getFPGATime()
+    body()
+    return RobotController.getFPGATime() - start
 }
-
-fun Double.squaredWithSign() = Math.copySign(this * this, this)

@@ -8,7 +8,7 @@ public class Path2D {
   private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-  private double m_robotWidth = 36.5 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+  private double m_robotWidth = 35.0 / 12.0 * 1.096;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
   private Vector2 m_prevCenterPositionForLeft;
   private Vector2 m_prevCenterPositionForRight;
   private Vector2 m_prevLeftPosition;
@@ -50,12 +50,12 @@ public class Path2D {
     return addPoint(point.x, point.y);
   }
 
-  public Path2DPoint addVector2After(Vector2 point, Path2DPoint after) {
-    return m_xyCurve.addPointAfter(point, after);
-  }
+
 
   public Path2DPoint addPoint(double x, double y) {
     return m_xyCurve.addPointToEnd(x, y);
+  }
+
   }
 
   public void addPointAngleAndMagnitude(double x, double y, double angle, double magnitude) {
@@ -73,6 +73,7 @@ public class Path2D {
   public void removeAllEasePoints() {
     m_easeCurve.removeAllPoints();
   }
+
   public void addEasePointSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
     m_easeCurve.storeValueSlopeAndMagnitude(time, value, slope, magnitude);
   }
