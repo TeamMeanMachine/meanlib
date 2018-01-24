@@ -56,8 +56,6 @@ public class Path2D {
     return m_xyCurve.addPointToEnd(x, y);
   }
 
-  }
-
   public void addPointAngleAndMagnitude(double x, double y, double angle, double magnitude) {
     m_xyCurve.addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
   }
