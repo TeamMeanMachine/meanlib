@@ -50,7 +50,10 @@ public class Path2D {
     return addPoint(point.x, point.y);
   }
 
-
+  public Path2DPoint addVector2After(Vector2 point, Path2DPoint after)
+  {
+    return m_xyCurve.addPointAfter(point, after);
+  }
 
   public Path2DPoint addPoint(double x, double y) {
     return m_xyCurve.addPointToEnd(x, y);
