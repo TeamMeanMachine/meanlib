@@ -39,7 +39,7 @@ repositories {
 
 dependencies {
     compile "edu.wpi.first.wpilibj:wpilibj-java:+"
-    compile "edu.wpi.first.wpilibj:wpilibj-jni:+"
+    compile "edu.wpi.first.wpilibj:wpilibj-jni:+:all"
     compile "edu.wpi.first.ntcore:ntcore-java:+"
     compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:arm"
     compile "openrio.mirror.third.ctre:CTRE-phoenix-java:+"

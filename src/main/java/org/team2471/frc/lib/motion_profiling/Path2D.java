@@ -8,7 +8,7 @@ public class Path2D {
   private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-  private double m_robotWidth = 36.5 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+  private double m_robotWidth = 35.0 / 12.0 * 1.096;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
   private Vector2 m_prevCenterPositionForLeft;
   private Vector2 m_prevCenterPositionForRight;
   private Vector2 m_prevLeftPosition;
@@ -37,24 +37,42 @@ public class Path2D {
     m_prevRightPosition = null;
   }
 
-  public void addVector2(Vector2 point) {
-    addPoint(point.x, point.y);
-  }
-
-  public void addPoint(double x, double y) {
-    m_xyCurve.addPointToEnd(x, y);
-  }
-
   public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
     m_xyCurve.addPointToEnd(x, y, xTangent, yTangent);
+  }
+
+  public boolean hasPoints()
+  {
+    return m_xyCurve.getHeadPoint()!=null;
+  }
+
+  public Path2DPoint addVector2(Vector2 point) {
+    return addPoint(point.x, point.y);
+  }
+
+  public Path2DPoint addVector2After(Vector2 point, Path2DPoint after)
+  {
+    return m_xyCurve.addPointAfter(point, after);
+  }
+
+  public Path2DPoint addPoint(double x, double y) {
+    return m_xyCurve.addPointToEnd(x, y);
   }
 
   public void addPointAngleAndMagnitude(double x, double y, double angle, double magnitude) {
     m_xyCurve.addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
   }
 
+  public void removePoint( Path2DPoint path2DPoint ) {
+    m_xyCurve.removePoint( path2DPoint );
+  }
+
   public void addEasePoint(double time, double value) {
     m_easeCurve.storeValue(time, value);
+  }
+
+  public void removeAllEasePoints() {
+    m_easeCurve.removeAllPoints();
   }
 
   public void addEasePointSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
@@ -62,7 +80,10 @@ public class Path2D {
   }
 
   public Vector2 getPosition(double time) {
-    return getPositionAtEase(m_easeCurve.getValue(time));
+    if (m_xyCurve.getHeadPoint()!=null)
+      return getPositionAtEase(m_easeCurve.getValue(time));
+    else
+      return getPositionAtEase(time/5.0);  // take 5 seconds to finish path (linear motion)
   }
 
   public Vector2 getTangent(double time) {
