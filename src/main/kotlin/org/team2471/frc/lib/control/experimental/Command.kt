@@ -41,17 +41,20 @@ class Command(val name: String,
                     conflictingCommands.forEach { it.join() }
                 }
 
-                println("Starting command $name")
-                body(this@launch)
-                CommandSystem.cleanCommand(this@Command)
+                try {
+                    println("Starting command $name")
+                    body(this@launch)
+                } finally {
+                    CommandSystem.cleanCommand(this@Command)
+                }
             }
         }
 
-        if(join) coroutine?.join()
+        if (join) coroutine?.join()
     }
 
-    fun launch() {
-        launch { invoke(coroutineContext, false) }
+    fun launch() = launch {
+        invoke(coroutineContext, false)
     }
 
     fun cancel(cause: Throwable? = null) = coroutine?.cancel(cause)
