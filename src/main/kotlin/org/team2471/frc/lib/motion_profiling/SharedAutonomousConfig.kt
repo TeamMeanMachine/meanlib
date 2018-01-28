@@ -65,7 +65,7 @@ class SharedAutonomousConfig(val name: String) {
                     //.toTypedArray()
     }
 
-    private val paths: MutableMap<String, Path2D> = HashMap()
+    val paths: MutableMap<String, Path2D> = HashMap()
     //private val table = configTable.getSubTable(name)
     //private val pathsTable = table.getSubTable("Paths")
 
