@@ -40,6 +40,7 @@ repositories {
 dependencies {
     compile "edu.wpi.first.wpilibj:wpilibj-java:+"
     compile "edu.wpi.first.wpilibj:wpilibj-jni:+"
+    compile "edu.wpi.first.wpiutil:wpiutil-java:3.0.0"
     compile "edu.wpi.first.ntcore:ntcore-java:4.0.0"
     compile "openrio.mirror.third.ctre:CTRE-phoenix-java:+"
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -47,11 +48,11 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     compile "org.jetbrains.kotlin:kotlin-reflect"
 
+    testCompile "edu.wpi.first.ntcore:ntcore-jni:4.0.0:all"
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
-    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
     testCompile 'org.assertj:assertj-core:3.8.0'
-    testCompile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:desktop"
     testCompile 'org.amshove.kluent:kluent:1.31'
+    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
 }
 
 compileKotlin {
