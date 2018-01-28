@@ -1,47 +1,65 @@
 package org.team2471.frc.lib.control.experimental
 
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import java.util.concurrent.TimeUnit
+import java.util.*
 
-private const val POLLING_RATE = 200L
+object EventMapper {
+    private val entries = LinkedList<EventMapperEntry>()
 
-fun Command.runWhen(condition: () -> Boolean) = launch {
-    var previousState = condition()
-    while (isActive) {
+    @Synchronized
+    internal fun addEntry(entry: EventMapperEntry) = entries.addFirst(entry)
+
+    fun tick() = entries.forEach { it() }
+}
+
+private typealias EventMapperEntry = () -> Unit
+
+private class RunWhenEntry(private val command: Command, private val condition: () -> Boolean) : EventMapperEntry {
+    private var previousState = condition()
+
+    override fun invoke() {
         val state = condition()
 
-        if (state && !previousState) launch()
+        if (state && !previousState) command.launch()
 
-        delay(POLLING_RATE, TimeUnit.MILLISECONDS)
         previousState = state
     }
 }
 
-fun Command.runWhile(condition: () -> Boolean) = launch {
-    var previousState = condition()
-    while (isActive) {
+private class RunWhileEntry(private val command: Command, private val condition: () -> Boolean) : EventMapperEntry {
+    private var previousState = condition()
+
+    override fun invoke() {
         val state = condition()
 
-        if (state && !previousState) launch()
-        else if (previousState && !state) cancel()
+        if (state && !previousState) command.launch()
+        else if (previousState && !state) command.cancel()
 
-        delay(POLLING_RATE, TimeUnit.MILLISECONDS)
         previousState = state
     }
 }
 
-fun Command.toggleWhen(condition: () -> Boolean) = launch {
-    var previousState = condition()
-    while (isActive) {
+private class ToggleWhenEntry(private val command: Command, private val condition: () -> Boolean) : EventMapperEntry {
+    private var previousState = condition()
+
+    override fun invoke() {
         val state = condition()
 
         if (state && !previousState) {
-            if (!isActive) launch()
-            else cancel()
+            if (!command.isActive) {
+                println("Toggle")
+                command.launch()
+            } else {
+                println("Untoggle")
+                command.cancel()
+            }
         }
 
-        delay(POLLING_RATE, TimeUnit.MILLISECONDS)
         previousState = state
     }
 }
+
+fun Command.runWhen(condition: () -> Boolean) = EventMapper.addEntry(RunWhenEntry(this, condition))
+
+fun Command.runWhile(condition: () -> Boolean) = EventMapper.addEntry(RunWhileEntry(this, condition))
+
+fun Command.toggleWhen(condition: () -> Boolean) = EventMapper.addEntry(ToggleWhenEntry(this, condition))

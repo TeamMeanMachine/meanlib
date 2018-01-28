@@ -285,7 +285,7 @@ public class MotionCurve {
           return getTailKey().getValue();
         case EXTRAPOLATION_LINEAR: {
           Vector2 v2Slope = getTailKey().getPrevTangent();
-          return getTailKey().getValue() + (v2Slope.y / v2Slope.x) * (time - getTailKey().getTime());
+          return getTailKey().getValue() + (v2Slope.getY() / v2Slope.getX()) * (time - getTailKey().getTime());
         }
         case EXTRAPOLATION_CYCLE: {
           double tStartdouble = getHeadKey().getTime();
@@ -338,7 +338,7 @@ public class MotionCurve {
           return getHeadKey().getValue();
         case EXTRAPOLATION_LINEAR: {
           Vector2 v2Slope = getHeadKey().getNextTangent();
-          return getHeadKey().getValue() + (v2Slope.y / v2Slope.x) * (time - getHeadKey().getTime());
+          return getHeadKey().getValue() + (v2Slope.getY() / v2Slope.getX()) * (time - getHeadKey().getTime());
         }
         case EXTRAPOLATION_CYCLE: {
           double tStartdouble = getHeadKey().getTime();
@@ -516,11 +516,11 @@ public class MotionCurve {
           return m_lastDerivative;
         if (key.getTime() == time) {
           Vector2 tangent = key.getNextTangent();
-          m_lastDerivative = tangent.y / tangent.x;
+          m_lastDerivative = tangent.getY() / tangent.getX();
           break;
         } else if (nextKey.getTime() == time) {
           Vector2 tangent = nextKey.getPrevTangent();
-          m_lastDerivative = tangent.y / tangent.x;
+          m_lastDerivative = tangent.getY() / tangent.getX();
           break;
         } else if (nextKey.getTime() > time) {
           m_lastDerivative = derivative(time, key);
@@ -534,11 +534,11 @@ public class MotionCurve {
           return m_lastDerivative;
         if (key.getTime() == time) {
           Vector2 tangent = key.getNextTangent();
-          m_lastDerivative = tangent.y / tangent.x;
+          m_lastDerivative = tangent.getY() / tangent.getX();
           break;
         } else if (nextKey.getTime() == time) {
           Vector2 tangent = nextKey.getPrevTangent();
-          m_lastDerivative = tangent.y / tangent.x;
+          m_lastDerivative = tangent.getY() / tangent.getX();
           break;
         } else if (key.getTime() < time) {
           m_lastDerivative = derivative(time, key);

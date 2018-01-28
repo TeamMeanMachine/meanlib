@@ -30,6 +30,7 @@ private fun MotionKey.remainingKeys(): List<MotionKey> {
     return result
 }
 
+/*
 private fun Path2D.dumpToTable(table: ITable) {
     table.putStringArray("XyCurvePoints", when (this.xyCurve.headPoint) {
         null -> emptyArray()
@@ -49,28 +50,31 @@ private fun Path2D.dumpToTable(table: ITable) {
     table.setPersistent("XyCurvePoints")
     table.setPersistent("EaseCurveKeys")
 }
+*/
 
-internal val pathVisualizerTable = NetworkTable.getTable("PathVisualizer")
+//internal val pathVisualizerTable = NetworkTable.getTable("PathVisualizer")
 
 class SharedAutonomousConfig(val name: String) {
     companion object {
-        private val configTable = pathVisualizerTable.getSubTable("Configs")
+        //private val configTable = pathVisualizerTable.getSubTable("Configs")
 
         val configNames: Array<String>
-            get() = configTable.subTables
-                    .filterNotNull()
-                    .toTypedArray()
+            get() = emptyArray()
+                    //configTable.subTables
+                    //.filterNotNull()
+                    //.toTypedArray()
     }
 
     private val paths: MutableMap<String, Path2D> = HashMap()
-    private val table = configTable.getSubTable(name)
-    private val pathsTable = table.getSubTable("Paths")
+    //private val table = configTable.getSubTable(name)
+    //private val pathsTable = table.getSubTable("Paths")
 
 
     val pathNames: Array<String>
-        get() = pathsTable.subTables
-                .filterNotNull()
-                .toTypedArray()
+        get() = emptyArray()
+//                pathsTable.subTables
+//                .filterNotNull()
+//                .toTypedArray()
 
     fun putPath(pathName: String, path: Path2D) = paths.put(pathName, path)
 
@@ -82,7 +86,7 @@ class SharedAutonomousConfig(val name: String) {
 
     fun updatePath(pathName: String) {
         val path = getPath(pathName)!!
-        val pathTable = pathsTable.getSubTable(pathName)
-        path.dumpToTable(pathTable)
+        //val pathTable = pathsTable.getSubTable(pathName)
+        //path.dumpToTable(pathTable)
     }
 }
