@@ -47,7 +47,7 @@ public class Path2D {
   }
 
   public Path2DPoint addVector2(Vector2 point) {
-    return addPoint(point.x, point.y);
+    return addPoint(point.getX(), point.getY());
   }
 
   public Path2DPoint addVector2After(Vector2 point, Path2DPoint after)
@@ -103,10 +103,10 @@ public class Path2D {
   public Vector2 getSidePosition(double time, double xOffset) {  // offset can be positive or negative (half the width of the robot)
     Vector2 centerPosition = getPosition(time);  // this could compute the position for a specific offset vector on the robot
     Vector2 tangent = getTangent(time);
-    tangent = Vector2.normalize(tangent);
-    tangent = Vector2.perpendicular(tangent);
-    tangent = Vector2.multiply(tangent, xOffset);
-    Vector2 sidePosition = Vector2.add(centerPosition, tangent);
+    tangent = Vector2.Companion.normalize(tangent);
+    tangent = Vector2.Companion.perpendicular(tangent);
+    tangent = Vector2.Companion.multiply(tangent, xOffset);
+    Vector2 sidePosition = Vector2.Companion.add(centerPosition, tangent);
     return sidePosition;
   }
 
@@ -127,15 +127,15 @@ public class Path2D {
 
     Vector2 centerPosition = getPosition(time);
     Vector2 leftPosition = getLeftPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(centerPosition, m_prevCenterPositionForLeft);
-    Vector2 deltaLeft = Vector2.subtract(leftPosition, m_prevLeftPosition);
+    Vector2 deltaCenter = Vector2.Companion.subtract(centerPosition, m_prevCenterPositionForLeft);
+    Vector2 deltaLeft = Vector2.Companion.subtract(leftPosition, m_prevLeftPosition);
     m_prevCenterPositionForLeft = centerPosition;
     m_prevLeftPosition = leftPosition;
 
-    if (Vector2.dot(deltaCenter, deltaLeft) > 0) {
-      return Vector2.length(deltaLeft);
+    if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
+      return Vector2.Companion.length(deltaLeft);
     } else {
-      return -Vector2.length(deltaLeft);
+      return -Vector2.Companion.length(deltaLeft);
     }
   }
 
@@ -148,15 +148,15 @@ public class Path2D {
 
     Vector2 centerPosition = getPosition(time);
     Vector2 rightPosition = getRightPosition(time);
-    Vector2 deltaCenter = Vector2.subtract(centerPosition, m_prevCenterPositionForRight);
-    Vector2 deltaRight = Vector2.subtract(rightPosition, m_prevRightPosition);
+    Vector2 deltaCenter = Vector2.Companion.subtract(centerPosition, m_prevCenterPositionForRight);
+    Vector2 deltaRight = Vector2.Companion.subtract(rightPosition, m_prevRightPosition);
     m_prevCenterPositionForRight = centerPosition;
     m_prevRightPosition = rightPosition;
 
-    if (Vector2.dot(deltaCenter, deltaRight) > 0) {
-      return Vector2.length(deltaRight);
+    if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
+      return Vector2.Companion.length(deltaRight);
     } else {
-      return -Vector2.length(deltaRight);
+      return -Vector2.Companion.length(deltaRight);
     }
   }
 

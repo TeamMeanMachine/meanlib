@@ -58,7 +58,7 @@ public class Path2DCurve {
 
   public Path2DPoint addPointAfter(Vector2 vec, Path2DPoint after)
   {
-    Path2DPoint path2DPoint = new Path2DPoint(vec.x, vec.y);
+    Path2DPoint path2DPoint = new Path2DPoint(vec.getX(), vec.getY());
     insertPointAfter(after, path2DPoint);
     return path2DPoint;
   }
