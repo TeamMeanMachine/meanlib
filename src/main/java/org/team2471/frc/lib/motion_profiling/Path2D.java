@@ -1,7 +1,15 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import com.sun.javafx.tk.Toolkit;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import org.team2471.frc.lib.vector.Vector2;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class Path2D {
 
@@ -239,4 +247,25 @@ public class Path2D {
   public void setName(String name) {
     this.name = name;
   }
+
+  public String toJSonString() {
+      Collection<Double> doublesList = new ArrayList<>();
+        doublesList.add(m_robotWidth);
+        doublesList.add(travelDirection);
+      Collection<Path2DCurve> path2DCurveCollection = new ArrayList<>();
+        path2DCurveCollection.add(m_xyCurve);
+      Collection<MotionCurve> motionCurveCollection = new ArrayList<>();
+        motionCurveCollection.add(m_easeCurve);
+
+      List<Collection> list = new ArrayList<>();
+        list.add(doublesList);
+        list.add(path2DCurveCollection);
+        list.add(motionCurveCollection);
+
+    Gson gson = new Gson();
+    Type type = new TypeToken<List<Toolkit.Task>>() {}.getType();
+    String json = gson.toJson(list, type);
+    System.out.println(json);
+  return json; }
 }
+
