@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
 import com.sun.javafx.tk.Toolkit;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import org.team2471.frc.lib.vector.Vector2;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -218,16 +217,6 @@ public class Path2D {
     this.m_mirrored = mirrored;
   }
 
-  public void writeToNetworkTable() {
-    NetworkTable table = NetworkTable.getTable("PathVisualizer");
-    table.putString( name, toString() );
-  }
-
-  public void readFromNetworkTable() {
-    NetworkTable table = NetworkTable.getTable("PathVisualizer");
-    String pathString = table.getString( name, "" );
-  }
-
   public String toString() {
     String rValue = "";
     for (Path2DPoint point = m_xyCurve.getHeadPoint(); point != null; point = point.getNextPoint()) {
@@ -267,5 +256,9 @@ public class Path2D {
     String json = gson.toJson(list, type);
     System.out.println(json);
   return json; }
+
+  public static Path2D fromJsonString(String jsonString) {
+    return null; // TODO: parse the json string and return the path
+  }
 }
 
