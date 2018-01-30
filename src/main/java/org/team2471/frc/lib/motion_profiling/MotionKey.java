@@ -233,7 +233,7 @@ public class MotionKey {
         break;
       case SLOPE_FLAT:
         if (m_prevKey != null)
-          m_prevTangent.set(getTimeAndValue().getX() - m_prevKey.getTimeAndValue().getX(), 0.0f);
+          m_prevTangent.set((getTimeAndValue().getX() - m_prevKey.getTimeAndValue().getX()) * 0.5, 0.0);
         break;
       case SLOPE_SMOOTH:
         bCalcSmoothPrev = true;

@@ -47,6 +47,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     compile "org.jetbrains.kotlin:kotlin-reflect"
+    compile 'com.google.code.gson:gson:2.8.2'
 
     testCompile "edu.wpi.first.ntcore:ntcore-jni:4.0.0:all"
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
