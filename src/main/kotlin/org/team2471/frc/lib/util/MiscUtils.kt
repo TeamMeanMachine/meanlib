@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.util
 
-import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.RobotController
+import edu.wpi.first.wpilibj.Timer
 
 /**
  * Executes the given block and returns elapsed time in seconds.

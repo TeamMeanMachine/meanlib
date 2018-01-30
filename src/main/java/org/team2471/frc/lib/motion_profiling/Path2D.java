@@ -37,6 +37,10 @@ public class Path2D {
         travelDirection = 1.0;
     }
 
+    public static Path2D fromJsonString(String jsonString) {
+        return null; // TODO: parse the json string and return the path
+    }
+
     public void reset() {
         m_prevCenterPositionForLeft = null;
         m_prevCenterPositionForRight = null;
@@ -255,10 +259,6 @@ public class Path2D {
         String json = gson.toJson(list, type);
         System.out.println(json);
         return json;
-    }
-
-    public static Path2D fromJsonString(String jsonString) {
-        return null; // TODO: parse the json string and return the path
     }
 }
 

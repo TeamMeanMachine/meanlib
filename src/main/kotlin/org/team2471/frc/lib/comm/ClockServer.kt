@@ -12,7 +12,7 @@ object ClockServer {
     private var initialized = false
 
     fun init(port: Int, timer: () -> Double = { Timer.getFPGATimestamp() }) {
-        if(!initialized) initialized = true
+        if (!initialized) initialized = true
         else throw IllegalStateException("A clock server has already been initialized!")
 
         Thread({
@@ -22,9 +22,9 @@ object ClockServer {
 
             val sendPacket = DatagramPacket(ByteArray(8), 8)
 
-            while(!Thread.currentThread().isInterrupted) {
+            while (!Thread.currentThread().isInterrupted) {
                 socket.receive(recvPacket)
-                if(recvPacket.data[0] == 42.toByte()) {
+                if (recvPacket.data[0] == 42.toByte()) {
                     ByteBuffer.wrap(sendPacket.data).putDouble(timer())
                     sendPacket.address = recvPacket.address
                     sendPacket.port = recvPacket.port

@@ -1,12 +1,6 @@
 package org.team2471.frc.lib.control.experimental
 
-import kotlinx.coroutines.experimental.delay
-import org.amshove.kluent.shouldBe
 import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
-import java.util.concurrent.TimeUnit
 
 object CommandSystemTest : Spek({
     // Skipping tests for now

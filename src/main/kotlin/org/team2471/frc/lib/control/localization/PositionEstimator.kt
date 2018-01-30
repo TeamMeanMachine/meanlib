@@ -3,7 +3,8 @@ package org.team2471.frc.lib.control.localization
 import edu.wpi.first.wpilibj.RobotController
 import org.team2471.frc.lib.math.Point
 import org.team2471.frc.lib.math.average
-import java.lang.Math.*
+import java.lang.Math.cos
+import java.lang.Math.sin
 
 class PositionEstimator(private var position: Point, private var heading: Double,
                         time: Long = RobotController.getFPGATime()) {
