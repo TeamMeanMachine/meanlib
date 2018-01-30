@@ -169,18 +169,33 @@ public class Path2D {
         }
     }
 
-    public double getLeftPositionDelta(double time) {
-        if (travelDirection > 0)
+
+    private double travelDirGetLeftPositionDelta(double time) {  // does travel direction actually work?
+        if (travelDirection>0)
             return privateGetLeftPositionDelta(time);
         else
             return -privateGetRightPositionDelta(time);
     }
 
-    public double getRightPositionDelta(double time) {
-        if (travelDirection > 0)
+    private double travelDirGetRightPositionDelta(double time) {
+        if (travelDirection>0)
             return privateGetRightPositionDelta(time);
         else
             return -privateGetLeftPositionDelta(time);
+    }
+
+    private double getLeftPositionDelta(double time) {
+        if (m_mirrored)
+            return travelDirGetRightPositionDelta(time);
+        else
+            return travelDirGetLeftPositionDelta(time);
+    }
+
+    private double getRightPositionDelta(double time) {
+        if (m_mirrored)
+            return travelDirGetLeftPositionDelta(time);
+        else
+            return travelDirGetRightPositionDelta(time);
     }
 
     public double getRobotWidth() {
