@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  * of the command coroutine.
  */
 suspend inline fun periodic(period: Int = 20,
-                     condition: () -> Boolean = { true }, body: () -> Unit) {
+                            condition: () -> Boolean = { true }, body: () -> Unit) {
     while (condition()) {
         val microPeriod = period * 1000L
 
@@ -23,7 +23,7 @@ suspend inline fun periodic(period: Int = 20,
             body()
         }
         if (time > microPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time/1000}ms, expected less than ${period}ms", false)
+                "Got: ${time / 1000}ms, expected less than ${period}ms", false)
         delay(microPeriod - min(time, microPeriod), TimeUnit.MICROSECONDS)
     }
 }

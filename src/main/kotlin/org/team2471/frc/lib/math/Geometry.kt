@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.math
 
-import java.lang.Math.*
+import java.lang.Math.pow
+import java.lang.Math.sqrt
 
 
 data class Point(val x: Double, val y: Double) {

@@ -60,10 +60,10 @@ class Vector2(var x: Double, var y: Double) {
 
     operator fun div(number: Double): Vector2 = Vector2(x / number, y / number)
 
-    operator fun plus(vecB: Vector2) : Vector2 = Vector2(x + vecB.x, y + vecB.y)
+    operator fun plus(vecB: Vector2): Vector2 = Vector2(x + vecB.x, y + vecB.y)
 
-    operator fun minus(vecB: Vector2) : Vector2 = Vector2(x - vecB.x, y - vecB.y)
+    operator fun minus(vecB: Vector2): Vector2 = Vector2(x - vecB.x, y - vecB.y)
 
-    operator fun unaryMinus() : Vector2 = Vector2(-x, -y)
+    operator fun unaryMinus(): Vector2 = Vector2(-x, -y)
 
 }

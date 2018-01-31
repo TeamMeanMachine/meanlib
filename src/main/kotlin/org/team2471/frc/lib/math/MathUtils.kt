@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.math
 
-import java.lang.Math.floor
 import java.lang.Math.pow
 
 fun Double.fitToRange(min: Double, max: Double): Double = when {
@@ -23,7 +22,7 @@ fun average(vararg x: Double) = x.sum() / x.size
 
 fun lerp(min: Double, max: Double, k: Double) = min + (max - min) * k
 
-fun Double.deadband(tolerance: Double) = if(Math.abs(this) < tolerance) {
+fun Double.deadband(tolerance: Double) = if (Math.abs(this) < tolerance) {
     0.0
 } else {
     (this - Math.copySign(tolerance, this)) / (1.0 - tolerance)

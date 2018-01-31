@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.RobotState
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.sync.Mutex
@@ -23,8 +24,14 @@ object CommandSystem {
             val activeCommandsEntry = table.getEntry("Active Commands")
             val activeRequirementsEntry = table.getEntry("Active Requirements")
             val defaultCommandsEntry = table.getEntry("Default Commands")
-            periodic(40) {
+
+            periodic(100) {
                 mutex.withLock {
+                    // Cancel all non-default commands on robot disable
+                    if (!RobotState.isEnabled()) activeCommands.subtract(defaultCommandsMap.values).forEach {
+                        it.cancel()
+                    }
+
                     activeCommandsEntry.setStringArray(activeCommands.map { it.name }.toTypedArray())
                     activeRequirementsEntry.setStringArray(activeRequirementsMap.map { (subsystem, command) ->
                         "${subsystem::class.simpleName} -> ${command.name}"
