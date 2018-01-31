@@ -1,39 +1,36 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import com.sun.javafx.tk.Toolkit;
 import org.team2471.frc.lib.vector.Vector2;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class Path2D {
+
+    private String name;
 
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-    private double m_robotWidth = 35.0 / 12.0 * 1.096;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
-    private double m_robotLength = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+    private double m_robotWidth = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+    private double robotLength = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+    private double widthFudgeFactor = 1.096;
+    private double speed = 1.0;
+    private double travelDirection = 1.0;
+    private boolean m_mirrored = false;
+
+    // calculation storage
     private Vector2 m_prevCenterPositionForLeft;
     private Vector2 m_prevCenterPositionForRight;
     private Vector2 m_prevLeftPosition;
     private Vector2 m_prevRightPosition;
-    private double travelDirection;
-    private boolean m_mirrored;
-    private String name;
 
     public Path2D() {
         m_xyCurve = new Path2DCurve();
         m_easeCurve = new MotionCurve();
-        travelDirection = 1.0;
     }
 
     public Path2D(String name) {
         this.name = name;
         m_xyCurve = new Path2DCurve();
         m_easeCurve = new MotionCurve();
-        travelDirection = 1.0;
     }
 
     public static Path2D fromJsonString(String jsonString) {
@@ -141,9 +138,9 @@ public class Path2D {
         m_prevLeftPosition = leftPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            return Vector2.Companion.length(deltaLeft);
+            return Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
         } else {
-            return -Vector2.Companion.length(deltaLeft);
+            return -Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
         }
     }
 
@@ -162,35 +159,35 @@ public class Path2D {
         m_prevRightPosition = rightPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            return Vector2.Companion.length(deltaRight);
+            return Vector2.Companion.length(deltaRight) * widthFudgeFactor;
         } else {
-            return -Vector2.Companion.length(deltaRight);
+            return -Vector2.Companion.length(deltaRight) * widthFudgeFactor;
         }
     }
 
 
     private double travelDirGetLeftPositionDelta(double time) {  // does travel direction actually work?
-        if (travelDirection>0)
+        if (travelDirection > 0)
             return privateGetLeftPositionDelta(time);
         else
             return -privateGetRightPositionDelta(time);
     }
 
     private double travelDirGetRightPositionDelta(double time) {
-        if (travelDirection>0)
+        if (travelDirection > 0)
             return privateGetRightPositionDelta(time);
         else
             return -privateGetLeftPositionDelta(time);
     }
 
-    private double getLeftPositionDelta(double time) {
+    public double getLeftPositionDelta(double time) {
         if (m_mirrored)
             return travelDirGetRightPositionDelta(time);
         else
             return travelDirGetLeftPositionDelta(time);
     }
 
-    private double getRightPositionDelta(double time) {
+    public double getRightPositionDelta(double time) {
         if (m_mirrored)
             return travelDirGetLeftPositionDelta(time);
         else
@@ -201,8 +198,8 @@ public class Path2D {
         return m_robotWidth;
     }
 
-    public void setRobotWidth(double robotWidth) {
-        m_robotWidth = robotWidth;
+    public void setRobotWidth(double _robotWidth) {
+        this.m_robotWidth = _robotWidth;
     }
 
 
@@ -251,58 +248,31 @@ public class Path2D {
     }
 
     public String toJSonString() {
-/*        Collection<Double> doublesList = new ArrayList<>();
-        doublesList.add(m_robotWidth);
-        doublesList.add(travelDirection);
-        Collection<Path2DCurve> path2DCurveCollection = new ArrayList<>();
-        path2DCurveCollection.add(m_xyCurve);
-        Collection<MotionCurve> motionCurveCollection = new ArrayList<>();
-        motionCurveCollection.add(m_easeCurve);
-
-        List<Collection> list = new ArrayList<>();
-        list.add(doublesList);
-        list.add(path2DCurveCollection);
-        list.add(motionCurveCollection);
-
-        Gson gson = new Gson();
-        Type type = new TypeToken<List<Toolkit.Task>>() {
-        }.getType();
-        String json = gson.toJson(list, type);
-        System.out.println(json);
-        return json;*/
         return "";
     }
 
     public double getRobotLength() {
-        return m_robotLength;
+        return robotLength;
     }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setRobotLength(double robotLength) {
+        this.robotLength = robotLength;
+    }
 
-  public double getRobotLength() {
-    return robotLength;
-  }
+    public double getWidthFudgeFactor() {
+        return widthFudgeFactor;
+    }
 
-  public void setRobotLength(double robotLength) {
-    this.robotLength = robotLength;
-  }
+    public void setWidthFudgeFactor(double widthFudgeFactor) {
+        this.widthFudgeFactor = widthFudgeFactor;
+    }
 
-  public double getWidthFudgeFactor() {
-    return widthFudgeFactor;
-  }
+    public double getSpeed() {
+        return speed;
+    }
 
-  public void setWidthFudgeFactor(double widthFudgeFactor) {
-    this.widthFudgeFactor = widthFudgeFactor;
-  }
-
-  public double getSpeed() {
-    return speed;
-  }
-
-  public void setSpeed(double speed) {
-    this.speed = speed;
-  }
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
 }
 

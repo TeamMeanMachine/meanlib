@@ -105,8 +105,11 @@ public class Path2DCurve {
 
     public Vector2 getPositionAtDistance(double distance) {
         Path2DPoint point = getPointBefore(distance);
-        if (point == null) {  // distance exceeds path length
-            return m_tailPoint.getPosition();
+        if (point == null) {
+            if (m_tailPoint != null)
+                return m_tailPoint.getPosition();
+            else
+                return new Vector2(0.0, 0.0);
         }
         return point.getPositionAtDistance(m_lengthRemaining);
     }
@@ -114,18 +117,14 @@ public class Path2DCurve {
     public Vector2 getTangentAtDistance(double distance) {
         Path2DPoint point = getPointBefore(distance);
         if (point == null) {  // distance exceeds path length
-            return m_tailPoint.getNextTangent();
+            if (m_tailPoint!=null)
+                return m_tailPoint.getNextTangent();
+            else
+                return new Vector2(0.0, 0.0);
         }
         return point.getTangentAtDistance(m_lengthRemaining);
     }
 
-  public Vector2 getPositionAtDistance(double distance) {
-    Path2DPoint point = getPointBefore(distance);
-    if (point == null) {  // distance exceeds path length
-      if (m_tailPoint!=null)
-        return m_tailPoint.getPosition();
-      else
-        return new Vector2(0.0, 0.0);
     private Path2DPoint getPointBefore(double distance) {
         double length = 0;
         for (Path2DPoint point = m_headPoint; point != null && point.getNextPoint() != null; point = point.getNextPoint()) {  // should make this incremental
