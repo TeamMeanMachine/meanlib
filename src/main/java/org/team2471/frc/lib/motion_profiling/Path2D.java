@@ -5,17 +5,21 @@ import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
 
+  private String name;
   private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
   private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
+  private double robotWidth = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+  private double robotLength;
+  private double widthFudgeFactor = 1.096;
+  private double speed = 1.0;
+  private double travelDirection = 1.0;
+  private boolean m_mirrored = false;
 
-  private double m_robotWidth = 35.0 / 12.0 * 1.096;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
-  private Vector2 m_prevCenterPositionForLeft;
-  private Vector2 m_prevCenterPositionForRight;
+  // temporary computation storage
   private Vector2 m_prevLeftPosition;
   private Vector2 m_prevRightPosition;
-  private double travelDirection;
-  private boolean m_mirrored;
-  private String name;
+  private Vector2 m_prevCenterPositionForLeft;
+  private Vector2 m_prevCenterPositionForRight;
 
   public Path2D() {
     m_xyCurve = new Path2DCurve();
@@ -111,11 +115,11 @@ public class Path2D {
   }
 
   public Vector2 getLeftPosition(double time) {
-    return getSidePosition(time, -m_robotWidth / 2.0);
+    return getSidePosition(time, -robotWidth / 2.0);
   }
 
   public Vector2 getRightPosition(double time) {
-    return getSidePosition(time, m_robotWidth / 2.0);
+    return getSidePosition(time, robotWidth / 2.0);
   }
 
   private double privateGetLeftPositionDelta(double time) {
@@ -133,9 +137,9 @@ public class Path2D {
     m_prevLeftPosition = leftPosition;
 
     if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-      return Vector2.Companion.length(deltaLeft);
+      return Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
     } else {
-      return -Vector2.Companion.length(deltaLeft);
+      return -Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
     }
   }
 
@@ -154,9 +158,9 @@ public class Path2D {
     m_prevRightPosition = rightPosition;
 
     if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-      return Vector2.Companion.length(deltaRight);
+      return Vector2.Companion.length(deltaRight) * widthFudgeFactor;
     } else {
-      return -Vector2.Companion.length(deltaRight);
+      return -Vector2.Companion.length(deltaRight) * widthFudgeFactor;
     }
   }
 
@@ -175,11 +179,11 @@ public class Path2D {
   }
 
   public double getRobotWidth() {
-    return m_robotWidth;
+    return robotWidth;
   }
 
   public void setRobotWidth(double robotWidth) {
-    m_robotWidth = robotWidth;
+    this.robotWidth = robotWidth;
   }
 
   public double getPathLength() {
@@ -238,5 +242,29 @@ public class Path2D {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public double getRobotLength() {
+    return robotLength;
+  }
+
+  public void setRobotLength(double robotLength) {
+    this.robotLength = robotLength;
+  }
+
+  public double getWidthFudgeFactor() {
+    return widthFudgeFactor;
+  }
+
+  public void setWidthFudgeFactor(double widthFudgeFactor) {
+    this.widthFudgeFactor = widthFudgeFactor;
+  }
+
+  public double getSpeed() {
+    return speed;
+  }
+
+  public void setSpeed(double speed) {
+    this.speed = speed;
   }
 }

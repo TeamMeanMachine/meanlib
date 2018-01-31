@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import org.team2471.frc.lib.math.Vector;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2DCurve {
@@ -109,7 +110,10 @@ public class Path2DCurve {
   public Vector2 getPositionAtDistance(double distance) {
     Path2DPoint point = getPointBefore(distance);
     if (point == null) {  // distance exceeds path length
-      return m_tailPoint.getPosition();
+      if (m_tailPoint!=null)
+        return m_tailPoint.getPosition();
+      else
+        return new Vector2(0.0, 0.0);
     }
     return point.getPositionAtDistance(m_lengthRemaining);
   }
