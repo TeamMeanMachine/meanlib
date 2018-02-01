@@ -9,7 +9,7 @@ public class Path2D {
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-    private double m_robotWidth = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
+    private double robotWidth = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
     private double robotLength = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
     private double widthFudgeFactor = 1.096;
     private double speed = 1.0;
@@ -85,8 +85,12 @@ public class Path2D {
     }
 
     public Vector2 getPosition(double time) {
-        if (m_xyCurve.getHeadPoint() != null)
-            return getPositionAtEase(m_easeCurve.getValue(time));
+        if (m_xyCurve.getHeadPoint() != null) {
+            if (speed > 0)
+                return getPositionAtEase(m_easeCurve.getValue(time * speed));
+            else
+                return getPositionAtEase(m_easeCurve.getValue((getDuration()-time) * speed));
+        }
         else
             return getPositionAtEase(time / 5.0);  // take 5 seconds to finish path (linear motion)
     }
@@ -116,11 +120,11 @@ public class Path2D {
     }
 
     public Vector2 getLeftPosition(double time) {
-        return getSidePosition(time, -m_robotWidth / 2.0);
+        return getSidePosition(time, -robotWidth / 2.0);
     }
 
     public Vector2 getRightPosition(double time) {
-        return getSidePosition(time, m_robotWidth / 2.0);
+        return getSidePosition(time, robotWidth / 2.0);
     }
 
     private double privateGetLeftPositionDelta(double time) {
@@ -195,16 +199,19 @@ public class Path2D {
     }
 
     public double getRobotWidth() {
-        return m_robotWidth;
+        return robotWidth;
     }
 
     public void setRobotWidth(double _robotWidth) {
-        this.m_robotWidth = _robotWidth;
+        this.robotWidth = _robotWidth;
     }
 
 
     public double getDuration() {
-        return m_easeCurve.getLength();
+        if (m_easeCurve!=null)
+            return m_easeCurve.getLength();
+        else
+            return 5.0;
     }
 
     public MotionCurve getEaseCurve() {
