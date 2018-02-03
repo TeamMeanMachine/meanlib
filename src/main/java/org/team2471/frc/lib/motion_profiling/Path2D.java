@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -255,7 +257,12 @@ public class Path2D {
     }
 
     public String toJSonString() {
-        return "";
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<Path2D> jsonAdapter = moshi.adapter(Path2D.class);
+
+        String json = jsonAdapter.toJson(this);
+        System.out.println(json);
+        return json;
     }
 
     public double getRobotLength() {
