@@ -158,4 +158,13 @@ public class Path2DCurve {
         return m_headPoint;
     }
 
+    public void fixUpTailAndPrevPointers() {
+        Path2DPoint prevPoint = null;
+        for (Path2DPoint point = m_headPoint; point != null; point = point.getNextPoint()) {
+            point.setPrevPoint(prevPoint);
+            point.setPath2DCurve(this);
+            prevPoint = point;
+        }
+        m_tailPoint = prevPoint;
+    }
 }

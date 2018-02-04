@@ -37,6 +37,14 @@ public class Autonomi {
         catch (Exception e) {
             System.out.println("Constructing Autonomi class from json failed.");
         }
+
+        autonomi.fixUpTailAndPrevPointers();
         return autonomi;
+    }
+
+    private void fixUpTailAndPrevPointers() {
+        for (Map.Entry<String, Autonomous> entry : mapAutonomous.entrySet()) {
+            entry.getValue().fixUpTailAndPrevPointers();
+        }
     }
 }
