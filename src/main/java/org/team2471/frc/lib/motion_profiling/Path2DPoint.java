@@ -6,24 +6,24 @@ import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOP
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_TANGENT_SPECIFIED;
 
 public class Path2DPoint {
-    private final int STEPS = 600;
+    private transient final int STEPS = 600;
     private Vector2 m_position;
     private Vector2 m_prevAngleAndMagnitude;
     private Vector2 m_nextAngleAndMagnitude;
     private Vector2 m_prevTangent;
     private Vector2 m_nextTangent;
-    private boolean m_bTangentsDirty;
-    private boolean m_bCoefficientsDirty;
-    private CubicCoefficients1D m_xCoeff;
-    private CubicCoefficients1D m_yCoeff;
-    private double m_segmentLength;
-    private double partialLength, prevPartialLength;
+    private transient boolean m_bTangentsDirty;
+    private transient boolean m_bCoefficientsDirty;
+    private transient CubicCoefficients1D m_xCoeff;
+    private transient CubicCoefficients1D m_yCoeff;
+    private transient double m_segmentLength;
+    private transient double partialLength, prevPartialLength;
     private SlopeMethod m_prevSlopeMethod;
     private SlopeMethod m_nextSlopeMethod;
 
-    private Path2DCurve m_path2DCurve;
+    private transient Path2DCurve m_path2DCurve;
     private Path2DPoint m_nextPoint;
-    private Path2DPoint m_prevPoint;
+    private transient Path2DPoint m_prevPoint;
 
     public Path2DPoint() {
         init();

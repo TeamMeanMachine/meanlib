@@ -6,7 +6,7 @@ import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
 
-    private String name;
+    public String name;
 
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
@@ -19,10 +19,10 @@ public class Path2D {
     private boolean m_mirrored = false;
 
     // calculation storage
-    private Vector2 m_prevCenterPositionForLeft;
-    private Vector2 m_prevCenterPositionForRight;
-    private Vector2 m_prevLeftPosition;
-    private Vector2 m_prevRightPosition;
+    private transient Vector2 m_prevCenterPositionForRight;
+    private transient Vector2 m_prevLeftPosition;
+    private transient Vector2 m_prevRightPosition;
+    private transient Vector2 m_prevCenterPositionForLeft;
 
     public Path2D() {
         m_xyCurve = new Path2DCurve();
@@ -256,7 +256,7 @@ public class Path2D {
         this.name = name;
     }
 
-    public String toJSonString() {
+    public String toJsonString() {
         Moshi moshi = new Moshi.Builder().build();
         JsonAdapter<Path2D> jsonAdapter = moshi.adapter(Path2D.class);
 

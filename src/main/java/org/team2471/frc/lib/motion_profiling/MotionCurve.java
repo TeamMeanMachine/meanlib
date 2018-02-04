@@ -3,17 +3,17 @@ package org.team2471.frc.lib.motion_profiling;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class MotionCurve {
-    private final double MAXFRAMEERROR = 0.003;
+    private transient final double MAXFRAMEERROR = 0.003;
     private MotionKey m_headKey;
-    private MotionKey m_tailKey;
+    private transient MotionKey m_tailKey;
     private double m_defaultValue;
     private double m_minValue;
     private double m_maxValue;
-    private double m_lastValue;
-    private double m_lastDerivative;
-    private double m_lastTime;
-    private boolean m_bLastTimeValid;
-    private MotionKey m_lastAccessedKey;
+    private transient double m_lastValue;
+    private transient double m_lastDerivative;
+    private transient double m_lastTime;
+    private transient boolean m_bLastTimeValid;
+    private transient MotionKey m_lastAccessedKey;
     private ExtrapolationMethods m_preExtrapolation;
     private ExtrapolationMethods m_postExtrapolation;
 

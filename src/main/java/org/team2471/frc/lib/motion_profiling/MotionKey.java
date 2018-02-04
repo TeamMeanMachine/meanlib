@@ -5,23 +5,23 @@ import org.team2471.frc.lib.vector.Vector2;
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
 
 public class MotionKey {
-    private final double CLAMPTOLERANCE = 0.005;
+    private transient final double CLAMPTOLERANCE = 0.005;
     private Vector2 m_timeAndValue;
     private Vector2 m_prevAngleAndMagnitude;
     private Vector2 m_nextAngleAndMagnitude;
     private Vector2 m_prevTangent;
     private Vector2 m_nextTangent;
-    private boolean m_bTangentsDirty;
-    private boolean m_bCoefficientsDirty;
-    private CubicCoefficients1D m_xCoeff;
-    private CubicCoefficients1D m_yCoeff;
+    private transient boolean m_bTangentsDirty;
+    private transient boolean m_bCoefficientsDirty;
+    private transient CubicCoefficients1D m_xCoeff;
+    private transient CubicCoefficients1D m_yCoeff;
     private SlopeMethod m_prevSlopeMethod;
     private SlopeMethod m_nextSlopeMethod;
     private boolean m_markBeginOrEndKeysToZeroSlope;
 
-    private MotionCurve m_motionCurve;
+    private transient MotionCurve m_motionCurve;
     private MotionKey m_nextKey;
-    private MotionKey m_prevKey;
+    private transient MotionKey m_prevKey;
 
     public MotionKey() {
         m_timeAndValue = new Vector2(0, 0);

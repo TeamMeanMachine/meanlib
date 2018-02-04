@@ -5,7 +5,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 private val pathsTable = NetworkTableInstance.getDefault().getTable("Shared Paths")
 
 fun Path2D.writeToNetworkTables() {
-    pathsTable.getEntry(name).forceSetString(toJSonString())
+    pathsTable.getEntry(name).forceSetString(toJsonString())
 }
 
 fun pathFromNetworkTables(name: String): Path2D? {

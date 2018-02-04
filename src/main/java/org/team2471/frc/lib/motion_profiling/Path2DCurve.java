@@ -6,10 +6,10 @@ import org.team2471.frc.lib.vector.Vector2;
 public class Path2DCurve {
 
     private Path2DPoint m_headPoint;
-    private Path2DPoint m_tailPoint;
-    private Path2DPoint m_lastAccessedPoint;
-    private double m_cachedLength;
-    private double m_lengthRemaining;
+    private transient Path2DPoint m_tailPoint;
+    private transient Path2DPoint m_lastAccessedPoint;
+    private transient double m_cachedLength;
+    private transient double m_lengthRemaining;
 
     public Path2DCurve() {
         m_headPoint = null;
