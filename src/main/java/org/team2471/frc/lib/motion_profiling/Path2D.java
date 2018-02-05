@@ -289,7 +289,7 @@ public class Path2D {
         this.speed = speed;
     }
 
-    public void fixUpTailAndPrevPointers() {
+    void fixUpTailAndPrevPointers() {
         m_xyCurve.fixUpTailAndPrevPointers();
         m_easeCurve.fixUpTailAndPrevPointers();
     }
