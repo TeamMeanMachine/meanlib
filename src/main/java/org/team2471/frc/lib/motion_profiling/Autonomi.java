@@ -60,4 +60,13 @@ public class Autonomi {
         NetworkTable table = NetworkTableInstance.getDefault().getTable("PathVisualizer");
         table.getEntry("autonomi").setString(json);
     }
+
+    static Autonomi initFromNetworkTables() {
+        Autonomi autonomi = null;
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("PathVisualizer");
+        String json = table.getEntry("autonomi").getString("");
+        if (!json.isEmpty())
+            autonomi = fromJsonString(json);
+        return autonomi;
+    }
 }
