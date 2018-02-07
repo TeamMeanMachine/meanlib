@@ -61,7 +61,8 @@ public class Autonomi {
         table.getEntry("autonomi").setString(json);
     }
 
-    static Autonomi initFromNetworkTables() {
+    static public Autonomi initFromNetworkTables() {
+        Autonomi autonomi = null;
         NetworkTable table = NetworkTableInstance.getDefault().getTable("PathVisualizer");
         String json = table.getEntry("autonomi").getString("");
         if (!json.isEmpty())
