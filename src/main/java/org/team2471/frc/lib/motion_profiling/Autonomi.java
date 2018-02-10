@@ -2,6 +2,8 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +11,9 @@ import java.util.Map;
 public class Autonomi {
 
     public Map<String, Autonomous> mapAutonomous = new HashMap<>();
+
+    static Moshi moshi = new Moshi.Builder().build();
+    static JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class);
 
     public Autonomous get(String name) {
         return mapAutonomous.get(name);
@@ -18,27 +23,29 @@ public class Autonomi {
         mapAutonomous.put(autonomous.name, autonomous);
     }
 
+    public Path2D getPath(String autoName, String pathName) {
+        Autonomous autonomous = get(autoName);
+        return autonomous.getPath(pathName);
+    }
+
     public String toJsonString() {
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class);
         String json = jsonAdapter.toJson(this);
         System.out.println(json);
         return json;
     }
 
     static public Autonomi fromJsonString(String json) {
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class);
-
         Autonomi autonomi = null;
         try {
             autonomi = jsonAdapter.fromJson(json);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Constructing Autonomi class from json failed.");
+            return null;
         }
 
-        autonomi.fixUpTailAndPrevPointers();
+        if (autonomi != null)
+            autonomi.fixUpTailAndPrevPointers();
+
         return autonomi;
     }
 
@@ -46,5 +53,20 @@ public class Autonomi {
         for (Map.Entry<String, Autonomous> entry : mapAutonomous.entrySet()) {
             entry.getValue().fixUpTailAndPrevPointers();
         }
+    }
+
+    public void publishToNetworkTables() {
+        String json = toJsonString();
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("PathVisualizer");
+        table.getEntry("autonomi").setString(json);
+    }
+
+    static public Autonomi initFromNetworkTables() {
+        Autonomi autonomi = null;
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("PathVisualizer");
+        String json = table.getEntry("autonomi").getString("");
+        if (!json.isEmpty())
+            return fromJsonString(json);
+        return null;
     }
 }

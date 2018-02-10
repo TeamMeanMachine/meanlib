@@ -20,7 +20,7 @@ public class Autonomous {
         return paths.get(name);
     }
 
-    public void fixUpTailAndPrevPointers() {
+    void fixUpTailAndPrevPointers() {
         for (Map.Entry<String, Path2D> entry : paths.entrySet()) {
             entry.getValue().fixUpTailAndPrevPointers();
         }

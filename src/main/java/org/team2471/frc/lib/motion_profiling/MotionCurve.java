@@ -619,7 +619,7 @@ public class MotionCurve {
 
     public enum ExtrapolationMethods {EXTRAPOLATION_CONSTANT, EXTRAPOLATION_LINEAR, EXTRAPOLATION_CYCLE, EXTRAPOLATION_CYCLE_RELATIVE, EXTRAPOLATION_OSCILLATE}
 
-    public void fixUpTailAndPrevPointers() {
+    void fixUpTailAndPrevPointers() {
         MotionKey prevKey = null;
         for (MotionKey key = m_headKey; key != null; key = key.getNextKey()) {
             key.setPrevKey(prevKey);

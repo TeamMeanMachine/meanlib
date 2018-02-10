@@ -19,10 +19,12 @@ public class Path2D {
     private boolean m_mirrored = false;
 
     // calculation storage
+    private transient Vector2 m_prevCenterPositionForLeft;
     private transient Vector2 m_prevCenterPositionForRight;
     private transient Vector2 m_prevLeftPosition;
     private transient Vector2 m_prevRightPosition;
-    private transient Vector2 m_prevCenterPositionForLeft;
+    private transient double leftDistance;
+    private transient double rightDistance;
 
     public Path2D() {
         m_xyCurve = new Path2DCurve();
@@ -200,6 +202,20 @@ public class Path2D {
             return travelDirGetRightPositionDelta(time);
     }
 
+    public void resetDistances() {
+        leftDistance = rightDistance = 0.0;
+    }
+
+    public double getLeftDistance(double time) {
+        leftDistance += getLeftPositionDelta(time);
+        return leftDistance;
+    }
+
+    public double getRightDistance(double time) {
+        rightDistance += getRightPositionDelta(time);
+        return rightDistance;
+    }
+
     public double getRobotWidth() {
         return robotWidth;
     }
@@ -289,7 +305,7 @@ public class Path2D {
         this.speed = speed;
     }
 
-    public void fixUpTailAndPrevPointers() {
+    void fixUpTailAndPrevPointers() {
         m_xyCurve.fixUpTailAndPrevPointers();
         m_easeCurve.fixUpTailAndPrevPointers();
     }
