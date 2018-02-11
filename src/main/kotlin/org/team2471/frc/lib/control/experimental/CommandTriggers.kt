@@ -1,12 +1,11 @@
 package org.team2471.frc.lib.control.experimental
 
-import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 object EventMapper {
-    private val entries = LinkedList<EventMapperEntry>()
+    private val entries = ConcurrentLinkedQueue<EventMapperEntry>()
 
-    @Synchronized
-    internal fun addEntry(entry: EventMapperEntry) = entries.addFirst(entry)
+    internal fun addEntry(entry: EventMapperEntry) = entries.add(entry)
 
     fun tick() = entries.forEach { it() }
 }
