@@ -13,29 +13,36 @@ class PIDController(
         @Volatile var f: Double,
         input: () -> Double,
         private val output: (Double) -> Unit,
+        temp: () -> Double,
         period: Int = 20) : SendableBase() {
 
     @Volatile
     var setpoint = input()
+
     @Volatile
     var isEnabled = false
         set(value) {
             if (!value && field) output(0.0)
             field = value
         }
+
     @Volatile
     var iZone: Double? = null
 
+    @Volatile
+    var error: Double = 0.0
+        private set
+
     init {
         var accum = 0.0
-        var previousError: Double? = null
 
         launch {
             periodic(period) {
                 suspendUntil { isEnabled }
 
                 val setpoint = setpoint
-                val error = input() - setpoint
+                val pos = input()
+                val error = setpoint - pos
 
                 // P gain
                 var outputValue = error * p
@@ -45,8 +52,8 @@ class PIDController(
                 accum += error
 
                 // D gain
-                outputValue += ((previousError ?: error) - error) * d
-                previousError = error
+                outputValue += (this@PIDController.error - error) * d
+                this@PIDController.error = error
 
                 // F gain
                 outputValue += setpoint * f
@@ -59,7 +66,6 @@ class PIDController(
                 }
 
                 output(outputValue)
-                println("Error: $error")
             }
         }
     }
