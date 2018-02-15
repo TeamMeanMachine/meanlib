@@ -95,6 +95,22 @@ public class MotionCurve {
         m_tailKey = null;
     }
 
+    public void removeKey(MotionKey key) {
+        if (key.getPrevKey()==null)
+            m_headKey = key.getNextKey();
+        else {
+            key.getPrevKey().setNextKey(key.getNextKey());
+            key.getPrevKey().onPositionChanged();
+        }
+
+        if (key.getNextKey()==null)
+            m_tailKey = key.getPrevKey();
+        else {
+            key.getNextKey().setPrevKey(key.getPrevKey());
+            key.getNextKey().onPositionChanged();
+        }
+    }
+
     private void insertKeyBefore(MotionKey atKey, MotionKey newKey) {
         newKey.setMotionCurve(this);
 
