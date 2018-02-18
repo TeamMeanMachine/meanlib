@@ -107,6 +107,7 @@ public class MotionKey {
 
     public void setTimeAndValue(Vector2 m_timeAndValue) {
         this.m_timeAndValue = m_timeAndValue;
+        onPositionChanged();
     }
 
     public Vector2 getPrevAngleAndMagnitude() {
