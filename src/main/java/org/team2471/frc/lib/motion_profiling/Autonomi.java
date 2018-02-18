@@ -3,6 +3,7 @@ package org.team2471.frc.lib.motion_profiling;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class Autonomi {
 
     public Path2D getPath(String autoName, String pathName) {
         Autonomous autonomous = get(autoName);
-        return autonomous.getPath(pathName);
+        return autonomous.get(pathName);
     }
 
     public String toJsonString() {
@@ -79,7 +80,9 @@ public class Autonomi {
 
         String json = toJsonString();
         NetworkTable table = networkTableInstance.getTable("PathVisualizer");
-        table.getEntry("Autonomi").setString(json);
+        NetworkTableEntry entry = table.getEntry("Autonomi");
+        entry.setPersistent();
+        entry.forceSetString(json);
     }
 
     static public Autonomi initFromNetworkTables() {

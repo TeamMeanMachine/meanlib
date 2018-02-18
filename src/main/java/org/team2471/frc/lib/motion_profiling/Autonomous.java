@@ -16,7 +16,7 @@ public class Autonomous {
         paths.put(path2D.name, path2D);
     }
 
-    public Path2D getPath(String name) {
+    public Path2D get(String name) {
         return paths.get(name);
     }
 
