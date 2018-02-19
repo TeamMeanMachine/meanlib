@@ -232,6 +232,11 @@ public class Path2D {
             return 5.0;
     }
 
+    public void setDuration(double seconds) {
+        if (m_easeCurve!=null && m_easeCurve.getTailKey()!=null)
+            m_easeCurve.getTailKey().setTime(seconds);
+    }
+
     public MotionCurve getEaseCurve() {
         return m_easeCurve;
     }
