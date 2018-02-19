@@ -19,18 +19,35 @@ object CommandSystem {
 
     private val table = NetworkTableInstance.getDefault().getTable("Command System")
 
+    internal var isEnabled = false
+        private set
+    private var isTeleop = false
+
     init {
         launch {
             val activeCommandsEntry = table.getEntry("Active Commands")
             val activeRequirementsEntry = table.getEntry("Active Requirements")
             val defaultCommandsEntry = table.getEntry("Default Commands")
+            val stateEntry = table.getEntry("State")
 
             periodic(100) {
                 mutex.withLock {
                     // Cancel all non-default commands on robot disable
-                    if (!RobotState.isEnabled()) activeCommands.subtract(defaultCommandsMap.values).forEach {
-                        it.cancel()
+                    val isEnabled = RobotState.isEnabled()
+                    if (isTeleop && isEnabled && !this@CommandSystem.isEnabled) {
+                        defaultCommandsMap.forEach { _, command ->
+                            command.launch()
+                        }
                     }
+                    this@CommandSystem.isEnabled = isEnabled
+                    isTeleop = RobotState.isOperatorControl()
+                    if (!isEnabled) activeCommands.forEach { it.cancel() }
+
+                    stateEntry.setString(when {
+                        isEnabled && isTeleop -> "TELEOP"
+                        isEnabled -> "ENABLED"
+                        else -> "DISABLED"
+                    })
 
                     activeCommandsEntry.setStringArray(activeCommands.map { it.name }.toTypedArray())
                     activeRequirementsEntry.setStringArray(activeRequirementsMap.map { (subsystem, command) ->
@@ -52,7 +69,8 @@ object CommandSystem {
                 .forEach { subsystem ->
                     if (activeRequirementsMap[subsystem] == command) {
                         activeRequirementsMap.remove(subsystem)
-                        defaultCommandsMap[subsystem]?.launch()
+
+                        if (isEnabled && isTeleop) defaultCommandsMap[subsystem]?.launch()
                     }
                 }
     }
@@ -112,22 +130,7 @@ object CommandSystem {
         runBlocking {
             mutex.withLock {
                 defaultCommandsMap[subsystem] = command
-                if (command.requirements.all { activeRequirementsMap[it] == null }) command.launch()
-            }
-        }
-    }
-
-    // the remaining functions exist for unit testing
-    internal val commandsRunning get() = activeCommands
-
-    internal fun clearAllState() {
-        runBlocking {
-            mutex.withLock {
-                defaultCommandsMap.clear()
-                activeCommands.forEach { it.cancel() }
-                activeCommands.forEach { it.join() }
-                activeRequirementsMap.clear()
-                activeCommands.clear()
+                if (isEnabled && isTeleop && command.requirements.all { activeRequirementsMap[it] == null }) command.launch()
             }
         }
     }

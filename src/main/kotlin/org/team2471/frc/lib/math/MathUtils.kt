@@ -19,6 +19,8 @@ fun square(x: Double): Double = pow(x, 2.0)
 
 fun Double.squareWithSign() = Math.copySign(this * this, this)
 
+fun Double.log10() = Math.log10(this)
+
 fun average(vararg x: Double) = x.sum() / x.size
 
 fun lerp(min: Double, max: Double, k: Double) = min + (max - min) * k
