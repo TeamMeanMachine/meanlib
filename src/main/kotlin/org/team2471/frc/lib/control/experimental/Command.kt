@@ -20,9 +20,14 @@ class Command(val name: String,
 
     private var coroutine: Job? = null
 
-    operator suspend fun invoke(context: CoroutineContext, join: Boolean = true) {
+    suspend operator fun invoke(context: CoroutineContext, join: Boolean = true) {
         if (isActive) {
             println("Command $name could not start because it is already running.")
+            return
+        }
+
+        if (!CommandSystem.isEnabled) {
+            println("Command $name could not start because the Command System is disabled.")
             return
         }
 
@@ -53,8 +58,10 @@ class Command(val name: String,
         if (join) coroutine?.join()
     }
 
-    fun launch() = launch {
-        invoke(coroutineContext, false)
+    fun launch() {
+        launch {
+            invoke(coroutineContext, false)
+        }
     }
 
     fun cancel(cause: Throwable? = null) = coroutine?.cancel(cause)
@@ -75,3 +82,4 @@ internal class Requirements(requirements: Set<Subsystem>) :
      */
     override val key: CoroutineContext.Key<*> get() = Key
 }
+
