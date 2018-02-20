@@ -11,9 +11,10 @@ public class Path2D {
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-    private double robotWidth = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
-    private double robotLength = 35.0 / 12.0;  // average FRC robots are 28 inches wide, converted to feet. // seems like this belongs in the Command
-    private double widthFudgeFactor = 1.096;
+    private double trackWidth = 25.0 / 12.0;
+    private double robotWidth = 30.0 / 12.0;
+    private double robotLength = 38.0 / 12.0;
+    private double scrubFactor = 1.12;
     private double speed = 1.0;
     private double travelDirection = 1.0;
     private boolean m_mirrored = false;
@@ -88,8 +89,12 @@ public class Path2D {
             else
                 return getPositionAtEase(m_easeCurve.getValue((getDuration()-time) * speed));
         }
-        else
-            return getPositionAtEase(time / 5.0);  // take 5 seconds to finish path (linear motion)
+        else {
+            if (speed > 0)
+                return getPositionAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
+            else
+                return getPositionAtEase((getDuration() - time) / 5.0 * speed);
+        }
     }
 
     public Vector2 getTangent(double time) {
@@ -139,9 +144,9 @@ public class Path2D {
         m_prevLeftPosition = leftPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            return Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
+            return Vector2.Companion.length(deltaLeft) * scrubFactor;
         } else {
-            return -Vector2.Companion.length(deltaLeft) * widthFudgeFactor;
+            return -Vector2.Companion.length(deltaLeft) * scrubFactor;
         }
     }
 
@@ -160,14 +165,13 @@ public class Path2D {
         m_prevRightPosition = rightPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            return Vector2.Companion.length(deltaRight) * widthFudgeFactor;
+            return Vector2.Companion.length(deltaRight) * scrubFactor;
         } else {
-            return -Vector2.Companion.length(deltaRight) * widthFudgeFactor;
+            return -Vector2.Companion.length(deltaRight) * scrubFactor;
         }
     }
 
-
-    private double travelDirGetLeftPositionDelta(double time) {  // does travel direction actually work?
+    private double travelDirGetLeftPositionDelta(double time) {
         if (travelDirection > 0)
             return privateGetLeftPositionDelta(time);
         else
@@ -229,6 +233,11 @@ public class Path2D {
             return 5.0;
     }
 
+    public void setDuration(double seconds) {
+        if (m_easeCurve!=null && m_easeCurve.getTailKey()!=null)
+            m_easeCurve.getTailKey().setTime(seconds);
+    }
+
     public MotionCurve getEaseCurve() {
         return m_easeCurve;
     }
@@ -286,12 +295,12 @@ public class Path2D {
         this.robotLength = robotLength;
     }
 
-    public double getWidthFudgeFactor() {
-        return widthFudgeFactor;
+    public double getScrubFactor() {
+        return scrubFactor;
     }
 
-    public void setWidthFudgeFactor(double widthFudgeFactor) {
-        this.widthFudgeFactor = widthFudgeFactor;
+    public void setScrubFactor(double scrubFactor) {
+        this.scrubFactor = scrubFactor;
     }
 
     public double getSpeed() {
