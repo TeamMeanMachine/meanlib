@@ -41,13 +41,6 @@ public class Path2D {
         return null; // TODO: parse the json string and return the path
     }
 
-    public void reset() {
-        m_prevCenterPositionForLeft = null;
-        m_prevCenterPositionForRight = null;
-        m_prevLeftPosition = null;
-        m_prevRightPosition = null;
-    }
-
     public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
         m_xyCurve.addPointToEnd(x, y, xTangent, yTangent);
     }
@@ -204,6 +197,10 @@ public class Path2D {
 
     public void resetDistances() {
         leftDistance = rightDistance = 0.0;
+        m_prevCenterPositionForLeft = null;
+        m_prevCenterPositionForRight = null;
+        m_prevLeftPosition = null;
+        m_prevRightPosition = null;
     }
 
     public double getLeftDistance(double time) {
