@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import org.team2471.frc.lib.math.Vector;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -90,7 +91,7 @@ public class Path2D {
     }
 
     public Vector2 getPosition(double time) {
-        if (m_xyCurve.getHeadPoint() != null) {
+        if (m_easeCurve.getHeadKey() != null) {
             if (speed > 0)
                 return getPositionAtEase(m_easeCurve.getValue(time * speed));
             else
@@ -110,12 +111,18 @@ public class Path2D {
 
     public Vector2 getPositionAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
-        return m_xyCurve.getPositionAtDistance(ease * totalDistance);
+        Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
+        if (m_mirrored)
+            rValue.setX(-rValue.getX());
+        return rValue;
     }
 
     public Vector2 getTangentAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
-        return m_xyCurve.getTangentAtDistance(ease * totalDistance);
+        Vector2 rValue = m_xyCurve.getTangentAtDistance(ease * totalDistance);
+        if (m_mirrored)
+            rValue.setX(-rValue.getX());
+        return rValue;
     }
 
     public Vector2 getSidePosition(double time, double xOffset) {  // offset can be positive or negative (half the width of the robot)
