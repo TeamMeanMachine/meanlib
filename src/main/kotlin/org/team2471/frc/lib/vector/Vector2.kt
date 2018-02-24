@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.vector
 
-class Vector2(var x: Double, var y: Double) {
+data class Vector2(var x: Double, var y: Double) {
 
     operator fun set(x: Double, y: Double) {
         this.x = x

@@ -2,7 +2,6 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import org.team2471.frc.lib.math.Vector;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -12,12 +11,12 @@ public class Path2D {
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
 
-    private double trackWidth = 25.0 / 12.0;
-    private double robotWidth = 30.0 / 12.0;
-    private double robotLength = 38.0 / 12.0;
-    private double scrubFactor = 1.12;
+    public enum RobotDirection {
+        FORWARD, BACKWARD
+    }
+
     private double speed = 1.0;
-    private double travelDirection = 1.0;
+    private RobotDirection robotDirection = RobotDirection.FORWARD;
     private boolean m_mirrored = false;
 
     // calculation storage
@@ -27,6 +26,7 @@ public class Path2D {
     private transient Vector2 m_prevRightPosition;
     private transient double leftDistance;
     private transient double rightDistance;
+    private transient Autonomous autonomous;
 
     public Path2D() {
         m_xyCurve = new Path2DCurve();
@@ -41,13 +41,6 @@ public class Path2D {
 
     public static Path2D fromJsonString(String jsonString) {
         return null; // TODO: parse the json string and return the path
-    }
-
-    public void reset() {
-        m_prevCenterPositionForLeft = null;
-        m_prevCenterPositionForRight = null;
-        m_prevLeftPosition = null;
-        m_prevRightPosition = null;
     }
 
     public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
@@ -95,18 +88,27 @@ public class Path2D {
             if (speed > 0)
                 return getPositionAtEase(m_easeCurve.getValue(time * speed));
             else
-                return getPositionAtEase(m_easeCurve.getValue((getDuration()-time) * speed));
-        }
-        else {
+                return getPositionAtEase(m_easeCurve.getValue(getDuration() - time * -speed));
+        } else {
             if (speed > 0)
                 return getPositionAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
             else
-                return getPositionAtEase((getDuration() - time) / 5.0 * speed);
+                return getPositionAtEase(getDuration() - time / 5.0 * -speed);
         }
     }
 
     public Vector2 getTangent(double time) {
-        return getTangentAtEase(m_easeCurve.getValue(time));
+        if (m_easeCurve.getHeadKey() != null) {
+            if (speed > 0)
+                return getTangentAtEase(m_easeCurve.getValue(time * speed));
+            else
+                return getTangentAtEase(m_easeCurve.getValue(getDuration() - time * -speed));
+        } else {
+            if (speed > 0)
+                return getTangentAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
+            else
+                return getTangentAtEase(getDuration() - time / 5.0 * -speed);
+        }
     }
 
     public Vector2 getPositionAtEase(double ease) {
@@ -126,24 +128,32 @@ public class Path2D {
     }
 
     public Vector2 getSidePosition(double time, double xOffset) {  // offset can be positive or negative (half the width of the robot)
-        Vector2 centerPosition = getPosition(time);  // this could compute the position for a specific offset vector on the robot
+        Vector2 centerPosition = getPosition(time);
         Vector2 tangent = getTangent(time);
         tangent = Vector2.Companion.normalize(tangent);
         tangent = Vector2.Companion.perpendicular(tangent);
+        if (speed<0.0)
+            xOffset = -xOffset;
         tangent = Vector2.Companion.multiply(tangent, xOffset);
         Vector2 sidePosition = Vector2.Companion.add(centerPosition, tangent);
         return sidePosition;
     }
 
     public Vector2 getLeftPosition(double time) {
-        return getSidePosition(time, -robotWidth / 2.0);
+        if (robotDirection==RobotDirection.FORWARD)
+            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
+        else
+            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
     }
 
     public Vector2 getRightPosition(double time) {
-        return getSidePosition(time, robotWidth / 2.0);
+        if (robotDirection==RobotDirection.FORWARD)
+            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
+        else
+            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
     }
 
-    private double privateGetLeftPositionDelta(double time) {
+    public double getLeftPositionDelta(double time) {
         if (m_prevLeftPosition == null) {
             m_prevCenterPositionForLeft = getPosition(time);
             m_prevLeftPosition = getLeftPosition(time);
@@ -158,13 +168,13 @@ public class Path2D {
         m_prevLeftPosition = leftPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            return Vector2.Companion.length(deltaLeft) * scrubFactor;
+            return Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
         } else {
-            return -Vector2.Companion.length(deltaLeft) * scrubFactor;
+            return -Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
         }
     }
 
-    private double privateGetRightPositionDelta(double time) {
+    public double getRightPositionDelta(double time) {
         if (m_prevRightPosition == null) {
             m_prevCenterPositionForRight = getPosition(time);
             m_prevRightPosition = getRightPosition(time);
@@ -179,42 +189,18 @@ public class Path2D {
         m_prevRightPosition = rightPosition;
 
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            return Vector2.Companion.length(deltaRight) * scrubFactor;
+            return Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
         } else {
-            return -Vector2.Companion.length(deltaRight) * scrubFactor;
+            return -Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
         }
-    }
-
-    private double travelDirGetLeftPositionDelta(double time) {
-        if (travelDirection > 0)
-            return privateGetLeftPositionDelta(time);
-        else
-            return -privateGetRightPositionDelta(time);
-    }
-
-    private double travelDirGetRightPositionDelta(double time) {
-        if (travelDirection > 0)
-            return privateGetRightPositionDelta(time);
-        else
-            return -privateGetLeftPositionDelta(time);
-    }
-
-    public double getLeftPositionDelta(double time) {
-        if (m_mirrored)
-            return travelDirGetRightPositionDelta(time);
-        else
-            return travelDirGetLeftPositionDelta(time);
-    }
-
-    public double getRightPositionDelta(double time) {
-        if (m_mirrored)
-            return travelDirGetLeftPositionDelta(time);
-        else
-            return travelDirGetRightPositionDelta(time);
     }
 
     public void resetDistances() {
         leftDistance = rightDistance = 0.0;
+        m_prevCenterPositionForLeft = null;
+        m_prevCenterPositionForRight = null;
+        m_prevLeftPosition = null;
+        m_prevRightPosition = null;
     }
 
     public double getLeftDistance(double time) {
@@ -227,24 +213,22 @@ public class Path2D {
         return rightDistance;
     }
 
-    public double getRobotWidth() {
-        return robotWidth;
-    }
-
-    public void setRobotWidth(double _robotWidth) {
-        this.robotWidth = _robotWidth;
-    }
-
-
     public double getDuration() {
-        if (m_easeCurve!=null)
+        if (m_easeCurve != null)
             return m_easeCurve.getLength();
         else
             return 5.0;
     }
 
+    public double getDurationWithSpeed() {
+        if (m_easeCurve != null)
+            return m_easeCurve.getLength() / Math.abs(speed);
+        else
+            return 5.0;
+    }
+
     public void setDuration(double seconds) {
-        if (m_easeCurve!=null && m_easeCurve.getTailKey()!=null)
+        if (m_easeCurve != null && m_easeCurve.getTailKey() != null)
             m_easeCurve.getTailKey().setTime(seconds);
     }
 
@@ -252,12 +236,12 @@ public class Path2D {
         return m_easeCurve;
     }
 
-    public double getTravelDirection() {
-        return travelDirection;
+    public RobotDirection getRobotDirection() {
+        return robotDirection;
     }
 
-    public void setTravelDirection(double travelDirection) {
-        this.travelDirection = travelDirection;
+    public void setRobotDirection(RobotDirection robotDirection) {
+        this.robotDirection = robotDirection;
     }
 
     public boolean isMirrored() {
@@ -297,28 +281,20 @@ public class Path2D {
         return json;
     }
 
-    public double getRobotLength() {
-        return robotLength;
-    }
-
-    public void setRobotLength(double robotLength) {
-        this.robotLength = robotLength;
-    }
-
-    public double getScrubFactor() {
-        return scrubFactor;
-    }
-
-    public void setScrubFactor(double scrubFactor) {
-        this.scrubFactor = scrubFactor;
-    }
-
     public double getSpeed() {
         return speed;
     }
 
     public void setSpeed(double speed) {
         this.speed = speed;
+    }
+
+    public Autonomous getAutonomous() {
+        return autonomous;
+    }
+
+    public void setAutonomous(Autonomous autonomous) {
+        this.autonomous = autonomous;
     }
 
     void fixUpTailAndPrevPointers() {
