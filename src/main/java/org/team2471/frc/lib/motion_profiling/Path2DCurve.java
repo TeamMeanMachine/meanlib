@@ -107,7 +107,7 @@ public class Path2DCurve {
         Path2DPoint point = getPointBefore(distance);
         if (point == null) {
             if (m_tailPoint != null)
-                return m_tailPoint.getPosition();
+                return new Vector2(m_tailPoint.getPosition().getX(), m_tailPoint.getPosition().getY());
             else
                 return new Vector2(0.0, 0.0);
         }
@@ -118,7 +118,7 @@ public class Path2DCurve {
         Path2DPoint point = getPointBefore(distance);
         if (point == null) {  // distance exceeds path length
             if (m_tailPoint!=null)
-                return m_tailPoint.getNextTangent();
+                return new Vector2(m_tailPoint.getNextTangent().getX(), m_tailPoint.getNextTangent().getY());
             else
                 return new Vector2(0.0, 0.0);
         }
