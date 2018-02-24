@@ -1,8 +1,6 @@
 package org.team2471.frc.lib.control.experimental
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
@@ -20,7 +18,7 @@ class Command(val name: String,
 
     private var coroutine: Job? = null
 
-    suspend operator fun invoke(context: CoroutineContext, join: Boolean = true) {
+    suspend operator fun invoke(context: CoroutineContext, timeout: Long? = null, join: Boolean = true) {
         if (isActive) {
             println("Command $name could not start because it is already running.")
             return
@@ -41,6 +39,11 @@ class Command(val name: String,
             }
 
             coroutine = launch(context + Requirements(parentRequirements + ourRequirements)) {
+                if(timeout != null) launch(coroutineContext) {
+                    delay(timeout)
+                    coroutine?.cancel(CancellationException("Command $name timed out ($timeout ms)"))
+                }
+
                 if (conflictingCommands.isNotEmpty()) {
                     println("Command $name waiting for conflicts to resolve...")
                     conflictingCommands.forEach { it.join() }
@@ -58,9 +61,9 @@ class Command(val name: String,
         if (join) coroutine?.join()
     }
 
-    fun launch() {
+    fun launch(timeout: Long? = null) {
         launch {
-            invoke(coroutineContext, false)
+            invoke(coroutineContext, timeout, false)
         }
     }
 
