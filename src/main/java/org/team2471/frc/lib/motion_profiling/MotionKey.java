@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
 
+import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
 
 public class MotionKey {
@@ -11,17 +12,17 @@ public class MotionKey {
     private Vector2 m_nextAngleAndMagnitude;
     private Vector2 m_prevTangent;
     private Vector2 m_nextTangent;
+    private SlopeMethod m_prevSlopeMethod;
+    private SlopeMethod m_nextSlopeMethod;
+    private boolean m_markBeginOrEndKeysToZeroSlope;
+    private MotionKey m_nextKey;
+
+    private transient MotionCurve m_motionCurve;
+    private transient MotionKey m_prevKey;
     private transient boolean m_bTangentsDirty;
     private transient boolean m_bCoefficientsDirty;
     private transient CubicCoefficients1D m_xCoeff;
     private transient CubicCoefficients1D m_yCoeff;
-    private SlopeMethod m_prevSlopeMethod;
-    private SlopeMethod m_nextSlopeMethod;
-    private boolean m_markBeginOrEndKeysToZeroSlope;
-
-    private transient MotionCurve m_motionCurve;
-    private MotionKey m_nextKey;
-    private transient MotionKey m_prevKey;
 
     public MotionKey() {
         m_timeAndValue = new Vector2(0, 0);
@@ -474,5 +475,37 @@ public class MotionKey {
     public enum SlopeMethod {
         SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
         SLOPE_STEPPED, SLOPE_STEPPED_NEXT
+    }
+
+    public void setMagnitude(double magnitude) {
+        m_prevAngleAndMagnitude.setY(magnitude);
+        m_nextAngleAndMagnitude.setY(magnitude);
+        m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
+    }
+
+    public void setAngle(double angle) {
+        m_prevAngleAndMagnitude.setX(angle);
+        m_nextAngleAndMagnitude.setX(angle);
+        m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
+    }
+
+    public void setPrevMagnitude(double magnitude) {
+        m_prevAngleAndMagnitude.setY(magnitude);
+        m_prevSlopeMethod = SLOPE_MANUAL;
+    }
+
+    public void setNextMagnitude(double magnitude) {
+        m_nextAngleAndMagnitude.setY(magnitude);
+        m_nextSlopeMethod = SLOPE_MANUAL;
+    }
+
+    public void setPrevAngle(double angle) {
+        m_prevAngleAndMagnitude.setX(angle);
+        m_prevSlopeMethod = SLOPE_MANUAL;
+    }
+
+    public void setNextAngle(double angle) {
+        m_nextAngleAndMagnitude.setX(angle);
+        m_nextSlopeMethod = SLOPE_MANUAL;
     }
 }
