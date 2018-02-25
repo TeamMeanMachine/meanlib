@@ -482,28 +482,42 @@ public class MotionKey {
         m_nextAngleAndMagnitude.setY(magnitude);
         m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
     }
+    public double getMagnitude() {
+        if (getPrevKey()!=null)
+            return getPrevMagnitude();
+        return getNextMagnitude();
+    }
 
     public void setAngle(double angle) {
         m_prevAngleAndMagnitude.setX(angle);
         m_nextAngleAndMagnitude.setX(angle);
         m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
     }
+    public double getAngle() {
+        if (getPrevKey()!=null)
+            return getPrevAngle();
+        return getNextAngle();
+    }
 
     public void setPrevMagnitude(double magnitude) {
         m_prevAngleAndMagnitude.setY(magnitude);
         m_prevSlopeMethod = SLOPE_MANUAL;
     }
-
     public void setNextMagnitude(double magnitude) {
         m_nextAngleAndMagnitude.setY(magnitude);
         m_nextSlopeMethod = SLOPE_MANUAL;
     }
 
+    public double getPrevAngle() {
+        return m_prevAngleAndMagnitude.getX();
+    }
     public void setPrevAngle(double angle) {
         m_prevAngleAndMagnitude.setX(angle);
         m_prevSlopeMethod = SLOPE_MANUAL;
     }
-
+    public double getNextAngle() {
+        return m_nextAngleAndMagnitude.getX();
+    }
     public void setNextAngle(double angle) {
         m_nextAngleAndMagnitude.setX(angle);
         m_nextSlopeMethod = SLOPE_MANUAL;
