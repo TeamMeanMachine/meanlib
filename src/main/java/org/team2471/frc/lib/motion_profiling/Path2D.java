@@ -167,11 +167,16 @@ public class Path2D {
         m_prevCenterPositionForLeft = centerPosition;
         m_prevLeftPosition = leftPosition;
 
+        double result;
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            return Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
         } else {
-            return -Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
         }
+        if (robotDirection==RobotDirection.FORWARD)
+            return result;
+        else
+            return -result;
     }
 
     public double getRightPositionDelta(double time) {
@@ -188,11 +193,16 @@ public class Path2D {
         m_prevCenterPositionForRight = centerPosition;
         m_prevRightPosition = rightPosition;
 
+        double result;
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            return Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
         } else {
-            return -Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
         }
+        if (robotDirection==RobotDirection.FORWARD)
+            return result;
+        else
+            return -result;
     }
 
     public void resetDistances() {
