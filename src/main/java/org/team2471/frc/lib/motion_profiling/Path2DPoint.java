@@ -2,8 +2,8 @@ package org.team2471.frc.lib.motion_profiling;
 
 import org.team2471.frc.lib.vector.Vector2;
 
+import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
-import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_TANGENT_SPECIFIED;
 
 public class Path2DPoint {
     private transient final int STEPS = 600;
@@ -12,17 +12,17 @@ public class Path2DPoint {
     private Vector2 m_nextAngleAndMagnitude;
     private Vector2 m_prevTangent;
     private Vector2 m_nextTangent;
+    private SlopeMethod m_prevSlopeMethod;
+    private SlopeMethod m_nextSlopeMethod;
+    private Path2DPoint m_nextPoint;
+
     private transient boolean m_bTangentsDirty;
     private transient boolean m_bCoefficientsDirty;
     private transient CubicCoefficients1D m_xCoeff;
     private transient CubicCoefficients1D m_yCoeff;
     private transient double m_segmentLength;
     private transient double partialLength, prevPartialLength;
-    private SlopeMethod m_prevSlopeMethod;
-    private SlopeMethod m_nextSlopeMethod;
-
     private transient Path2DCurve m_path2DCurve;
-    private Path2DPoint m_nextPoint;
     private transient Path2DPoint m_prevPoint;
 
     public Path2DPoint() {
@@ -138,16 +138,22 @@ public class Path2DPoint {
     }
 
     public void setPrevTangent(Vector2 prevTangent) {
-        m_prevAngleAndMagnitude = new Vector2(0, 1);
-        calculateTangents();  // determine the default tangents
-        double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
-        double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
-        double angle = goalAngle - defaultAngle;
-        double magnitude = Vector2.Companion.length(prevTangent) / Vector2.Companion.length(m_prevTangent);
-        m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
-        m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
-        m_nextSlopeMethod = SLOPE_SMOOTH;
-        m_prevSlopeMethod = SLOPE_SMOOTH;
+        if (m_nextSlopeMethod == SLOPE_SMOOTH) {
+            m_prevAngleAndMagnitude = new Vector2(0, 1);
+            calculateTangents();  // determine the default tangents
+            double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
+            double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
+            double angle = goalAngle - defaultAngle;
+            double magnitude = Vector2.Companion.length(prevTangent) / Vector2.Companion.length(m_prevTangent);
+            m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+            m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
+            m_nextSlopeMethod = SLOPE_SMOOTH;
+            m_prevSlopeMethod = SLOPE_SMOOTH;
+            onPositionChanged();
+        }
+        else if (m_nextSlopeMethod == SLOPE_MANUAL) {
+            m_prevTangent = prevTangent;
+        }
         onPositionChanged();
     }
 
@@ -159,7 +165,7 @@ public class Path2DPoint {
     }
 
     public void setNextTangent(Vector2 nextTangent) {
-        if (getNextPoint() != null) {
+        if (m_nextSlopeMethod == SLOPE_SMOOTH) {
             m_nextAngleAndMagnitude = new Vector2(0, 1);
             calculateTangents();  // determine the default tangents
             double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
@@ -170,13 +176,11 @@ public class Path2DPoint {
             m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
             m_nextSlopeMethod = SLOPE_SMOOTH;
             m_prevSlopeMethod = SLOPE_SMOOTH;
-            onPositionChanged();
-        } else {
-            m_nextTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
-            m_nextSlopeMethod = SLOPE_TANGENT_SPECIFIED;
-            m_prevTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
-            m_prevSlopeMethod = SLOPE_TANGENT_SPECIFIED;
         }
+        else if (m_nextSlopeMethod == SLOPE_MANUAL) {
+            m_nextTangent = nextTangent;
+        }
+        onPositionChanged();
     }
 
     public Path2DCurve getPath2DCurve() {
@@ -209,6 +213,7 @@ public class Path2DPoint {
 
     public void setPrevSlopeMethod(SlopeMethod slopeMethod) {
         m_prevSlopeMethod = slopeMethod;
+        m_bTangentsDirty = true;
     }
 
     public SlopeMethod getNextSlopeMethod() {
@@ -217,6 +222,7 @@ public class Path2DPoint {
 
     public void setNextSlopeMethod(SlopeMethod slopeMethod) {
         m_prevSlopeMethod = slopeMethod;
+        m_bTangentsDirty = true;
     }
 
     public double getPrevAngle() {
@@ -267,7 +273,7 @@ public class Path2DPoint {
             case SLOPE_SMOOTH:
                 bCalcSmoothPrev = true;
                 break;
-            case SLOPE_TANGENT_SPECIFIED:
+            case SLOPE_MANUAL:
                 break;
         }
 
@@ -279,7 +285,7 @@ public class Path2DPoint {
             case SLOPE_SMOOTH:
                 bCalcSmoothNext = true;
                 break;
-            case SLOPE_TANGENT_SPECIFIED:
+            case SLOPE_MANUAL:
                 break;
         }
 
@@ -449,6 +455,6 @@ public class Path2DPoint {
     }
 
     public enum SlopeMethod {
-        SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_SMOOTH, SLOPE_TANGENT_SPECIFIED
+        SLOPE_SMOOTH, SLOPE_MANUAL, SLOPE_LINEAR
     }
 }
