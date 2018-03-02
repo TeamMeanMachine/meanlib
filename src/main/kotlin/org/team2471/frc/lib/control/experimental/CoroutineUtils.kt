@@ -2,9 +2,12 @@ package org.team2471.frc.lib.control.experimental
 
 import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import org.team2471.frc.lib.util.measureTimeFPGAMicros
 import java.lang.Long.min
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.math.roundToLong
 
 /**
  * Runs the provided [body] of code periodically per [period] ms.
@@ -31,3 +34,11 @@ suspend inline fun periodic(period: Int = 20,
 suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean) {
     while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
 }
+
+suspend fun parallel(coroutineContext: CoroutineContext, vararg blocks: suspend () -> Unit) {
+    blocks.map { block ->
+        launch(coroutineContext) { block() }
+    }.forEach { it.join() }
+}
+
+suspend fun delaySeconds(time: Double) = delay((time * 1000).roundToLong())
