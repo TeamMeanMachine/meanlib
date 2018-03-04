@@ -56,4 +56,11 @@ public class Autonomi {
             entry.getValue().fixUpTailAndPrevPointers();
         }
     }
+
+    public void publishToNetworkTables(NetworkTableInstance networkTableInstance) {
+        String json = toJsonString();
+        NetworkTable table = networkTableInstance.getTable("PathVisualizer");
+        NetworkTableEntry entry = table.getEntry("Autonomi");
+        entry.setString(json);
+    }
 }
