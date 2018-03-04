@@ -45,10 +45,8 @@ private class ToggleWhenEntry(private val command: Command, private val conditio
 
         if (state && !previousState) {
             if (!command.isActive) {
-                println("Toggle")
                 command.launch()
             } else {
-                println("Untoggle")
                 command.cancel()
             }
         }
