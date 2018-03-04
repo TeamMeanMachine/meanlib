@@ -69,20 +69,11 @@ public class Autonomi {
         }
     }
 
-    public void publishToNetworkTables() {
-        shutdown();
-        networkTableInstance.setNetworkIdentity("PathVisualizer");
-        if (serverId.matches("[1-9](\\d{1,3})?")) {
-            networkTableInstance.startClientTeam(Integer.parseInt(serverId), serverPort);
-        } else {
-            networkTableInstance.startClient(serverId, serverPort);
-        }
-
+    public void publishToNetworkTables(NetworkTableInstance networkTableInstance) {
         String json = toJsonString();
         NetworkTable table = networkTableInstance.getTable("PathVisualizer");
         NetworkTableEntry entry = table.getEntry("Autonomi");
-        entry.setPersistent();
-        entry.forceSetString(json);
+        entry.setString(json);
     }
 
     static public Autonomi initFromNetworkTables() {
