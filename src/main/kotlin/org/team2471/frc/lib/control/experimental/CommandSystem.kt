@@ -1,6 +1,8 @@
 package org.team2471.frc.lib.control.experimental
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotState
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
@@ -19,36 +21,35 @@ object CommandSystem {
 
     private val table = NetworkTableInstance.getDefault().getTable("Command System")
 
-    internal var isEnabled = false
-        private set
-    private var isTeleop = false
+    val isEnabled: Boolean
+        get() = RobotState.isEnabled()
 
     init {
         launch {
             val activeCommandsEntry = table.getEntry("Active Commands")
             val activeRequirementsEntry = table.getEntry("Active Requirements")
             val defaultCommandsEntry = table.getEntry("Default Commands")
-            val stateEntry = table.getEntry("State")
+            val enabledEntry = table.getEntry("Enabled")
 
+            var prevEnabled = isEnabled
             periodic(100) {
                 mutex.withLock {
+                    val isEnabled = isEnabled
                     // Cancel all non-default commands on robot disable
-                    val isEnabled = RobotState.isEnabled()
-                    if (isTeleop && isEnabled && !this@CommandSystem.isEnabled) {
-                        defaultCommandsMap.forEach { _, command ->
-                            command.launch()
+                    if (isEnabled && !prevEnabled) {
+                        defaultCommandsMap.forEach { subsystem, defaultCommand ->
+                            if (!activeRequirementsMap.contains(subsystem)) {
+                                defaultCommand.launch()
+                            }
                         }
                     }
-                    this@CommandSystem.isEnabled = isEnabled
-                    isTeleop = RobotState.isOperatorControl()
-                    if (!isEnabled) activeCommands.forEach { it.cancel() }
+                    prevEnabled = isEnabled
 
-                    stateEntry.setString(when {
-                        isEnabled && isTeleop -> "TELEOP"
-                        isEnabled -> "ENABLED"
-                        else -> "DISABLED"
-                    })
+                    if (!isEnabled) {
+                        activeCommands.forEach { it.cancel() }
+                    }
 
+                    enabledEntry.setString(if (isEnabled) "ENABLED" else "DISABLED")
                     activeCommandsEntry.setStringArray(activeCommands.map { it.name }.toTypedArray())
                     activeRequirementsEntry.setStringArray(activeRequirementsMap.map { (subsystem, command) ->
                         "${subsystem::class.simpleName} -> ${command.name}"
@@ -70,7 +71,7 @@ object CommandSystem {
                     if (activeRequirementsMap[subsystem] == command) {
                         activeRequirementsMap.remove(subsystem)
 
-                        if (isEnabled && isTeleop) defaultCommandsMap[subsystem]?.launch()
+                        if (isEnabled) defaultCommandsMap[subsystem]?.launch()
                     }
                 }
     }
@@ -130,7 +131,7 @@ object CommandSystem {
         runBlocking {
             mutex.withLock {
                 defaultCommandsMap[subsystem] = command
-                if (isEnabled && isTeleop && command.requirements.all { activeRequirementsMap[it] == null }) command.launch()
+                if (isEnabled && command.requirements.all { activeRequirementsMap[it] == null }) command.launch()
             }
         }
     }
