@@ -17,7 +17,6 @@ public class Path2D {
 
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
-    private boolean m_mirrored = false;
 
     // calculation storage
     private transient Vector2 m_prevCenterPositionForLeft;
@@ -114,7 +113,7 @@ public class Path2D {
     public Vector2 getPositionAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
         Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
-        if (m_mirrored)
+        if (isMirrored())
             rValue.setX(-rValue.getX());
         return rValue;
     }
@@ -122,7 +121,7 @@ public class Path2D {
     public Vector2 getTangentAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
         Vector2 rValue = m_xyCurve.getTangentAtDistance(ease * totalDistance);
-        if (m_mirrored)
+        if (isMirrored())
             rValue.setX(-rValue.getX());
         return rValue;
     }
@@ -255,11 +254,11 @@ public class Path2D {
     }
 
     public boolean isMirrored() {
-        return m_mirrored;
+        return autonomous.isMirrored();
     }
 
     public void setMirrored(boolean mirrored) {
-        this.m_mirrored = mirrored;
+        autonomous.setMirrored(mirrored);
     }
 
     public String toString() {
@@ -310,6 +309,10 @@ public class Path2D {
     void fixUpTailAndPrevPointers() {
         m_xyCurve.fixUpTailAndPrevPointers();
         m_easeCurve.fixUpTailAndPrevPointers();
+    }
+
+    public double getLength() {
+        return m_xyCurve.getLength();
     }
 }
 

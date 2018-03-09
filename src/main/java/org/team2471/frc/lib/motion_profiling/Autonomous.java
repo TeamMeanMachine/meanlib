@@ -12,6 +12,7 @@ public class Autonomous {
     private double scrubFactor = 1.12;
     private double robotWidth = 30.0 / 12.0;
     private double robotLength = 38.0 / 12.0;
+    private boolean m_mirrored = false;
 
     public Autonomous(String name) {
         this.name = name;
@@ -63,5 +64,13 @@ public class Autonomous {
 
     public void setTrackWidth(double trackWidth) {
         this.trackWidth = trackWidth;
+    }
+
+    public boolean isMirrored() {
+        return m_mirrored;
+    }
+
+    public void setMirrored(boolean m_mirrored) {
+        this.m_mirrored = m_mirrored;
     }
 }
