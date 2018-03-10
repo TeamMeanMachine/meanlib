@@ -31,20 +31,8 @@ object CommandSystem {
             val defaultCommandsEntry = table.getEntry("Default Commands")
             val enabledEntry = table.getEntry("Enabled")
 
-            var prevEnabled = isEnabled
             periodic(100) {
                 mutex.withLock {
-                    val isEnabled = isEnabled
-                    // Cancel all non-default commands on robot disable
-                    if (isEnabled && !prevEnabled) {
-                        defaultCommandsMap.forEach { subsystem, defaultCommand ->
-                            if (!activeRequirementsMap.contains(subsystem)) {
-                                defaultCommand.launch()
-                            }
-                        }
-                    }
-                    prevEnabled = isEnabled
-
                     if (!isEnabled) {
                         activeCommands.forEach { it.cancel() }
                     }
@@ -59,6 +47,12 @@ object CommandSystem {
                     }.toTypedArray())
                 }
             }
+        }
+    }
+
+    fun initDefaultCommands() = defaultCommandsMap.forEach { subsystem, defaultCommand ->
+        if (!activeRequirementsMap.contains(subsystem)) {
+            defaultCommand.launch()
         }
     }
 
