@@ -17,6 +17,8 @@ public class Path2D {
 
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
+    private double trackWidth = 25.0 / 12.0;
+    private double scrubFactor = 1.12;
 
     // calculation storage
     private transient Vector2 m_prevCenterPositionForLeft;
@@ -140,16 +142,16 @@ public class Path2D {
 
     public Vector2 getLeftPosition(double time) {
         if (robotDirection==RobotDirection.FORWARD)
-            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, -getTrackWidth() / 2.0);
         else
-            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, getTrackWidth() / 2.0);
     }
 
     public Vector2 getRightPosition(double time) {
         if (robotDirection==RobotDirection.FORWARD)
-            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, getTrackWidth() / 2.0);
         else
-            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, -getTrackWidth() / 2.0);
     }
 
     public double getLeftPositionDelta(double time) {
@@ -168,9 +170,9 @@ public class Path2D {
 
         double result;
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            result = Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaLeft) * getScrubFactor();
         } else {
-            result = -Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaLeft) * getScrubFactor();
         }
         if (robotDirection==RobotDirection.FORWARD)
             return result;
@@ -194,9 +196,9 @@ public class Path2D {
 
         double result;
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            result = Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaRight) * getScrubFactor();
         } else {
-            result = -Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaRight) * getScrubFactor();
         }
         if (robotDirection==RobotDirection.FORWARD)
             return result;
@@ -254,7 +256,7 @@ public class Path2D {
     }
 
     public boolean isMirrored() {
-        return autonomous.isMirrored();
+        return autonomous != null && autonomous.isMirrored();
     }
 
     public void setMirrored(boolean mirrored) {
@@ -313,6 +315,14 @@ public class Path2D {
 
     public double getLength() {
         return m_xyCurve.getLength();
+    }
+
+    public double getTrackWidth() {
+        return autonomous != null ? autonomous.getTrackWidth() : trackWidth;
+    }
+
+    public double getScrubFactor(){
+        return autonomous != null ? autonomous.getScrubFactor() : scrubFactor;
     }
 }
 
