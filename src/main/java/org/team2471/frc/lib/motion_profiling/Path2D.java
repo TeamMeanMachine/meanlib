@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import org.team2471.frc.lib.math.Vector;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -314,5 +315,24 @@ public class Path2D {
     public double getLength() {
         return m_xyCurve.getLength();
     }
-}
+
+    public double getAccelerationAtEase(double ease) {
+        double deltaEase = 1.0 / 100.0;
+        Vector2 tangent1 = getTangentAtEase(ease);
+        Vector2 tangent2 = getTangentAtEase(ease+deltaEase);
+        Vector2 delta = Vector2.Companion.subtract(tangent2, tangent1);
+        return Vector2.Companion.length(delta) * Path2DPoint.STEPS / deltaEase / getDuration() / getDuration();  // this is how much it would curve over the entire path length
+    }
+
+    public Vector2 getVelocityAtEase(double ease) {
+        Vector2 velocity = getTangentAtEase(ease);
+        velocity = Vector2.Companion.multiply(velocity, Path2DPoint.STEPS);
+        return velocity;
+    }
+
+    public double getCurvatureAtEase(double ease) {
+        double radius = 0.0;
+        Vector2 velocity = getVelocityAtEase(ease);
+        return Vector2.Companion.dot(velocity, velocity) / radius;
+    }
 
