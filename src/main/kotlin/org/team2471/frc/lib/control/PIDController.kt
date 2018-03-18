@@ -14,7 +14,7 @@ class PIDController(
         input: () -> Double,
         private val output: (Double) -> Unit,
         temp: () -> Double,
-        period: Int = 20) : SendableBase() {
+        period: Long = 20) : SendableBase() {
 
     @Volatile
     var setpoint = input()

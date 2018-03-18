@@ -17,17 +17,11 @@ import kotlin.math.roundToLong
  * Additionally, a [condition] can be provided to allow termination of the loop without cancellation
  * of the command coroutine.
  */
-suspend inline fun periodic(period: Int = 20,
+suspend inline fun periodic(period: Long = 20,
                             condition: () -> Boolean = { true }, body: () -> Unit) {
     while (condition()) {
-        val microPeriod = period * 1000L
-
-        val time = measureTimeFPGAMicros {
-            body()
-        }
-        if (time > microPeriod) DriverStation.reportWarning("Periodic loop went over expected time. " +
-                "Got: ${time / 1000}ms, expected less than ${period}ms", false)
-        delay(microPeriod - min(time, microPeriod), TimeUnit.MICROSECONDS)
+        body()
+        delay(period)
     }
 }
 
