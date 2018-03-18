@@ -132,7 +132,7 @@ public class Path2D {
         Vector2 tangent = getTangent(time);
         tangent = Vector2.Companion.normalize(tangent);
         tangent = Vector2.Companion.perpendicular(tangent);
-        if (speed<0.0)
+        if (speed < 0.0)
             xOffset = -xOffset;
         tangent = Vector2.Companion.multiply(tangent, xOffset);
         Vector2 sidePosition = Vector2.Companion.add(centerPosition, tangent);
@@ -140,17 +140,17 @@ public class Path2D {
     }
 
     public Vector2 getLeftPosition(double time) {
-        if (robotDirection==RobotDirection.FORWARD)
-            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
+        if (robotDirection == RobotDirection.FORWARD)
+            return getSidePosition(time, -autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
         else
-            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, autonomous.getTrackWidth() * autonomous.getScrubFactor()/ 2.0);
     }
 
     public Vector2 getRightPosition(double time) {
-        if (robotDirection==RobotDirection.FORWARD)
-            return getSidePosition(time, autonomous.getTrackWidth() / 2.0);
+        if (robotDirection == RobotDirection.FORWARD)
+            return getSidePosition(time, autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
         else
-            return getSidePosition(time, -autonomous.getTrackWidth() / 2.0);
+            return getSidePosition(time, -autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
     }
 
     public double getLeftPositionDelta(double time) {
@@ -169,11 +169,11 @@ public class Path2D {
 
         double result;
         if (Vector2.Companion.dot(deltaCenter, deltaLeft) > 0) {
-            result = Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaLeft);
         } else {
-            result = -Vector2.Companion.length(deltaLeft) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaLeft);
         }
-        if (robotDirection==RobotDirection.FORWARD)
+        if (robotDirection == RobotDirection.FORWARD)
             return result;
         else
             return -result;
@@ -195,11 +195,11 @@ public class Path2D {
 
         double result;
         if (Vector2.Companion.dot(deltaCenter, deltaRight) > 0) {
-            result = Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = Vector2.Companion.length(deltaRight);
         } else {
-            result = -Vector2.Companion.length(deltaRight) * autonomous.getScrubFactor();
+            result = -Vector2.Companion.length(deltaRight);
         }
-        if (robotDirection==RobotDirection.FORWARD)
+        if (robotDirection == RobotDirection.FORWARD)
             return result;
         else
             return -result;
@@ -319,7 +319,7 @@ public class Path2D {
     public double getAccelerationAtEase(double ease) {
         double deltaEase = 1.0 / 100.0;
         Vector2 tangent1 = getTangentAtEase(ease);
-        Vector2 tangent2 = getTangentAtEase(ease+deltaEase);
+        Vector2 tangent2 = getTangentAtEase(ease + deltaEase);
         Vector2 delta = Vector2.Companion.subtract(tangent2, tangent1);
         return Vector2.Companion.length(delta) * Path2DPoint.STEPS / deltaEase / getDuration() / getDuration();  // this is how much it would curve over the entire path length
     }
@@ -335,4 +335,4 @@ public class Path2D {
         Vector2 velocity = getVelocityAtEase(ease);
         return Vector2.Companion.dot(velocity, velocity) / radius;
     }
-
+}
