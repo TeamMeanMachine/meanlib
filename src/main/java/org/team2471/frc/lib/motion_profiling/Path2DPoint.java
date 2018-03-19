@@ -6,7 +6,7 @@ import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOP
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
 
 public class Path2DPoint {
-    private transient final int STEPS = 600;
+    public static transient final int STEPS = 600;
     private Vector2 m_position;
     private Vector2 m_prevAngleAndMagnitude;
     private Vector2 m_nextAngleAndMagnitude;
