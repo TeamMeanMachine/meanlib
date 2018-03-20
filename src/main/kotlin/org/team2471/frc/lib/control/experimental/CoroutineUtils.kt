@@ -1,12 +1,9 @@
 package org.team2471.frc.lib.control.experimental
 
-import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
-import org.team2471.frc.lib.util.measureTimeFPGAMicros
-import java.lang.Long.min
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.coroutineContext
 import kotlin.math.roundToLong
 
 /**
@@ -29,7 +26,7 @@ suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean
     while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
 }
 
-suspend fun parallel(coroutineContext: CoroutineContext, vararg blocks: suspend () -> Unit) {
+suspend fun parallel(vararg blocks: suspend () -> Unit) {
     blocks.map { block ->
         launch(coroutineContext) { block() }
     }.forEach { it.join() }

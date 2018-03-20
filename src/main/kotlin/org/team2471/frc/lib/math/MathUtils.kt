@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.math
 
-import java.lang.Math.pow
+import java.lang.Math.*
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 fun Double.fitToRange(min: Double, max: Double): Double = when {
@@ -39,16 +40,28 @@ infix fun Double.mod(n: Double) = if (this < 0) {
 } else {
     this % n
 }
+
 fun round(number: Double, digits: Int): Double {
     val modulo = Math.pow(10.0, digits.toDouble())
     return (number * modulo).roundToInt() / modulo
 }
+
 fun linearMap(inLo: Double, inHi: Double, outLo: Double, outHi: Double, inAlpha: Double): Double {
-    return (inAlpha-inLo) / (inHi-inLo) * (outHi-outLo) + outLo
+    return (inAlpha - inLo) / (inHi - inLo) * (outHi - outLo) + outLo
 }
 
 fun cubicMap(inLo: Double, inHi: Double, outLo: Double, outHi: Double, inAlpha: Double): Double {
-    val x = (inAlpha-inLo) / (inHi-inLo)
+    val x = (inAlpha - inLo) / (inHi - inLo)
     val cubic = (3 - 2 * x) * x * x
-    return cubic * (outHi-outLo) + outLo
+    return cubic * (outHi - outLo) + outLo
+}
+
+fun windRelativeAngles(angle1: Double, angle2: Double): Double {
+    val diff = angle1 - angle2
+    val absDiff = abs(diff)
+    return if (absDiff > 180.0) {
+        angle2 + 360.0 * signum(diff) * floor((absDiff / 360.0) + 0.5)
+    } else {
+        angle2
+    }
 }
