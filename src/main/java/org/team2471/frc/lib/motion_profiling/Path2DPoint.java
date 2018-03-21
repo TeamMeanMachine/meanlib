@@ -138,22 +138,28 @@ public class Path2DPoint {
     }
 
     public void setPrevTangent(Vector2 prevTangent) {
-        if (m_nextSlopeMethod == SLOPE_SMOOTH) {
-            m_prevAngleAndMagnitude = new Vector2(0, 1);
-            calculateTangents();  // determine the default tangents
-            double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
-            double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
-            double angle = goalAngle - defaultAngle;
-            double magnitude = Vector2.Companion.length(prevTangent) / Vector2.Companion.length(m_prevTangent);
-            m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
-            m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
-            m_nextSlopeMethod = SLOPE_SMOOTH;
-            m_prevSlopeMethod = SLOPE_SMOOTH;
-            onPositionChanged();
+        if (getPrevPoint()!=null) {
+            if (m_nextSlopeMethod == SLOPE_SMOOTH) {
+                m_prevAngleAndMagnitude = new Vector2(0, 1);
+                calculateTangents();  // determine the default tangents
+                double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
+                double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
+                double angle = goalAngle - defaultAngle;
+                double magnitude = Vector2.Companion.length(prevTangent) / Vector2.Companion.length(m_prevTangent);
+                m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+                m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
+                m_nextSlopeMethod = SLOPE_SMOOTH;
+                m_prevSlopeMethod = SLOPE_SMOOTH;
+            } else if (m_nextSlopeMethod == SLOPE_MANUAL) {
+                m_prevTangent = prevTangent;
+            }
+        } else {
+            m_nextTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
+            m_nextSlopeMethod = SLOPE_MANUAL;
+            m_prevTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
+            m_prevSlopeMethod = SLOPE_MANUAL;
         }
-        else if (m_nextSlopeMethod == SLOPE_MANUAL) {
-            m_prevTangent = prevTangent;
-        }
+
         onPositionChanged();
     }
 
@@ -165,20 +171,27 @@ public class Path2DPoint {
     }
 
     public void setNextTangent(Vector2 nextTangent) {
-        if (m_nextSlopeMethod == SLOPE_SMOOTH) {
-            m_nextAngleAndMagnitude = new Vector2(0, 1);
-            calculateTangents();  // determine the default tangents
-            double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
-            double goalAngle = Math.toDegrees(Math.atan2(nextTangent.getY(), nextTangent.getX()));
-            double angle = goalAngle - defaultAngle;
-            double magnitude = Vector2.Companion.length(nextTangent) / Vector2.Companion.length(m_nextTangent);
-            m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
-            m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
-            m_nextSlopeMethod = SLOPE_SMOOTH;
-            m_prevSlopeMethod = SLOPE_SMOOTH;
+        if (m_nextPoint != null) {
+            if (m_nextSlopeMethod == SLOPE_SMOOTH) {
+                m_nextAngleAndMagnitude = new Vector2(0, 1);
+                calculateTangents();  // determine the default tangents
+                double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
+                double goalAngle = Math.toDegrees(Math.atan2(nextTangent.getY(), nextTangent.getX()));
+                double angle = goalAngle - defaultAngle;
+                double magnitude = Vector2.Companion.length(nextTangent) / Vector2.Companion.length(m_nextTangent);
+                m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+                m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
+                m_nextSlopeMethod = SLOPE_SMOOTH;
+                m_prevSlopeMethod = SLOPE_SMOOTH;
+            } else if (m_nextSlopeMethod == SLOPE_MANUAL) {
+                m_nextTangent = nextTangent;
+            }
         }
-        else if (m_nextSlopeMethod == SLOPE_MANUAL) {
-            m_nextTangent = nextTangent;
+        else {
+            m_nextTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
+            m_nextSlopeMethod = SLOPE_MANUAL;
+            m_prevTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
+            m_prevSlopeMethod = SLOPE_MANUAL;
         }
         onPositionChanged();
     }
