@@ -18,6 +18,8 @@ public class Path2D {
 
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
+    private double trackWidth = 25.0 / 12.0;
+    private double scrubFactor = 1.12;
 
     // calculation storage
     private transient Vector2 m_prevCenterPositionForLeft;
@@ -255,7 +257,7 @@ public class Path2D {
     }
 
     public boolean isMirrored() {
-        return autonomous.isMirrored();
+        return autonomous != null && autonomous.isMirrored();
     }
 
     public void setMirrored(boolean mirrored) {
@@ -315,7 +317,13 @@ public class Path2D {
     public double getLength() {
         return m_xyCurve.getLength();
     }
+    public double getTrackWidth() {
+        return autonomous != null ? autonomous.getTrackWidth() : trackWidth;
+    }
 
+    public double getScrubFactor(){
+        return autonomous != null ? autonomous.getScrubFactor() : scrubFactor;
+    }
     public double getAccelerationAtEase(double ease) {
         double deltaEase = 1.0 / 100.0;
         Vector2 tangent1 = getTangentAtEase(ease);
