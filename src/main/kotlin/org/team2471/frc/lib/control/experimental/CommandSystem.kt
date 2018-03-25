@@ -86,7 +86,8 @@ object CommandSystem {
 
         mutex.withLock {
             val conflictingCommands = subsystems.mapNotNull { activeRequirementsMap[it] }.toSet()
-            println("${conflictingCommands.size} conflicting commands found for command ${command.name}")
+            if (conflictingCommands.isNotEmpty())
+                println("${conflictingCommands.size} conflicting commands found for command ${command.name}")
 
             // verify that all conflicting commands may be interrupted
             if (conflictingCommands.any { !it.isCancellable }) {
