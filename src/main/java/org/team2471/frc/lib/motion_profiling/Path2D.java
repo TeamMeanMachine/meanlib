@@ -20,6 +20,7 @@ public class Path2D {
     private RobotDirection robotDirection = RobotDirection.FORWARD;
     private double trackWidth = 25.0 / 12.0;
     private double scrubFactor = 1.12;
+    private boolean m_mirrored = false;
 
     // calculation storage
     private transient Vector2 m_prevCenterPositionForLeft;
@@ -257,11 +258,11 @@ public class Path2D {
     }
 
     public boolean isMirrored() {
-        return autonomous != null && autonomous.isMirrored();
+        return m_mirrored || (autonomous != null && autonomous.isMirrored());  // the path is mirrored if the path is marked mirrored or the autonomous is marked mirrored
     }
 
     public void setMirrored(boolean mirrored) {
-        autonomous.setMirrored(mirrored);
+        m_mirrored = mirrored;
     }
 
     public String toString() {
