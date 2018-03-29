@@ -95,6 +95,11 @@ object CommandSystem {
                 return null
             }
 
+            if (command.isActive) {
+                println("Command ${command.name} could not start because it is already running.")
+                return null
+            }
+
             // Update state.
             // It is important to do take over the requirements before you cancel the conflicts.
             // If you don't, a default command for one of our requirements may be launched.
