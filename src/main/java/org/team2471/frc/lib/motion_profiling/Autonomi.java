@@ -14,7 +14,7 @@ public class Autonomi {
     public Map<String, Autonomous> mapAutonomous = new HashMap<>();
 
     static Moshi moshi = new Moshi.Builder().build();
-    static JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class);
+    static JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class).indent("\t");
     private static NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
 
     public Autonomous get(String name) {
