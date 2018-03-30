@@ -86,11 +86,17 @@ object CommandSystem {
 
         mutex.withLock {
             val conflictingCommands = subsystems.mapNotNull { activeRequirementsMap[it] }.toSet()
-            println("${conflictingCommands.size} conflicting commands found for command ${command.name}")
+            if (conflictingCommands.isNotEmpty())
+                println("${conflictingCommands.size} conflicting commands found for command ${command.name}")
 
             // verify that all conflicting commands may be interrupted
             if (conflictingCommands.any { !it.isCancellable }) {
                 println("Uninterruptible requirement found when starting ${command.name}")
+                return null
+            }
+
+            if (command.isActive) {
+                println("Command ${command.name} could not start because it is already running.")
                 return null
             }
 

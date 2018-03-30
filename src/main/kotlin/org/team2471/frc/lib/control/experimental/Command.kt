@@ -19,11 +19,6 @@ class Command(val name: String,
     private var coroutine: Job? = null
 
     suspend operator fun invoke(context: CoroutineContext, timeout: Long? = null, join: Boolean = true) {
-        if (isActive) {
-            println("Command $name could not start because it is already running.")
-            return
-        }
-
         if (!CommandSystem.isEnabled) {
             println("Command $name could not start because the Command System is disabled.")
             return
@@ -71,7 +66,8 @@ class Command(val name: String,
 
     suspend fun join() = coroutine?.join()
 
-    val isActive get() = coroutine?.isActive == true
+    val isActive: Boolean
+        get() = coroutine?.isActive == true
 }
 
 internal class Requirements(requirements: Set<Subsystem>) :

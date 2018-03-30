@@ -2,7 +2,6 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import org.team2471.frc.lib.math.Vector;
 import org.team2471.frc.lib.vector.Vector2;
 
 public class Path2D {
@@ -101,17 +100,23 @@ public class Path2D {
     }
 
     public Vector2 getTangent(double time) {
+        double flipTangent = getRobotDirection() == RobotDirection.FORWARD ? 1.0 : -1.0;
+        Vector2 rValue;
+
         if (m_easeCurve.getHeadKey() != null) {
             if (speed > 0)
-                return getTangentAtEase(m_easeCurve.getValue(time * speed));
+                rValue = getTangentAtEase(m_easeCurve.getValue(time * speed));
             else
-                return getTangentAtEase(m_easeCurve.getValue(getDuration() - time * -speed));
+                rValue = getTangentAtEase(m_easeCurve.getValue(getDuration() - time * -speed));
         } else {
             if (speed > 0)
-                return getTangentAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
+                rValue = getTangentAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
             else
-                return getTangentAtEase(getDuration() - time / 5.0 * -speed);
+                rValue = getTangentAtEase(getDuration() - time / 5.0 * -speed);
         }
+
+        rValue = Vector2.Companion.multiply(rValue, flipTangent);
+        return rValue;
     }
 
     public Vector2 getPositionAtEase(double ease) {
@@ -143,17 +148,11 @@ public class Path2D {
     }
 
     public Vector2 getLeftPosition(double time) {
-        if (robotDirection == RobotDirection.FORWARD)
-            return getSidePosition(time, -autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
-        else
-            return getSidePosition(time, autonomous.getTrackWidth() * autonomous.getScrubFactor()/ 2.0);
+        return getSidePosition(time, -autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
     }
 
     public Vector2 getRightPosition(double time) {
-        if (robotDirection == RobotDirection.FORWARD)
-            return getSidePosition(time, autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
-        else
-            return getSidePosition(time, -autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
+        return getSidePosition(time, autonomous.getTrackWidth() * autonomous.getScrubFactor() / 2.0);
     }
 
     public double getLeftPositionDelta(double time) {
@@ -318,13 +317,15 @@ public class Path2D {
     public double getLength() {
         return m_xyCurve.getLength();
     }
+
     public double getTrackWidth() {
         return autonomous != null ? autonomous.getTrackWidth() : trackWidth;
     }
 
-    public double getScrubFactor(){
+    public double getScrubFactor() {
         return autonomous != null ? autonomous.getScrubFactor() : scrubFactor;
     }
+
     public double getAccelerationAtEase(double ease) {
         double deltaEase = 1.0 / 100.0;
         Vector2 tangent1 = getTangentAtEase(ease);
