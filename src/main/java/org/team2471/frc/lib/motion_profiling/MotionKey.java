@@ -118,7 +118,9 @@ public class MotionKey {
     public void setPrevAngleAndMagnitude(Vector2 m_prevAngleAndMagnitude) {
         m_markBeginOrEndKeysToZeroSlope = false;
         this.m_prevAngleAndMagnitude = m_prevAngleAndMagnitude;
+        m_prevSlopeMethod = SlopeMethod.SLOPE_MANUAL;
         setTangentsDirty(true);
+        onPositionChanged();
     }
 
     public Vector2 getNextAngleAndMagnitude() {
@@ -128,7 +130,9 @@ public class MotionKey {
     public void setNextAngleAndMagnitude(Vector2 m_nextAngleAndMagnitude) {
         m_markBeginOrEndKeysToZeroSlope = false;
         this.m_nextAngleAndMagnitude = m_nextAngleAndMagnitude;
+        m_nextSlopeMethod = SlopeMethod.SLOPE_MANUAL;
         setTangentsDirty(true);
+        onPositionChanged();
     }
 
     public Vector2 getPrevTangent() {
