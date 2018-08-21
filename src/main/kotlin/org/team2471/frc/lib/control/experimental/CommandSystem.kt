@@ -27,7 +27,7 @@ object CommandSystem {
     init {
         launch {
             val activeCommandsEntry = table.getEntry("Active Commands")
-            val activeRequirementsEntry = table.getEntry("Active Requirements")
+            val activeRequirementsEntry = table.getEntry("Active CoroutineRequirements")
             val defaultCommandsEntry = table.getEntry("Default Commands")
             val enabledEntry = table.getEntry("Enabled")
 
