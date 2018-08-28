@@ -28,8 +28,9 @@ object SubsystemScheduler {
                     if (!isEnabled) continue@messageLoop
 
                     CancellationException("Subsystem Coordinator Disabled").let { e ->
-                        cache.forEach { (_, job) -> job.cancel(e); job.join() }
-                    }
+                        cache.map { (_, job) -> job.cancel(e); job }
+                    }.forEach { it.join() }
+
                     isEnabled = false
                 }
 
@@ -92,10 +93,6 @@ object SubsystemScheduler {
                                 body()
                                 continuation.resume(Unit)
                             } catch (exception: Throwable) {
-                                if (exception !is TakeoverException) {
-                                    allHandles.forEach { it.launchDefaultAction() }
-                                }
-
                                 continuation.resumeWithException(exception)
                             } finally {
                                 channel.offer(Message.Clean(job))
@@ -114,12 +111,12 @@ object SubsystemScheduler {
                                 if (i > 0) {
                                     reportError("Action job in thread ${Thread.currentThread().name}" +
                                             "hanging up subsystems { ${newHandles.joinToString { it.name }} } " +
-                                            "(${i * 0.5}s)", false)
+                                            "(${i * 2.5}s)", false)
                                 }
                                 i++
                             }
 
-                            delay(500)
+                            delay(2500)
                         }
                     }
                 }
@@ -134,7 +131,7 @@ object SubsystemScheduler {
                 is Message.Clean -> {
                     cache.keys
                             .filter { cache[it] === message.job }
-                            .forEach { cache.remove(it) }
+                            .forEach { cache.remove(it); it.launchDefaultAction() }
                 }
             }
         }
