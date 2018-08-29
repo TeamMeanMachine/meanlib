@@ -58,9 +58,6 @@ object SubsystemScheduler {
                     val newJob = suspendCoroutine<Job> { launchCont ->
                         // launch new action coroutine with all handles applied
                         launch(callerContext + CoroutineRequirements(allHandles),
-                                // starting the coroutine in atomic mode guarantees that
-                                // the coroutine makes it to the try-catch below in the
-                                // case that the callerContext is canceled
                                 CoroutineStart.ATOMIC) {
 
                             val actionContext = coroutineContext
@@ -74,21 +71,13 @@ object SubsystemScheduler {
                             launchCont.resume(job)
 
                             try {
-                                // cancel conflicts
-                                TakeoverException(conflicts).let { e ->
-                                    conflictJobs.map { conflict ->
-                                        // spawn a child coroutine for each conflict - it is
-                                        // critical that these children do not complete until
-                                        // it's respective conflict is completed
-                                        launch(callerContext, CoroutineStart.ATOMIC) {
-                                            conflict.cancel(e)
-
-                                            withContext(NonCancellable) {
-                                                conflict.join()
-                                            }
-                                        }
-                                    }
-                                }.forEach { it.join() }
+                                // cancel conflicts - action coroutines must not complete until
+                                // it's conflict jobs have finished execution
+                                withContext(NonCancellable) {
+                                    val e = TakeoverException(conflicts)
+                                    conflictJobs.forEach { it.cancel(e) }
+                                    conflictJobs.forEach { it.join() }
+                                }
 
                                 body()
                                 continuation.resume(Unit)
@@ -129,9 +118,13 @@ object SubsystemScheduler {
                 }
 
                 is Message.Clean -> {
+                    // grab currently used handles
                     cache.keys
                             .filter { cache[it] === message.job }
-                            .forEach { cache.remove(it); it.launchDefaultAction() }
+                            .forEach {
+                                cache.remove(it)
+                                if (isEnabled) it.launchDefaultAction()
+                            }
                 }
             }
         }
