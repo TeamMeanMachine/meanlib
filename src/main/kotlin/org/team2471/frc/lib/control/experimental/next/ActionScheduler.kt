@@ -9,57 +9,68 @@ import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext
 import kotlin.coroutines.experimental.suspendCoroutine
 
-object SubsystemScheduler {
+object ActionScheduler {
     private val channel = actor<Message>(capacity = Channel.UNLIMITED) {
-        val cache = hashMapOf<SubsystemHandle, Job>()
-        val knownHandles = hashSetOf<SubsystemHandle>()
+        val cache = hashMapOf<SubsystemLock, Job>()
+        val knownHandles = hashSetOf<SubsystemLock>()
 
-        // process incoming messages
         messageLoop@ for (message in channel) {
+            // process newest message in queue
             when (message) {
+                // ActionScheduler.enable invoked
                 is Message.Enable -> {
+                    // do nothing if already enabled
                     if (isEnabled) continue@messageLoop
 
+                    // put all subsystems into default states
                     knownHandles.forEach { it.launchDefaultAction() }
+
+                    // update state
                     isEnabled = true
                 }
 
+                // ActionScheduler.disable invoked
                 is Message.Disable -> {
+                    // do nothing if already disabled
                     if (!isEnabled) continue@messageLoop
 
-                    CancellationException("Subsystem Coordinator Disabled").let { e ->
-                        cache.map { (_, job) -> job.cancel(e); job }
-                    }.forEach { it.join() }
+                    // cancel all running actions
+                    val e = CancellationException("Subsystem Coordinator Disabled")
+                    cache.forEach { (_, job) -> job.cancel(e) }
 
+                    // update state
                     isEnabled = false
                 }
 
+                // ActionScheduler.use invoked
                 is Message.NewAction -> {
+                    // do nothing if currently disabled
                     if (!isEnabled) continue@messageLoop
 
-                    val (handles, callerContext, body, cancelConflicts, continuation) = message
+                    // destructure message object
+                    val (locks, callerContext, body, cancelConflicts, continuation) = message
 
-                    val previousHandles: Set<SubsystemHandle> = callerContext[CoroutineRequirements] ?: emptySet()
-                    val newHandles = handles - previousHandles
-                    val allHandles = handles + previousHandles
+                    // subsystems required by use calls being used in calling coroutine
+                    val previousHandles: Set<SubsystemLock> = callerContext[CoroutineRequirements] ?: emptySet()
+                    // newly required subsystems (not previously required)
+                    val newHandles = locks - previousHandles
+                    // all subsystems
+                    val allHandles = locks + previousHandles
 
-                    // find conflicting jobs
-                    val conflicts = newHandles.filter { it in cache }
+                    // find conflicts
+                    val conflictingHandles = newHandles.filter { it in cache }
 
-                    if (!cancelConflicts && conflicts.isNotEmpty()) {
-                        val e = CancellationException("Action not allowed to cancel conflicts" +
-                                "{ ${conflicts.joinToString { it.name }} }")
-                        continuation.resumeWithException(e)
+                    if (!cancelConflicts && conflictingHandles.isNotEmpty()) {
+                        continuation.resumeWithException(CancellationException("Action not allowed to cancel conflicts" +
+                                "{ ${conflictingHandles.joinToString { it.name }} }"))
                         continue@messageLoop
                     }
 
-                    val conflictJobs = conflicts.map { cache[it]!! }
+                    val conflictingJobs = conflictingHandles.map { cache[it]!! }
 
-                    val newJob = suspendCoroutine<Job> { launchCont ->
-                        // launch new action coroutine with all handles applied
-                        launch(callerContext + CoroutineRequirements(allHandles),
-                                CoroutineStart.ATOMIC) {
-
+                    // spawn action coroutine and suspend scheduler until a Job can be retrieved
+                    val actionJob = suspendCoroutine<Job> { launchCont ->
+                        launch(callerContext + CoroutineRequirements(allHandles), CoroutineStart.ATOMIC) {
                             val actionContext = coroutineContext
 
                             // coroutines created with `launch` always have a Job in
@@ -72,31 +83,37 @@ object SubsystemScheduler {
 
                             try {
                                 // cancel conflicts - action coroutines must not complete until
-                                // it's conflict jobs have finished execution
+                                // it's conflict's jobs have finished execution
                                 withContext(NonCancellable) {
-                                    val e = TakeoverException(conflicts)
-                                    conflictJobs.forEach { it.cancel(e) }
-                                    conflictJobs.forEach { it.join() }
+                                    val e = TakeoverException(conflictingHandles)
+                                    conflictingJobs.forEach { it.cancel(e) }
+                                    conflictingJobs.forEach { it.join() }
                                 }
 
+                                // run provided code
                                 body()
+
+                                // resume calling coroutine
                                 continuation.resume(Unit)
                             } catch (exception: Throwable) {
+                                // pass exception to calling coroutine
                                 continuation.resumeWithException(exception)
                             } finally {
-                                channel.offer(Message.Clean(job))
+                                // tell the scheduler that the action job has finished executing
+                                channel.offer(Message.Clean(allHandles, job))
                             }
                         }
                     }
 
-                    // write over state
-                    allHandles.forEach { cache[it] = newJob }
+                    // write over state - future actions that use these locks will
+                    // cancel and wait for the action job to complete
+                    allHandles.forEach { cache[it] = actionJob }
 
                     // launch watchdog coroutine
                     launch(MeanlibContext) {
                         var i = 0
-                        while (!newJob.isCompleted) {
-                            if (newJob.isCancelled) {
+                        while (!actionJob.isCompleted) {
+                            if (actionJob.isCancelled) {
                                 if (i > 0) {
                                     reportError("Action job in thread ${Thread.currentThread().name}" +
                                             "hanging up subsystems { ${newHandles.joinToString { it.name }} } " +
@@ -111,16 +128,15 @@ object SubsystemScheduler {
                 }
 
                 is Message.RegisterSubsystem -> {
-                    val handle = message.handle
-                    knownHandles.add(handle)
+                    val lock = message.lock
+                    knownHandles.add(lock)
 
-                    if (isEnabled) handle.launchDefaultAction()
+                    if (isEnabled) lock.launchDefaultAction()
                 }
 
                 is Message.Clean -> {
-                    // grab currently used handles
-                    cache.keys
-                            .filter { cache[it] === message.job }
+                    val (locks, job) = message
+                    locks.filter { cache[it] === job }
                             .forEach {
                                 cache.remove(it)
                                 if (isEnabled) it.launchDefaultAction()
@@ -142,20 +158,20 @@ object SubsystemScheduler {
     }
 
     suspend fun use(
-            vararg subsystemHandles: SubsystemHandle,
+            vararg subsystemLocks: SubsystemLock,
             cancelConflicts: Boolean = true,
             body: suspend () -> Unit
     ) {
         val context = coroutineContext
 
         suspendCancellableCoroutine<Unit> { cont ->
-            val message = Message.NewAction(setOf(*subsystemHandles), context, body, cancelConflicts, cont)
+            val message = Message.NewAction(setOf(*subsystemLocks), context, body, cancelConflicts, cont)
             channel.offer(message)
         }
     }
 
-    internal fun register(subsystemHandle: SubsystemHandle) {
-        channel.offer(Message.RegisterSubsystem(subsystemHandle))
+    internal fun register(subsystemLock: SubsystemLock) {
+        channel.offer(Message.RegisterSubsystem(subsystemLock))
     }
 
     private sealed class Message {
@@ -164,25 +180,25 @@ object SubsystemScheduler {
         object Disable : Message()
 
         data class NewAction(
-                val handles: Set<SubsystemHandle>,
+                val locks: Set<SubsystemLock>,
                 val coroutineContext: CoroutineContext,
                 val body: suspend () -> Unit,
                 val cancelConflicts: Boolean,
                 val continuation: CancellableContinuation<Unit>
         ) : Message()
 
-        class RegisterSubsystem(val handle: SubsystemHandle) : Message()
+        class RegisterSubsystem(val lock: SubsystemLock) : Message()
 
-        class Clean(val job: Job) : Message()
+        data class Clean(val locks: Iterable<SubsystemLock>, val job: Job) : Message()
     }
 
-    private class TakeoverException(conflicts: Iterable<SubsystemHandle>)
-        : CancellationException("Coroutine takeover by subsystem handles " +
+    private class TakeoverException(conflicts: Iterable<SubsystemLock>)
+        : CancellationException("Coroutine takeover by subsystem locks " +
             "{ ${conflicts.joinToString { it.name }} }")
 
     private class CoroutineRequirements(
-            requirements: Set<SubsystemHandle>
-    ) : Set<SubsystemHandle> by requirements, AbstractCoroutineContextElement(Key) {
+            requirements: Set<SubsystemLock>
+    ) : Set<SubsystemLock> by requirements, AbstractCoroutineContextElement(Key) {
         companion object Key : CoroutineContext.Key<CoroutineRequirements>
     }
 }
