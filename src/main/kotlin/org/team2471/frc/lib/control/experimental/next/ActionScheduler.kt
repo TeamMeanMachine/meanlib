@@ -112,7 +112,7 @@ object ActionScheduler {
         isEnabled = false
     }
 
-    private suspend fun handleNewActionMessage(message: Message.NewAction) {
+    private fun handleNewActionMessage(message: Message.NewAction) {
         // do nothing if currently disabled
         if (!isEnabled) return
 
@@ -137,42 +137,29 @@ object ActionScheduler {
 
         val conflictingJobs = conflictingHandles.map { cache[it]!! }
 
-        // spawn action coroutine and suspend scheduler until a Job can be retrieved
-
-        val actionJob = suspendCoroutine<Job> { launchCont ->
-            launch(callerContext + CoroutineRequirements(allHandles), CoroutineStart.ATOMIC) {
-                val actionContext = coroutineContext
-
-                // coroutines created with `launch` always have a Job in
-                // it's context
-                val job = actionContext[Job]!!
-
-                // kick back new job so the coordinator can have something
-                // to cancel later if necessary
-                launchCont.resume(job)
-
-                try {
-                    // cancel conflicts - action coroutines must not complete until
-                    // it's conflict's jobs have finished execution
-                    withContext(NonCancellable) {
-                        val e = CancellationException("Taking over subsystems " +
-                                "{ ${conflictingHandles.joinToString { it.name }} }")
-                        conflictingJobs.forEach { it.cancel(e) }
-                        conflictingJobs.forEach { it.join() }
-                    }
-
-                    // run provided code
-                    body()
-
-                    // resume calling coroutine
-                    continuation.resume(Unit)
-                } catch (exception: Throwable) {
-                    // pass exception to calling coroutine
-                    continuation.resumeWithException(exception)
-                } finally {
-                    // tell the scheduler that the action job has finished executing
-                    channel.offer(Message.Clean(allHandles, job))
+        // spawn action coroutine
+        val actionJob = launch(callerContext + CoroutineRequirements(allHandles), CoroutineStart.ATOMIC) {
+            try {
+                // cancel conflicts - action coroutines must not complete until
+                // it's conflict's jobs have finished execution
+                withContext(NonCancellable) {
+                    val e = CancellationException("Taking over subsystems " +
+                            "{ ${conflictingHandles.joinToString { it.name }} }")
+                    conflictingJobs.forEach { it.cancel(e) }
+                    conflictingJobs.forEach { it.join() }
                 }
+
+                // run provided code
+                body()
+
+                // resume calling coroutine
+                continuation.resume(Unit)
+            } catch (exception: Throwable) {
+                // pass exception to calling coroutine
+                continuation.resumeWithException(exception)
+            } finally {
+                // tell the scheduler that the action job has finished executing
+                channel.offer(Message.Clean(allHandles, coroutineContext[Job]!!))
             }
         }
 
