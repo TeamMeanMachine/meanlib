@@ -9,14 +9,14 @@ class SubsystemLock(
         private val defaultActionDelay: Int = 20
 ) {
     init {
-        ActionScheduler.register(this)
+        SubsystemManager.register(this)
     }
 
     internal fun launchDefaultAction() {
         val action = defaultAction ?: return
 
         launch(MeanlibContext) {
-            ActionScheduler.use(this@SubsystemLock, cancelConflicts = false) {
+            SubsystemManager.use(this@SubsystemLock, cancelConflicts = false) {
                 while (true) {
                     action()
                     delay(defaultActionDelay)

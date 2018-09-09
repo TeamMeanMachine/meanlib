@@ -3,15 +3,13 @@ package org.team2471.frc.lib.control.experimental.next
 import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.actor
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext
-import kotlin.coroutines.experimental.suspendCoroutine
 
-object ActionScheduler {
-    val cache = hashMapOf<SubsystemLock, Job>()
-    val knownHandles = hashSetOf<SubsystemLock>()
+object SubsystemManager {
+    private val cache = hashMapOf<SubsystemLock, Job>()
+    private val registry = hashSetOf<SubsystemLock>()
 
     private val channel = Channel<Message>(Channel.UNLIMITED)
 
@@ -94,7 +92,7 @@ object ActionScheduler {
         if (isEnabled) return
 
         // put all subsystems into default states
-        knownHandles.forEach { it.launchDefaultAction() }
+        registry.forEach { it.launchDefaultAction() }
 
         // update state
         isEnabled = true
@@ -172,11 +170,9 @@ object ActionScheduler {
             var i = 0
             while (!actionJob.isCompleted) {
                 if (actionJob.isCancelled) {
-                    if (i > 0) {
-                        reportError("Action job in thread ${Thread.currentThread().name}" +
-                                "hanging up subsystems { ${newHandles.joinToString { it.name }} } " +
-                                "(${i * 2.5}s)", false)
-                    }
+                    if (i > 0) reportError("Action job in thread ${Thread.currentThread().name}" +
+                            "hanging up subsystems { ${newHandles.joinToString { it.name }} } " +
+                            "(${i * 2.5}s)", false)
                     i++
                 }
 
@@ -187,9 +183,9 @@ object ActionScheduler {
 
     private fun handleRegisterSubsystemMessage(message: Message.RegisterSubsystem) {
         val lock = message.lock
-        knownHandles.add(lock)
+        registry.add(lock)
 
-        if (isEnabled) lock.launchDefaultAction()
+        if (isEnabled && !cache.containsKey(lock)) lock.launchDefaultAction()
     }
 
     private fun handleCleanMessage(message: Message.Clean) {
