@@ -7,9 +7,9 @@ import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext
 
-object SubsystemManager {
-    private val cache = hashMapOf<SubsystemLock, Job>()
-    private val registry = hashSetOf<SubsystemLock>()
+object EventHandler {
+    private val cache = hashMapOf<Resource, Job>()
+    private val registry = hashSetOf<Resource>()
 
     private val channel = Channel<Message>(Channel.UNLIMITED)
 
@@ -36,15 +36,15 @@ object SubsystemManager {
         channel.offer(Message.Disable)
     }
 
-    suspend fun use(
-            vararg subsystemLocks: SubsystemLock,
+    internal suspend fun useResources(
+            resources: Array<out Resource>,
             cancelConflicts: Boolean = true,
             body: suspend () -> Unit
     ) {
         val context = coroutineContext
 
         suspendCancellableCoroutine<Unit> { cont ->
-            val message = Message.NewAction(setOf(*subsystemLocks), context, body, cancelConflicts, cont)
+            val message = Message.NewAction(setOf(*resources), context, body, cancelConflicts, cont)
             channel.offer(message)
         }
     }
@@ -53,8 +53,8 @@ object SubsystemManager {
      * INTERNAL API
      */
 
-    internal fun register(subsystemLock: SubsystemLock) {
-        channel.offer(Message.RegisterSubsystem(subsystemLock))
+    internal fun register(resource: Resource) {
+        channel.offer(Message.RegisterSubsystem(resource))
     }
 
     /*
@@ -92,7 +92,7 @@ object SubsystemManager {
         }
 
         data class NewAction(
-                private val locks: Set<SubsystemLock>,
+                private val resources: Set<Resource>,
                 private val callerContext: CoroutineContext,
                 private val body: suspend () -> Unit,
                 private val cancelConflicts: Boolean,
@@ -103,14 +103,14 @@ object SubsystemManager {
                 if (!isEnabled) return
 
                 // subsystems required by use calls being used in calling coroutine
-                val previousHandles: Set<SubsystemLock> = callerContext[CoroutineRequirements] ?: emptySet()
+                val prevResources: Set<Resource> = callerContext[Requirements] ?: emptySet()
                 // newly required subsystems (not previously required)
-                val newHandles = locks - previousHandles
+                val newResources = resources - prevResources
                 // all subsystems
-                val allHandles = locks + previousHandles
+                val allResources = resources + prevResources
 
                 // find conflicts
-                val conflictingHandles = newHandles.filter { it in cache }
+                val conflictingHandles = newResources.filter { it in cache }
 
                 if (!cancelConflicts && conflictingHandles.isNotEmpty()) {
                     continuation.resumeWithException(CancellationException("Action not allowed to cancel conflicts" +
@@ -121,7 +121,7 @@ object SubsystemManager {
                 val conflictingJobs = conflictingHandles.map { cache[it]!! }
 
                 // spawn action coroutine
-                val actionJob = launch(callerContext + CoroutineRequirements(allHandles), CoroutineStart.ATOMIC) {
+                val actionJob = launch(callerContext + Requirements(allResources), CoroutineStart.ATOMIC) {
                     try {
                         // cancel conflicts - action coroutines must not complete until
                         // it's conflict's jobs have finished execution
@@ -142,13 +142,13 @@ object SubsystemManager {
                         continuation.resumeWithException(exception)
                     } finally {
                         // tell the scheduler that the action job has finished executing
-                        channel.offer(Message.Clean(allHandles, coroutineContext[Job]!!))
+                        channel.offer(Message.Clean(allResources, coroutineContext[Job]!!))
                     }
                 }
 
-                // write over state - future actions that use these locks will
+                // write over state - future actions that use these resources will
                 // cancel and wait for the action job to complete
-                allHandles.forEach { cache[it] = actionJob }
+                allResources.forEach { cache[it] = actionJob }
 
                 // launch watchdog coroutine
                 launch(MeanlibContext) {
@@ -156,7 +156,7 @@ object SubsystemManager {
                     while (!actionJob.isCompleted) {
                         if (actionJob.isCancelled) {
                             if (i > 0) reportError("Action job in thread ${Thread.currentThread().name}" +
-                                    "hanging up subsystems { ${newHandles.joinToString { it.name }} } " +
+                                    "hanging up subsystems { ${newResources.joinToString { it.name }} } " +
                                     "(${i * 2.5}s)", false)
                             i++
                         }
@@ -167,17 +167,17 @@ object SubsystemManager {
             }
         }
 
-        class RegisterSubsystem(private val lock: SubsystemLock) : Message {
+        class RegisterSubsystem(private val resource: Resource) : Message {
             override fun handle() {
-                registry.add(lock)
+                registry.add(resource)
 
-                if (isEnabled && !cache.containsKey(lock)) lock.launchDefaultAction()
+                if (isEnabled && !cache.containsKey(resource)) resource.launchDefaultAction()
             }
         }
 
-        data class Clean(val locks: Iterable<SubsystemLock>, val job: Job) : Message {
+        data class Clean(val resources: Iterable<Resource>, val job: Job) : Message {
             override fun handle() {
-                locks.filter { cache[it] === job }
+                resources.filter { cache[it] === job }
                         .forEach {
                             cache.remove(it)
                             if (isEnabled) it.launchDefaultAction()
@@ -186,9 +186,12 @@ object SubsystemManager {
         }
     }
 
-    private class CoroutineRequirements(
-            requirements: Set<SubsystemLock>
-    ) : Set<SubsystemLock> by requirements, AbstractCoroutineContextElement(Key) {
-        companion object Key : CoroutineContext.Key<CoroutineRequirements>
+    private class Requirements(
+            requirements: Set<Resource>
+    ) : Set<Resource> by requirements, AbstractCoroutineContextElement(Key) {
+        companion object Key : CoroutineContext.Key<Requirements>
     }
 }
+
+suspend fun use(vararg resources: Resource, cancelConflicts: Boolean = true, body: suspend () -> Unit) =
+        EventHandler.useResources(resources, cancelConflicts, body)
