@@ -56,7 +56,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     val ds = DriverStation.getInstance()
 
     var previousRobotMode: RobotMode? = null
-    val baseResource = Resource("Base")
+
+    val mainResource = Resource("Main")
 
     while (true) {
         ds.waitForData()
@@ -67,29 +68,35 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
                 previousRobotMode = RobotMode.DISABLED
 
                 launch(MeanlibContext) {
-                    use(baseResource) { robotProgram.disable() }
+                    use(mainResource) { robotProgram.disable() }
                 }
             }
-        } else if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
+            continue
+        }
+
+        // process joystick inputs
+        InputMapper.process()
+
+        if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
             HAL.observeUserProgramAutonomous()
             previousRobotMode = RobotMode.AUTONOMOUS
 
             launch(MeanlibContext) {
-                use(baseResource) { robotProgram.autonomous() }
+                use(mainResource) { robotProgram.autonomous() }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
             HAL.observeUserProgramTeleop()
             previousRobotMode = RobotMode.TELEOP
 
             launch(MeanlibContext) {
-                use(baseResource) { robotProgram.teleop() }
+                use(mainResource) { robotProgram.teleop() }
             }
-        } else if (previousRobotMode != RobotMode.TEST) {
+        } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
             HAL.observeUserProgramTest()
             previousRobotMode = RobotMode.TEST
 
             launch(MeanlibContext) {
-                use(baseResource) { robotProgram.test() }
+                use(mainResource) { robotProgram.test() }
             }
         }
     }

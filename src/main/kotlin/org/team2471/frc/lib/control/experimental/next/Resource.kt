@@ -1,22 +1,19 @@
 package org.team2471.frc.lib.control.experimental.next
 
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.Job
 
-class Resource(
-        internal val name: String,
-        private val defaultAction: (suspend () -> Unit)? = null
-) {
-    init {
-        EventHandler.register(this)
-    }
+open class Resource(val name: String, isEnabled: Boolean = true) {
+    internal var activeJob: Job? = null
 
-    internal fun launchDefaultAction() {
-        val action = defaultAction ?: return
-
-        launch(MeanlibContext) {
-            EventHandler.useResources(arrayOf(this@Resource), cancelConflicts = false) {
-                action()
-            }
-        }
-    }
+    var isEnabled: Boolean = true
+        internal set
 }
+
+abstract class DaemonResource(name: String) : Resource(name) {
+    abstract suspend fun onReset()
+}
+
+fun Resource.enable() = EventHandler.enableResource(this)
+
+fun Resource.disable() = EventHandler.disableResource(this)
+
