@@ -14,17 +14,18 @@ internal object EventHandler {
         for (message in channel) handleMessage(message)
     }
 
-    suspend fun useResources(
+    suspend fun <R> useResources(
             resources: Set<Resource>,
             cancelConflicts: Boolean = true,
-            body: suspend () -> Unit
-    ) {
+            body: suspend () -> R
+    ): R {
         val context = coroutineContext
 
-        suspendCancellableCoroutine<Unit> { cont ->
+        @Suppress("UNCHECKED_CAST")
+        return suspendCancellableCoroutine<Any?> { cont ->
             val message = Message.NewAction(resources, context, body, cancelConflicts, cont)
             messageChannel.offer(message)
-        }
+        } as R
     }
 
     fun enableResource(resource: Resource) {
@@ -67,16 +68,16 @@ internal object EventHandler {
 
 
                 // find conflicts
-                val conflictingHandles = newResources.filter { it.activeJob != null }
+                val conflictResources = newResources.filter { it.activeJob != null }
 
                 // verify that all conflicts can be canceled
-                if (!message.cancelConflicts && conflictingHandles.isNotEmpty()) {
+                if (!message.cancelConflicts && conflictResources.isNotEmpty()) {
                     message.continuation.resumeWithException(CancellationException("Action not allowed to cancel conflicts" +
-                            "{ ${conflictingHandles.joinToString { it.name }} }"))
+                            "{ ${conflictResources.joinToString { it.name }} }"))
                     return
                 }
 
-                val conflictingJobs = conflictingHandles.map { it.activeJob!! }
+                val conflictJobs = conflictResources.map { it.activeJob!! }
 
                 // spawn action coroutine
                 val actionJob = launch(message.callerContext + Requirements(allResources), CoroutineStart.ATOMIC) {
@@ -85,16 +86,16 @@ internal object EventHandler {
                         // it's conflict's jobs have finished execution
                         withContext(NonCancellable) {
                             val e = CancellationException("Taking over subsystems " +
-                                    "{ ${conflictingHandles.joinToString { it.name }} }")
-                            conflictingJobs.forEach { it.cancel(e) }
-                            conflictingJobs.forEach { it.join() }
+                                    "{ ${conflictResources.joinToString { it.name }} }")
+                            conflictJobs.forEach { it.cancel(e) }
+                            conflictJobs.forEach { it.join() }
                         }
 
                         // run provided code
-                        message.body()
+                        val result = message.body()
 
                         // resume calling coroutine
-                        message.continuation.resume(Unit)
+                        message.continuation.resume(result)
                     } catch (exception: Throwable) {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
@@ -152,12 +153,12 @@ internal object EventHandler {
         class NewAction(
                 val resources: Set<Resource>,
                 val callerContext: CoroutineContext,
-                val body: suspend () -> Unit,
+                val body: suspend () -> Any?,
                 val cancelConflicts: Boolean,
-                val continuation: CancellableContinuation<Unit>
+                val continuation: CancellableContinuation<Any?>
         ) : Message()
 
-        class Clean(val resources: Iterable<Resource>, val job: Job) : Message()
+        class Clean(val resources: Set<Resource>, val job: Job) : Message()
 
         class Enable(val resource: Resource) : Message()
 
@@ -171,5 +172,5 @@ internal object EventHandler {
     }
 }
 
-suspend fun use(vararg resources: Resource, cancelConflicts: Boolean = true, body: suspend () -> Unit) =
+suspend fun <R> use(vararg resources: Resource, cancelConflicts: Boolean = true, body: suspend () -> R): R =
         EventHandler.useResources(setOf(*resources), cancelConflicts, body)
