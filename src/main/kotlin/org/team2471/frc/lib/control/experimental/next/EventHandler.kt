@@ -16,7 +16,7 @@ internal object EventHandler {
 
     suspend fun <R> useResources(
             resources: Set<Resource>,
-            cancelConflicts: Boolean = true,
+            cancelConflicts: Boolean,
             body: suspend () -> R
     ): R {
         val context = coroutineContext
@@ -38,7 +38,7 @@ internal object EventHandler {
 
     private fun resetResource(resource: DaemonResource) {
         launch(MeanlibContext) {
-            use(resource, cancelConflicts = false) {
+            useResources(setOf(resource), false) {
                 resource.onReset()
             }
         }
@@ -58,7 +58,7 @@ internal object EventHandler {
                 // all subsystems
                 val allResources = message.resources + prevResources
 
-                // verify that all requirements are enabled
+                // verify that all required resources are enabled
                 val disabledResources = allResources.filter { !it.isEnabled }
                 if (disabledResources.isNotEmpty()) {
                     message.continuation.resumeWithException(CancellationException("Action not allowed to use" +
@@ -66,11 +66,10 @@ internal object EventHandler {
                     return
                 }
 
-
-                // find conflicts
+                // find conflicting resources
                 val conflictResources = newResources.filter { it.activeJob != null }
 
-                // verify that all conflicts can be canceled
+                // verify that all conflicting resources can be canceled
                 if (!message.cancelConflicts && conflictResources.isNotEmpty()) {
                     message.continuation.resumeWithException(CancellationException("Action not allowed to cancel conflicts" +
                             "{ ${conflictResources.joinToString { it.name }} }"))
@@ -171,6 +170,3 @@ internal object EventHandler {
         companion object Key : CoroutineContext.Key<Requirements>
     }
 }
-
-suspend fun <R> use(vararg resources: Resource, cancelConflicts: Boolean = true, body: suspend () -> R): R =
-        EventHandler.useResources(setOf(*resources), cancelConflicts, body)
