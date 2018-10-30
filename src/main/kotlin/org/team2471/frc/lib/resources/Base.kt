@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.control.experimental.next
+package org.team2471.frc.lib.resources
 
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.*
@@ -7,7 +7,8 @@ import edu.wpi.first.wpilibj.hal.HAL
 import edu.wpi.first.wpilibj.internal.HardwareHLUsageReporting
 import edu.wpi.first.wpilibj.internal.HardwareTimer
 import edu.wpi.first.wpilibj.util.WPILibVersion
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.launch
+import org.team2471.frc.lib.coroutines.MeanlibScope
 import java.io.File
 
 interface RobotProgram {
@@ -67,7 +68,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
                 HAL.observeUserProgramDisabled()
                 previousRobotMode = RobotMode.DISABLED
 
-                launch(MeanlibContext) {
+                MeanlibScope.launch {
                     use(mainResource) { robotProgram.disable() }
                 }
             }
@@ -81,21 +82,21 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             HAL.observeUserProgramAutonomous()
             previousRobotMode = RobotMode.AUTONOMOUS
 
-            launch(MeanlibContext) {
+            MeanlibScope.launch {
                 use(mainResource) { robotProgram.autonomous() }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
             HAL.observeUserProgramTeleop()
             previousRobotMode = RobotMode.TELEOP
 
-            launch(MeanlibContext) {
+            MeanlibScope.launch {
                 use(mainResource) { robotProgram.teleop() }
             }
         } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
             HAL.observeUserProgramTest()
             previousRobotMode = RobotMode.TEST
 
-            launch(MeanlibContext) {
+            MeanlibScope.launch {
                 use(mainResource) { robotProgram.test() }
             }
         }

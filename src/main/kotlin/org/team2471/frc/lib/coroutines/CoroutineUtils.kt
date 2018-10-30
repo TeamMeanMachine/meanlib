@@ -1,19 +1,16 @@
-package org.team2471.frc.lib.control.experimental
+package org.team2471.frc.lib.coroutines
 
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 import org.team2471.frc.lib.util.measureTimeFPGA
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.experimental.coroutineContext
 
 /**
  * Runs the provided [body] of code periodically per [period] seconds.
  *
  * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
  */
+@InternalCoroutinesApi
 suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Double) -> Boolean) {
     val stackTrace = if (watchdog) Thread.currentThread().stackTrace else null
 
@@ -47,10 +44,10 @@ suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Dou
 }
 
 suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean) {
-    while (!condition()) delay(pollingRate.toLong(), TimeUnit.MILLISECONDS)
+    while (!condition()) delay(pollingRate.toLong())
 }
 
-suspend fun parallel(vararg blocks: suspend () -> Unit) {
+suspend fun parallel(vararg blocks: suspend () -> Unit) = coroutineScope {
     blocks.map { block ->
         launch(coroutineContext) { block() }
     }.forEach { it.join() }

@@ -1,7 +1,7 @@
-package org.team2471.frc.lib.control.experimental.next
+package org.team2471.frc.lib.resources
 
 import edu.wpi.first.wpilibj.XboxController
-import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.CoroutineScope
 
 // Xbox controller extensions
 fun MapperScope<XboxController>.a(body: suspend CoroutineScope.() -> Unit) =
