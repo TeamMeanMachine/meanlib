@@ -4,13 +4,13 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
 import kotlinx.coroutines.*
 import org.team2471.frc.lib.util.measureTimeFPGA
+import kotlin.coroutines.resume
 
 /**
  * Runs the provided [body] of code periodically per [period] seconds.
  *
  * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
  */
-@InternalCoroutinesApi
 suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Double) -> Boolean) {
     val stackTrace = if (watchdog) Thread.currentThread().stackTrace else null
 
@@ -23,15 +23,17 @@ suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Dou
                 }
 
                 if (dt > period) {
-                    DriverStation.reportWarning("Periodic loop took ${dt - period}s longer " +
-                            "than allowed period (${period}s).", stackTrace!!)
+                    DriverStation.reportWarning(
+                        "Periodic loop took ${dt - period}s longer " +
+                                "than allowed period (${period}s).", stackTrace!!
+                    )
                 }
             } else {
                 isFinished = body(period)
             }
 
             if (isFinished) {
-                cont.completeResume(Unit)
+                cont.resume(Unit)
             }
         }
 
@@ -54,3 +56,5 @@ suspend fun parallel(vararg blocks: suspend () -> Unit) = coroutineScope {
 }
 
 suspend fun delay(time: Double) = delay((time * 1000).toLong())
+
+suspend fun halt(): Nothing = suspendCancellableCoroutine {}

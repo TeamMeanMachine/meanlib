@@ -1,9 +1,11 @@
-package org.team2471.frc.lib.resources
+package org.team2471.frc.lib.framework.internal
 
 import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.team2471.frc.lib.coroutines.MeanlibScope
+import org.team2471.frc.lib.framework.DaemonSubsystem
+import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
 
 @ExperimentalCoroutinesApi
@@ -12,14 +14,12 @@ internal object EventHandler {
 
     init {
         MeanlibScope.launch {
-            for (message in messageChannel) handleMessage(
-                message
-            )
+            for (message in messageChannel) handleMessage(message)
         }
     }
 
-    suspend fun <R> useResources(
-        resources: Set<Resource>,
+    suspend fun <R> useSubsystems(
+        subsystems: Set<Subsystem>,
         cancelConflicts: Boolean,
         body: suspend () -> R
     ): R {
@@ -28,7 +28,7 @@ internal object EventHandler {
         @Suppress("UNCHECKED_CAST")
         return suspendCancellableCoroutine<Any?> { cont ->
             val message = Message.NewAction(
-                resources,
+                subsystems,
                 context,
                 body,
                 cancelConflicts,
@@ -38,26 +38,26 @@ internal object EventHandler {
         } as R
     }
 
-    fun enableResource(resource: Resource) {
+    fun enableSubsystem(subsystem: Subsystem) {
         messageChannel.offer(
             Message.Enable(
-                resource
+                subsystem
             )
         )
     }
 
-    fun disableResource(resource: Resource) {
+    fun disableSubsystem(subsystem: Subsystem) {
         messageChannel.offer(
             Message.Disable(
-                resource
+                subsystem
             )
         )
     }
 
-    private fun resetResource(resource: DaemonResource) {
+    private fun resetSubsystem(subsystem: DaemonSubsystem) {
         MeanlibScope.launch {
-            useResources(setOf(resource), false) {
-                resource.onReset()
+            useSubsystems(setOf(subsystem), false) {
+                subsystem.default()
             }
         }
     }
@@ -66,34 +66,38 @@ internal object EventHandler {
     // MESSAGE HANDLING
     //
 
+    @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
         when (message) {
             is Message.NewAction -> {
                 // subsystems required by use calls being used in calling coroutine
-                val prevResources: Set<Resource> = message.callerContext[Requirements] ?: emptySet()
+                val prevSubsystems: Set<Subsystem> = message.callerContext[Requirements] ?: emptySet()
                 // newly required subsystems (not previously required)
-                val newResources = message.resources - prevResources
+                val newSubsystems = message.subsystems - prevSubsystems
                 // all subsystems
-                val allResources = message.resources + prevResources
+                val allSubsystems = message.subsystems + prevSubsystems
 
-                // verify that all required resources are enabled
-                val disabledResources = allResources.filter { !it.isEnabled }
-                if (disabledResources.isNotEmpty()) {
-                    message.continuation.resumeWithException(CancellationException("Action not allowed to use" +
-                            "disabled resources { ${disabledResources.joinToString { it.name }} }"
+                // verify that all required subsystems are enabled
+                if (allSubsystems.any { !it.isEnabled }) {
+                    return message.continuation.resumeWithException(
+                        CancellationException(
+                            "Action not allowed to use disabled subsystems { ${allSubsystems.filter {
+                                !it.isEnabled
+                            }.joinToString { it.name }} }"
+                        )
                     )
-                    )
-                    return
                 }
 
-                // find conflicting resources
-                val conflictResources = newResources.filter { it.activeJob != null }
+                // find conflicting subsystems
+                val conflictResources = newSubsystems.filter { it.activeJob != null }
 
-                // verify that all conflicting resources can be canceled
+                // verify that all conflicting subsystems can be canceled
                 if (!message.cancelConflicts && conflictResources.isNotEmpty()) {
-                    message.continuation.resumeWithException(CancellationException("Action not allowed to cancel conflicts" +
-                            "{ ${conflictResources.joinToString { it.name }} }"
-                    )
+                    message.continuation.resumeWithException(
+                        CancellationException(
+                            "Action not allowed to cancel conflicts" +
+                                    "{ ${conflictResources.joinToString { it.name }} }"
+                        )
                     )
                     return
                 }
@@ -102,16 +106,13 @@ internal object EventHandler {
 
                 // spawn action coroutine
                 val actionJob = CoroutineScope(message.callerContext).launch(
-                    Requirements(allResources),
+                    Requirements(allSubsystems),
                     CoroutineStart.ATOMIC
                 ) {
                     try {
-                        // cancel conflicts - action coroutines must not complete until
+                        // Cancel conflicting jobs. It is critical that coroutines must not complete until
                         // it's conflict's jobs have finished execution
                         withContext(NonCancellable) {
-//                            val e = CancellationException("Taking over subsystems " +
-//                                    "{ ${conflictResources.joinToString { it.name }} }"
-//                            )
                             conflictJobs.forEach { it.cancel() }
                             conflictJobs.forEach { it.join() }
                         }
@@ -128,24 +129,25 @@ internal object EventHandler {
                         // tell the scheduler that the action job has finished executing
                         messageChannel.offer(
                             Message.Clean(
-                                allResources,
+                                allSubsystems,
                                 coroutineContext[Job]!!
                             )
                         )
                     }
                 }
 
-                // write over state - future actions that use these resources will
+                // write over state - future actions that use these subsystems will
                 // cancel and wait for the action job to complete
-                allResources.forEach { it.activeJob = actionJob }
+                allSubsystems.forEach { it.activeJob = actionJob }
 
                 // launch watchdog coroutine
                 MeanlibScope.launch {
                     var i = 0
                     while (!actionJob.isCompleted) {
                         if (actionJob.isCancelled) {
-                            if (i > 0) reportError("Action job hanging up subsystems " +
-                                    "{ ${newResources.joinToString { it.name }} } (${i * 2.5}s)", false
+                            if (i > 0) reportError(
+                                "Action job hanging up subsystems " +
+                                        "{ ${newSubsystems.joinToString { it.name }} } (${i * 2.5}s)", false
                             )
                             i++
                         }
@@ -156,54 +158,49 @@ internal object EventHandler {
             }
 
             is Message.Clean -> {
-                message.resources
+                message.subsystems
                     .filter { it.activeJob === message.job }
-                    .forEach { resource ->
-                        resource.activeJob = null
-                        if (resource.isEnabled && resource is DaemonResource) resetResource(
-                            resource
-                        )
+                    .forEach { subsystem ->
+                        subsystem.activeJob = null
+                        if (subsystem.isEnabled && subsystem is DaemonSubsystem) resetSubsystem(subsystem)
                     }
             }
 
             is Message.Enable -> {
-                if (message.resource.isEnabled) return
-                message.resource.isEnabled = true
+                if (message.subsystem.isEnabled) return
+                message.subsystem.isEnabled = true
 
-                if (message.resource is DaemonResource) resetResource(
-                    message.resource
-                )
+                if (message.subsystem is DaemonSubsystem) resetSubsystem(message.subsystem)
             }
 
             is Message.Disable -> {
-                if (!message.resource.isEnabled) return
+                if (!message.subsystem.isEnabled) return
 
-//                val cause = CancellationException("Resource ${message.resource.name} disabled.")
-                message.resource.isEnabled = false
-                message.resource.activeJob?.cancel()
+                message.subsystem.isEnabled = false
+                message.subsystem.activeJob?.cancel()
             }
         }
     }
 
     private sealed class Message {
         class NewAction(
-            val resources: Set<Resource>,
+            val subsystems: Set<Subsystem>,
             val callerContext: CoroutineContext,
             val body: suspend () -> Any?,
             val cancelConflicts: Boolean,
             val continuation: CancellableContinuation<Any?>
         ) : Message()
 
-        class Clean(val resources: Set<Resource>, val job: Job) : Message()
+        class Clean(val subsystems: Set<Subsystem>, val job: Job) : Message()
 
-        class Enable(val resource: Resource) : Message()
+        class Enable(val subsystem: Subsystem) : Message()
 
-        class Disable(val resource: Resource) : Message()
+        class Disable(val subsystem: Subsystem) : Message()
     }
 
     private class Requirements(
-        requirements: Set<Resource>
-    ) : Set<Resource> by requirements, AbstractCoroutineContextElement(Key) {
+        requirements: Set<Subsystem>
+    ) : Set<Subsystem> by requirements, AbstractCoroutineContextElement(Key) {
         companion object Key : CoroutineContext.Key<Requirements>
     }
 }

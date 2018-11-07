@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.resources
+package org.team2471.frc.lib.framework
 
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.*
@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.internal.HardwareTimer
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibScope
+import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
 
 interface RobotProgram {
@@ -58,7 +59,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
     var previousRobotMode: RobotMode? = null
 
-    val mainResource = Resource("Main")
+    val mainSubsystem = Subsystem("Robot")
 
     while (true) {
         ds.waitForData()
@@ -69,7 +70,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
                 previousRobotMode = RobotMode.DISABLED
 
                 MeanlibScope.launch {
-                    use(mainResource) { robotProgram.disable() }
+                    use(mainSubsystem) { robotProgram.disable() }
                 }
             }
             continue
@@ -83,21 +84,21 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             previousRobotMode = RobotMode.AUTONOMOUS
 
             MeanlibScope.launch {
-                use(mainResource) { robotProgram.autonomous() }
+                use(mainSubsystem) { robotProgram.autonomous() }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
             HAL.observeUserProgramTeleop()
             previousRobotMode = RobotMode.TELEOP
 
             MeanlibScope.launch {
-                use(mainResource) { robotProgram.teleop() }
+                use(mainSubsystem) { robotProgram.teleop() }
             }
         } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
             HAL.observeUserProgramTest()
             previousRobotMode = RobotMode.TEST
 
             MeanlibScope.launch {
-                use(mainResource) { robotProgram.test() }
+                use(mainSubsystem) { robotProgram.test() }
             }
         }
     }
