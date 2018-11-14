@@ -14,9 +14,10 @@ import kotlin.coroutines.resume
 suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Double) -> Boolean) {
     val stackTrace = if (watchdog) Thread.currentThread().stackTrace else null
 
+    lateinit var notifier: Notifier
     suspendCancellableCoroutine<Unit> { cont ->
         var isFinished = false
-        val notifier = Notifier {
+        notifier = Notifier {
             if (watchdog) {
                 val dt = measureTimeFPGA {
                     isFinished = body(period)
@@ -37,12 +38,10 @@ suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Dou
             }
         }
 
-        try {
-            notifier.startPeriodic(period)
-        } finally {
-            notifier.stop()
-        }
+        notifier.startPeriodic(period)
     }
+
+    notifier.stop()
 }
 
 suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean) {

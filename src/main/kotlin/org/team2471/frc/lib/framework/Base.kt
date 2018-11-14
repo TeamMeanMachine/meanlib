@@ -41,7 +41,7 @@ fun initializeWpilib() {
     // Set some implementations so that the static methods work properly
     Timer.SetImplementation(HardwareTimer())
     HLUsageReporting.SetImplementation(HardwareHLUsageReporting())
-    RobotState.SetImplementation(DriverStation.getInstance())
+    setDefaultRobotStateImplementation()
 
     // Report our robot's language as Java
     HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Java)
@@ -53,13 +53,14 @@ fun initializeWpilib() {
 }
 
 fun runRobotProgram(robotProgram: RobotProgram): Nothing {
-    println("********** Robot program starting **********")
+    println("********** Robot program starting! **********")
 
+    HAL.observeUserProgramStarting()
     val ds = DriverStation.getInstance()
 
     var previousRobotMode: RobotMode? = null
 
-    val mainSubsystem = Subsystem("Robot")
+    val mainSubsystem = Subsystem("Robot", false)
 
     while (true) {
         ds.waitForData()

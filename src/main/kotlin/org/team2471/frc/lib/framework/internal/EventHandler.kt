@@ -68,6 +68,7 @@ internal object EventHandler {
 
     @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
+        println("Handling message: $message")
         when (message) {
             is Message.NewAction -> {
                 // subsystems required by use calls being used in calling coroutine
@@ -183,7 +184,7 @@ internal object EventHandler {
     }
 
     private sealed class Message {
-        class NewAction(
+        data class NewAction(
             val subsystems: Set<Subsystem>,
             val callerContext: CoroutineContext,
             val body: suspend () -> Any?,
@@ -191,11 +192,11 @@ internal object EventHandler {
             val continuation: CancellableContinuation<Any?>
         ) : Message()
 
-        class Clean(val subsystems: Set<Subsystem>, val job: Job) : Message()
+        data class Clean(val subsystems: Set<Subsystem>, val job: Job) : Message()
 
-        class Enable(val subsystem: Subsystem) : Message()
+        data class Enable(val subsystem: Subsystem) : Message()
 
-        class Disable(val subsystem: Subsystem) : Message()
+        data class Disable(val subsystem: Subsystem) : Message()
     }
 
     private class Requirements(
