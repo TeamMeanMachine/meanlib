@@ -3,7 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm")
+    maven
+    kotlin("jvm") version "1.3.10"
 }
 
 group = "org.team2471.lib"
