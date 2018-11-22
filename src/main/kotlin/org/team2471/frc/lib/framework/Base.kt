@@ -60,7 +60,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
     var previousRobotMode: RobotMode? = null
 
-    val mainSubsystem = Subsystem("Robot", false)
+    val mainSubsystem = Subsystem("Robot")
 
     while (true) {
         ds.waitForData()
