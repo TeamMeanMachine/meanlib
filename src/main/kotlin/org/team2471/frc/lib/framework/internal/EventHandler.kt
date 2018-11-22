@@ -39,19 +39,11 @@ internal object EventHandler {
     }
 
     fun enableSubsystem(subsystem: Subsystem) {
-        messageChannel.offer(
-            Message.Enable(
-                subsystem
-            )
-        )
+        messageChannel.offer(Message.Enable(subsystem))
     }
 
     fun disableSubsystem(subsystem: Subsystem) {
-        messageChannel.offer(
-            Message.Disable(
-                subsystem
-            )
-        )
+        messageChannel.offer(Message.Disable(subsystem))
     }
 
     private fun resetSubsystem(subsystem: DaemonSubsystem) {
