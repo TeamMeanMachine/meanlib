@@ -72,12 +72,11 @@ internal object EventHandler {
 
                 // verify that all required subsystems are enabled
                 if (allSubsystems.any { !it.isEnabled }) {
-                    return message.continuation.resumeWithException(
-                        CancellationException(
-                            "Action not allowed to use disabled subsystems { ${allSubsystems.filter {
-                                !it.isEnabled
-                            }.joinToString { it.name }} }"
-                        )
+                    return message.continuation.resumeWithException(CancellationException(
+                        "Action not allowed to use disabled subsystems { ${allSubsystems.filter {
+                            !it.isEnabled
+                        }.joinToString { it.name }} }"
+                    )
                     )
                 }
 
@@ -120,12 +119,7 @@ internal object EventHandler {
                         message.continuation.resumeWithException(exception)
                     } finally {
                         // tell the scheduler that the action job has finished executing
-                        messageChannel.offer(
-                            Message.Clean(
-                                allSubsystems,
-                                coroutineContext[Job]!!
-                            )
-                        )
+                        messageChannel.offer(Message.Clean(allSubsystems, coroutineContext[Job]!!))
                     }
                 }
 
