@@ -1,59 +1,73 @@
 package org.team2471.frc.lib.coroutines
 
 import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Notifier
 import kotlinx.coroutines.*
 import org.team2471.frc.lib.util.measureTimeFPGA
-import kotlin.coroutines.resume
+
+private class BreakPeriodic : Throwable()
+
+class PeriodicScope @PublishedApi internal constructor(val period: Double) {
+    fun exitPeriodic(): Nothing = throw BreakPeriodic()
+}
 
 /**
  * Runs the provided [body] of code periodically per [period] seconds.
  *
+ * The periodic loop will continue until [PeriodicScope.exitPeriodic] is called.
+ *
  * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
+ *
+ * If the [body] takes longer than the [period] to complete, a warning is printed. This can
+ * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend fun periodic(period: Double = 0.02, watchdog: Boolean = true, body: (Double) -> Boolean) {
-    val stackTrace = if (watchdog) Thread.currentThread().stackTrace else null
+suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true, body: PeriodicScope.() -> Unit) = try {
+    val scope = PeriodicScope(period)
 
-    lateinit var notifier: Notifier
-    suspendCancellableCoroutine<Unit> { cont ->
-        var isFinished = false
-        notifier = Notifier {
-            if (watchdog) {
-                val dt = measureTimeFPGA {
-                    isFinished = body(period)
-                }
+    while (true) {
+        val dt = measureTimeFPGA { body(scope) }
+        if (watchOverrun && dt > period) DriverStation.reportWarning(
+            "Code in periodic block ran ${period - dt} over it's period!",
+            Thread.currentThread().stackTrace
+        )
 
-                if (dt > period) {
-                    DriverStation.reportWarning(
-                        "Periodic loop took ${dt - period}s longer " +
-                                "than allowed period (${period}s).", stackTrace!!
-                    )
-                }
-            } else {
-                isFinished = body(period)
-            }
-
-            if (isFinished) {
-                cont.resume(Unit)
-            }
-        }
-
-        notifier.startPeriodic(period)
+        delay(period - dt)
     }
-
-    notifier.stop()
+} catch (_: BreakPeriodic) {
+    // do nothing
 }
 
-suspend fun suspendUntil(pollingRate: Int = 20, condition: suspend () -> Boolean) {
+/**
+ * Suspends until [condition] evaluates to true.
+ *
+ * @param pollingRate The time between each check, in milliseconds
+ */
+suspend inline fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean) {
     while (!condition()) delay(pollingRate.toLong())
 }
 
-suspend fun parallel(vararg blocks: suspend () -> Unit) = coroutineScope {
+/**
+ * Runs each block in [blocks] in a child coroutine, and suspends until all of them have completed.
+ *
+ * If one child is cancelled, the remaining children are stopped, and the exception is propagated upwards.
+ */
+suspend inline fun parallel(vararg blocks: suspend () -> Unit) = coroutineScope {
     blocks.map { block ->
-        launch(coroutineContext) { block() }
-    }.forEach { it.join() }
+        launch { block() }
+    }.forEach {
+        it.join()
+    }
 }
 
-suspend fun delay(time: Double) = delay((time * 1000).toLong())
+/**
+ * Suspends the coroutine for [time] seconds.
+ *
+ * @see kotlinx.coroutines.delay
+ */
+suspend inline fun delay(time: Double) = delay((time * 1000).toLong())
 
-suspend fun halt(): Nothing = suspendCancellableCoroutine {}
+/**
+ * Suspends the coroutine forever.
+ *
+ * A halted coroutine can still be canceled.
+ */
+suspend inline fun halt(): Nothing = suspendCancellableCoroutine {}

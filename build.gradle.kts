@@ -1,9 +1,22 @@
 import com.sun.org.apache.bcel.internal.Repository
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0")
+    }
+}
+
 plugins {
     java
-    kotlin("jvm")
+    maven
+}
+
+apply {
+    plugin("kotlin")
 }
 
 group = "org.team2471.lib"
@@ -44,5 +57,5 @@ tasks.withType<KotlinCompile> {
 val compileKotlin: KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-//    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
+    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
 }
