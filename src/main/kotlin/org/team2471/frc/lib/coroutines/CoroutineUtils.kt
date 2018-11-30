@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.*
 import org.team2471.frc.lib.util.measureTimeFPGA
 
-private class BreakPeriodic : Throwable()
+internal class BreakPeriodic : Throwable()
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
     fun exitPeriodic(): Nothing = throw BreakPeriodic()
