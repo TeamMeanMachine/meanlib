@@ -13,6 +13,10 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
         follower
     }
 
+    init {
+        allTalons { it.configFactoryDefault(Int.MAX_VALUE) }
+    }
+
     fun setPercent(percent: Double) = talon.set(ControlMode.PercentOutput, percent)
 
     fun setPosition(position: Double) = talon.set(ControlMode.Position, position)
@@ -34,4 +38,65 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
 
     fun setMotionMagic(position: Double, feedForward: Double) =
         talon.set(ControlMode.MotionMagic, position, DemandType.ArbitraryFeedForward, feedForward)
+
+    inline fun config(timeoutMs: Int = 0, body: ConfigScope.() -> Unit) = body(ConfigScope(timeoutMs))
+
+    private inline fun allTalons(body: (CTRETalonSRX) -> Unit) {
+        body(talon)
+        followers.forEach(body)
+    }
+
+    inner class ConfigScope (private val timeoutMs: Int) {
+        inline fun pid(slot: Int, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
+
+        fun pidSlot(slot: Int) {
+            talon.selectProfileSlot(slot, 0)
+        }
+
+        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
+            // apply to followers
+            allTalons { it.configContinuousCurrentLimit(continuousLimit, timeoutMs) }
+            allTalons { it.configPeakCurrentLimit(peakLimit, timeoutMs) }
+            allTalons { it.configPeakCurrentDuration(peakDuration, timeoutMs) }
+            allTalons { it.enableCurrentLimit(true) }
+        }
+
+        inner class PIDConfigScope(private val slot: Int) {
+            fun p (p: Double) {
+                talon.config_kP(slot, p, timeoutMs)
+            }
+
+            fun i (i: Double) {
+                talon.config_kI(slot, i, timeoutMs)
+            }
+
+            fun d (d: Double) {
+                talon.config_kD(slot, d, timeoutMs)
+            }
+
+            fun f (f: Double) {
+                talon.config_kF(slot, f, timeoutMs)
+            }
+
+            fun iZone (iZone: Int) {
+                talon.config_IntegralZone(slot, iZone, timeoutMs)
+            }
+
+            fun allowableError(allowableError: Int) {
+                talon.configAllowableClosedloopError(slot, allowableError, timeoutMs)
+            }
+
+            fun maxIntegralAccumulator(maxIntegralAccumulator: Double) {
+                talon.configMaxIntegralAccumulator(slot, maxIntegralAccumulator, timeoutMs)
+            }
+
+            fun closedLoopPeakOutput(closedLoopPeakOutput: Double) {
+                talon.configClosedLoopPeakOutput(slot, closedLoopPeakOutput, timeoutMs)
+            }
+
+            fun closedLoopPeriod(closedLoopPeriod: Int) {
+                talon.configClosedLoopPeriod(slot, closedLoopPeriod, timeoutMs)
+            }
+        }
+    }
 }
