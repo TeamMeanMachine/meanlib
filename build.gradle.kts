@@ -38,7 +38,7 @@ dependencies {
     implementation("edu.wpi.first.wpilibj:wpilibj-java:2018.4.1")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:3.2.0")
     implementation("edu.wpi.first.ntcore:ntcore-java:4.1.0")
-    implementation("openrio.mirror.third.ctre:CTRE-phoenix-java:5.3.1.0")
+    implementation("openrio.mirror.third.ctre:CTRE-phoenix-java:5.7.1.0")
 
     // other
     implementation("com.google.code.gson:gson:2.8.2")
