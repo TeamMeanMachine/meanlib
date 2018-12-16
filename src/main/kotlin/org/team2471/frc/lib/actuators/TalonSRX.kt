@@ -2,6 +2,7 @@ package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.DemandType
+import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 
 class TalonSRX(deviceId: Int, vararg followerIds: Int) {
@@ -39,7 +40,13 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     fun setMotionMagic(position: Double, feedForward: Double) =
         talon.set(ControlMode.MotionMagic, position, DemandType.ArbitraryFeedForward, feedForward)
 
-    inline fun config(timeoutMs: Int = 0, body: ConfigScope.() -> Unit) = apply {
+    val velocity: Int
+        get() = talon.getSelectedSensorVelocity(0)
+
+    val position: Int
+        get() = talon.getSelectedSensorPosition(0)
+
+    inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
     }
 
@@ -49,11 +56,23 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     }
 
     inner class ConfigScope(private val timeoutMs: Int) {
+        fun inverted(inverted: Boolean) = allTalons { it.inverted = inverted }
+
+        fun brakeMode() = allTalons { it.setNeutralMode(NeutralMode.Brake) }
+
+        fun coastMode() = allTalons { it.setNeutralMode(NeutralMode.Coast) }
+
+        fun closedLoopRamp(secondsToFull: Double) {
+            talon.configClosedloopRamp(secondsToFull)
+        }
+
+        fun openLoopRamp(secondsToFull: Double) {
+            talon.configOpenloopRamp(secondsToFull)
+        }
+
         inline fun pid(slot: Int, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
 
-        fun pidSlot(slot: Int) {
-            talon.selectProfileSlot(slot, 0)
-        }
+        fun pidSlot(slot: Int) = talon.selectProfileSlot(slot, 0)
 
         fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
             // apply to followers
