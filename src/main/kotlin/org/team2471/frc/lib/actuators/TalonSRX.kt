@@ -39,14 +39,16 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     fun setMotionMagic(position: Double, feedForward: Double) =
         talon.set(ControlMode.MotionMagic, position, DemandType.ArbitraryFeedForward, feedForward)
 
-    inline fun config(timeoutMs: Int = 0, body: ConfigScope.() -> Unit) = body(ConfigScope(timeoutMs))
+    inline fun config(timeoutMs: Int = 0, body: ConfigScope.() -> Unit) = apply {
+        body(ConfigScope(timeoutMs))
+    }
 
     private inline fun allTalons(body: (CTRETalonSRX) -> Unit) {
         body(talon)
         followers.forEach(body)
     }
 
-    inner class ConfigScope (private val timeoutMs: Int) {
+    inner class ConfigScope(private val timeoutMs: Int) {
         inline fun pid(slot: Int, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
 
         fun pidSlot(slot: Int) {
@@ -62,23 +64,23 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
         }
 
         inner class PIDConfigScope(private val slot: Int) {
-            fun p (p: Double) {
+            fun p(p: Double) {
                 talon.config_kP(slot, p, timeoutMs)
             }
 
-            fun i (i: Double) {
+            fun i(i: Double) {
                 talon.config_kI(slot, i, timeoutMs)
             }
 
-            fun d (d: Double) {
+            fun d(d: Double) {
                 talon.config_kD(slot, d, timeoutMs)
             }
 
-            fun f (f: Double) {
+            fun f(f: Double) {
                 talon.config_kF(slot, f, timeoutMs)
             }
 
-            fun iZone (iZone: Int) {
+            fun iZone(iZone: Int) {
                 talon.config_IntegralZone(slot, iZone, timeoutMs)
             }
 
