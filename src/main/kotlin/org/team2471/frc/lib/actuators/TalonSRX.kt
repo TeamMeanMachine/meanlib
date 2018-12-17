@@ -3,48 +3,55 @@ package org.team2471.frc.lib.actuators
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.DemandType
 import com.ctre.phoenix.motorcontrol.NeutralMode
+import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 
 class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     private val talon = CTRETalonSRX(deviceId)
 
+    private var feedbackCoefficient = 1.0
+
     private val followers = followerIds.map { id ->
         val follower = CTRETalonSRX(id)
         follower.follow(talon)
         follower
-    }
+    }.toTypedArray()
 
     init {
         allTalons { it.configFactoryDefault(Int.MAX_VALUE) }
+        talon.selectedSensorPosition = 0
     }
 
-    fun setPercent(percent: Double) = talon.set(ControlMode.PercentOutput, percent)
+    fun setPercentOutput(percent: Double) = talon.set(ControlMode.PercentOutput, percent)
 
-    fun setPosition(position: Double) = talon.set(ControlMode.Position, position)
+    fun setPositionSetpoint(position: Double) = talon.set(ControlMode.Position, position)
 
-    fun setPosition(position: Double, feedForward: Double) =
+    fun setPositionSetpoint(position: Double, feedForward: Double) =
         talon.set(ControlMode.Position, position, DemandType.ArbitraryFeedForward, feedForward)
 
-    fun setVelocity(velocity: Double) = talon.set(ControlMode.Velocity, velocity)
+    fun setVelocitySetpoint(velocity: Double) = talon.set(ControlMode.Velocity, velocity)
 
-    fun setVelocity(velocity: Double, feedForward: Double) =
+    fun setVelocitySetpoint(velocity: Double, feedForward: Double) =
         talon.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, feedForward)
 
-    fun setCurrent(current: Double) = talon.set(ControlMode.Current, current)
+    fun setCurrentSetpoint(current: Double) = talon.set(ControlMode.Current, current)
 
-    fun setCurrent(current: Double, feedForward: Double) =
+    fun setCurrentSetpoint(current: Double, feedForward: Double) =
         talon.set(ControlMode.Current, current, DemandType.ArbitraryFeedForward, feedForward)
 
-    fun setMotionMagic(position: Double) = talon.set(ControlMode.MotionMagic, position)
+    fun setMotionMagicSetpoint(position: Double) = talon.set(ControlMode.MotionMagic, position)
 
-    fun setMotionMagic(position: Double, feedForward: Double) =
+    fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
         talon.set(ControlMode.MotionMagic, position, DemandType.ArbitraryFeedForward, feedForward)
 
-    val velocity: Int
-        get() = talon.getSelectedSensorVelocity(0)
+    val velocity: Double
+        get() = talon.getSelectedSensorVelocity(0) * feedbackCoefficient * 10.0
 
-    val position: Int
-        get() = talon.getSelectedSensorPosition(0)
+    var position: Double
+        get() = talon.getSelectedSensorPosition(0) * feedbackCoefficient
+        set(value) {
+            talon.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
+        }
 
     inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
@@ -56,11 +63,23 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     }
 
     inner class ConfigScope(private val timeoutMs: Int) {
+        val ctreTalon get() = talon
+
+        val ctreFollowers get() = followers
+
+        var feedbackCoefficient: Double
+            get() = this@TalonSRX.feedbackCoefficient
+            set(value) {
+                this@TalonSRX.feedbackCoefficient = value
+            }
+
         fun inverted(inverted: Boolean) = allTalons { it.inverted = inverted }
 
         fun brakeMode() = allTalons { it.setNeutralMode(NeutralMode.Brake) }
 
         fun coastMode() = allTalons { it.setNeutralMode(NeutralMode.Coast) }
+
+        fun sensorPhase(inverted: Boolean) = talon.setSensorPhase(inverted)
 
         fun closedLoopRamp(secondsToFull: Double) {
             talon.configClosedloopRamp(secondsToFull)
