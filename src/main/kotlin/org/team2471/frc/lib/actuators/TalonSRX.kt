@@ -53,6 +53,9 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
             talon.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
         }
 
+    val closedLoopError: Double
+        get() = talon.closedLoopError * feedbackCoefficient
+
     inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
     }
