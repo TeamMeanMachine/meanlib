@@ -24,28 +24,31 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
 
     fun setPercentOutput(percent: Double) = talon.set(ControlMode.PercentOutput, percent)
 
-    fun setPositionSetpoint(position: Double) = talon.set(ControlMode.Position, position)
+    fun setPositionSetpoint(position: Double) = talon.set(ControlMode.Position, position / feedbackCoefficient)
 
     fun setPositionSetpoint(position: Double, feedForward: Double) =
-        talon.set(ControlMode.Position, position, DemandType.ArbitraryFeedForward, feedForward)
+        talon.set(ControlMode.Position, position / feedbackCoefficient, DemandType.ArbitraryFeedForward, feedForward)
 
-    fun setVelocitySetpoint(velocity: Double) = talon.set(ControlMode.Velocity, velocity)
+    fun setVelocitySetpoint(velocity: Double) = talon.set(ControlMode.Velocity, velocity / feedbackCoefficient)
 
     fun setVelocitySetpoint(velocity: Double, feedForward: Double) =
-        talon.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, feedForward)
+        talon.set(ControlMode.Velocity, velocity / feedbackCoefficient, DemandType.ArbitraryFeedForward, feedForward)
 
     fun setCurrentSetpoint(current: Double) = talon.set(ControlMode.Current, current)
 
     fun setCurrentSetpoint(current: Double, feedForward: Double) =
         talon.set(ControlMode.Current, current, DemandType.ArbitraryFeedForward, feedForward)
 
-    fun setMotionMagicSetpoint(position: Double) = talon.set(ControlMode.MotionMagic, position)
+    fun setMotionMagicSetpoint(position: Double) = talon.set(ControlMode.MotionMagic, position / feedbackCoefficient)
 
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
-        talon.set(ControlMode.MotionMagic, position, DemandType.ArbitraryFeedForward, feedForward)
+        talon.set(ControlMode.MotionMagic, position / feedbackCoefficient, DemandType.ArbitraryFeedForward, feedForward)
 
     val velocity: Double
         get() = talon.getSelectedSensorVelocity(0) * feedbackCoefficient * 10.0
+
+    val output: Double
+        get() = talon.motorOutputPercent
 
     var position: Double
         get() = talon.getSelectedSensorPosition(0) * feedbackCoefficient
@@ -55,6 +58,10 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
 
     val closedLoopError: Double
         get() = talon.closedLoopError * feedbackCoefficient
+
+    fun stop() {
+        talon.neutralOutput()
+    }
 
     inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
