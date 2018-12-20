@@ -48,15 +48,15 @@ internal object EventHandler {
 
     private fun resetSubsystem(subsystem: DaemonSubsystem) {
         MeanlibScope.launch {
-            useSubsystems(setOf(subsystem), false) {
-                subsystem.default()
-            }
+            useSubsystems(setOf(subsystem), false, subsystem::default)
         }
     }
 
     //
     // MESSAGE HANDLING
     //
+
+    private var actions = 0
 
     @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
@@ -68,6 +68,8 @@ internal object EventHandler {
                 val newSubsystems = message.subsystems - prevSubsystems
                 // all subsystems
                 val allSubsystems = message.subsystems + prevSubsystems
+
+                val id = actions++
 
                 // verify that all required subsystems are enabled
                 if (allSubsystems.any { !it.isEnabled }) {
@@ -118,13 +120,13 @@ internal object EventHandler {
                         message.continuation.resumeWithException(exception)
                     } finally {
                         // tell the scheduler that the action job has finished executing
-                        messageChannel.offer(Message.Clean(allSubsystems, coroutineContext[Job]!!))
+                        messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
                     }
                 }
 
                 // write over state - future actions that use these subsystems will
                 // cancel and wait for the action job to complete
-                allSubsystems.forEach { it.activeJob = actionJob }
+                newSubsystems.forEach { it.activeJob = actionJob }
 
                 // launch watchdog coroutine
                 MeanlibScope.launch {

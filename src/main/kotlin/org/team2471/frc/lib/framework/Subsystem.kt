@@ -2,16 +2,24 @@
 
 package org.team2471.frc.lib.framework
 
+import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.Job
 import org.team2471.frc.lib.framework.internal.EventHandler
 
 open class Subsystem(val name: String, startEnabled: Boolean = true) {
+    private val table = NetworkTableInstance.getDefault().getTable("Subsystems").getSubTable(name)
+    private val enabledEntry = table.getEntry("Enabled")
+
     internal var activeJob: Job? = null
 
     var isEnabled: Boolean = false
-        internal set
+        internal set(value) {
+            field = value
+            enabledEntry.setBoolean(value)
+        }
 
     init {
+        enabledEntry.setBoolean(false)
         if (startEnabled) enable()
     }
 }
