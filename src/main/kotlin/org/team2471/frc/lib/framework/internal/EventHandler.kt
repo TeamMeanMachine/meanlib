@@ -56,8 +56,6 @@ internal object EventHandler {
     // MESSAGE HANDLING
     //
 
-    private var actions = 0
-
     @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
         when (message) {
@@ -68,8 +66,6 @@ internal object EventHandler {
                 val newSubsystems = message.subsystems - prevSubsystems
                 // all subsystems
                 val allSubsystems = message.subsystems + prevSubsystems
-
-                val id = actions++
 
                 // verify that all required subsystems are enabled
                 if (allSubsystems.any { !it.isEnabled }) {
@@ -119,6 +115,7 @@ internal object EventHandler {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
                     } finally {
+                        allSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
                         messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
                     }

@@ -18,6 +18,9 @@ open class Subsystem(val name: String, startEnabled: Boolean = true) {
             enabledEntry.setBoolean(value)
         }
 
+    // always called when a coroutine using the subsystem finishes, cancelled or otherwise.
+    open fun reset() = Unit
+
     init {
         enabledEntry.setBoolean(false)
         if (startEnabled) enable()
