@@ -23,12 +23,18 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
 suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true, body: PeriodicScope.() -> Unit) = try {
     val scope = PeriodicScope(period)
 
+    var overrunCounter = 0
     while (true) {
         val dt = measureTimeFPGA { body(scope) }
-        if (watchOverrun && dt > period) DriverStation.reportWarning(
-            "Code in periodic block ran ${period - dt} over it's period!",
-            Thread.currentThread().stackTrace
-        )
+        if (watchOverrun && dt > period) {
+            overrunCounter++
+            if (overrunCounter >= 2) DriverStation.reportWarning(
+                "Code in periodic block ran ${period - dt} over it's period. ($overrunCounter times)",
+                Thread.currentThread().stackTrace
+            )
+        } else {
+            overrunCounter = 0
+        }
 
         delay(period - dt)
     }
