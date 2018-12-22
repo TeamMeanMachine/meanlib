@@ -9,17 +9,20 @@ import edu.wpi.first.wpilibj.internal.HardwareTimer
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibScope
+import org.team2471.frc.lib.coroutines.parallel
 import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
 
 interface RobotProgram {
-    suspend fun autonomous()
+    suspend fun autonomous() { /* NOOP */ }
 
-    suspend fun teleop()
+    suspend fun teleop() { /* NOOP */ }
 
-    suspend fun disable()
+    suspend fun test() { /* NOOP */ }
 
-    suspend fun test()
+    suspend fun enable() { /* NOOP */}
+
+    suspend fun disable() { /* NOOP */ }
 }
 
 private enum class RobotMode {
@@ -80,26 +83,46 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
         // process joystick inputs
         InputMapper.process()
 
+        val wasDisabled = previousRobotMode == RobotMode.DISABLED
+
         if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
             HAL.observeUserProgramAutonomous()
             previousRobotMode = RobotMode.AUTONOMOUS
 
             MeanlibScope.launch {
-                use(mainSubsystem) { robotProgram.autonomous() }
+                use(mainSubsystem) {
+                    if (wasDisabled) {
+                        parallel({ robotProgram.enable() }, { robotProgram.autonomous() })
+                    } else {
+                        robotProgram.autonomous()
+                    }
+                }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
             HAL.observeUserProgramTeleop()
             previousRobotMode = RobotMode.TELEOP
 
             MeanlibScope.launch {
-                use(mainSubsystem) { robotProgram.teleop() }
+                use(mainSubsystem) {
+                    if (wasDisabled) {
+                        parallel({ robotProgram.enable() }, { robotProgram.teleop() })
+                    } else {
+                        robotProgram.teleop()
+                    }
+                }
             }
         } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
             HAL.observeUserProgramTest()
             previousRobotMode = RobotMode.TEST
 
             MeanlibScope.launch {
-                use(mainSubsystem) { robotProgram.test() }
+                use(mainSubsystem) {
+                    if (wasDisabled) {
+                        parallel({ robotProgram.enable() }, { robotProgram.test() })
+                    } else {
+                        robotProgram.autonomous()
+                    }
+                }
             }
         }
     }
