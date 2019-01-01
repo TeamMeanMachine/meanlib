@@ -13,6 +13,8 @@ import org.team2471.frc.lib.coroutines.parallel
 import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
 
+const val LANGUAGE_KOTLIN = 6
+
 interface RobotProgram {
     suspend fun autonomous() { /* NOOP */ }
 
@@ -47,7 +49,7 @@ fun initializeWpilib() {
     setDefaultRobotStateImplementation()
 
     // Report our robot's language as Java
-    HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Java)
+    HAL.report(FRCNetComm.tResourceType.kResourceType_Language, LANGUAGE_KOTLIN)
 
     // wpilib's RobotBase does this for some reason
     File("/tmp/frc_versions/FRC_Lib_Version.ini").writeText("Java ${WPILibVersion.Version}")
