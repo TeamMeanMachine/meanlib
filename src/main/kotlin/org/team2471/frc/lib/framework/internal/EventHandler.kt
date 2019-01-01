@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.team2471.frc.lib.coroutines.MeanlibScope
-import org.team2471.frc.lib.framework.DaemonSubsystem
 import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
 
@@ -46,9 +45,11 @@ internal object EventHandler {
         messageChannel.offer(Message.Disable(subsystem))
     }
 
-    private fun resetSubsystem(subsystem: DaemonSubsystem) {
+    private fun resetSubsystem(subsystem: Subsystem) {
+        val defaultFunction = subsystem.defaultFunction ?: return
+
         MeanlibScope.launch {
-            useSubsystems(setOf(subsystem), false, subsystem::default)
+            useSubsystems(setOf(subsystem), false, defaultFunction)
         }
     }
 
@@ -147,7 +148,7 @@ internal object EventHandler {
                     .filter { it.activeJob === message.job }
                     .forEach { subsystem ->
                         subsystem.activeJob = null
-                        if (subsystem.isEnabled && subsystem is DaemonSubsystem) resetSubsystem(subsystem)
+                        if (subsystem.isEnabled) resetSubsystem(subsystem)
                     }
             }
 
@@ -155,7 +156,7 @@ internal object EventHandler {
                 if (message.subsystem.isEnabled) return
                 message.subsystem.isEnabled = true
 
-                if (message.subsystem is DaemonSubsystem) resetSubsystem(message.subsystem)
+                resetSubsystem(message.subsystem)
             }
 
             is Message.Disable -> {

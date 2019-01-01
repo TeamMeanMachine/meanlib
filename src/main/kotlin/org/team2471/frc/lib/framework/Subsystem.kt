@@ -4,9 +4,14 @@ package org.team2471.frc.lib.framework
 
 import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.Job
+import org.team2471.frc.lib.coroutines.halt
 import org.team2471.frc.lib.framework.internal.EventHandler
 
-open class Subsystem(val name: String, startEnabled: Boolean = true) {
+open class Subsystem(
+    val name: String,
+    startEnabled: Boolean = true,
+    internal val defaultFunction: (suspend () -> Unit)? = null
+) {
     private val table = NetworkTableInstance.getDefault().getTable("Subsystems").getSubTable(name)
     private val enabledEntry = table.getEntry("Enabled")
 
@@ -25,10 +30,6 @@ open class Subsystem(val name: String, startEnabled: Boolean = true) {
         enabledEntry.setBoolean(false)
         if (startEnabled) enable()
     }
-}
-
-abstract class DaemonSubsystem(name: String, startEnabled: Boolean = true) : Subsystem(name, startEnabled) {
-    abstract suspend fun default()
 }
 
 fun Subsystem.enable() = EventHandler.enableSubsystem(this)
