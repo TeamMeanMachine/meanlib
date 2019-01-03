@@ -4,27 +4,32 @@ import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.*
 import org.team2471.frc.lib.util.measureTimeFPGA
 
-internal class BreakPeriodic : Throwable()
-
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
-    fun exitPeriodic(): Nothing = throw BreakPeriodic()
+    @PublishedApi
+    internal var isRunning = true
+
+    fun stop() {
+        isRunning = false
+    }
 }
 
 /**
  * Runs the provided [body] of code periodically per [period] seconds.
  *
- * The periodic loop will continue until [PeriodicScope.exitPeriodic] is called.
+ * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, or an exception is thrown.
+ * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
+ * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
  *
  * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
  *
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true, body: PeriodicScope.() -> Unit) = try {
+suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true, body: PeriodicScope.() -> Unit) {
     val scope = PeriodicScope(period)
 
     var overrunCounter = 0
-    while (true) {
+    while (scope.isRunning) {
         val dt = measureTimeFPGA { body(scope) }
         if (watchOverrun && dt > period) {
             overrunCounter++
@@ -38,8 +43,6 @@ suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true,
 
         delay(period - dt)
     }
-} catch (_: BreakPeriodic) {
-    // do nothing
 }
 
 /**
