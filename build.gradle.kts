@@ -1,4 +1,3 @@
-import com.sun.org.apache.bcel.internal.Repository
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -35,9 +34,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
 
     // frc libs
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2018.4.1")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:3.2.0")
-    implementation("edu.wpi.first.ntcore:ntcore-java:4.1.0")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:2019.1.1")
+    implementation("edu.wpi.first.hal:hal-java:2019.1.1")
+    implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.1.1")
+    implementation("edu.wpi.first.ntcore:ntcore-java:2019.1.1")
     implementation("openrio.mirror.third.ctre:CTRE-phoenix-java:5.7.1.0")
 
     // other
