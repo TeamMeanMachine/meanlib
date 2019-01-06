@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.*
+import org.team2471.frc.lib.Unproven
 import kotlin.coroutines.resume
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
@@ -27,6 +28,7 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
+@Unproven
 suspend inline fun periodic(
     period: Double = 0.02,
     watchOverrun: Boolean = true,
