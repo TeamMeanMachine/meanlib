@@ -1,15 +1,17 @@
 package org.team2471.frc.lib.coroutines
 
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.Notifier
+import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.*
-import org.team2471.frc.lib.util.measureTimeFPGA
+import kotlin.coroutines.resume
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
     @PublishedApi
-    internal var isRunning = true
+    internal var isDone = false
 
     fun stop() {
-        isRunning = false
+        isDone = true
     }
 }
 
@@ -25,23 +27,31 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend inline fun periodic(period: Double = 0.02, watchOverrun: Boolean = true, body: PeriodicScope.() -> Unit) {
+suspend inline fun periodic(
+    period: Double = 0.02,
+    watchOverrun: Boolean = true,
+    crossinline body: PeriodicScope.() -> Unit
+) {
     val scope = PeriodicScope(period)
+    val watchdog = if (watchOverrun) {
+        Watchdog(period + 0.01) { DriverStation.reportWarning("Periodic loop overrun", true) }
+    } else {
+        null
+    }
 
-    var overrunCounter = 0
-    while (scope.isRunning) {
-        val dt = measureTimeFPGA { body(scope) }
-        if (watchOverrun && dt > period) {
-            overrunCounter++
-            if (overrunCounter >= 2) DriverStation.reportWarning(
-                "Code in periodic block ran ${period - dt} over it's period. ($overrunCounter times)",
-                Thread.currentThread().stackTrace
-            )
-        } else {
-            overrunCounter = 0
+    lateinit var notifier: Notifier
+
+    try {
+        suspendCancellableCoroutine<Unit> {
+            notifier = Notifier {
+                body(scope)
+                watchdog?.reset()
+                if (scope.isDone) it.resume(Unit)
+            }
         }
-
-        delay(period - dt)
+    } finally {
+        notifier.close()
+        watchdog?.close()
     }
 }
 
