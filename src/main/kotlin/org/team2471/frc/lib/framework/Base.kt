@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibScope
 import org.team2471.frc.lib.coroutines.parallel
 import org.team2471.frc.lib.framework.internal.InputMapper
-import org.team2471.frc.lib.util.Environment
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
@@ -45,7 +44,7 @@ fun initializeWpilib() {
     // Report our robot's language as Java
     HAL.report(FRCNetComm.tResourceType.kResourceType_Language, LANGUAGE_KOTLIN)
 
-    if (Environment.isReal) {
+    if (RobotBase.isReal()) {
         File("/tmp/frc_versions/FRC_Lib_Version.ini").writeText("Java ${WPILibVersion.Version}")
     }
 

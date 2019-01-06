@@ -3,7 +3,6 @@ package org.team2471.frc.lib.util
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.hal.AllianceStationID
 import edu.wpi.first.hal.HAL
-import edu.wpi.first.hal.HALUtil
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -13,7 +12,6 @@ object Environment {
     val station: AllianceStation
     val fmsAttached: Boolean
     val sessionID: String
-    val isReal: Boolean
 
     init {
         // load alliance data
@@ -34,8 +32,6 @@ object Environment {
         }
 
         fmsAttached = ds.isFMSAttached
-
-        isReal = HALUtil.getHALRuntimeType() == 0
 
         val sdf = SimpleDateFormat("MM-dd-h:mm:ss-a")
         sdf.timeZone = TimeZone.getTimeZone("America/Los_Angeles") // PST
