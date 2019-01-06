@@ -57,5 +57,5 @@ tasks.withType<KotlinCompile> {
 val compileKotlin: KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
+    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses", "-Xuse-experimental=kotlin.Experimental")
 }
