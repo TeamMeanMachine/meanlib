@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
-
 package org.team2471.frc.lib.framework
 
 import edu.wpi.first.networktables.NetworkTableInstance
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import org.team2471.frc.lib.framework.internal.EventHandler
 
@@ -22,6 +21,7 @@ import org.team2471.frc.lib.framework.internal.EventHandler
  *
  * @see use
  */
+@UseExperimental(ExperimentalCoroutinesApi::class)
 open class Subsystem(
     /**
      * The name of your Subsystem, required for debugging purposes.
@@ -91,5 +91,6 @@ open class Subsystem(
  * the code inside the nested [use] call's [body] will effectively be using subsystems A, B, and C, instead of
  * cancelling itself.
  */
+@UseExperimental(ExperimentalCoroutinesApi::class)
 suspend fun <R> use(vararg subsystems: Subsystem, cancelConflicts: Boolean = true, body: suspend () -> R) =
     EventHandler.useSubsystems(setOf(*subsystems), cancelConflicts, body)
