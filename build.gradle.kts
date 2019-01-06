@@ -24,7 +24,7 @@ version = "2019"
 repositories {
     mavenCentral()
     maven { setUrl("http://first.wpi.edu/FRC/roborio/maven/release") }
-    maven { setUrl("https://raw.githubusercontent.com/Open-RIO/Maven-Mirror/master/m2") }
+    maven { setUrl("http://devsite.ctr-electronics.com/maven/release/") }
 }
 
 dependencies {
@@ -38,7 +38,7 @@ dependencies {
     implementation("edu.wpi.first.hal:hal-java:2019.1.1")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.1.1")
     implementation("edu.wpi.first.ntcore:ntcore-java:2019.1.1")
-    implementation("openrio.mirror.third.ctre:CTRE-phoenix-java:5.7.1.0")
+    implementation("com.ctre.phoenix:api-java:5.12.0")
 
     // other
     implementation("com.google.code.gson:gson:2.8.2")
