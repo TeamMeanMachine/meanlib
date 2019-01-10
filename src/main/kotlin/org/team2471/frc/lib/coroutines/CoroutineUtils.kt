@@ -50,6 +50,8 @@ suspend inline fun periodic(
                 watchdog?.reset()
                 if (scope.isDone) it.resume(Unit)
             }
+
+            notifier.startPeriodic(period)
         }
     } finally {
         notifier.close()
