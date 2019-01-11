@@ -2,6 +2,9 @@
 
 package org.team2471.frc.lib.units
 
+import org.team2471.frc.lib.Unproven
+
+@Unproven
 inline class AngularVelocity(val changePerSecond: Angle) {
     operator fun plus(other: AngularVelocity) = AngularVelocity(changePerSecond + other.changePerSecond)
 
@@ -23,9 +26,12 @@ inline class AngularVelocity(val changePerSecond: Angle) {
 }
 
 // constructors
+@Unproven
 inline val Angle.perSecond get() = AngularVelocity(this)
 
+@Unproven
 inline operator fun Angle.div(time: Time) = AngularVelocity(this / time.asSeconds)
 
 // destructors
+@Unproven
 inline operator fun AngularVelocity.times(time: Time) = changePerSecond / time.asSeconds

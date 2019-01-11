@@ -1,5 +1,8 @@
 package org.team2471.frc.lib.units
 
+import org.team2471.frc.lib.Unproven
+
+@Unproven
 inline class Time(val asSeconds: Double) {
     operator fun plus(other: Time) = Time(asSeconds + other.asSeconds)
 
@@ -19,4 +22,5 @@ inline class Time(val asSeconds: Double) {
 }
 
 // constructors
+@Unproven
 inline val Number.seconds get() = Time(this.toDouble())

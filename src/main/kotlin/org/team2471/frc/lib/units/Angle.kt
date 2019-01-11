@@ -1,5 +1,8 @@
 package org.team2471.frc.lib.units
 
+import org.team2471.frc.lib.Unproven
+
+@Unproven
 inline class Angle(val asRadians: Double) {
     operator fun plus(other: Angle) = Angle(asRadians + other.asRadians)
 
@@ -47,8 +50,11 @@ inline class Angle(val asRadians: Double) {
 }
 
 // constructors
+@Unproven
 inline val Number.radians get() = Angle(this.toDouble())
+@Unproven
 inline val Number.degrees get() = Angle(Math.toRadians(this.toDouble()))
 
 // destructors
+@Unproven
 inline val Angle.asDegrees get() = Math.toDegrees(asRadians)
