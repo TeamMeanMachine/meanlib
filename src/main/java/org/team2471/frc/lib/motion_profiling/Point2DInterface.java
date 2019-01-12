@@ -15,5 +15,4 @@ public interface Point2DInterface {
     public Path2DPoint getPrevPoint();
     public void setPrevPoint(Point2DInterface m_prevPoint);
 
-
     }

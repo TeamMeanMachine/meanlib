@@ -5,7 +5,7 @@ import org.team2471.frc.lib.vector.Vector2;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
 
-public class Path2DPoint {
+public class Path2DPoint implements Point2DInterface {
     public static transient final int STEPS = 600;
     private Vector2 m_position;
     private Vector2 m_prevAngleAndMagnitude;
@@ -102,15 +102,9 @@ public class Path2DPoint {
         return m_prevAngleAndMagnitude;
     }
 
-    public void setPrevAngleAndMagnitude(Vector2 prevAngleAndMagnitude) {  // this one takes the angle in world space - stored as an offset
-        m_prevAngleAndMagnitude = new Vector2(0, 1);
-        calculateTangents();  // determine the default tangents
-        double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
-        double goalAngle = prevAngleAndMagnitude.getX();
-        double angle = goalAngle - defaultAngle;
-        double magnitude = prevAngleAndMagnitude.getY() / Vector2.Companion.length(m_prevTangent);
-        m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
-        m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+    public void setPrevAngleAndMagnitude(Vector2 prevAngleAndMagnitude) {
+        m_prevAngleAndMagnitude = new Vector2(prevAngleAndMagnitude.getX(), prevAngleAndMagnitude.getY());
+        m_prevSlopeMethod = SLOPE_SMOOTH;
         onPositionChanged();
     }
 
@@ -119,14 +113,8 @@ public class Path2DPoint {
     }
 
     public void setNextAngleAndMagnitude(Vector2 nextAngleAndMagnitude) {  // this one takes the angle in world space - stored as an offset
-        m_nextAngleAndMagnitude = new Vector2(0, 1);
-        calculateTangents();  // determine the default tangents
-        double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
-        double goalAngle = nextAngleAndMagnitude.getX();
-        double angle = goalAngle - defaultAngle;
-        double magnitude = nextAngleAndMagnitude.getY() / Vector2.Companion.length(m_nextTangent);
-        m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
-        m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+        m_nextAngleAndMagnitude = new Vector2(nextAngleAndMagnitude.getX(), nextAngleAndMagnitude.getY());
+        m_prevSlopeMethod = SLOPE_SMOOTH;
         onPositionChanged();
     }
 
@@ -220,6 +208,14 @@ public class Path2DPoint {
         this.m_prevPoint = m_prevPoint;
     }
 
+    public void setNextPoint(Point2DInterface nextPoint) {
+        setNextPoint( (Path2DPoint)nextPoint );
+    }
+
+    public void setPrevPoint(Point2DInterface prevPoint) {
+        setPrevPoint( (Path2DPoint)prevPoint );
+    }
+
     public SlopeMethod getPrevSlopeMethod() {
         return m_prevSlopeMethod;
     }
@@ -287,6 +283,7 @@ public class Path2DPoint {
                 bCalcSmoothPrev = true;
                 break;
             case SLOPE_MANUAL:
+                // todo: should actually compute the angle and magnitude from the vector here
                 break;
         }
 
@@ -299,6 +296,7 @@ public class Path2DPoint {
                 bCalcSmoothNext = true;
                 break;
             case SLOPE_MANUAL:
+                // todo: should actually compute the angle and magnitude from the vector here
                 break;
         }
 

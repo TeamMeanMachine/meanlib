@@ -476,6 +476,14 @@ public class MotionKey {
         this.m_markBeginOrEndKeysToZeroSlope = m_setBeginOrEndKeysToZeroSlope;
     }
 
+    public MotionKey getM_nextKey() {
+        return m_nextKey;
+    }
+
+    public MotionKey getM_prevKey() {
+        return m_prevKey;
+    }
+
     public enum SlopeMethod {
         SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
         SLOPE_STEPPED, SLOPE_STEPPED_NEXT
