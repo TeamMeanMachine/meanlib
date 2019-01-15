@@ -5,7 +5,9 @@ import edu.wpi.first.wpilibj.*
 import edu.wpi.first.hal.FRCNetComm
 import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.util.WPILibVersion
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 import org.team2471.frc.lib.coroutines.MeanlibScope
 import org.team2471.frc.lib.coroutines.parallel
 import org.team2471.frc.lib.framework.internal.InputMapper
@@ -69,7 +71,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
                 HAL.observeUserProgramDisabled()
                 previousRobotMode = RobotMode.DISABLED
 
-                MeanlibScope.launch {
+                GlobalScope.launch(MeanlibDispatcher) {
                     use(mainSubsystem) { robotProgram.disable() }
                 }
             }
@@ -85,7 +87,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             HAL.observeUserProgramAutonomous()
             previousRobotMode = RobotMode.AUTONOMOUS
 
-            MeanlibScope.launch {
+            GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
                     if (wasDisabled) {
                         parallel({ robotProgram.enable() }, { robotProgram.autonomous() })
@@ -98,7 +100,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             HAL.observeUserProgramTeleop()
             previousRobotMode = RobotMode.TELEOP
 
-            MeanlibScope.launch {
+            GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
                     if (wasDisabled) {
                         parallel({ robotProgram.enable() }, { robotProgram.teleop() })
@@ -111,7 +113,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             HAL.observeUserProgramTest()
             previousRobotMode = RobotMode.TEST
 
-            MeanlibScope.launch {
+            GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
                     if (wasDisabled) {
                         parallel({ robotProgram.enable() }, { robotProgram.test() })
