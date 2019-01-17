@@ -13,6 +13,8 @@ data class Vector2(var x: Double, var y: Double) {
         set(x * c - y * s, x * s + y * c)
     }
 
+    fun rotateDegrees(degrees: Double) = rotateRadians(Math.toRadians(degrees))
+
     override fun toString(): String {
         return "<$x, $y>"
     }

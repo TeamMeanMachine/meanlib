@@ -10,6 +10,7 @@ public class Path2D {
 
     private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
     private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
+    private MotionCurve m_headingCurve; // the angle from the path which the robot is headed
 
     public enum RobotDirection {
         FORWARD, BACKWARD
