@@ -32,7 +32,7 @@ public class Autonomi {
 
     public String toJsonString() {
         String json = jsonAdapter.toJson(this);
-        System.out.println(json);
+        //System.out.println(json);
         return json;
     }
 
