@@ -1,55 +1,37 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import org.team2471.frc.lib.vector.Vector2;
+import org.team2471.frc.lib.math.Vector2;
 
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
 
-public class Path2DPoint implements Point2DInterface {
+public class Path2DPoint {
     public static transient final int STEPS = 600;
-    private Vector2 m_position;
-    private Vector2 m_prevAngleAndMagnitude;
-    private Vector2 m_nextAngleAndMagnitude;
-    private Vector2 m_prevTangent;
-    private Vector2 m_nextTangent;
-    private SlopeMethod m_prevSlopeMethod;
-    private SlopeMethod m_nextSlopeMethod;
-    private Path2DPoint m_nextPoint;
 
-    private transient boolean m_bTangentsDirty;
-    private transient boolean m_bCoefficientsDirty;
+    private Vector2 m_position;
+    private Vector2 m_prevAngleAndMagnitude = new Vector2(0, 1.9);
+    private Vector2 m_nextAngleAndMagnitude = new Vector2(0, 1.9);
+    private Vector2 m_prevTangent = new Vector2(0, 0);
+    private Vector2 m_nextTangent = new Vector2(0, 0);
+    private SlopeMethod m_prevSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
+    private SlopeMethod m_nextSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
+    private Path2DPoint m_nextPoint = null;
+
+    private transient boolean m_bTangentsDirty = true;
+    private transient boolean m_bCoefficientsDirty = true;
     private transient CubicCoefficients1D m_xCoeff;
     private transient CubicCoefficients1D m_yCoeff;
-    private transient double m_segmentLength;
-    private transient double partialLength, prevPartialLength;
-    private transient Path2DCurve m_path2DCurve;
-    private transient Path2DPoint m_prevPoint;
-
-    public Path2DPoint() {
-        init();
-    }
+    private transient double m_segmentLength = 0;
+    private transient double partialLength = -1, prevPartialLength;
+    private transient Path2DCurve m_path2DCurve = null;
+    private transient Path2DPoint m_prevPoint = null;
 
     public Path2DPoint(double x, double y) {
-        init();
-        m_position.set(x, y);
+        m_position = new Vector2(x, y);
     }
 
-    private void init() {
-        m_position = new Vector2(0, 0);
-        m_prevAngleAndMagnitude = new Vector2(0, 1.9);
-        m_nextAngleAndMagnitude = new Vector2(0, 1.9);
-        m_prevTangent = new Vector2(0, 0);
-        m_nextTangent = new Vector2(0, 0);
-
-        m_bTangentsDirty = true;
-        m_bCoefficientsDirty = true;
-        m_prevSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
-        m_nextSlopeMethod = SlopeMethod.SLOPE_SMOOTH;
-        m_path2DCurve = null;
-        m_nextPoint = null;
-        m_prevPoint = null;
-        m_segmentLength = 0;
-        partialLength = -1;
+    public Path2DPoint() {
+        this(0, 0);
     }
 
     public void onPositionChanged() {
@@ -133,7 +115,7 @@ public class Path2DPoint implements Point2DInterface {
                 double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
                 double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
                 double angle = goalAngle - defaultAngle;
-                double magnitude = Vector2.Companion.length(prevTangent) / Vector2.Companion.length(m_prevTangent);
+                double magnitude = prevTangent.getLength() / m_prevTangent.getLength();
                 m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
                 m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
                 m_nextSlopeMethod = SLOPE_SMOOTH;
@@ -166,7 +148,7 @@ public class Path2DPoint implements Point2DInterface {
                 double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
                 double goalAngle = Math.toDegrees(Math.atan2(nextTangent.getY(), nextTangent.getX()));
                 double angle = goalAngle - defaultAngle;
-                double magnitude = Vector2.Companion.length(nextTangent) / Vector2.Companion.length(m_nextTangent);
+                double magnitude = nextTangent.getLength() / m_nextTangent.getLength();
                 m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
                 m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
                 m_nextSlopeMethod = SLOPE_SMOOTH;
@@ -196,24 +178,16 @@ public class Path2DPoint implements Point2DInterface {
         return m_nextPoint;
     }
 
-    public void setNextPoint(Path2DPoint m_nextPoint) {
-        this.m_nextPoint = m_nextPoint;
+    public void setNextPoint(Path2DPoint nextPoint) {
+        this.m_nextPoint = nextPoint;
     }
 
     public Path2DPoint getPrevPoint() {
         return m_prevPoint;
     }
 
-    public void setPrevPoint(Path2DPoint m_prevPoint) {
-        this.m_prevPoint = m_prevPoint;
-    }
-
-    public void setNextPoint(Point2DInterface nextPoint) {
-        setNextPoint( (Path2DPoint)nextPoint );
-    }
-
-    public void setPrevPoint(Point2DInterface prevPoint) {
-        setPrevPoint( (Path2DPoint)prevPoint );
+    public void setPrevPoint(Path2DPoint prevPoint) {
+        this.m_prevPoint = prevPoint;
     }
 
     public SlopeMethod getPrevSlopeMethod() {
@@ -277,7 +251,7 @@ public class Path2DPoint implements Point2DInterface {
         switch (getPrevSlopeMethod()) {
             case SLOPE_LINEAR:
                 if (m_prevPoint != null)
-                    m_prevTangent = Vector2.Companion.subtract(getPosition(), m_prevPoint.getPosition());
+                    m_prevTangent = getPosition().minus(m_prevPoint.getPosition());
                 break;
             case SLOPE_SMOOTH:
                 bCalcSmoothPrev = true;
@@ -290,7 +264,7 @@ public class Path2DPoint implements Point2DInterface {
         switch (getNextSlopeMethod()) {
             case SLOPE_LINEAR:
                 if (m_nextPoint != null)
-                    m_nextTangent = Vector2.Companion.subtract(m_nextPoint.getPosition(), getPosition());
+                    m_nextTangent = m_nextPoint.getPosition().minus(getPosition());
                 break;
             case SLOPE_SMOOTH:
                 bCalcSmoothNext = true;
@@ -302,55 +276,55 @@ public class Path2DPoint implements Point2DInterface {
 
         if (bCalcSmoothPrev || bCalcSmoothNext) {
             if (m_prevPoint != null && m_nextPoint != null) {
-                Vector2 delta = Vector2.Companion.subtract(m_nextPoint.getPosition(), m_prevPoint.getPosition());
+                Vector2 delta = m_nextPoint.getPosition().minus(m_prevPoint.getPosition());
                 //double weight = Math.abs(delta.x);  // Bug for paths:  just works for 2d channels I think
-                double weight = Vector2.Companion.length(delta);
+                double weight = delta.getLength();
                 if (weight == 0) // if points are on top of one another (no tangents)
                 {
                     if (bCalcSmoothPrev)
-                        m_prevTangent.set(0, 0);
+                        m_prevTangent = new Vector2(0, 0);
                     if (bCalcSmoothNext)
-                        m_nextTangent.set(0, 0);
+                        m_nextTangent = new Vector2(0, 0);
                 } else {
-                    delta = Vector2.Companion.divide(delta, weight);
+                    delta = delta.div(weight);
 
                     if (bCalcSmoothPrev) {
-                        double prevLength = Vector2.Companion.length(Vector2.Companion.subtract(getPosition(), m_prevPoint.getPosition())) / defaultSplineDivisor;
-                        m_prevTangent = Vector2.Companion.multiply(delta, prevLength);
+                        double prevLength = (getPosition().minus(m_prevPoint.getPosition())).getLength() / defaultSplineDivisor;
+                        m_prevTangent = delta.times(prevLength);
                     }
                     if (bCalcSmoothNext) {
-                        double nextLength = Vector2.Companion.length(Vector2.Companion.subtract(m_nextPoint.getPosition(), getPosition())) / defaultSplineDivisor;
-                        m_nextTangent = Vector2.Companion.multiply(delta, nextLength);
+                        double nextLength = (m_nextPoint.getPosition().minus(getPosition())).getLength() / defaultSplineDivisor;
+                        m_nextTangent = delta.times(nextLength);
                     }
                 }
             } else {
                 if (m_nextPoint != null) {
                     if (bCalcSmoothPrev) {
-                        m_prevTangent = Vector2.Companion.subtract(m_nextPoint.getPosition(), getPosition());
-                        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, 1.0 / defaultSplineDivisor);
+                        m_prevTangent = m_nextPoint.getPosition().minus(getPosition());
+                        m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
                     }
                     if (bCalcSmoothNext) {
-                        m_nextTangent = Vector2.Companion.subtract(m_nextPoint.getPosition(), getPosition());
-                        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, 1.0 / defaultSplineDivisor);
+                        m_nextTangent = m_nextPoint.getPosition().minus(getPosition());
+                        m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
                     }
                 }
 
                 if (m_prevPoint != null) {
                     if (bCalcSmoothPrev) {
-                        m_prevTangent = Vector2.Companion.subtract(getPosition(), m_prevPoint.getPosition());
-                        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, 1.0 / defaultSplineDivisor);
+                        m_prevTangent = getPosition().minus(m_prevPoint.getPosition());
+                        m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
                     }
                     if (bCalcSmoothNext) {
-                        m_nextTangent = Vector2.Companion.subtract(getPosition(), m_prevPoint.getPosition());
-                        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, 1.0 / defaultSplineDivisor);
+                        m_nextTangent = getPosition().minus(m_prevPoint.getPosition());
+                        m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
                     }
                 }
             }
-            m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevMagnitude());
-            m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextMagnitude());
+            m_prevTangent = m_prevTangent.times(getPrevMagnitude())
+                .rotateDegrees(getPrevAngle());
 
-            m_prevTangent.rotateRadians(Math.toRadians(getPrevAngle()));
-            m_nextTangent.rotateRadians(Math.toRadians(getNextAngle()));
+            m_nextTangent = m_nextTangent.times(getNextMagnitude())
+                .rotateDegrees(getNextAngle());
         }
     }
 
@@ -390,16 +364,15 @@ public class Path2DPoint implements Point2DInterface {
 
         // calculate segment length
         Vector2 pos = new Vector2(0, 0);
-        Vector2 prevPos = new Vector2(0, 0);
         m_xCoeff.initFD(STEPS);
         m_yCoeff.initFD(STEPS);
         m_segmentLength = 0;
-        prevPos.set(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
+        Vector2 prevPos = new Vector2(m_xCoeff.getFDValue(), m_yCoeff.getFDValue());
 
         for (int i = 0; i < STEPS; i++) {
-            pos.set(m_xCoeff.bumpFDFaster(), m_yCoeff.bumpFDFaster());
-            m_segmentLength += Vector2.Companion.length(Vector2.Companion.subtract(pos, prevPos));
-            prevPos.set(pos.getX(), pos.getY());
+            pos = new Vector2(m_xCoeff.bumpFDFaster(), m_yCoeff.bumpFDFaster());
+            m_segmentLength += pos.minus(prevPos).getLength();
+            prevPos = new Vector2(pos.getX(), pos.getY());
         }
     }
 
@@ -422,15 +395,15 @@ public class Path2DPoint implements Point2DInterface {
         }
 
         while (partialLength <= distance) {
-            pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
-            prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
+            pos = new Vector2(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
+            prevPos = new Vector2(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
             prevPartialLength = partialLength;
-            partialLength += Vector2.Companion.length(Vector2.Companion.subtract(pos, prevPos));
+            partialLength += pos.minus(prevPos).getLength();
         }
 
         double intoSegment = (distance - prevPartialLength) / (partialLength - prevPartialLength);  // linearly interpolate t based on distance of the surrounding steps
 
-        return Vector2.Companion.add(Vector2.Companion.multiply(prevPos, 1.0f - intoSegment), Vector2.Companion.multiply(pos, intoSegment));
+        return prevPos.times(1.0f - intoSegment).plus(pos.times(intoSegment));
     }
 
     public Vector2 getTangentAtDistance(double distance) {
@@ -444,13 +417,13 @@ public class Path2DPoint implements Point2DInterface {
         }
 
         while (partialLength <= distance) {
-            pos.set(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
-            prevPos.set(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
+            pos = new Vector2(m_xCoeff.bumpFD(), m_yCoeff.bumpFD());
+            prevPos = new Vector2(m_xCoeff.getFdPrevValue(), m_yCoeff.getFdPrevValue());
             prevPartialLength = partialLength;
-            partialLength += Vector2.Companion.length(Vector2.Companion.subtract(pos, prevPos));
+            partialLength += pos.minus(prevPos).getLength();
         }
 
-        return Vector2.Companion.subtract(pos, prevPos);
+        return pos.minus(prevPos);
     }
 
     public String toString() {
