@@ -34,12 +34,15 @@ public class Path2D {
     public Path2D() {
         m_xyCurve = new Path2DCurve();
         m_easeCurve = new MotionCurve();
+        m_headingCurve = new MotionCurve();
     }
 
     public Path2D(String name) {
         this.name = name;
         m_xyCurve = new Path2DCurve();
         m_easeCurve = new MotionCurve();
+        m_headingCurve = new MotionCurve();
+
     }
 
     public static Path2D fromJsonString(String jsonString) {
@@ -249,6 +252,10 @@ public class Path2D {
         return m_easeCurve;
     }
 
+    public MotionCurve getHeadingCurve() {
+        return m_headingCurve;
+    }
+
     public RobotDirection getRobotDirection() {
         return robotDirection;
     }
@@ -313,6 +320,7 @@ public class Path2D {
     void fixUpTailAndPrevPointers() {
         m_xyCurve.fixUpTailAndPrevPointers();
         m_easeCurve.fixUpTailAndPrevPointers();
+        m_headingCurve.fixUpTailAndPrevPointers();
     }
 
     public double getLength() {
