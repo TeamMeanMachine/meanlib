@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.math
 
-data class Vector2(val x: Double, val y: Double) {
+data class Vector2(var x: Double, var y: Double) {
     val length: Double get() = Math.sqrt(dot(this))
     val angle: Double get() = Math.atan2(x, y)
 
