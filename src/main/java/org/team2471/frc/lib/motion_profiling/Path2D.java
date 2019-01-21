@@ -140,7 +140,8 @@ public class Path2D {
         Vector2 tangent = getTangent(time)
                 .normalize()
                 .perpendicular()
-                .times(Math.copySign(xOffset, speed));
+                .times(xOffset)
+                .times(Math.copySign(1.0, speed));
         return centerPosition.plus(tangent);
     }
 

@@ -4,13 +4,13 @@ data class Vector2(var x: Double, var y: Double) {
     val length: Double get() = Math.sqrt(dot(this))
     val angle: Double get() = Math.atan2(x, y)
 
-    fun rotate(radians: Double): Vector2 {
+    fun rotateRadians(radians: Double): Vector2 {
         val c = Math.cos(radians)
         val s = Math.sin(radians)
         return Vector2(x * c - y * s, x * s + y * c)
     }
 
-    fun rotateDegrees(degrees: Double): Vector2 = rotate(Math.toRadians(degrees))
+    fun rotateDegrees(degrees: Double): Vector2 = rotateRadians(Math.toRadians(degrees))
 
     operator fun unaryPlus() = this * 1.0
 

@@ -25,7 +25,7 @@ class ArcadePath(private val path: Path2D, private val trackWidth: Double) {
     }
 
     fun getRightPosition(time: Double): Vector2 {
-        return path.getSidePosition(time, -trackWidth / 2.0)
+        return path.getSidePosition(time, trackWidth / 2.0)
     }
 
     fun getLeftPositionDelta(time: Double): Double {

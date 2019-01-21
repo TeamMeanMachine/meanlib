@@ -2,7 +2,7 @@ package org.team2471.frc.lib.motion_profiling
 
 import org.team2471.frc.lib.vector.Vector2
 
-class SwerveRobot : MotionRobot() {
+class SwerveRobot {
 /*
     val swerveModules : Array<SwerveModule> = {
         SwerveModule(Vector2(15, 16)),
