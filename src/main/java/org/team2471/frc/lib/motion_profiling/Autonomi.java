@@ -8,12 +8,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import org.team2471.frc.lib.motion_profiling.following.ArcadeRobot;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Autonomi {
 
     //public ArcadeRobot arcadeRobot;
-    public Map<String, Autonomous> mapAutonomous = new HashMap<>();
+    public Map<String, Autonomous> mapAutonomous = new LinkedHashMap<>();
 
     static Moshi moshi = new Moshi.Builder().build();
     static JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class).indent("\t");
