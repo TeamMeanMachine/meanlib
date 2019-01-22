@@ -108,28 +108,10 @@ public class Path2DPoint {
     }
 
     public void setPrevTangent(Vector2 prevTangent) {
-        if (getPrevPoint()!=null) {
-            if (m_nextSlopeMethod == SLOPE_SMOOTH) {
-                m_prevAngleAndMagnitude = new Vector2(0, 1);
-                calculateTangents();  // determine the default tangents
-                double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
-                double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
-                double angle = goalAngle - defaultAngle;
-                double magnitude = prevTangent.getLength() / m_prevTangent.getLength();
-                m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
-                m_nextAngleAndMagnitude = new Vector2(angle, getNextMagnitude());
-                m_nextSlopeMethod = SLOPE_SMOOTH;
-                m_prevSlopeMethod = SLOPE_SMOOTH;
-            } else if (m_nextSlopeMethod == SLOPE_MANUAL) {
-                m_prevTangent = prevTangent;
-            }
-        } else {
-            m_nextTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
-            m_nextSlopeMethod = SLOPE_MANUAL;
-            m_prevTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
-            m_prevSlopeMethod = SLOPE_MANUAL;
+        if (m_prevPoint!=null) {
+            m_prevTangent = prevTangent;
+            calculatePrevAngleAndMagnitudeFromTangent();
         }
-
         onPositionChanged();
     }
 
@@ -142,28 +124,32 @@ public class Path2DPoint {
 
     public void setNextTangent(Vector2 nextTangent) {
         if (m_nextPoint != null) {
-            if (m_nextSlopeMethod == SLOPE_SMOOTH) {
-                m_nextAngleAndMagnitude = new Vector2(0, 1);
-                calculateTangents();  // determine the default tangents
-                double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
-                double goalAngle = Math.toDegrees(Math.atan2(nextTangent.getY(), nextTangent.getX()));
-                double angle = goalAngle - defaultAngle;
-                double magnitude = nextTangent.getLength() / m_nextTangent.getLength();
-                m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
-                m_prevAngleAndMagnitude = new Vector2(angle, getPrevMagnitude());
-                m_nextSlopeMethod = SLOPE_SMOOTH;
-                m_prevSlopeMethod = SLOPE_SMOOTH;
-            } else if (m_nextSlopeMethod == SLOPE_MANUAL) {
-                m_nextTangent = nextTangent;
-            }
-        }
-        else {
-            m_nextTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
-            m_nextSlopeMethod = SLOPE_MANUAL;
-            m_prevTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
-            m_prevSlopeMethod = SLOPE_MANUAL;
+            m_nextTangent = nextTangent;
+            calculateNextAngleAndMagnitudeFromTangent();
         }
         onPositionChanged();
+    }
+
+    private void calculatePrevAngleAndMagnitudeFromTangent() {
+        Vector2 prevTangent = new Vector2(m_prevTangent.getX(), m_prevTangent.getY());
+        calculateDefaultTangents(true, false);  // determine the default tangents
+        double defaultAngle = Math.toDegrees(Math.atan2(m_prevTangent.getY(), m_prevTangent.getX()));
+        double goalAngle = Math.toDegrees(Math.atan2(prevTangent.getY(), prevTangent.getX()));
+        double angle = goalAngle - defaultAngle;
+        double magnitude = prevTangent.getLength() / m_prevTangent.getLength();
+        m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
+        m_prevTangent.set(prevTangent);
+    }
+
+    private void calculateNextAngleAndMagnitudeFromTangent() {
+        Vector2 nextTangent = new Vector2(m_nextTangent.getX(), m_nextTangent.getY());
+        calculateDefaultTangents(false, true);  // determine the default tangents
+        double defaultAngle = Math.toDegrees(Math.atan2(m_nextTangent.getY(), m_nextTangent.getX()));
+        double goalAngle = Math.toDegrees(Math.atan2(nextTangent.getY(), nextTangent.getX()));
+        double angle = goalAngle - defaultAngle;
+        double magnitude = nextTangent.getLength() / m_nextTangent.getLength();
+        m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
+        m_nextTangent.set(nextTangent);
     }
 
     public Path2DCurve getPath2DCurve() {
@@ -246,8 +232,6 @@ public class Path2DPoint {
         boolean bCalcSmoothPrev = false;
         boolean bCalcSmoothNext = false;
 
-        final double defaultSplineDivisor = 2.0;
-
         switch (getPrevSlopeMethod()) {
             case SLOPE_LINEAR:
                 if (m_prevPoint != null)
@@ -275,56 +259,63 @@ public class Path2DPoint {
         }
 
         if (bCalcSmoothPrev || bCalcSmoothNext) {
-            if (m_prevPoint != null && m_nextPoint != null) {
-                Vector2 delta = m_nextPoint.getPosition().minus(m_prevPoint.getPosition());
-                //double weight = Math.abs(delta.x);  // Bug for paths:  just works for 2d channels I think
-                double weight = delta.getLength();
-                if (weight == 0) // if points are on top of one another (no tangents)
-                {
-                    if (bCalcSmoothPrev)
-                        m_prevTangent = new Vector2(0, 0);
-                    if (bCalcSmoothNext)
-                        m_nextTangent = new Vector2(0, 0);
-                } else {
-                    delta = delta.div(weight);
+            calculateDefaultTangents(bCalcSmoothPrev, bCalcSmoothNext);
 
-                    if (bCalcSmoothPrev) {
-                        double prevLength = (getPosition().minus(m_prevPoint.getPosition())).getLength() / defaultSplineDivisor;
-                        m_prevTangent = delta.times(prevLength);
-                    }
-                    if (bCalcSmoothNext) {
-                        double nextLength = (m_nextPoint.getPosition().minus(getPosition())).getLength() / defaultSplineDivisor;
-                        m_nextTangent = delta.times(nextLength);
-                    }
-                }
-            } else {
-                if (m_nextPoint != null) {
-                    if (bCalcSmoothPrev) {
-                        m_prevTangent = m_nextPoint.getPosition().minus(getPosition());
-                        m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
-                    }
-                    if (bCalcSmoothNext) {
-                        m_nextTangent = m_nextPoint.getPosition().minus(getPosition());
-                        m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
-                    }
-                }
-
-                if (m_prevPoint != null) {
-                    if (bCalcSmoothPrev) {
-                        m_prevTangent = getPosition().minus(m_prevPoint.getPosition());
-                        m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
-                    }
-                    if (bCalcSmoothNext) {
-                        m_nextTangent = getPosition().minus(m_prevPoint.getPosition());
-                        m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
-                    }
-                }
-            }
             m_prevTangent = m_prevTangent.times(getPrevMagnitude())
                 .rotateDegrees(getPrevAngle());
 
             m_nextTangent = m_nextTangent.times(getNextMagnitude())
                 .rotateDegrees(getNextAngle());
+        }
+    }
+
+    private void calculateDefaultTangents(boolean bCalcSmoothPrev, boolean bCalcSmoothNext) {
+        final double defaultSplineDivisor = 2.0;
+
+        if (m_prevPoint != null && m_nextPoint != null) {
+            Vector2 delta = m_nextPoint.getPosition().minus(m_prevPoint.getPosition());
+            //double weight = Math.abs(delta.x);  // Bug for paths:  just works for 2d channels I think
+            double weight = delta.getLength();
+            if (weight == 0) // if points are on top of one another (no tangents)
+            {
+                if (bCalcSmoothPrev)
+                    m_prevTangent = new Vector2(0, 0);
+                if (bCalcSmoothNext)
+                    m_nextTangent = new Vector2(0, 0);
+            } else {
+                delta = delta.div(weight);
+
+                if (bCalcSmoothPrev) {
+                    double prevLength = (getPosition().minus(m_prevPoint.getPosition())).getLength() / defaultSplineDivisor;
+                    m_prevTangent = delta.times(prevLength);
+                }
+                if (bCalcSmoothNext) {
+                    double nextLength = (m_nextPoint.getPosition().minus(getPosition())).getLength() / defaultSplineDivisor;
+                    m_nextTangent = delta.times(nextLength);
+                }
+            }
+        } else {
+            if (m_nextPoint != null) {
+                if (bCalcSmoothPrev) {
+                    m_prevTangent = m_nextPoint.getPosition().minus(getPosition());
+                    m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
+                }
+                if (bCalcSmoothNext) {
+                    m_nextTangent = m_nextPoint.getPosition().minus(getPosition());
+                    m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
+                }
+            }
+
+            if (m_prevPoint != null) {
+                if (bCalcSmoothPrev) {
+                    m_prevTangent = getPosition().minus(m_prevPoint.getPosition());
+                    m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
+                }
+                if (bCalcSmoothNext) {
+                    m_nextTangent = getPosition().minus(m_prevPoint.getPosition());
+                    m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
+                }
+            }
         }
     }
 

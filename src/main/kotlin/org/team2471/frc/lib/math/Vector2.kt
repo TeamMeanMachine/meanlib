@@ -33,4 +33,14 @@ data class Vector2(var x: Double, var y: Double) {
     fun mirrorXAxis() = Vector2(-x, y)
 
     fun mirrorYAxis() = Vector2(x, -y)
+
+    fun set(other: Vector2) {
+        x = other.x
+        y = other.y
+    }
+
+    fun set(X: Double, Y: Double) {
+        x = X
+        y = Y
+    }
 }
