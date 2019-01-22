@@ -270,8 +270,6 @@ public class Path2DPoint {
     }
 
     private void calculateDefaultTangents(boolean bCalcSmoothPrev, boolean bCalcSmoothNext) {
-        final double defaultSplineDivisor = 2.0;
-
         if (m_prevPoint != null && m_nextPoint != null) {
             Vector2 delta = m_nextPoint.getPosition().minus(m_prevPoint.getPosition());
             //double weight = Math.abs(delta.x);  // Bug for paths:  just works for 2d channels I think
@@ -286,11 +284,11 @@ public class Path2DPoint {
                 delta = delta.div(weight);
 
                 if (bCalcSmoothPrev) {
-                    double prevLength = (getPosition().minus(m_prevPoint.getPosition())).getLength() / defaultSplineDivisor;
+                    double prevLength = (getPosition().minus(m_prevPoint.getPosition())).getLength();
                     m_prevTangent = delta.times(prevLength);
                 }
                 if (bCalcSmoothNext) {
-                    double nextLength = (m_nextPoint.getPosition().minus(getPosition())).getLength() / defaultSplineDivisor;
+                    double nextLength = (m_nextPoint.getPosition().minus(getPosition())).getLength();
                     m_nextTangent = delta.times(nextLength);
                 }
             }
@@ -298,22 +296,18 @@ public class Path2DPoint {
             if (m_nextPoint != null) {
                 if (bCalcSmoothPrev) {
                     m_prevTangent = m_nextPoint.getPosition().minus(getPosition());
-                    m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
                 }
                 if (bCalcSmoothNext) {
                     m_nextTangent = m_nextPoint.getPosition().minus(getPosition());
-                    m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
                 }
             }
 
             if (m_prevPoint != null) {
                 if (bCalcSmoothPrev) {
                     m_prevTangent = getPosition().minus(m_prevPoint.getPosition());
-                    m_prevTangent = m_prevTangent.times(1.0 / defaultSplineDivisor);
                 }
                 if (bCalcSmoothNext) {
                     m_nextTangent = getPosition().minus(m_prevPoint.getPosition());
-                    m_nextTangent = m_nextTangent.times(1.0 / defaultSplineDivisor);
                 }
             }
         }
