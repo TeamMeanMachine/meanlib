@@ -86,7 +86,11 @@ public class Path2DPoint {
 
     public void setPrevAngleAndMagnitude(Vector2 prevAngleAndMagnitude) {
         m_prevAngleAndMagnitude = new Vector2(prevAngleAndMagnitude.getX(), prevAngleAndMagnitude.getY());
-        m_prevSlopeMethod = SLOPE_SMOOTH;
+        if (m_prevSlopeMethod == SLOPE_MANUAL) {
+            m_prevSlopeMethod = SLOPE_SMOOTH;
+            calculateTangents();
+            m_prevSlopeMethod = SLOPE_MANUAL;
+        }
         onPositionChanged();
     }
 
@@ -96,7 +100,11 @@ public class Path2DPoint {
 
     public void setNextAngleAndMagnitude(Vector2 nextAngleAndMagnitude) {  // this one takes the angle in world space - stored as an offset
         m_nextAngleAndMagnitude = new Vector2(nextAngleAndMagnitude.getX(), nextAngleAndMagnitude.getY());
-        m_prevSlopeMethod = SLOPE_SMOOTH;
+        if (m_nextSlopeMethod == SLOPE_MANUAL) {
+            m_nextSlopeMethod = SLOPE_SMOOTH;
+            calculateTangents();
+            m_nextSlopeMethod = SLOPE_MANUAL;
+        }
         onPositionChanged();
     }
 
