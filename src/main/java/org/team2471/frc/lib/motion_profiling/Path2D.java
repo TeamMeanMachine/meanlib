@@ -22,7 +22,7 @@ public class Path2D {
 
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
-    private CurveType curveType = CurveType.EASE;
+    public CurveType curveType = CurveType.EASE;
     private double trackWidth = 25.0 / 12.0;
     private double scrubFactor = 1.12;
     private boolean m_mirrored = false;
