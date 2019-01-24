@@ -16,11 +16,11 @@ data class Point(val x: Double, val y: Double) {
 
     operator fun plus(b: Point) = Point(x + b.x, y + b.y)
 
-    operator fun plus(vec: Vector) = Point(x + vec.x, y + vec.y)
+    operator fun plus(vec: Vector2) = Point(x + vec.x, y + vec.y)
 
     operator fun minus(b: Point) = Point(x - b.x, y - b.y)
 
-    operator fun minus(vec: Vector) = Point(x - vec.x, y - vec.y)
+    operator fun minus(vec: Vector2) = Point(x - vec.x, y - vec.y)
 
     operator fun times(scalar: Double) = Point(x * scalar, y * scalar)
 
@@ -28,7 +28,7 @@ data class Point(val x: Double, val y: Double) {
 
     fun distance(b: Point): Double = sqrt(pow(b.x - this.x, 2.0) + pow(b.y - this.y, 2.0))
 
-    fun vectorTo(b: Point): Vector = Vector(b.x - this.x, b.y - this.y)
+    fun vectorTo(b: Point): Vector2 = Vector2(b.x - this.x, b.y - this.y)
 
     fun closestPoint(firstPoint: Point, vararg additionalPoints: Point): Point =
             additionalPoints.fold(firstPoint) { result, next ->
@@ -43,9 +43,9 @@ data class Line(val pointA: Point, val pointB: Point) {
 
     operator fun get(x: Double): Double = slope * x + intercept
 
-    operator fun plus(vec: Vector) = Line(pointA + vec, pointB + vec)
+    operator fun plus(vec: Vector2) = Line(pointA + vec, pointB + vec)
 
-    operator fun minus(vec: Vector) = Line(pointA - vec, pointB - vec)
+    operator fun minus(vec: Vector2) = Line(pointA - vec, pointB - vec)
 
     fun pointInLine(point: Point): Boolean = point.y == this[point.x]
 
@@ -92,9 +92,9 @@ data class Circle(val center: Point, val radius: Double) {
         return arrayOf(p1, p2)
     }
 
-    operator fun plus(vec: Vector) = Circle(center + vec, radius)
+    operator fun plus(vec: Vector2) = Circle(center + vec, radius)
 
-    operator fun minus(vec: Vector) = Circle(center - vec, radius)
+    operator fun minus(vec: Vector2) = Circle(center - vec, radius)
 
     operator fun times(scalar: Double) = Circle(center, radius * scalar)
 

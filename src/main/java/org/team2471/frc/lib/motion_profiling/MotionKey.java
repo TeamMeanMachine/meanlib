@@ -411,8 +411,8 @@ public class MotionKey {
             }
         }
 
-        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevAngleAndMagnitude().getY() / 3.0);
-        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextAngleAndMagnitude().getY() / 3.0);
+        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevAngleAndMagnitude().getY()); // / 3.0 it seems like this is more of a UI only thing, and shouldn't really be done in this case.  But maybe I'm wrong.  Subtract the points, then take a third to get a good default tangent.  Does that still appear too long in the UI?  So we divide by 3 again.
+        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextAngleAndMagnitude().getY()); // / 3.0
     }
 
     public CubicCoefficients1D getXCoefficients() {
