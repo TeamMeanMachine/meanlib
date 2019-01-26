@@ -34,6 +34,10 @@ public class Path2DPoint {
         this(0, 0);
     }
 
+    public enum PointType {
+        POINT, PREV_TANGENT, NEXT_TANGENT
+    }
+
     public void onPositionChanged() {
         getPath2DCurve().onPositionChanged();  // tell the path too
 
