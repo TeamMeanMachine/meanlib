@@ -492,7 +492,7 @@ public class MotionKey {
     public void setMagnitude(double magnitude) {
         m_prevAngleAndMagnitude.setY(magnitude);
         m_nextAngleAndMagnitude.setY(magnitude);
-        //m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
+        m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
         onPositionChanged();
     }
     public double getMagnitude() {

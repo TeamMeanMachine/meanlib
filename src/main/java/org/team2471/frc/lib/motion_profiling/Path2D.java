@@ -16,8 +16,15 @@ public class Path2D {
         FORWARD, BACKWARD
     }
 
+    public enum CurveType {
+        EASE, HEADING, BOTH
+    }
+
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
+    public CurveType curveType = CurveType.EASE;
+    private double trackWidth = 25.0 / 12.0;
+    private double scrubFactor = 1.12;
     private boolean m_mirrored = false;
 
     private transient Autonomous autonomous;
@@ -71,6 +78,8 @@ public class Path2D {
     public void addEasePoint(double time, double value) {
         m_easeCurve.storeValue(time, value);
     }
+
+    public void addHeadingPoint(double time, double value) { m_headingCurve.storeValue(time, value); }
 
     public void removeAllEasePoints() {
         m_easeCurve.removeAllPoints();
@@ -179,6 +188,10 @@ public class Path2D {
     public void setRobotDirection(RobotDirection robotDirection) {
         this.robotDirection = robotDirection;
     }
+
+    public CurveType getCurveType() { return curveType; }
+
+    public void setCurveType(CurveType curveType) { this.curveType = curveType; }
 
     public boolean isMirrored() {
         return m_mirrored || (autonomous != null && autonomous.isMirrored());  // the path is mirrored if the path is marked mirrored or the autonomous is marked mirrored
