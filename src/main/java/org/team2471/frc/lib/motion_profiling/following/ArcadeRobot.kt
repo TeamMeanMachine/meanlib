@@ -17,8 +17,8 @@ interface ArcadeRobot {
             rightDistance: Double, rightFeedForward: Double
     )
 
-    fun startFollowing() { //NOOP }
-    fun stopFollowing() { //NOOP }
+    fun startFollowing() { /* NOOP */ }
+    fun stopFollowing() { /* NOOP */ }
 
     fun stop() {
         driveOpenLoop(0.0, 0.0)
