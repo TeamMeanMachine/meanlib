@@ -104,7 +104,7 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
         fun pidSlot(slot: Int) = talon.selectProfileSlot(slot, 0)
 
         fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
-            // apply to followers
+            // apply to following
             allTalons { it.configContinuousCurrentLimit(continuousLimit, timeoutMs) }
             allTalons { it.configPeakCurrentLimit(peakLimit, timeoutMs) }
             allTalons { it.configPeakCurrentDuration(peakDuration, timeoutMs) }

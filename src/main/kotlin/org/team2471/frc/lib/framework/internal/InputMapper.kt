@@ -2,9 +2,10 @@ package org.team2471.frc.lib.framework.internal
 
 import edu.wpi.first.wpilibj.GenericHID
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.MeanlibScope
+import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 
 internal object InputMapper {
     private val bindings = hashMapOf<Mapping, Binding>()
@@ -33,7 +34,7 @@ internal object InputMapper {
         ) : Binding() {
             override fun process(mapping: Mapping) {
                 if (mapping.controller.getRawButtonPressed(mapping.button)) {
-                    MeanlibScope.launch(block = body)
+                    GlobalScope.launch(MeanlibDispatcher, block = body)
                 }
             }
         }
@@ -46,7 +47,7 @@ internal object InputMapper {
             override fun process(mapping: Mapping) {
                 if (mapping.controller.getRawButtonPressed(mapping.button)) {
                     prevJob = if (prevJob == null || prevJob!!.isCompleted) {
-                        MeanlibScope.launch(block = body)
+                        GlobalScope.launch(MeanlibDispatcher, block = body)
                     } else {
                         prevJob?.cancel()
                         null
@@ -64,7 +65,7 @@ internal object InputMapper {
                 val buttonState = mapping.controller.getRawButton(mapping.button)
 
                 if (buttonState && prevJob == null) {
-                    prevJob = MeanlibScope.launch(block = body)
+                    prevJob = GlobalScope.launch(MeanlibDispatcher, block = body)
                 } else if (!buttonState && prevJob != null) {
                     prevJob!!.cancel()
                     prevJob = null

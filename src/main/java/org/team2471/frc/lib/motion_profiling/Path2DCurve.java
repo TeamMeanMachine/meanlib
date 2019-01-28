@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import org.team2471.frc.lib.math.Vector;
-import org.team2471.frc.lib.vector.Vector2;
+import org.team2471.frc.lib.math.Vector2;
 
 public class Path2DCurve {
 
@@ -78,8 +77,6 @@ public class Path2DCurve {
     }
 
     public void addPointAngleAndMagnitudeToEnd(double x, double y, double angle, double magnitude) {
-        angle += 90.0;  // 0 degrees is in front of robot (positive y)
-        angle *= Math.PI / 180.0;  // degrees to radians
         Path2DPoint path2DPoint = new Path2DPoint(x, y);
         insertPointAfter(m_tailPoint, path2DPoint);
         Vector2 angleAndMagnitude = new Vector2(angle, magnitude);
@@ -156,6 +153,10 @@ public class Path2DCurve {
 
     public Path2DPoint getHeadPoint() {
         return m_headPoint;
+    }
+
+    public Path2DPoint getTailPoint() {
+        return m_tailPoint;
     }
 
     void fixUpTailAndPrevPointers() {

@@ -5,17 +5,24 @@ import com.squareup.moshi.Moshi;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import org.team2471.frc.lib.motion_profiling.following.*;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Autonomi {
+    public RobotParameters robotParameters;
+    transient public ArcadeParameters arcadeParameters;
+    // transient public SwerveParameters swerveParameters;
 
-    public Map<String, Autonomous> mapAutonomous = new HashMap<>();
+    public DrivetrainParameters drivetrainParameters;
 
-    static Moshi moshi = new Moshi.Builder().build();
-    static JsonAdapter<Autonomi> jsonAdapter = moshi.adapter(Autonomi.class).indent("\t");
-    private static NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
+    public Map<String, Autonomous> mapAutonomous = new LinkedHashMap<>();
+
+    private static JsonAdapter<Autonomi> jsonAdapter = new Moshi.Builder()
+            .add(DrivetrainParameters.getMoshiAdapter())
+            .build()
+            .adapter(Autonomi.class).indent("\t");
 
     public Autonomous get(String name) {
         return mapAutonomous.get(name);
@@ -31,13 +38,11 @@ public class Autonomi {
     }
 
     public String toJsonString() {
-        String json = jsonAdapter.toJson(this);
-        System.out.println(json);
-        return json;
+        return jsonAdapter.toJson(this);
     }
 
     static public Autonomi fromJsonString(String json) {
-        Autonomi autonomi = null;
+        Autonomi autonomi;
         try {
             autonomi = jsonAdapter.fromJson(json);
         } catch (Exception e) {

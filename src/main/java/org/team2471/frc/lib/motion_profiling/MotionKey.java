@@ -411,8 +411,8 @@ public class MotionKey {
             }
         }
 
-        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevAngleAndMagnitude().getY() / 3.0);
-        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextAngleAndMagnitude().getY() / 3.0);
+        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevAngleAndMagnitude().getY()); // / 3.0 it seems like this is more of a UI only thing, and shouldn't really be done in this case.  But maybe I'm wrong.  Subtract the points, then take a third to get a good default tangent.  Does that still appear too long in the UI?  So we divide by 3 again.
+        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextAngleAndMagnitude().getY()); // / 3.0
     }
 
     public CubicCoefficients1D getXCoefficients() {
@@ -476,6 +476,14 @@ public class MotionKey {
         this.m_markBeginOrEndKeysToZeroSlope = m_setBeginOrEndKeysToZeroSlope;
     }
 
+    public MotionKey getM_nextKey() {
+        return m_nextKey;
+    }
+
+    public MotionKey getM_prevKey() {
+        return m_prevKey;
+    }
+
     public enum SlopeMethod {
         SLOPE_MANUAL, SLOPE_LINEAR, SLOPE_FLAT, SLOPE_SMOOTH, SLOPE_CLAMPED, SLOPE_PLATEAU,
         SLOPE_STEPPED, SLOPE_STEPPED_NEXT
@@ -484,7 +492,7 @@ public class MotionKey {
     public void setMagnitude(double magnitude) {
         m_prevAngleAndMagnitude.setY(magnitude);
         m_nextAngleAndMagnitude.setY(magnitude);
-        //m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
+        m_nextSlopeMethod = m_prevSlopeMethod = SLOPE_MANUAL;
         onPositionChanged();
     }
     public double getMagnitude() {

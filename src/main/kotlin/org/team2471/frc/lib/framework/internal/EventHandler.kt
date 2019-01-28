@@ -3,6 +3,7 @@ package org.team2471.frc.lib.framework.internal
 import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 import org.team2471.frc.lib.coroutines.MeanlibScope
 import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
@@ -12,7 +13,7 @@ internal object EventHandler {
     private val messageChannel = Channel<Message>(capacity = Channel.UNLIMITED)
 
     init {
-        MeanlibScope.launch {
+        GlobalScope.launch(MeanlibDispatcher) {
             for (message in messageChannel) handleMessage(message)
         }
     }
@@ -48,7 +49,7 @@ internal object EventHandler {
     private fun resetSubsystem(subsystem: Subsystem) {
         val defaultFunction = subsystem.defaultFunction ?: return
 
-        MeanlibScope.launch {
+        GlobalScope.launch(MeanlibDispatcher) {
             useSubsystems(setOf(subsystem), false, defaultFunction)
         }
     }
@@ -127,7 +128,7 @@ internal object EventHandler {
                 newSubsystems.forEach { it.activeJob = actionJob }
 
                 // launch watchdog coroutine
-                MeanlibScope.launch {
+                GlobalScope.launch(MeanlibDispatcher) {
                     var i = 0
                     while (!actionJob.isCompleted) {
                         if (actionJob.isCancelled) {
