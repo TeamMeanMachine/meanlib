@@ -30,12 +30,16 @@ open class Subsystem(
     /**
      * An optional function that is run whenever the subsystem is enabled and unused.
      */
-    internal val defaultFunction: (suspend () -> Unit)? = null
+    @Deprecated("override default() function instead")
+    private val defaultFunction: (suspend () -> Unit)? = null
 ) {
     private val table = NetworkTableInstance.getDefault().getTable("Subsystems").getSubTable(name)
     private val enabledEntry = table.getEntry("Enabled")
 
     internal var activeJob: Job? = null
+
+    internal var hasDefault = true
+        private set
 
     /**
      * Whether or not the [Subsystem] is enabled.
@@ -53,7 +57,15 @@ open class Subsystem(
      * An optionally overloadable method. This method is automatically run whenever any [use] call completes,
      * regardless of if it completed or canceled.
      */
-    open fun reset() { /* NOOP */ }
+    open fun reset() { /* NOOP */
+    }
+
+    /**
+     * An optional function that is run whenever the subsystem is enabled and unused.
+     */
+    @Suppress("DEPRECATION")
+    open suspend fun default() = defaultFunction?.invoke() ?: run { hasDefault = false }
+
 
     /**
      * Enables the [Subsystem].
