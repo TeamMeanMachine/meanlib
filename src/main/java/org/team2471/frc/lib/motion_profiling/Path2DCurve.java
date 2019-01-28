@@ -155,6 +155,10 @@ public class Path2DCurve {
         return m_headPoint;
     }
 
+    public Path2DPoint getTailPoint() {
+        return m_tailPoint;
+    }
+
     void fixUpTailAndPrevPointers() {
         Path2DPoint prevPoint = null;
         for (Path2DPoint point = m_headPoint; point != null; point = point.getNextPoint()) {
