@@ -17,7 +17,8 @@ interface ArcadeRobot {
             rightDistance: Double, rightFeedForward: Double
     )
 
-    fun startFollowing()
+    fun startFollowing() { //NOOP }
+    fun stopFollowing() { //NOOP }
 
     fun stop() {
         driveOpenLoop(0.0, 0.0)
@@ -95,6 +96,7 @@ suspend fun <T> T.driveAlongPath(
             }
         } finally {
             stop()
+            stopFollowing()
         }
     }
 
