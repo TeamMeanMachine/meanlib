@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.motion_profiling.following
+package org.team2471.frc.lib.motion.following
 
 import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.Unproven

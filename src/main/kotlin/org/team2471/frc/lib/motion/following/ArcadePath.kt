@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.motion_profiling.following
+package org.team2471.frc.lib.motion.following
 
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.Path2D

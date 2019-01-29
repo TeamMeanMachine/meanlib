@@ -5,7 +5,6 @@ import com.squareup.moshi.Moshi;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import org.team2471.frc.lib.motion_profiling.following.ArcadeRobot;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
