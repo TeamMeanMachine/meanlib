@@ -47,10 +47,10 @@ internal object EventHandler {
     }
 
     private fun resetSubsystem(subsystem: Subsystem) {
-        val defaultFunction = subsystem.defaultFunction ?: return
-
-        GlobalScope.launch(MeanlibDispatcher) {
-            useSubsystems(setOf(subsystem), false, defaultFunction)
+        if (subsystem.hasDefault) {
+            GlobalScope.launch(MeanlibDispatcher) {
+                useSubsystems(setOf(subsystem), false, subsystem::default)
+            }
         }
     }
 

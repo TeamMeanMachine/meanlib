@@ -3,7 +3,7 @@ package org.team2471.frc.lib.motion.following
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.Path2D
 
-class ArcadePath(private val path: Path2D, private val trackWidth: Double) {
+class ArcadePath(private val path: Path2D, private val finalTrackWidth: Double) {
     private var prevCenterPositionForLeft: Vector2? = null
     private var prevCenterPositionForRight: Vector2? = null
     private var prevLeftPosition: Vector2? = null
@@ -21,11 +21,11 @@ class ArcadePath(private val path: Path2D, private val trackWidth: Double) {
     }
 
     fun getLeftPosition(time: Double): Vector2 {
-        return path.getSidePosition(time, -trackWidth / 2.0)
+        return path.getSidePosition(time, -finalTrackWidth / 2.0)
     }
 
     fun getRightPosition(time: Double): Vector2 {
-        return path.getSidePosition(time, trackWidth / 2.0)
+        return path.getSidePosition(time, finalTrackWidth / 2.0)
     }
 
     fun getLeftPositionDelta(time: Double): Double {

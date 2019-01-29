@@ -8,6 +8,7 @@ import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
+import org.team2471.frc.lib.motion_profiling.following.ArcadeParameters
 
 interface ArcadeRobot {
     fun driveOpenLoop(leftPower: Double, rightPower: Double)
@@ -17,7 +18,8 @@ interface ArcadeRobot {
             rightDistance: Double, rightFeedForward: Double
     )
 
-    fun startFollowing()
+    fun startFollowing() { /* NOOP */ }
+    fun stopFollowing() { /* NOOP */ }
 
     fun stop() {
         driveOpenLoop(0.0, 0.0)
@@ -25,23 +27,7 @@ interface ArcadeRobot {
 
     val heading: Double
     val headingRate: Double
-
-    val config: Config
-
-    data class Config(
-            val trackWidth: Double,
-            val scrubFactor: Double,
-            val driveTurningP: Double,
-            val leftFeedForwardOffset: Double,
-            val leftFeedForwardCoefficient: Double,
-            val rightFeedForwardOffset: Double,
-            val rightFeedForwardCoefficient: Double,
-            val headingFeedForward: Double,
-            val doHeadingCorrection: Boolean,
-            val headingCorrectionP: Double,
-            val headingCorrectionI: Double,
-            val headingCorrectionIDecay: Double
-    )
+    val parameters: ArcadeParameters
 }
 
 @Unproven
@@ -55,7 +41,7 @@ suspend fun <T> T.driveAlongPath(
 
         startFollowing()
 
-        val arcadePath = ArcadePath(path, config.trackWidth * config.scrubFactor)
+        val arcadePath = ArcadePath(path, parameters.trackWidth * parameters.scrubFactor)
 
         var prevLeftDistance = 0.0
         var prevRightDistance = 0.0
@@ -74,10 +60,10 @@ suspend fun <T> T.driveAlongPath(
                 val pathAngle = Math.toDegrees(path.getTangent(t).angle)
                 val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle)
 
-                angleErrorAccum = angleErrorAccum * config.headingCorrectionIDecay + angleError
+                angleErrorAccum = angleErrorAccum * parameters.headingCorrectionIDecay + angleError
 
-                val gyroCorrection = if (config.doHeadingCorrection) {
-                    angleError * config.headingCorrectionP + angleErrorAccum * config.headingCorrectionI
+                val gyroCorrection = if (parameters.doHeadingCorrection) {
+                    angleError * parameters.headingCorrectionP + angleErrorAccum * parameters.headingCorrectionI
                 } else {
                     0.0
                 }
@@ -91,14 +77,14 @@ suspend fun <T> T.driveAlongPath(
                 val leftVelocity = (leftDistance - prevLeftDistance) / dt
                 val rightVelocity = (rightDistance - prevRightDistance) / dt
 
-                val velocityDeltaTimesCoefficient = (leftVelocity - rightVelocity) * config.headingFeedForward
+                val velocityDeltaTimesCoefficient = (leftVelocity - rightVelocity) * parameters.headingFeedForward
 
-                val leftFeedForward = leftVelocity * config.leftFeedForwardCoefficient +
-                        (config.leftFeedForwardOffset * Math.signum(leftVelocity)) +
+                val leftFeedForward = leftVelocity * parameters.leftFeedForwardCoefficient +
+                        (parameters.leftFeedForwardOffset * Math.signum(leftVelocity)) +
                         velocityDeltaTimesCoefficient
 
-                val rightFeedForward = rightVelocity * config.leftFeedForwardCoefficient +
-                        (config.leftFeedForwardOffset * Math.signum(rightVelocity)) -
+                val rightFeedForward = rightVelocity * parameters.leftFeedForwardCoefficient +
+                        (parameters.leftFeedForwardOffset * Math.signum(rightVelocity)) -
                         velocityDeltaTimesCoefficient
 
                 driveClosedLoop(leftDistance, leftFeedForward, rightDistance, rightFeedForward)
@@ -111,6 +97,7 @@ suspend fun <T> T.driveAlongPath(
             }
         } finally {
             stop()
+            stopFollowing()
         }
     }
 
@@ -123,10 +110,10 @@ fun ArcadeRobot.drive(throttle: Double, softTurn: Double, hardTurn: Double) {
     val totalTurn = (softTurn * Math.abs(throttle)) + hardTurn
     val velocitySetpoint = totalTurn * 250.0
 
-    val gyroRate = if (config.doHeadingCorrection) headingRate else 0.0
+    val gyroRate = if (parameters.doHeadingCorrection) headingRate else 0.0
     val velocityError = velocitySetpoint - gyroRate
 
-    val turnAdjust = (velocityError * config.driveTurningP).deadband(1.0e-2)
+    val turnAdjust = (velocityError * parameters.driveTurningP).deadband(1.0e-2)
 
     var leftPower = throttle + totalTurn + turnAdjust
     var rightPower = throttle - totalTurn - turnAdjust
