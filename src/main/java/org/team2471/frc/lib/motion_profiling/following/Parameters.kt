@@ -13,6 +13,7 @@ sealed class DrivetrainParameters {
         val moshiAdapter: PolymorphicJsonAdapterFactory<DrivetrainParameters>
                 get() = PolymorphicJsonAdapterFactory.of(DrivetrainParameters::class.java, "drivetrain")
                         .withSubtype(ArcadeParameters::class.java, "arcade")
+                        .withSubtype(SwerveParameters::class.java, "swerve")
 
     }
 }
@@ -32,4 +33,13 @@ data class ArcadeParameters(
         var headingCorrectionIDecay: Double = 1.0
 ) : DrivetrainParameters()
 
-// TODO: swerve parameters
+data class SwerveParameters(
+        val trackWidth: Double,
+        val trackLength: Double,
+        val gyroRateCorrection: Double
+
+
+) : DrivetrainParameters() {
+    val lengthComponent = trackLength / Math.hypot(trackLength, trackWidth)
+    val widthComponent = trackWidth / Math.hypot(trackLength, trackWidth)
+}

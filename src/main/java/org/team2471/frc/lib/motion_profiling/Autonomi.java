@@ -5,16 +5,14 @@ import com.squareup.moshi.Moshi;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import org.team2471.frc.lib.motion_profiling.following.*;
+import org.team2471.frc.lib.motion_profiling.following.DrivetrainParameters;
+import org.team2471.frc.lib.motion_profiling.following.RobotParameters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Autonomi {
     public RobotParameters robotParameters;
-    transient public ArcadeParameters arcadeParameters;
-    // transient public SwerveParameters swerveParameters;
-
     public DrivetrainParameters drivetrainParameters;
 
     public Map<String, Autonomous> mapAutonomous = new LinkedHashMap<>();
