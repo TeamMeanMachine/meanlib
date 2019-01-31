@@ -1,15 +1,18 @@
 package org.team2471.frc.lib.motion.following
 
+import org.team2471.frc.lib.Unproven
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
+import org.team2471.frc.lib.units.*
 
+@Unproven
 interface SwerveDrive {
-    val heading: Double
-    val headingRate: Double
-    val frontLeftAngle: Double
-    val frontRightAngle: Double
-    val backRightAngle: Double
-    val backLeftAngle: Double
+    val heading: Angle
+    val headingRate: AngularVelocity
+    val frontLeftAngle: Angle
+    val frontRightAngle: Angle
+    val backRightAngle: Angle
+    val backLeftAngle: Angle
     val parameters: SwerveParameters
 
     fun startFollowing() = Unit
@@ -19,28 +22,28 @@ interface SwerveDrive {
     fun stop()
 
     fun driveClosedLoop(
-            frontLeftDistance: Double, frontRightDistance: Double,
-            backRightDistance: Double, backLeftDistance: Double,
-            topLeftAngle: Double, topRightAngle: Double,
-            bottomRightAngle: Double, bottomLeftAngle: Double
+        frontLeftDistance: Length, frontRightDistance: Length,
+        backRightDistance: Length, backLeftDistance: Length,
+        frontLeftAngle: Angle, frontRightAngle: Angle,
+        backRightAngle: Angle, backLeftAngle: Angle
     )
 
     fun driveOpenLoop(
-            frontLeftPower: Double, frontRightPower: Double,
-            backLeftPower: Double, backRightPower: Double,
-            frontleftAngle: Double, frontRightAngle: Double,
-            backleftAngle: Double, backRightAngle: Double
+        frontLeftPower: Double, frontRightPower: Double,
+        backLeftPower: Double, backRightPower: Double,
+        frontLeftAngle: Angle, frontRightAngle: Angle,
+        backLeftAngle: Angle, backRightAngle: Angle
     )
 }
 
+@Unproven
 fun SwerveDrive.drive(translation: Vector2, turn: Double) {
-    var heading = heading + headingRate * parameters.gyroRateCorrection
-    heading = Math.IEEEremainder(heading, 360.0)
+    var heading = heading + (headingRate * parameters.gyroRateCorrection).changePerSecond
+    heading = Math.IEEEremainder(heading.asRadians, 2 * Math.PI).radians
 
-    heading = Math.toRadians(heading)
     translation.let { (x, y) ->
-        translation.x = -y * Math.sin(heading) + x * Math.cos(heading)
-        translation.y =  y * Math.cos(heading) + x * Math.sin(heading)
+        translation.x = -y * heading.sin() + x * heading.cos()
+        translation.y = y * heading.cos() + x * heading.sin()
     }
 
     val a = translation.x - turn * parameters.lengthComponent
@@ -49,32 +52,32 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double) {
     val d = translation.y + turn * parameters.widthComponent
 
     val speeds = doubleArrayOf(
-            Math.hypot(b, d),
-            Math.hypot(b, c),
-            Math.hypot(a, d),
-            Math.hypot(a, c)
+        Math.hypot(b, d),
+        Math.hypot(b, c),
+        Math.hypot(a, d),
+        Math.hypot(a, c)
     )
 
-    val turns = doubleArrayOf(
-            Math.atan2(b, d) * 0.5 / Math.PI,
-            Math.hypot(b, c) * 0.5 / Math.PI,
-            Math.hypot(a, d) * 0.5 / Math.PI,
-            Math.hypot(a, c) * 0.5 / Math.PI
+    val turns = arrayOf(
+        Angle.atan2(b, d),
+        Angle.atan2(b, c),
+        Angle.atan2(a, d),
+        Angle.atan2(a, c)
     )
 
     val maxSpeed = speeds.max()!!
-    if (maxSpeed > 1.0){
+    if (maxSpeed > 1.0) {
         for (i in 0..3) {
             speeds[i] /= maxSpeed
         }
     }
 
-    val angles = doubleArrayOf(frontLeftAngle, frontRightAngle, backLeftAngle, backRightAngle)
+    val angles = arrayOf(frontLeftAngle, frontRightAngle, backLeftAngle, backRightAngle)
 
     for (i in 0..3) {
-        val angleError = Math.IEEEremainder(angles[i] - turns[i], 360.0)
-        if (Math.abs(angleError) > 90) {
-            turns[i] -= Math.copySign(180.0, angleError)
+        val angleError = Math.IEEEremainder((angles[i] - turns[i]).asRadians, 2 * Math.PI).radians
+        if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
+            turns[i] -= Math.copySign(Math.PI, angleError.asRadians).radians
             speeds[i] = -speeds[i]
         }
     }
