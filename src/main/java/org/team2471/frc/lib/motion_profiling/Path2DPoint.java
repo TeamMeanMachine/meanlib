@@ -151,6 +151,9 @@ public class Path2DPoint {
         double magnitude = prevTangent.getLength() / m_prevTangent.getLength();
         m_prevAngleAndMagnitude = new Vector2(angle, magnitude);
         m_prevTangent.set(prevTangent);
+        if (m_prevSlopeMethod==SLOPE_SMOOTH) {
+            m_nextAngleAndMagnitude.set(new Vector2(angle, getNextMagnitude()));
+        }
     }
 
     private void calculateNextAngleAndMagnitudeFromTangent() {
@@ -162,6 +165,9 @@ public class Path2DPoint {
         double magnitude = nextTangent.getLength() / m_nextTangent.getLength();
         m_nextAngleAndMagnitude = new Vector2(angle, magnitude);
         m_nextTangent.set(nextTangent);
+        if (m_nextSlopeMethod==SLOPE_SMOOTH) {
+            m_prevAngleAndMagnitude.set(new Vector2(angle, getPrevMagnitude()));
+        }
     }
 
     public Path2DCurve getPath2DCurve() {
