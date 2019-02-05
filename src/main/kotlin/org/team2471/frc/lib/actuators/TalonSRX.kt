@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 
+@Deprecated("Replaced with MotorController")
 class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     private val talon = CTRETalonSRX(deviceId)
 
