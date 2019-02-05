@@ -15,7 +15,7 @@ data class VictorID(val value: Int) : MotorControllerID()
 
 private fun CTREMotorController(id: MotorControllerID) = when(id) {
     is TalonID -> CTRETalonSRX(id.value)
-    is VictorID -> CTRETalonSRX(id.value)
+    is VictorID -> CTREVictorSPX(id.value)
 }
 
 class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorControllerID) {
