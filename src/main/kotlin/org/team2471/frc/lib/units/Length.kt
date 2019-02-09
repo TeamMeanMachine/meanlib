@@ -1,8 +1,5 @@
 package org.team2471.frc.lib.units
 
-import org.team2471.frc.lib.Unproven
-
-@Unproven
 inline class Length(val asInches: Double) {
     operator fun plus(other: Length) = Length(asInches + other.asInches)
 
@@ -24,19 +21,12 @@ inline class Length(val asInches: Double) {
 }
 
 // constructors
-@Unproven
 inline val Number.inches get() = Length(this.toDouble())
-@Unproven
 inline val Number.feet get() = Length(this.toDouble() * 12.0)
-@Unproven
 inline val Number.meters get() = Length(this.toDouble() * 39.37008)
-@Unproven
 inline val Number.cm get() = Length(this.toDouble() * 0.3937008)
 
 // destructors
-@Unproven
 inline val Length.asFeet get() = asInches / 12.0
-@Unproven
 inline val Length.asMeters get() = asInches / 39.37008
-@Unproven
 inline val Length.asCm get() = asInches / 0.3937008

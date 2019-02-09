@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.*
-import org.team2471.frc.lib.Unproven
 import kotlin.coroutines.resume
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {

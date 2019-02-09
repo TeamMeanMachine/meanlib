@@ -1,11 +1,9 @@
 package org.team2471.frc.lib.motion.following
 
-import org.team2471.frc.lib.Unproven
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
 
-@Unproven
 interface SwerveDrive {
     val heading: Angle
     val headingRate: AngularVelocity
@@ -36,7 +34,6 @@ interface SwerveDrive {
     )
 }
 
-@Unproven
 fun SwerveDrive.drive(translation: Vector2, turn: Double) {
     var heading = heading + (headingRate * parameters.gyroRateCorrection).changePerSecond
     heading = Math.IEEEremainder(heading.asRadians, 2 * Math.PI).radians

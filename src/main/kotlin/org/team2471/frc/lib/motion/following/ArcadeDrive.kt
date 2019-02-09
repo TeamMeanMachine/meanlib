@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.motion.following
 
 import edu.wpi.first.wpilibj.Timer
-import org.team2471.frc.lib.Unproven
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.framework.use
@@ -31,7 +30,6 @@ interface ArcadeDrive {
     }
 }
 
-@Unproven
 suspend fun <T> T.driveAlongPath(
         path: Path2D,
         extraTime: Double = 0.0
