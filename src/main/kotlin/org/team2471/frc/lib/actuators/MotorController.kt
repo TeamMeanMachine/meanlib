@@ -127,6 +127,32 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
         }
 
+        fun nominalOutputForward(percent: Double) {
+            ctreMotorController.configNominalOutputForward(percent)
+        }
+
+        fun nominalOutputReverse(percent: Double) {
+            ctreMotorController.configNominalOutputReverse(percent)
+        }
+
+        fun nominalOutput(percent: Double) {
+            nominalOutputForward(percent)
+            nominalOutputReverse(percent)
+        }
+
+        fun peakOutputForward(percent: Double) {
+            ctreMotorController.configPeakOutputForward(percent)
+        }
+
+        fun peakOutputReverse(percent: Double) {
+            ctreMotorController.configPeakOutputReverse(percent)
+        }
+
+        fun peakOutput(percent: Double) {
+            peakOutputForward(percent)
+            peakOutputReverse(percent)
+        }
+
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {
                 ctreMotorController.config_kP(slot, p, timeoutMs)
