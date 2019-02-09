@@ -30,7 +30,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }.toTypedArray()
 
     init {
-        allTalons { it.configFactoryDefault(Int.MAX_VALUE) }
+        allTalons { it.configFactoryDefault() }
         ctreMotorController.selectedSensorPosition = 0
     }
 
@@ -75,8 +75,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         ctreMotorController.neutralOutput()
     }
 
-    inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
-        body(ConfigScope(timeoutMs))
+    inline fun config(body: ConfigScope.() -> Unit) = apply {
+        body(ConfigScope())
     }
 
     private inline fun allTalons(body: (CTREMotorController) -> Unit) {
@@ -84,7 +84,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         followers.forEach(body)
     }
 
-    inner class ConfigScope(private val timeoutMs: Int) {
+    inner class ConfigScope {
         val ctreController get() = ctreMotorController
 
         val ctreFollowers get() = followers
@@ -119,9 +119,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             // apply to following
             allTalons { controller ->
                 if (controller is CTRETalonSRX) {
-                    controller.configContinuousCurrentLimit(continuousLimit, timeoutMs)
-                    controller.configPeakCurrentLimit(peakLimit, timeoutMs)
-                    controller.configPeakCurrentDuration(peakDuration, timeoutMs)
+                    controller.configContinuousCurrentLimit(continuousLimit)
+                    controller.configPeakCurrentLimit(peakLimit)
+                    controller.configPeakCurrentDuration(peakDuration)
                     controller.enableCurrentLimit(true)
                 }
             }
@@ -129,39 +129,39 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {
-                ctreMotorController.config_kP(slot, p, timeoutMs)
+                ctreMotorController.config_kP(slot, p)
             }
 
             fun i(i: Double) {
-                ctreMotorController.config_kI(slot, i, timeoutMs)
+                ctreMotorController.config_kI(slot, i)
             }
 
             fun d(d: Double) {
-                ctreMotorController.config_kD(slot, d, timeoutMs)
+                ctreMotorController.config_kD(slot, d)
             }
 
             fun f(f: Double) {
-                ctreMotorController.config_kF(slot, f, timeoutMs)
+                ctreMotorController.config_kF(slot, f)
             }
 
             fun iZone(iZone: Int) {
-                ctreMotorController.config_IntegralZone(slot, iZone, timeoutMs)
+                ctreMotorController.config_IntegralZone(slot, iZone)
             }
 
             fun allowableError(allowableError: Int) {
-                ctreMotorController.configAllowableClosedloopError(slot, allowableError, timeoutMs)
+                ctreMotorController.configAllowableClosedloopError(slot, allowableError)
             }
 
             fun maxIntegralAccumulator(maxIntegralAccumulator: Double) {
-                ctreMotorController.configMaxIntegralAccumulator(slot, maxIntegralAccumulator, timeoutMs)
+                ctreMotorController.configMaxIntegralAccumulator(slot, maxIntegralAccumulator)
             }
 
             fun closedLoopPeakOutput(closedLoopPeakOutput: Double) {
-                ctreMotorController.configClosedLoopPeakOutput(slot, closedLoopPeakOutput, timeoutMs)
+                ctreMotorController.configClosedLoopPeakOutput(slot, closedLoopPeakOutput)
             }
 
             fun closedLoopPeriod(closedLoopPeriod: Int) {
-                ctreMotorController.configClosedLoopPeriod(slot, closedLoopPeriod, timeoutMs)
+                ctreMotorController.configClosedLoopPeriod(slot, closedLoopPeriod)
             }
         }
     }
