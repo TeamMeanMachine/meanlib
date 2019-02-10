@@ -63,7 +63,7 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
         talon.neutralOutput()
     }
 
-    inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
+    inline fun config(timeoutMs: Int = 20, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
     }
 
