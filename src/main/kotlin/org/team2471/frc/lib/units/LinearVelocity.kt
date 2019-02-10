@@ -2,9 +2,6 @@
 
 package org.team2471.frc.lib.units
 
-import org.team2471.frc.lib.Unproven
-
-@Unproven
 inline class LinearVelocity(val lengthPerSecond: Length) {
     operator fun plus(other: LinearVelocity) = LinearVelocity(lengthPerSecond + other.lengthPerSecond)
 
@@ -24,17 +21,12 @@ inline class LinearVelocity(val lengthPerSecond: Length) {
 }
 
 // constructors
-@Unproven
 inline val Length.perSecond get() = LinearVelocity(this)
-@Unproven
 inline val Length.perDs get() = LinearVelocity(this * 10.0)
 
-@Unproven
 inline operator fun Length.div(time: Time) = LinearVelocity(this / time.asSeconds)
 
 // destructors
-@Unproven
 inline val LinearVelocity.lengthPerDs get() = lengthPerSecond / 10.0
 
-@Unproven
 inline operator fun LinearVelocity.times(time: Time) = lengthPerSecond / time.asSeconds
