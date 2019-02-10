@@ -1,42 +1,50 @@
 package org.team2471.frc.lib.motion.following
 
+import kotlinx.coroutines.withTimeout
+import org.team2471.frc.lib.coroutines.delay
+import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import kotlin.math.absoluteValue
 
 interface SwerveDrive {
+    val parameters: SwerveParameters
     val heading: Angle
     val headingRate: AngularVelocity
-    val frontLeftAngle: Angle
-    val frontRightAngle: Angle
-    val backRightAngle: Angle
-    val backLeftAngle: Angle
-    val parameters: SwerveParameters
+
+    val frontLeftModule: Module
+    val frontRightModule: Module
+    val backLeftModule: Module
+    val backRightModule: Module
 
     fun startFollowing() = Unit
 
     fun stopFollowing() = Unit
 
-    fun stop()
+    interface Module {
+        val angle: Angle
 
-    fun driveClosedLoop(
-        frontLeftDistance: Length, frontRightDistance: Length,
-        backRightDistance: Length, backLeftDistance: Length,
-        frontLeftAngle: Angle, frontRightAngle: Angle,
-        backRightAngle: Angle, backLeftAngle: Angle
-    )
+        fun drive(angle: Angle, power: Double)
 
-    fun driveOpenLoop(
-        frontLeftPower: Double, frontRightPower: Double,
-        backLeftPower: Double, backRightPower: Double,
-        frontLeftAngle: Angle, frontRightAngle: Angle,
-        backLeftAngle: Angle, backRightAngle: Angle
-    )
+        fun driveWithDistance(angle: Angle, distance: Length)
+
+        fun stop()
+    }
+}
+
+fun SwerveDrive.stop() {
+    frontLeftModule.stop()
+    frontRightModule.stop()
+    backLeftModule.stop()
+    backRightModule.stop()
 }
 
 fun SwerveDrive.drive(translation: Vector2, turn: Double) {
-    var heading = heading + (headingRate * parameters.gyroRateCorrection).changePerSecond
-    heading = Math.IEEEremainder(heading.asRadians, 2 * Math.PI).radians
+    if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
+        return stop()
+    }
+    val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
 
     translation.let { (x, y) ->
         translation.x = -y * heading.sin() + x * heading.cos()
@@ -69,15 +77,33 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double) {
         }
     }
 
-    val angles = arrayOf(frontLeftAngle, frontRightAngle, backLeftAngle, backRightAngle)
+    val angles = arrayOf(frontLeftModule.angle, frontRightModule.angle, backLeftModule.angle, backRightModule.angle)
 
     for (i in 0..3) {
-        val angleError = Math.IEEEremainder((angles[i] - turns[i]).asRadians, 2 * Math.PI).radians
+        val angleError = (turns[i] - angles[i]).wrap()
         if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
-            turns[i] -= Math.copySign(Math.PI, angleError.asRadians).radians
+            turns[i] -= Math.PI.radians
             speeds[i] = -speeds[i]
         }
     }
 
-    driveOpenLoop(speeds[0], speeds[1], speeds[2], speeds[3], turns[0], turns[1], turns[2], turns[3])
+    frontLeftModule.drive(turns[0], speeds[0])
+    frontRightModule.drive(turns[1], speeds[1])
+    backLeftModule.drive(turns[2], speeds[2])
+    backRightModule.drive(turns[3], speeds[3])
+}
+
+suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
+    try {
+        periodic(watchOverrun = false) {
+            drive(angle, 0.0)
+
+            val error = (angle - this@steerToAngle.angle).wrap()
+
+            if (error.asRadians.absoluteValue < tolerance.asRadians) stop()
+        }
+        delay(0.2)
+    } finally {
+        stop()
+    }
 }
