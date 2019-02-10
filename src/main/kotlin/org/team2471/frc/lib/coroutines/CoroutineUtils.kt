@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.*
+import org.team2471.frc.lib.units.Time
+import org.team2471.frc.lib.util.measureTimeFPGA
 import kotlin.coroutines.resume
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
@@ -29,32 +31,47 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
  */
 suspend inline fun periodic(
     period: Double = 0.02,
-    watchOverrun: Boolean = true,
+    watchOverrun: Boolean = false,
     crossinline body: PeriodicScope.() -> Unit
 ) {
     val scope = PeriodicScope(period)
+
     val watchdog = if (watchOverrun) {
-        Watchdog(period + 0.01) { DriverStation.reportWarning("Periodic loop overrun", true) }
+        Watchdog(period) { DriverStation.reportWarning("Periodic loop overrun", true) }
     } else {
         null
     }
 
-    lateinit var notifier: Notifier
-
-    try {
-        suspendCancellableCoroutine<Unit> {
-            notifier = Notifier {
-                body(scope)
-                watchdog?.reset()
-                if (scope.isDone) it.resume(Unit)
-            }
-
-            notifier.startPeriodic(period)
+    while (true) {
+        watchdog?.reset()
+        val dt = measureTimeFPGA {
+            body(scope)
         }
-    } finally {
-        notifier.close()
-        watchdog?.close()
+        if (scope.isDone) break
+        val remainder = period - dt
+        if (remainder <= 0.0) {
+            yield()
+        } else {
+            delay(remainder)
+        }
     }
+//    var cont: CancellableContinuation<Unit>? = null
+//    var notifier: Notifier? = null
+//    try {
+//        suspendCancellableCoroutine<Unit> { c ->
+//            cont = c
+//            notifier = Notifier {
+//                body(scope)
+//                watchdog?.reset()
+//                if (scope.isDone && c.isActive) c.resume(Unit)
+//            }.apply { startPeriodic(period) }
+//        }
+//    } catch (e: Throwable) {
+//        cont?.cancel(e)
+//    } finally {
+//        notifier?.close()
+//        watchdog?.close()
+//    }
 }
 
 /**
@@ -85,6 +102,8 @@ suspend inline fun CoroutineScope.parallel(vararg blocks: suspend () -> Unit) {
  * @see kotlinx.coroutines.delay
  */
 suspend inline fun delay(time: Double) = delay((time * 1000).toLong())
+
+suspend inline fun delay(time: Time) = delay(time.asSeconds)
 
 /**
  * Suspends the coroutine forever.

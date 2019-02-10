@@ -20,8 +20,12 @@ inline class Angle(val asRadians: Double) {
     override fun toString() = "$asRadians radians"
 
     fun sin() = Angle.sin(this)
+
     fun cos() = Angle.cos(this)
+
     fun tan() = Angle.tan(this)
+
+    fun wrap() = Angle(Math.IEEEremainder(asRadians, 2 * Math.PI))
 
     companion object {
         @JvmStatic
