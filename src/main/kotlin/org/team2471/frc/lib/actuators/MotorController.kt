@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.DemandType
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
+import edu.wpi.first.wpilibj.DriverStation
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController as CTREMotorController
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
@@ -24,6 +25,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     private var feedbackCoefficient = 1.0
 
+    private var rawOffset = 0
+
     private val followers = followerIds.map { id ->
         val follower = CTREMotorController(id)
         follower.follow(ctreMotorController)
@@ -43,23 +46,30 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         get() = ctreMotorController.motorOutputPercent
 
     var position: Double
-        get() = ctreMotorController.getSelectedSensorPosition(0) * feedbackCoefficient
+        get() = (ctreMotorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient
         set(value) {
             ctreMotorController.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
         }
+
+    val rawPosition: Int
+        get() = ctreMotorController.getSelectedSensorPosition(0)
 
     val closedLoopError: Double
         get() = ctreMotorController.closedLoopError * feedbackCoefficient
 
     init {
-        allTalons { it.configFactoryDefault(20) }
+        allTalons {
+            it.configFactoryDefault(20)
+            it.setNeutralMode(NeutralMode.Coast)
+        }
         ctreMotorController.selectedSensorPosition = 0
+
     }
 
     fun setPercentOutput(percent: Double) = ctreMotorController.set(ControlMode.PercentOutput, percent)
 
     fun setPositionSetpoint(position: Double) =
-        ctreMotorController.set(ControlMode.Position, position / feedbackCoefficient)
+        ctreMotorController.set(ControlMode.Position, (position / feedbackCoefficient) - rawOffset)
 
     fun setPositionSetpoint(position: Double, feedForward: Double) =
         ctreMotorController.set(
@@ -86,7 +96,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
         ctreMotorController.set(
-            ControlMode.MotionMagic, position / feedbackCoefficient,
+            ControlMode.MotionMagic, (position / feedbackCoefficient) - rawOffset,
             DemandType.ArbitraryFeedForward, feedForward
         )
 
@@ -137,6 +147,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             ctreMotorController.configMotionCruiseVelocity(srxCruisingVelocity)
         }
 
+        fun rawOffset(ticks: Int) {
+            rawOffset = ticks
+        }
+
         inline fun pid(slot: Int = 0, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
 
         fun pidSlot(slot: Int) = ctreMotorController.selectProfileSlot(slot, 0)
@@ -163,6 +177,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {
+                DriverStation.reportWarning("Before: $p, after: ${p / feedbackCoefficient}", true)
                 ctreMotorController.config_kP(slot, p / feedbackCoefficient, timeoutMs)
             }
 
