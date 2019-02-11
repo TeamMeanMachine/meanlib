@@ -17,7 +17,7 @@ inline class Angle(val asRadians: Double) {
 
     operator fun compareTo(other: Angle) = asRadians.compareTo(other.asRadians)
 
-    override fun toString() = "$asRadians radians"
+    override fun toString() = "$asDegrees degrees"
 
     fun sin() = Angle.sin(this)
 
