@@ -16,7 +16,6 @@ class PDController(var p: Double, var d: Double) {
         }
 
         val dt = time - lastTime
-        println(dt)
         val deltaError = (error - lastError) / dt
         lastError = error
         lastTime = time
