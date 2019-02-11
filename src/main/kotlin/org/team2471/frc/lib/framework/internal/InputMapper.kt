@@ -10,18 +10,22 @@ import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 internal object InputMapper {
     private val bindings = hashMapOf<Mapping, Binding>()
 
+    @Synchronized
     fun setPressBinding(controller: GenericHID, button: Int, body: suspend CoroutineScope.() -> Unit) {
         bindings[Mapping(controller, button)] = Binding.Press(body)
     }
 
+    @Synchronized
     fun setToggleBinding(controller: GenericHID, button: Int, body: suspend CoroutineScope.() -> Unit) {
         bindings[Mapping(controller, button)] = Binding.Toggle(body)
     }
 
+    @Synchronized
     fun setHoldBinding(controller: GenericHID, button: Int, body: suspend CoroutineScope.() -> Unit) {
         bindings[Mapping(controller, button)] = Binding.Hold(body)
     }
 
+    @Synchronized
     fun process() = bindings.forEach { mapping, binding -> binding.process(mapping) }
 
     private data class Mapping(val controller: GenericHID, val button: Int)
