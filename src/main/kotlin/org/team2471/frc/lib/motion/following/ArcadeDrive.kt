@@ -81,8 +81,8 @@ suspend fun <T> T.driveAlongPath(
                     (parameters.leftFeedForwardOffset * Math.signum(leftVelocity)) +
                     velocityDeltaTimesCoefficient
 
-            val rightFeedForward = rightVelocity * parameters.leftFeedForwardCoefficient +
-                    (parameters.leftFeedForwardOffset * Math.signum(rightVelocity)) -
+            val rightFeedForward = rightVelocity * parameters.rightFeedForwardCoefficient +
+                    (parameters.rightFeedForwardOffset * Math.signum(rightVelocity)) -
                     velocityDeltaTimesCoefficient
 
             driveClosedLoop(leftDistance, leftFeedForward, rightDistance, rightFeedForward)
