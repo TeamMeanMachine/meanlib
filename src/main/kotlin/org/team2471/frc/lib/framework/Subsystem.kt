@@ -64,7 +64,15 @@ open class Subsystem(
      * An optional function that is run whenever the subsystem is enabled and unused.
      */
     @Suppress("DEPRECATION")
-    open suspend fun default() = defaultFunction?.invoke() ?: run { hasDefault = false }
+    open suspend fun default() {
+        val defaultFunction = defaultFunction
+
+        if (defaultFunction != null) {
+            defaultFunction()
+        } else {
+            hasDefault = false
+        }
+    }
 
 
     /**

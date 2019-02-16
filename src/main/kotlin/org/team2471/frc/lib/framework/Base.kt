@@ -89,11 +89,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.autonomous() })
-                    } else {
-                        robotProgram.autonomous()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.autonomous()
                 }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
@@ -102,11 +99,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.teleop() })
-                    } else {
-                        robotProgram.teleop()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.teleop()
                 }
             }
         } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
@@ -115,11 +109,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.test() })
-                    } else {
-                        robotProgram.autonomous()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.test()
                 }
             }
         }
