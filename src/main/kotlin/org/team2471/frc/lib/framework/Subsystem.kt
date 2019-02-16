@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.framework
 
 import edu.wpi.first.networktables.NetworkTableInstance
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import org.team2471.frc.lib.framework.internal.EventHandler
@@ -112,5 +113,5 @@ open class Subsystem(
  * cancelling itself.
  */
 @UseExperimental(ExperimentalCoroutinesApi::class)
-suspend fun <R> use(vararg subsystems: Subsystem, cancelConflicts: Boolean = true, body: suspend () -> R) =
+suspend fun <R> use(vararg subsystems: Subsystem, cancelConflicts: Boolean = true, body: suspend CoroutineScope.()  -> R) =
     EventHandler.useSubsystems(setOf(*subsystems), cancelConflicts, body)
