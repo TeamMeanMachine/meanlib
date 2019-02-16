@@ -177,7 +177,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {
-                DriverStation.reportWarning("Before: $p, after: ${p / feedbackCoefficient}", true)
                 ctreMotorController.config_kP(slot, p / feedbackCoefficient, timeoutMs)
             }
 
