@@ -40,7 +40,8 @@ fun SwerveDrive.stop() {
     backRightModule.stop()
 }
 
-fun SwerveDrive.drive(translation: Vector2, turn: Double) {
+fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
+    //TODO: Field Centric boolean... IDK what part makes it field centric
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }

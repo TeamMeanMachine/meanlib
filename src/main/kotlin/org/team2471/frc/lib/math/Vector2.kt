@@ -34,6 +34,8 @@ data class Vector2(var x: Double, var y: Double) {
 
     fun mirrorYAxis() = Vector2(x, -y)
 
+    fun distance(other: Vector2) = Math.hypot(x - other.x, y - other.y)
+
     fun set(other: Vector2) {
         x = other.x
         y = other.y

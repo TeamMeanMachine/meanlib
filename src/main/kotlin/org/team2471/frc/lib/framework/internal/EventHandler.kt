@@ -117,7 +117,7 @@ internal object EventHandler {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
                     } finally {
-                        allSubsystems.forEach { it.reset() }
+                        newSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
                         messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
                     }
