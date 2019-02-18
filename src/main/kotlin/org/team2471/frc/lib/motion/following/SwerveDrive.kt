@@ -7,11 +7,14 @@ import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
 import kotlin.math.absoluteValue
+import kotlin.math.cos
+import kotlin.math.sin
 
 interface SwerveDrive {
     val parameters: SwerveParameters
     val heading: Angle
     val headingRate: AngularVelocity
+    var position: Vector2
 
     val frontLeftModule: Module
     val frontRightModule: Module
@@ -24,6 +27,7 @@ interface SwerveDrive {
 
     interface Module {
         val angle: Angle
+        val speed: Double
 
         fun drive(angle: Angle, power: Double)
 
@@ -107,3 +111,20 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
         stop()
     }
 }
+
+fun SwerveDrive.recordOdometry(deltaTime: Double) {
+    var translation = Vector2(0.0, 0.0)
+    translation += frontLeftModule.recordOdometry(heading, deltaTime)
+    translation += frontRightModule.recordOdometry(heading, deltaTime)
+    translation += backLeftModule.recordOdometry(heading, deltaTime)
+    translation += backRightModule.recordOdometry(heading, deltaTime)
+    translation /= 4.0
+    position += translation
+}
+
+fun SwerveDrive.Module.recordOdometry(heading: Angle, deltaTime: Double) : Vector2 {
+    val angleInFieldSpace = heading + angle
+    return Vector2(speed * deltaTime * sin(angleInFieldSpace.asRadians),
+        speed * deltaTime * cos(angleInFieldSpace.asRadians))
+}
+
