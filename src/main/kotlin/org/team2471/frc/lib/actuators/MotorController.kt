@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.DemandType
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import edu.wpi.first.wpilibj.DriverStation
+import org.team2471.frc.lib.math.DoubleRange
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController as CTREMotorController
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
@@ -138,6 +139,16 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         fun openLoopRamp(secondsToFull: Double) {
             ctreMotorController.configOpenloopRamp(secondsToFull)
+        }
+
+        fun nominalOutputRange(range: DoubleRange) {
+            ctreMotorController.configNominalOutputReverse(range.start, timeoutMs)
+            ctreMotorController.configNominalOutputForward(range.endInclusive, timeoutMs)
+        }
+
+        fun peakOutputRange(range: DoubleRange) {
+            ctreMotorController.configPeakOutputReverse(range.start, timeoutMs)
+            ctreMotorController.configPeakOutputForward(range.endInclusive, timeoutMs)
         }
 
         fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
