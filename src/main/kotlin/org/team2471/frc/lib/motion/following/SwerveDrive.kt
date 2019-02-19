@@ -56,13 +56,15 @@ fun SwerveDrive.zeroEncoders() {
     frontRightModule.zeroEncoder()
     backLeftModule.zeroEncoder()
     backRightModule.zeroEncoder()
+    position = Vector2(0.0, 0.0)
 }
 
-fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean) {
+fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean=false) {
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }
     val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+    recordOdometry()
 
     translation.let { (x, y) ->
         translation.x = -y * heading.sin() + x * heading.cos()
@@ -126,17 +128,6 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
-    val angleInFieldSpace = heading + angle
-    val deltaDistance = currentDistance - previousDistance
-    previousDistance = currentDistance
-    return Vector2(
-        deltaDistance * sin(angleInFieldSpace.asRadians),
-        deltaDistance * cos(angleInFieldSpace.asRadians)
-    )
-
-}
-
 fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
     translation += frontLeftModule.recordOdometry(heading)
@@ -147,42 +138,56 @@ fun SwerveDrive.recordOdometry() {
     position += translation
 }
 
+fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
+    val angleInFieldSpace = heading + angle
+    val deltaDistance = currentDistance - previousDistance
+    previousDistance = currentDistance
+    return Vector2(
+        deltaDistance * sin(angleInFieldSpace.asRadians),
+        deltaDistance * cos(angleInFieldSpace.asRadians)
+    )
+}
 
 suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
-    val kFeedForward = 0.01
-    val kPosition = .001
-    val kTurn = .01
+    val kFeedForward = 0.0 // 0.1
+    val kPosition = 0.2
+    val kTurn = 0.0 // 0.01
 
     zeroEncoders()
     var prevTime = 0.0
 
-    val timer = Timer().apply { start() }
+    val timer = Timer()
+    timer.start()
     var finished = false
-    try {
-        periodic() {
-            val t = timer.get()
-            val dt = t - prevTime
+    periodic() {
+        val t = timer.get()
+        val dt = t - prevTime
 
-            // velocity feed forward
-            val pathVelocity = path.getVelocityAtTime(t)
+        // velocity feed forward
+        val pathVelocity = path.getVelocityAtTime(t)
 
-            // position error
-            val pathPosition = path.getPosition(t)
-            val positionError = position - pathPosition
+        // position error
+        val pathPosition = path.getPosition(t)
+        val positionError = pathPosition - position
 
-            val positionControlField = pathVelocity * kFeedForward + positionError * kPosition
-            val positionControl = positionControlField.rotateDegrees(heading.asDegrees)
+        println("pathPosition=$pathPosition position=$position positionError=$positionError")
 
-            // apply gyro corrections to the distances
-            val gyroAngle = heading
-            val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
-            val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
+        val translationControlField = pathVelocity * kFeedForward + positionError * kPosition
+        //val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
-            drive(positionControl, angleError * kTurn, true)
-        }
-    } finally {
+        // apply gyro corrections to the distances
+        val gyroAngle = heading
+        val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
+        val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
 
+        val turnControl = angleError * kTurn
+
+        drive(translationControlField, turnControl, true)
+
+        if (t >= path.durationWithSpeed + extraTime)
+            stop()
     }
+    drive(Vector2(0.0,0.0), 0.0, true)
 }
