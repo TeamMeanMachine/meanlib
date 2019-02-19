@@ -58,7 +58,7 @@ fun SwerveDrive.zeroEncoders() {
     backRightModule.zeroEncoder()
 }
 
-fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean) {
+fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }
@@ -180,7 +180,7 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
             val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
             val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
 
-            drive(positionControl, angleError * kTurn, true)
+            drive(positionControl, angleError * kTurn)
         }
     } finally {
 
