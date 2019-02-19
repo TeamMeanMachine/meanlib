@@ -62,11 +62,13 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }
-    val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
 
-    translation.let { (x, y) ->
-        translation.x = -y * heading.sin() + x * heading.cos()
-        translation.y = y * heading.cos() + x * heading.sin()
+    if (fieldCentric) {
+        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+        translation.let { (x, y) ->
+            translation.x = -y * heading.sin() + x * heading.cos()
+            translation.y = y * heading.cos() + x * heading.sin()
+        }
     }
 
     val a = translation.x - turn * parameters.lengthComponent
