@@ -4,14 +4,20 @@ import kotlinx.coroutines.withTimeout
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.math.windRelativeAngles
+import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
+import kotlin.math.cos
+import kotlin.math.sin
 
 interface SwerveDrive {
     val parameters: SwerveParameters
     val heading: Angle
     val headingRate: AngularVelocity
+    var position: Vector2
 
     val frontLeftModule: Module
     val frontRightModule: Module
@@ -24,12 +30,17 @@ interface SwerveDrive {
 
     interface Module {
         val angle: Angle
+        val speed: Double
+        val currentDistance: Double
+        var previousDistance: Double
 
         fun drive(angle: Angle, power: Double)
 
         fun driveWithDistance(angle: Angle, distance: Length)
 
         fun stop()
+
+        fun zeroEncoder()
     }
 }
 
@@ -40,8 +51,14 @@ fun SwerveDrive.stop() {
     backRightModule.stop()
 }
 
-fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
-    //TODO: Field Centric boolean... IDK what part makes it field centric
+fun SwerveDrive.zeroEncoders() {
+    frontLeftModule.zeroEncoder()
+    frontRightModule.zeroEncoder()
+    backLeftModule.zeroEncoder()
+    backRightModule.zeroEncoder()
+}
+
+fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean) {
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }
@@ -106,5 +123,66 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
         delay(0.2)
     } finally {
         stop()
+    }
+}
+
+fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
+    val angleInFieldSpace = heading + angle
+    val deltaDistance = currentDistance - previousDistance
+    previousDistance = currentDistance
+    return Vector2(
+        deltaDistance * sin(angleInFieldSpace.asRadians),
+        deltaDistance * cos(angleInFieldSpace.asRadians)
+    )
+
+}
+
+fun SwerveDrive.recordOdometry() {
+    var translation = Vector2(0.0, 0.0)
+    translation += frontLeftModule.recordOdometry(heading)
+    translation += frontRightModule.recordOdometry(heading)
+    translation += backLeftModule.recordOdometry(heading)
+    translation += backRightModule.recordOdometry(heading)
+    translation /= 4.0
+    position += translation
+}
+
+
+suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
+
+    val kFeedForward = 0.01
+    val kPosition = .001
+    val kTurn = .01
+
+    zeroEncoders()
+    var prevTime = 0.0
+
+    val timer = Timer().apply { start() }
+    var finished = false
+    try {
+        periodic() {
+            val t = timer.get()
+            val dt = t - prevTime
+
+            // velocity feed forward
+            val pathVelocity = path.getVelocityAtTime(t)
+
+            // position error
+            val pathPosition = path.getPosition(t)
+            val positionError = position - pathPosition
+
+            val positionControlField = pathVelocity * kFeedForward + positionError * kPosition
+            val positionControl = positionControlField.rotateDegrees(heading.asDegrees)
+
+            // apply gyro corrections to the distances
+            val gyroAngle = heading
+            val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
+            val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
+
+            drive(positionControl, angleError * kTurn, true)
+        }
+    } finally {
+
     }
 }
