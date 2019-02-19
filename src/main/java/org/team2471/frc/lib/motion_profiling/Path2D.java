@@ -270,6 +270,12 @@ public class Path2D {
         return velocity;
     }
 
+    public Vector2 getVelocityAtTime(double time) {
+        Vector2 velocity = getTangent(time);
+        velocity = velocity.times(Path2DPoint.STEPS);
+        return velocity;
+    }
+
     public double getCurvatureAtEase(double ease) {
         double radius = 0.0;
         Vector2 velocity = getVelocityAtEase(ease);
