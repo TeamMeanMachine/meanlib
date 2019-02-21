@@ -81,7 +81,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
         // process joystick inputs
         InputMapper.process()
 
-        val wasDisabled = previousRobotMode == RobotMode.DISABLED
+        val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
         if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
             HAL.observeUserProgramAutonomous()
