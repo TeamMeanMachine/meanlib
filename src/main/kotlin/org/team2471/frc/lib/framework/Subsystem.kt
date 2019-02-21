@@ -95,6 +95,8 @@ open class Subsystem(
      */
     fun disable() = EventHandler.disableSubsystem(this)
 
+    fun cancelActive() = EventHandler.cancelSubsystem(this)
+
     init {
         enabledEntry.setBoolean(false)
     }

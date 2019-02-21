@@ -46,6 +46,10 @@ internal object EventHandler {
         messageChannel.offer(Message.Disable(subsystem))
     }
 
+    fun cancelSubsystem(subsystem: Subsystem) {
+        messageChannel.offer(Message.CancelActiveAction(subsystem))
+    }
+
     private fun resetSubsystem(subsystem: Subsystem) {
         if (subsystem.hasDefault) {
             GlobalScope.launch(MeanlibDispatcher) {
@@ -144,6 +148,8 @@ internal object EventHandler {
                 }
             }
 
+            is Message.CancelActiveAction -> message.subsystem.activeJob?.cancel()
+
             is Message.Clean -> {
                 message.subsystems
                     .filter { it.activeJob === message.job }
@@ -177,6 +183,8 @@ internal object EventHandler {
             val cancelConflicts: Boolean,
             val continuation: CancellableContinuation<Any?>
         ) : Message()
+
+        class CancelActiveAction(val subsystem: Subsystem) : Message()
 
         class Clean(val subsystems: Set<Subsystem>, val job: Job) : Message()
 
