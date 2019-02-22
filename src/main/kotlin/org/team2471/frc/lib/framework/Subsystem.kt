@@ -58,8 +58,7 @@ open class Subsystem(
      * An optionally overloadable method. This method is automatically run whenever any [use] call completes,
      * regardless of if it completed or canceled.
      */
-    open fun reset() { /* NOOP */
-    }
+    open fun reset() { /* NOOP */ }
 
     /**
      * An optional function that is run whenever the subsystem is enabled and unused.
@@ -74,7 +73,6 @@ open class Subsystem(
             hasDefault = false
         }
     }
-
 
     /**
      * Enables the [Subsystem].
@@ -94,6 +92,14 @@ open class Subsystem(
      * Note that disables are asynchronous, so it may take some time for the [Subsystem] to be disabled.
      */
     fun disable() = EventHandler.disableSubsystem(this)
+
+    /**
+     * Cancels any active coroutine that is currently using the [Subsystem].
+     *
+     * If a [use] call requires more than one [Subsystem], calling [cancelActive] on any of them will have the
+     * same effect.
+     */
+    fun cancelActive() = EventHandler.cancelSubsystem(this)
 
     init {
         enabledEntry.setBoolean(false)
