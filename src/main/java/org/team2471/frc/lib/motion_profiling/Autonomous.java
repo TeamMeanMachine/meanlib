@@ -2,6 +2,7 @@ package org.team2471.frc.lib.motion_profiling;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Autonomous {
 
@@ -28,6 +29,10 @@ public class Autonomous {
             entry.getValue().fixUpTailAndPrevPointers();
             entry.getValue().setAutonomous(this);
         }
+    }
+
+    public Set<String> getPathNames() {
+        return  paths.keySet();
     }
 
     public boolean isMirrored() {

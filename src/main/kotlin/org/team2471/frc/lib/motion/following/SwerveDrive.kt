@@ -18,6 +18,10 @@ interface SwerveDrive {
     val heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
+    var prevPosition: Vector2
+    var prevTime: Double
+    var velocity: Vector2
+    var prevPathPosition: Vector2
 
     val frontLeftModule: Module
     val frontRightModule: Module
@@ -134,13 +138,18 @@ fun SwerveDrive.recordOdometry() {
     val v1 = frontRightModule.recordOdometry(heading)
     val v2 = backLeftModule.recordOdometry(heading)
     val v3 = backRightModule.recordOdometry(heading)
-    println("fl=$v0 fr=$v1 bl=$v2 br=$v3")
+//    println("fl=$v0 fr=$v1 bl=$v2 br=$v3")
     translation += v0
     translation += v1
     translation += v2
     translation += v3
     translation /= 4.0
     position += translation
+    val time = System.currentTimeMillis().toDouble()/1000.0
+    val deltaTime = time - prevTime
+    velocity = (position - prevPosition)/deltaTime
+    prevTime = time
+    prevPosition = position
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
@@ -156,10 +165,6 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
 suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
-    // move these to swerve parameters
-    val kFeedForward = 0.0 // 0.1
-    val kPosition = 0.2
-    val kTurn = 0.0 // 0.01
 
     zeroEncoders()
     var prevTime = 0.0
@@ -167,20 +172,22 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
     val timer = Timer()
     timer.start()
     var finished = false
+    prevPathPosition = path.getPosition(0.0)
     periodic() {
         val t = timer.get()
         val dt = t - prevTime
 
-        // velocity feed forward
-        val pathVelocity = path.getVelocityAtTime(t)
 
         // position error
         val pathPosition = path.getPosition(t)
         val positionError = pathPosition - position
 
+        // velocity feed forward
+        val pathVelocity = (pathPosition - prevPathPosition)/dt
         //println("pathPosition=$pathPosition position=$position positionError=$positionError")
+        prevPathPosition = pathPosition
 
-        val translationControlField = pathVelocity * kFeedForward + positionError * kPosition
+        val translationControlField = pathVelocity * parameters.kFeedForward + positionError * parameters.kPosition
         //val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
         // apply gyro corrections
@@ -188,12 +195,16 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
         val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
         val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
 
-        val turnControl = angleError * kTurn
+        val turnControl = angleError * parameters.kTurn
 
         drive(translationControlField, turnControl, true)
 
         if (t >= path.durationWithSpeed + extraTime)
             stop()
+
+//        println("Time=$t Path Position=$pathPosition Position=$position")
+        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
+        prevTime = t
     }
     drive(Vector2(0.0,0.0), 0.0, true)
 }
