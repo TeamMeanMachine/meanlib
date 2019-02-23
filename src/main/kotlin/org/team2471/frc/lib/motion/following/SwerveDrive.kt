@@ -130,10 +130,15 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 
 fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
-    translation += frontLeftModule.recordOdometry(heading)
-    translation += frontRightModule.recordOdometry(heading)
-    translation += backLeftModule.recordOdometry(heading)
-    translation += backRightModule.recordOdometry(heading)
+    val v0 = frontLeftModule.recordOdometry(heading)
+    val v1 = frontRightModule.recordOdometry(heading)
+    val v2 = backLeftModule.recordOdometry(heading)
+    val v3 = backRightModule.recordOdometry(heading)
+//    println("fl=$v0 fr=$v1 bl=$v2 br=$v3")
+    translation += v0
+    translation += v1
+    translation += v2
+    translation += v3
     translation /= 4.0
     position += translation
 }
@@ -151,6 +156,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
 suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
+    // move these to swerve parameters
     val kFeedForward = 0.0 // 0.1
     val kPosition = 0.2
     val kTurn = 0.0 // 0.01
@@ -172,11 +178,15 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
         val pathPosition = path.getPosition(t)
         val positionError = pathPosition - position
 
-        println("pathPosition=$pathPosition position=$position positionError=$positionError")
+        //println("pathPosition=$pathPosition position=$position positionError=$positionError")
 
         val translationControlField = pathVelocity * kFeedForward + positionError * kPosition
         //val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
+        // apply gyro corrections
+        val gyroAngle = heading
+        val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
+        val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
 
         val turnControl = angleError * kTurn
 
