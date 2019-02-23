@@ -134,7 +134,7 @@ fun SwerveDrive.recordOdometry() {
     val v1 = frontRightModule.recordOdometry(heading)
     val v2 = backLeftModule.recordOdometry(heading)
     val v3 = backRightModule.recordOdometry(heading)
-    println("fl=$v0 fr=$v1 bl=$v2 br=$v3")
+//    println("fl=$v0 fr=$v1 bl=$v2 br=$v3")
     translation += v0
     translation += v1
     translation += v2
