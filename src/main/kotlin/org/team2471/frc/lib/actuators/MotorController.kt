@@ -118,7 +118,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Sets the percent output.
      *
      * @param percent the percent output at which to set the [MotorController]
-     *
      * @see CTREMotorController.set
      */
     fun setPercentOutput(percent: Double) = ctreMotorController.set(ControlMode.PercentOutput, percent)
@@ -127,7 +126,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Sets the closed-loop position setpoint.
      *
      * @param position the closed-loop positon setpoint
-     *
      * @see CTREMotorController.set
      */
     fun setPositionSetpoint(position: Double) =
@@ -138,7 +136,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @param position the closed-loop positon setpoint
      * @param feedForward the closed-loop feed forward
-     *
      * @see CTREMotorController.set
      */
     fun setPositionSetpoint(position: Double, feedForward: Double) =
@@ -151,7 +148,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Sets the closed-loop velocity setpoint.
      *
      * @param velocity the closed-loop velocity setpoint
-     *
      * @see CTREMotorController.set
      */
     fun setVelocitySetpoint(velocity: Double) =
@@ -162,7 +158,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @param velocity the closed-loop velocity setpoint
      * @param feedForward the closed-loop feed forward
-     *
      * @see CTREMotorController.set
      */
     fun setVelocitySetpoint(velocity: Double, feedForward: Double) =
@@ -175,7 +170,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Sets the closed-loop current setpoint.
      *
      * @param current the closed-loop current setpoint
-     *
      * @see CTREMotorController.set
      */
     fun setCurrentSetpoint(current: Double) = ctreMotorController.set(ControlMode.Current, current)
@@ -185,7 +179,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @param current the closed-loop current setpoint
      * @param feedForward the closed-loop feed forward
-     *
      * @see CTREMotorController.set
      */
     fun setCurrentSetpoint(current: Double, feedForward: Double) =
@@ -195,7 +188,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Sets the closed-loop Motion Magic position setpoint.
      *
      * @param position the closed-loop Motion Magic position setpoint
-     *
      * @see CTREMotorController.set
      */
     fun setMotionMagicSetpoint(position: Double) =
@@ -206,7 +198,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @param position the closed-loop Motion Magic position setpoint
      * @param feedForward the closed-loop feed forward
-     *
      * @see CTREMotorController.set
      */
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
