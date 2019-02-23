@@ -36,7 +36,10 @@ data class ArcadeParameters(
 data class SwerveParameters(
         val trackWidth: Double,
         val trackLength: Double,
-        val gyroRateCorrection: Double
+        val gyroRateCorrection: Double,
+        val kFeedForward: Double,
+        val kPosition: Double,
+        val kTurn: Double
 
 
 ) : DrivetrainParameters() {

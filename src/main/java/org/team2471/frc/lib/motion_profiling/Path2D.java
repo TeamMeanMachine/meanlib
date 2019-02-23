@@ -271,8 +271,9 @@ public class Path2D {
     }
 
     public Vector2 getVelocityAtTime(double time) {
-        Vector2 velocity = getTangent(time);
-        velocity = velocity.times(Path2DPoint.STEPS);
+        Vector2 tangent = getTangent(time);
+        tangent.normalize();
+        Vector2 velocity = tangent.times( m_easeCurve.getDerivative(time) * m_xyCurve.getLength());
         return velocity;
     }
 
