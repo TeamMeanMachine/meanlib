@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
     }
 }
 
@@ -16,6 +17,7 @@ plugins {
 
 apply {
     plugin("kotlin")
+    plugin("org.jetbrains.dokka")
 }
 
 group = "org.team2471.lib"

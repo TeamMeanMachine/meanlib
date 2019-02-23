@@ -45,7 +45,7 @@ fun main() {
 This program will print "Enabling robot!" followed by "Beginning teleoperated mode!" as soon as it's
 enabled in teleop from the Driver Station.
 
-Being driven by Kotlin coroutines, long-running operations can easily be run in parallel with one
+Being driven by Kotlin coroutines, long-running actions can easily be run in parallel with one
 another.
 
 ```kotlin
@@ -55,16 +55,31 @@ object Robot : RobotProgram {
             parallel({
                 // Wait 5 seconds
                 delay(5.0)
-                println("Hello world!")
+                println("Hello meanlib!")
             }, {
-                for (i in 0..10) {
-                    println("Hello $i!")
+                for (i in 0..6) {
+                    println("Number $i!")
                     delay(1.0)
                 }
             })
+            println("Done.")
         }
     }
 }
 ```
 
-_TODO: More examples coming soon._
+This code will result in the following output:
+
+```
+Number 0!
+Number 1!
+Number 2!
+Number 3!
+Number 4!
+Number 5!
+Hello meablib!
+Number 6!
+Done.
+```
+
+_TODO: More complete examples coming soon._
