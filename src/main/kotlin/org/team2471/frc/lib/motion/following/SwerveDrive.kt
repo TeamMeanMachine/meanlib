@@ -17,15 +17,16 @@ import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 
+private var prevPosition = Vector2(0.0, 0.0)
+private var prevPathPosition = Vector2(0.0, 0.0)
+private var prevTime = 0.0
+
 interface SwerveDrive {
     val parameters: SwerveParameters
     var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
-    var prevPosition: Vector2
-    var prevTime: Double
     var velocity: Vector2
-    var prevPathPosition: Vector2
 
     val frontLeftModule: Module
     val frontRightModule: Module
@@ -39,8 +40,8 @@ interface SwerveDrive {
     interface Module {
         val angle: Angle
         val speed: Double
-        val currentDistance: Double
-        var previousDistance: Double
+        val currDistance: Double
+        var prevDistance: Double
 
         fun drive(angle: Angle, power: Double)
 
@@ -160,8 +161,8 @@ fun SwerveDrive.recordOdometry() {
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     val angleInFieldSpace = heading + angle
-    val deltaDistance = currentDistance - previousDistance
-    previousDistance = currentDistance
+    val deltaDistance = currDistance - prevDistance
+    prevDistance = currDistance
     return Vector2(
         deltaDistance * sin(angleInFieldSpace.asRadians),
         deltaDistance * cos(angleInFieldSpace.asRadians)
@@ -197,7 +198,6 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
         prevPathPosition = pathPosition
 
         val translationControlField = pathVelocity * parameters.kFeedForward + positionError * parameters.kPosition
-        //val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
         // apply gyro corrections
         val gyroAngle = heading
@@ -211,9 +211,10 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
         if (t >= path.durationWithSpeed + extraTime)
             stop()
 
+        prevTime = t
+
 //        println("Time=$t Path Position=$pathPosition Position=$position")
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
-        prevTime = t
     }
     drive(Vector2(0.0,0.0), 0.0, true)
 }
