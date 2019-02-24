@@ -15,7 +15,7 @@ import kotlin.math.sin
 
 interface SwerveDrive {
     val parameters: SwerveParameters
-    val heading: Angle
+    var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
     var prevPosition: Vector2
@@ -162,11 +162,14 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     )
 }
 
-suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
+suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, resetOdometry: Boolean = false) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
-
-    zeroEncoders()
+    if (resetOdometry) {
+        zeroEncoders()
+        position = path.getPosition(0.0)
+        heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+    }
     var prevTime = 0.0
 
     val timer = Timer()
@@ -203,7 +206,7 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
             stop()
 
 //        println("Time=$t Path Position=$pathPosition Position=$position")
-        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
+//        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
         prevTime = t
     }
     drive(Vector2(0.0,0.0), 0.0, true)

@@ -7,11 +7,14 @@ import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 import org.team2471.frc.lib.coroutines.MeanlibScope
 import org.team2471.frc.lib.coroutines.parallel
+import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
+import java.lang.IllegalStateException
 
 const val LANGUAGE_KOTLIN = 6
 
@@ -53,7 +56,7 @@ fun initializeWpilib() {
     println("wpilib initialized successfully.")
 }
 
-fun runRobotProgram(robotProgram: RobotProgram): Nothing {
+fun runRobotProgram(robotProgram: RobotProgram) = runBlocking {
     println("********** Robot program starting! **********")
 
     HAL.observeUserProgramStarting()
