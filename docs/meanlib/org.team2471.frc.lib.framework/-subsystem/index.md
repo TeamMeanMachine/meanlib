@@ -23,18 +23,23 @@ Subsystems are disabled by default, so [enable](enable.md) must be called before
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Subsystem(name: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`, defaultFunction: suspend () -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)` = null)`<br>An individually requirable component of your robot. |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [isEnabled](is-enabled.md) | `var isEnabled: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)<br>Whether or not the [Subsystem](./index.md) is enabled. |
 | [name](name.md) | `val name: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)<br>The name of your Subsystem, required for debugging purposes. |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [cancelActive](cancel-active.md) | `fun cancelActive(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Cancels any active coroutine that is currently using the [Subsystem](./index.md). |
 | [default](default.md) | `open suspend fun default(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>An optional function that is run whenever the subsystem is enabled and unused. |
 | [disable](disable.md) | `fun disable(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Disables the [Subsystem](./index.md). |
 | [enable](enable.md) | `fun enable(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Enables the [Subsystem](./index.md). |
 | [reset](reset.md) | `open fun reset(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>An optionally overloadable method. This method is automatically run whenever any [use](../use.md) call completes, regardless of if it completed or canceled. |
-

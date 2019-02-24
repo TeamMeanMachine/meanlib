@@ -6,7 +6,8 @@
 
 ### Enum Values
 
+| Name | Summary |
+|---|---|
 | [POINT](-p-o-i-n-t.md) |  |
 | [PREV_TANGENT](-p-r-e-v_-t-a-n-g-e-n-t.md) |  |
 | [NEXT_TANGENT](-n-e-x-t_-t-a-n-g-e-n-t.md) |  |
-

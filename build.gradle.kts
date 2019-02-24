@@ -60,7 +60,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<DokkaTask> {
-    outputFormat = "markdown"
+    outputFormat = "gfm"
     outputDirectory = "docs"
 }
 

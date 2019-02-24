@@ -2,6 +2,8 @@
 
 ### All Types
 
+| Name | Summary |
+|---|---|
 | [org.team2471.frc.lib.util.Alliance](../org.team2471.frc.lib.util/-alliance/index.md) |  |
 | [org.team2471.frc.lib.util.AllianceStation](../org.team2471.frc.lib.util/-alliance-station/index.md) |  |
 | [org.team2471.frc.lib.units.Angle](../org.team2471.frc.lib.units/-angle/index.md) |  |
@@ -54,4 +56,3 @@
 | [org.team2471.frc.lib.math.Vector2](../org.team2471.frc.lib.math/-vector2/index.md) |  |
 | [org.team2471.frc.lib.vector.Vector2](../org.team2471.frc.lib.vector/-vector2/index.md) |  |
 | [org.team2471.frc.lib.actuators.VictorID](../org.team2471.frc.lib.actuators/-victor-i-d/index.md) | The ID of a Victor SPX motor controller. |
-

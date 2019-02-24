@@ -4,5 +4,6 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [InterpolatableCircularBuffer](-interpolatable-circular-buffer/index.md) | `class InterpolatableCircularBuffer : CircularBuffer` |
-

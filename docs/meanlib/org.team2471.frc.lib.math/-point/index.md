@@ -6,15 +6,21 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Point(x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [x](x.md) | `val x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [y](y.md) | `val y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [closestPoint](closest-point.md) | `fun closestPoint(firstPoint: `[`Point`](./index.md)`, vararg additionalPoints: `[`Point`](./index.md)`): `[`Point`](./index.md) |
 | [distance](distance.md) | `fun distance(b: `[`Point`](./index.md)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [div](div.md) | `operator fun div(scalar: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Point`](./index.md) |
@@ -27,5 +33,6 @@
 
 ### Companion Object Properties
 
+| Name | Summary |
+|---|---|
 | [ORIGIN](-o-r-i-g-i-n.md) | `val ORIGIN: `[`Point`](./index.md) |
-

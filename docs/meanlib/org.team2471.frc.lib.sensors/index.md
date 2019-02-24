@@ -4,5 +4,6 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [Magnepot](-magnepot/index.md) | `class Magnepot : AnalogInput` |
-

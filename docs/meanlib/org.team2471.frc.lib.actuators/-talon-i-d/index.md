@@ -12,9 +12,12 @@ The ID of a Talon SRX motor controller.
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `TalonID(value: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`)`<br>The ID of a Talon SRX motor controller. |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [value](value.md) | `val value: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)<br>the Talon's CAN ID |
-

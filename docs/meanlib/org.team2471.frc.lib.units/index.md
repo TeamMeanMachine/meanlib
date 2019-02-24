@@ -4,6 +4,8 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [Angle](-angle/index.md) | `class Angle` |
 | [AngularAcceleration](-angular-acceleration/index.md) | `class AngularAcceleration` |
 | [AngularVelocity](-angular-velocity/index.md) | `class AngularVelocity` |
@@ -14,10 +16,14 @@
 
 ### Extensions for External Classes
 
+| Name | Summary |
+|---|---|
 | [kotlin.Number](kotlin.-number/index.md) |  |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [asCm](as-cm.md) | `val `[`Length`](-length/index.md)`.asCm: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [asDegrees](as-degrees.md) | `val `[`Angle`](-angle/index.md)`.asDegrees: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [asFeet](as-feet.md) | `val `[`Length`](-length/index.md)`.asFeet: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -29,6 +35,7 @@
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [div](div.md) | `operator fun `[`AngularVelocity`](-angular-velocity/index.md)`.div(time: `[`Time`](-time/index.md)`): `[`AngularAcceleration`](-angular-acceleration/index.md)<br>`operator fun `[`Angle`](-angle/index.md)`.div(time: `[`Time`](-time/index.md)`): `[`AngularVelocity`](-angular-velocity/index.md)<br>`operator fun `[`LinearVelocity`](-linear-velocity/index.md)`.div(time: `[`Time`](-time/index.md)`): `[`LinearAcceleration`](-linear-acceleration/index.md)<br>`operator fun `[`Length`](-length/index.md)`.div(time: `[`Time`](-time/index.md)`): `[`LinearVelocity`](-linear-velocity/index.md) |
 | [times](times.md) | `operator fun `[`AngularAcceleration`](-angular-acceleration/index.md)`.times(time: `[`Time`](-time/index.md)`): `[`AngularVelocity`](-angular-velocity/index.md)<br>`operator fun `[`AngularVelocity`](-angular-velocity/index.md)`.times(time: `[`Time`](-time/index.md)`): `[`Angle`](-angle/index.md)<br>`operator fun `[`LinearAcceleration`](-linear-acceleration/index.md)`.times(time: `[`Time`](-time/index.md)`): `[`LinearVelocity`](-linear-velocity/index.md)<br>`operator fun `[`LinearVelocity`](-linear-velocity/index.md)`.times(time: `[`Time`](-time/index.md)`): `[`Length`](-length/index.md) |
-

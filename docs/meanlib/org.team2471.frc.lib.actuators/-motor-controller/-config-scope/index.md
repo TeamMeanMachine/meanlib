@@ -6,20 +6,28 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [PIDConfigScope](-p-i-d-config-scope/index.md) | `inner class PIDConfigScope` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `ConfigScope(timeoutMs: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [ctreController](ctre-controller.md) | `val ctreController: BaseMotorController`<br>The primary, "master" [MotorController](../index.md). |
 | [ctreFollowers](ctre-followers.md) | `val ctreFollowers: `[`Array`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html)`<BaseMotorController>`<br>An array of [MotorController](../index.md)s which follow [ctreController](ctre-controller.md). |
 | [feedbackCoefficient](feedback-coefficient.md) | `var feedbackCoefficient: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)<br>A coefficient applied to the attached encoder's raw value in order to convert it into a desired unit of measurement. For example, if 7126 encoder ticks equals 1 foot of drive distance on your drivetrain, [feedbackCoefficient](feedback-coefficient.md) should be set to `1.0/7126.0`. |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [brakeMode](brake-mode.md) | `fun brakeMode(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Enables brake mode. |
 | [closedLoopRamp](closed-loop-ramp.md) | `fun closedLoopRamp(secondsToFull: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Sets the amount of time required for closed loop control of the [MotorController](../index.md) to go from neutral output to full power. |
 | [coastMode](coast-mode.md) | `fun coastMode(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Enables coast mode. |
@@ -35,4 +43,3 @@
 | [pidSlot](pid-slot.md) | `fun pidSlot(slot: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Selects a specific PID slot. |
 | [rawOffset](raw-offset.md) | `fun rawOffset(ticks: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Sets a raw offset, in encoder ticks, to the selected sensor. |
 | [sensorPhase](sensor-phase.md) | `fun sensorPhase(inverted: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Sets the phase of the sensor. |
-

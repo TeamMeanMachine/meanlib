@@ -6,7 +6,8 @@
 
 ### Enum Values
 
+| Name | Summary |
+|---|---|
 | [EASE](-e-a-s-e.md) |  |
 | [HEADING](-h-e-a-d-i-n-g.md) |  |
 | [BOTH](-b-o-t-h.md) |  |
-

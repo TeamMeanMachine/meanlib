@@ -6,16 +6,22 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `MapperScope(controller: `[`C`](index.md#C)`)` |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [buttonHold](button-hold.md) | `fun buttonHold(button: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`, body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Executes [body](button-hold.md#org.team2471.frc.lib.framework.MapperScope$buttonHold(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/body) while [button](button-hold.md#org.team2471.frc.lib.framework.MapperScope$buttonHold(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/button) is pressed. When released, [body](button-hold.md#org.team2471.frc.lib.framework.MapperScope$buttonHold(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/body) is cancelled. |
 | [buttonPress](button-press.md) | `fun buttonPress(button: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`, body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Executes [body](button-press.md#org.team2471.frc.lib.framework.MapperScope$buttonPress(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/body) when [button](button-press.md#org.team2471.frc.lib.framework.MapperScope$buttonPress(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/button) is pressed. |
 | [buttonToggle](button-toggle.md) | `fun buttonToggle(button: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`, body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)<br>Toggles the execution of [body](button-toggle.md#org.team2471.frc.lib.framework.MapperScope$buttonToggle(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/body) for each press of [button](button-toggle.md#org.team2471.frc.lib.framework.MapperScope$buttonToggle(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/button). When toggled off, [body](button-toggle.md#org.team2471.frc.lib.framework.MapperScope$buttonToggle(kotlin.Int, kotlin.SuspendFunction1((kotlinx.coroutines.CoroutineScope, kotlin.Unit)))/body) is cancelled. |
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [aHold](../a-hold.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.aHold(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [aPress](../a-press.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.aPress(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [aToggle](../a-toggle.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.aToggle(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
@@ -46,4 +52,3 @@
 | [yHold](../y-hold.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.yHold(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [yPress](../y-press.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.yPress(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [yToggle](../y-toggle.md) | `fun `[`MapperScope`](./index.md)`<XboxController>.yToggle(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

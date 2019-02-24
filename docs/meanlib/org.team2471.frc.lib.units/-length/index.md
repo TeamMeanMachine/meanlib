@@ -6,14 +6,20 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Length(asInches: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [asInches](as-inches.md) | `val asInches: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [compareTo](compare-to.md) | `operator fun compareTo(other: `[`Length`](./index.md)`): `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 | [div](div.md) | `operator fun div(factor: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Length`](./index.md) |
 | [minus](minus.md) | `operator fun minus(other: `[`Length`](./index.md)`): `[`Length`](./index.md) |
@@ -26,6 +32,8 @@
 
 ### Extension Properties
 
+| Name | Summary |
+|---|---|
 | [asCm](../as-cm.md) | `val `[`Length`](./index.md)`.asCm: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [asFeet](../as-feet.md) | `val `[`Length`](./index.md)`.asFeet: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [asMeters](../as-meters.md) | `val `[`Length`](./index.md)`.asMeters: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -34,5 +42,6 @@
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [div](../div.md) | `operator fun `[`Length`](./index.md)`.div(time: `[`Time`](../-time/index.md)`): `[`LinearVelocity`](../-linear-velocity/index.md) |
-

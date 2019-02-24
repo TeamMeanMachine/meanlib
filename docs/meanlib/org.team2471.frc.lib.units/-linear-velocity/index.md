@@ -6,14 +6,20 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `LinearVelocity(lengthPerSecond: `[`Length`](../-length/index.md)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [lengthPerSecond](length-per-second.md) | `val lengthPerSecond: `[`Length`](../-length/index.md) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [compareTo](compare-to.md) | `operator fun compareTo(other: `[`LinearVelocity`](./index.md)`): `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 | [div](div.md) | `operator fun div(factor: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`LinearVelocity`](./index.md) |
 | [minus](minus.md) | `operator fun minus(other: `[`LinearVelocity`](./index.md)`): `[`LinearVelocity`](./index.md) |
@@ -25,12 +31,15 @@
 
 ### Extension Properties
 
+| Name | Summary |
+|---|---|
 | [lengthPerDs](../length-per-ds.md) | `val `[`LinearVelocity`](./index.md)`.lengthPerDs: `[`Length`](../-length/index.md) |
 | [perDs](../per-ds.md) | `val `[`LinearVelocity`](./index.md)`.perDs: `[`LinearAcceleration`](../-linear-acceleration/index.md) |
 | [perSecond](../per-second.md) | `val `[`LinearVelocity`](./index.md)`.perSecond: `[`LinearAcceleration`](../-linear-acceleration/index.md) |
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [div](../div.md) | `operator fun `[`LinearVelocity`](./index.md)`.div(time: `[`Time`](../-time/index.md)`): `[`LinearAcceleration`](../-linear-acceleration/index.md) |
 | [times](../times.md) | `operator fun `[`LinearVelocity`](./index.md)`.times(time: `[`Time`](../-time/index.md)`): `[`Length`](../-length/index.md) |
-

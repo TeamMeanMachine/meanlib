@@ -6,15 +6,21 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Circle(center: `[`Point`](../-point/index.md)`, radius: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [center](center.md) | `val center: `[`Point`](../-point/index.md) |
 | [radius](radius.md) | `val radius: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [div](div.md) | `operator fun div(scalar: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Circle`](./index.md) |
 | [intersectingPoints](intersecting-points.md) | `fun intersectingPoints(line: `[`Line`](../-line/index.md)`): `[`Array`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html)`<`[`Point`](../-point/index.md)`>` |
 | [minus](minus.md) | `operator fun minus(vec: `[`Vector2`](../-vector2/index.md)`): `[`Circle`](./index.md) |
@@ -23,5 +29,6 @@
 
 ### Companion Object Properties
 
+| Name | Summary |
+|---|---|
 | [UNIT](-u-n-i-t.md) | `val UNIT: `[`Circle`](./index.md) |
-

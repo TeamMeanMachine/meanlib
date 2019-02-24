@@ -6,10 +6,14 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `MotionProfileCurve(pidInterface: PIDInterface)`<br>`MotionProfileCurve(pidInterface: PIDInterface, animation: `[`MotionProfileAnimation`](../-motion-profile-animation/index.md)`)` |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [getOffset](get-offset.md) | `open fun getOffset(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [play](play.md) | `open fun play(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [setOffset](set-offset.md) | `open fun setOffset(offset: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
@@ -17,6 +21,8 @@
 
 ### Inherited Functions
 
+| Name | Summary |
+|---|---|
 | [getDefaultValue](../-motion-curve/get-default-value.md) | `open fun getDefaultValue(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [getDerivative](../-motion-curve/get-derivative.md) | `open fun getDerivative(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [getHeadKey](../-motion-curve/get-head-key.md) | `open fun getHeadKey(): `[`MotionKey`](../-motion-key/index.md) |
@@ -38,4 +44,3 @@
 | [setTailKey](../-motion-curve/set-tail-key.md) | `open fun setTailKey(tailKey: `[`MotionKey`](../-motion-key/index.md)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [storeValue](../-motion-curve/store-value.md) | `open fun storeValue(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`MotionKey`](../-motion-key/index.md) |
 | [storeValueSlopeAndMagnitude](../-motion-curve/store-value-slope-and-magnitude.md) | `open fun storeValueSlopeAndMagnitude(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, slope: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, magnitude: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`MotionKey`](../-motion-key/index.md) |
-

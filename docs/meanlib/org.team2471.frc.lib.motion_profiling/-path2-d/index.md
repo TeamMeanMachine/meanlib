@@ -6,20 +6,28 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [CurveType](-curve-type/index.md) | `class CurveType` |
 | [RobotDirection](-robot-direction/index.md) | `class RobotDirection` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Path2D()`<br>`Path2D(name: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [curveType](curve-type.md) | `var curveType: `[`CurveType`](-curve-type/index.md) |
 | [name](name.md) | `var name: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [addEasePoint](add-ease-point.md) | `open fun addEasePoint(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [addEasePointSlopeAndMagnitude](add-ease-point-slope-and-magnitude.md) | `open fun addEasePointSlopeAndMagnitude(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, slope: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, magnitude: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [addHeadingPoint](add-heading-point.md) | `open fun addHeadingPoint(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
@@ -65,5 +73,6 @@
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [writeToNetworkTables](../write-to-network-tables.md) | `fun `[`Path2D`](./index.md)`.writeToNetworkTables(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

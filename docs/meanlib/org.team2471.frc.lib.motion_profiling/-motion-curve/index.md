@@ -6,14 +6,20 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [ExtrapolationMethods](-extrapolation-methods/index.md) | `class ExtrapolationMethods` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `MotionCurve()` |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [getDefaultValue](get-default-value.md) | `open fun getDefaultValue(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [getDerivative](get-derivative.md) | `open fun getDerivative(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [getHeadKey](get-head-key.md) | `open fun getHeadKey(): `[`MotionKey`](../-motion-key/index.md) |
@@ -38,5 +44,6 @@
 
 ### Inheritors
 
+| Name | Summary |
+|---|---|
 | [MotionProfileCurve](../-motion-profile-curve/index.md) | `open class MotionProfileCurve : `[`MotionCurve`](./index.md) |
-

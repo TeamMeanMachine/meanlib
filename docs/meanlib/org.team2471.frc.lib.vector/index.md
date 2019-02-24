@@ -4,5 +4,6 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [Vector2](-vector2/index.md) | `data class ~~Vector2~~` |
-

@@ -6,19 +6,27 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [PointType](-point-type/index.md) | `class PointType` |
 | [SlopeMethod](-slope-method/index.md) | `class SlopeMethod` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Path2DPoint(x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)`<br>`Path2DPoint()` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [STEPS](-s-t-e-p-s.md) | `static val STEPS: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [areCoefficientsDirty](are-coefficients-dirty.md) | `open fun areCoefficientsDirty(): `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 | [areTangentsDirty](are-tangents-dirty.md) | `open fun areTangentsDirty(): `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 | [getNextAngle](get-next-angle.md) | `open fun getNextAngle(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -54,4 +62,3 @@
 | [setPrevTangent](set-prev-tangent.md) | `open fun setPrevTangent(prevTangent: `[`Vector2`](../../org.team2471.frc.lib.math/-vector2/index.md)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [setTangentsDirty](set-tangents-dirty.md) | `open fun setTangentsDirty(bTangentsDirty: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [toString](to-string.md) | `open fun toString(): `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
-

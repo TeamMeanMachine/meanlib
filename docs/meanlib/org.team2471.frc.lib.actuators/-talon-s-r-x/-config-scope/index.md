@@ -6,20 +6,28 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [PIDConfigScope](-p-i-d-config-scope/index.md) | `inner class PIDConfigScope` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `ConfigScope(timeoutMs: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [ctreFollowers](ctre-followers.md) | `val ctreFollowers: `[`Array`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html)`<TalonSRX>` |
 | [ctreTalon](ctre-talon.md) | `val ctreTalon: TalonSRX` |
 | [feedbackCoefficient](feedback-coefficient.md) | `var feedbackCoefficient: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [brakeMode](brake-mode.md) | `fun brakeMode(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [closedLoopRamp](closed-loop-ramp.md) | `fun closedLoopRamp(secondsToFull: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [coastMode](coast-mode.md) | `fun coastMode(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
@@ -31,4 +39,3 @@
 | [pid](pid.md) | `fun pid(slot: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`, body: `[`PIDConfigScope`](-p-i-d-config-scope/index.md)`.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [pidSlot](pid-slot.md) | `fun pidSlot(slot: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [sensorPhase](sensor-phase.md) | `fun sensorPhase(inverted: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

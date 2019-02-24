@@ -4,6 +4,8 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [Autonomi](-autonomi/index.md) | `open class Autonomi` |
 | [Autonomous](-autonomous/index.md) | `open class Autonomous` |
 | [CubicCoefficients1D](-cubic-coefficients1-d/index.md) | `open class CubicCoefficients1D` |
@@ -17,6 +19,7 @@
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [pathFromNetworkTables](path-from-network-tables.md) | `fun pathFromNetworkTables(name: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`): `[`Path2D`](-path2-d/index.md)`?` |
 | [writeToNetworkTables](write-to-network-tables.md) | `fun `[`Path2D`](-path2-d/index.md)`.writeToNetworkTables(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

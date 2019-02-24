@@ -7,15 +7,21 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Vector2(x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [x](x.md) | `var x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [y](y.md) | `var y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [div](div.md) | `operator fun div(number: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Vector2`](./index.md) |
 | [minus](minus.md) | `operator fun minus(vecB: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
 | [plus](plus.md) | `operator fun plus(vecB: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
@@ -28,6 +34,8 @@
 
 ### Companion Object Functions
 
+| Name | Summary |
+|---|---|
 | [add](add.md) | `fun add(firstVector: `[`Vector2`](./index.md)`, secondVector: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
 | [angle](angle.md) | `fun angle(vector: `[`Vector2`](./index.md)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [divide](divide.md) | `fun divide(firstVector: `[`Vector2`](./index.md)`, quotient: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Vector2`](./index.md) |
@@ -37,4 +45,3 @@
 | [normalize](normalize.md) | `fun normalize(vector: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
 | [perpendicular](perpendicular.md) | `fun perpendicular(vector: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
 | [subtract](subtract.md) | `fun subtract(firstVector: `[`Vector2`](./index.md)`, secondVector: `[`Vector2`](./index.md)`): `[`Vector2`](./index.md) |
-

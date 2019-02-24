@@ -6,10 +6,14 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Vector2(x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, y: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [angle](angle.md) | `val angle: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [length](length.md) | `val length: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [x](x.md) | `var x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -17,6 +21,8 @@
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [distance](distance.md) | `fun distance(other: `[`Vector2`](./index.md)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [div](div.md) | `operator fun div(scalar: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Vector2`](./index.md) |
 | [dot](dot.md) | `fun dot(b: `[`Vector2`](./index.md)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -32,4 +38,3 @@
 | [times](times.md) | `operator fun times(scalar: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Vector2`](./index.md) |
 | [unaryMinus](unary-minus.md) | `operator fun unaryMinus(): `[`Vector2`](./index.md) |
 | [unaryPlus](unary-plus.md) | `operator fun unaryPlus(): `[`Vector2`](./index.md) |
-

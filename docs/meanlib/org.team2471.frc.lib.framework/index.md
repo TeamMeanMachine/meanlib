@@ -4,16 +4,22 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [MapperScope](-mapper-scope/index.md) | `class MapperScope<C : GenericHID>` |
 | [RobotProgram](-robot-program/index.md) | `interface RobotProgram`<br>The core robot program to run. The methods in this interface can be overridden in order to execute code in the specified mode. |
 | [Subsystem](-subsystem/index.md) | `open class Subsystem`<br>An individually requirable component of your robot. |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [LANGUAGE_KOTLIN](-l-a-n-g-u-a-g-e_-k-o-t-l-i-n.md) | `const val LANGUAGE_KOTLIN: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [aHold](a-hold.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.aHold(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [aPress](a-press.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.aPress(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [aToggle](a-toggle.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.aToggle(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
@@ -48,4 +54,3 @@
 | [yHold](y-hold.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.yHold(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [yPress](y-press.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.yPress(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [yToggle](y-toggle.md) | `fun `[`MapperScope`](-mapper-scope/index.md)`<XboxController>.yToggle(body: suspend CoroutineScope.() -> `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

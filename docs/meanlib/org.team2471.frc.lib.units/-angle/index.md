@@ -6,14 +6,20 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `Angle(asRadians: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [asRadians](as-radians.md) | `val asRadians: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [compareTo](compare-to.md) | `operator fun compareTo(other: `[`Angle`](./index.md)`): `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 | [cos](cos.md) | `fun cos(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [div](div.md) | `operator fun div(factor: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Angle`](./index.md) |
@@ -30,6 +36,8 @@
 
 ### Companion Object Functions
 
+| Name | Summary |
+|---|---|
 | [acos](acos.md) | `fun acos(value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Angle`](./index.md) |
 | [asin](asin.md) | `fun asin(value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Angle`](./index.md) |
 | [atan](atan.md) | `fun atan(value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Angle`](./index.md) |
@@ -40,10 +48,13 @@
 
 ### Extension Properties
 
+| Name | Summary |
+|---|---|
 | [asDegrees](../as-degrees.md) | `val `[`Angle`](./index.md)`.asDegrees: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [perSecond](../per-second.md) | `val `[`Angle`](./index.md)`.perSecond: `[`AngularVelocity`](../-angular-velocity/index.md) |
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [div](../div.md) | `operator fun `[`Angle`](./index.md)`.div(time: `[`Time`](../-time/index.md)`): `[`AngularVelocity`](../-angular-velocity/index.md) |
-

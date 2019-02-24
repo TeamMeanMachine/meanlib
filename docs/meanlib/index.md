@@ -2,6 +2,8 @@
 
 ### Packages
 
+| Name | Summary |
+|---|---|
 | [org.team2471.frc.lib.actuators](org.team2471.frc.lib.actuators/index.md) |  |
 | [org.team2471.frc.lib.control](org.team2471.frc.lib.control/index.md) |  |
 | [org.team2471.frc.lib.coroutines](org.team2471.frc.lib.coroutines/index.md) |  |

@@ -6,10 +6,13 @@
 
 ### Companion Object Properties
 
+| Name | Summary |
+|---|---|
 | [moshiAdapter](moshi-adapter.md) | `val moshiAdapter: PolymorphicJsonAdapterFactory<`[`DrivetrainParameters`](./index.md)`>` |
 
 ### Inheritors
 
+| Name | Summary |
+|---|---|
 | [ArcadeParameters](../-arcade-parameters/index.md) | `data class ArcadeParameters : `[`DrivetrainParameters`](./index.md) |
 | [SwerveParameters](../-swerve-parameters/index.md) | `data class SwerveParameters : `[`DrivetrainParameters`](./index.md) |
-

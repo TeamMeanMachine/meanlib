@@ -6,10 +6,13 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `AllianceStation(alliance: `[`Alliance`](../-alliance/index.md)`, station: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [alliance](alliance.md) | `val alliance: `[`Alliance`](../-alliance/index.md) |
 | [station](station.md) | `val station: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
-

@@ -6,14 +6,20 @@
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `AngularAcceleration(velocityPerSecond: `[`AngularVelocity`](../-angular-velocity/index.md)`)` |
 
 ### Properties
 
+| Name | Summary |
+|---|---|
 | [velocityPerSecond](velocity-per-second.md) | `val velocityPerSecond: `[`AngularVelocity`](../-angular-velocity/index.md) |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [compareTo](compare-to.md) | `operator fun compareTo(other: `[`AngularAcceleration`](./index.md)`): `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
 | [div](div.md) | `operator fun div(factor: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`AngularAcceleration`](./index.md) |
 | [minus](minus.md) | `operator fun minus(other: `[`AngularAcceleration`](./index.md)`): `[`AngularAcceleration`](./index.md) |
@@ -26,9 +32,12 @@
 
 ### Extension Properties
 
+| Name | Summary |
+|---|---|
 | [velocityPerDs](../velocity-per-ds.md) | `val `[`AngularAcceleration`](./index.md)`.velocityPerDs: `[`AngularVelocity`](../-angular-velocity/index.md) |
 
 ### Extension Functions
 
+| Name | Summary |
+|---|---|
 | [times](../times.md) | `operator fun `[`AngularAcceleration`](./index.md)`.times(time: `[`Time`](../-time/index.md)`): `[`AngularVelocity`](../-angular-velocity/index.md) |
-

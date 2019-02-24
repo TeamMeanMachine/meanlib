@@ -1,4 +1,4 @@
-$dokka.format:markdown
+$dokka.format:gfm
 $dokka.linkExtension:md
 $dokka.location:org.team2471.frc.lib.coroutines$parallel(kotlinx.coroutines.CoroutineScope, kotlin.Array((kotlin.SuspendFunction0((kotlin.Unit)))))org.team2471.frc.lib.coroutines/kotlinx.coroutines.-coroutine-scope/parallel.md
 $dokka.location:org.team2471.frc.lib.math$deadband(kotlin.Double, kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/deadband.md

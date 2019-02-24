@@ -6,14 +6,20 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [SlopeMethod](-slope-method/index.md) | `class SlopeMethod` |
 
 ### Constructors
 
+| Name | Summary |
+|---|---|
 | [&lt;init&gt;](-init-.md) | `MotionKey()` |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [areCoefficientsDirty](are-coefficients-dirty.md) | `open fun areCoefficientsDirty(): `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 | [areTangentsDirty](are-tangents-dirty.md) | `open fun areTangentsDirty(): `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 | [getAngle](get-angle.md) | `open fun getAngle(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
@@ -61,4 +67,3 @@
 | [setTime](set-time.md) | `open fun setTime(time: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [setTimeAndValue](set-time-and-value.md) | `open fun setTimeAndValue(m_timeAndValue: `[`Vector2`](../../org.team2471.frc.lib.vector/-vector2/index.md)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [setValue](set-value.md) | `open fun setValue(value: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-

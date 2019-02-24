@@ -6,6 +6,7 @@
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [getFdPrevValue](get-fd-prev-value.md) | `open fun getFdPrevValue(): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [getFdSteps](get-fd-steps.md) | `open fun getFdSteps(): `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
-

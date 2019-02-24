@@ -6,6 +6,7 @@
 
 ### Enum Values
 
+| Name | Summary |
+|---|---|
 | [RED](-r-e-d.md) |  |
 | [BLUE](-b-l-u-e.md) |  |
-

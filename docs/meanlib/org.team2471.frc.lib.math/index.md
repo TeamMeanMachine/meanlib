@@ -4,6 +4,8 @@
 
 ### Types
 
+| Name | Summary |
+|---|---|
 | [Circle](-circle/index.md) | `data class Circle` |
 | [Line](-line/index.md) | `data class Line` |
 | [Point](-point/index.md) | `data class Point` |
@@ -11,16 +13,22 @@
 
 ### Type Aliases
 
+| Name | Summary |
+|---|---|
 | [DoubleRange](-double-range.md) | `typealias DoubleRange = `[`ClosedFloatingPointRange`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-closed-floating-point-range/index.html)`<`[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`>` |
 
 ### Extensions for External Classes
 
+| Name | Summary |
+|---|---|
 | [kotlin.Double](kotlin.-double/index.md) |  |
 | [kotlin.Int](kotlin.-int/index.md) |  |
 | [kotlin.ranges.ClosedFloatingPointRange](kotlin.ranges.-closed-floating-point-range/index.md) |  |
 
 ### Functions
 
+| Name | Summary |
+|---|---|
 | [average](average.md) | `fun average(vararg x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [cubicMap](cubic-map.md) | `fun cubicMap(inLo: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, inHi: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, outLo: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, outHi: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, inAlpha: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [fresnel](fresnel.md) | `fun fresnel(xxa: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Pair`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html)`<`[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`>`<br>Approximate the Fresnel function. |
@@ -30,4 +38,3 @@
 | [round](round.md) | `fun round(number: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, digits: `[`Int`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [square](square.md) | `fun square(x: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
 | [windRelativeAngles](wind-relative-angles.md) | `fun windRelativeAngles(angle1: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`, angle2: `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)`): `[`Double`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html) |
-
