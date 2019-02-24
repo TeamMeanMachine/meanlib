@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion.following
 
+import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.withTimeout
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
@@ -17,6 +18,8 @@ interface SwerveDrive {
     val parameters: SwerveParameters
     val heading: Angle
     val headingRate: AngularVelocity
+    val headingWithDashboardSwitch: Angle
+    val headingRateWithDashboardSwitch: AngularVelocity
     var position: Vector2
     var prevPosition: Vector2
     var prevTime: Double
@@ -70,7 +73,7 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     recordOdometry()
 
     if (fieldCentric) {
-        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+        val heading = (headingWithDashboardSwitch + (-headingRateWithDashboardSwitch * parameters.gyroRateCorrection).changePerSecond).wrap()
         translation.let { (x, y) ->
             translation.x = -y * heading.sin() + x * heading.cos()
             translation.y = y * heading.cos() + x * heading.sin()
@@ -134,6 +137,10 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
+private val table = NetworkTableInstance.getDefault().getTable("PathVisualizer")
+private val positionXEntry = table.getEntry("positionX")
+private val positionYEntry = table.getEntry("positionY")
+
 fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
     val v0 = frontLeftModule.recordOdometry(heading)
@@ -152,6 +159,9 @@ fun SwerveDrive.recordOdometry() {
     velocity = (position - prevPosition)/deltaTime
     prevTime = time
     prevPosition = position
+
+    positionXEntry.setDouble(position.x)
+    positionYEntry.setDouble(position.y)
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
