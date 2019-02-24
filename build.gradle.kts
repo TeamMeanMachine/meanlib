@@ -1,3 +1,4 @@
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -56,6 +57,11 @@ configure<JavaPluginConvention> {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType<DokkaTask> {
+    outputFormat = "markdown"
+    outputDirectory = "docs"
 }
 
 val compileKotlin: KotlinCompile by tasks

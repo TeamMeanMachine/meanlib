@@ -1,0 +1,32 @@
+$dokka.format:markdown
+$dokka.linkExtension:md
+$dokka.location:org.team2471.frc.lib.coroutines$parallel(kotlinx.coroutines.CoroutineScope, kotlin.Array((kotlin.SuspendFunction0((kotlin.Unit)))))org.team2471.frc.lib.coroutines/kotlinx.coroutines.-coroutine-scope/parallel.md
+$dokka.location:org.team2471.frc.lib.math$deadband(kotlin.Double, kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/deadband.md
+$dokka.location:org.team2471.frc.lib.math$fitToRange(kotlin.Double, kotlin.Double, kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/fit-to-range.md
+$dokka.location:org.team2471.frc.lib.math$fitToRange(kotlin.Int, kotlin.Int, kotlin.Int)org.team2471.frc.lib.math/kotlin.-int/fit-to-range.md
+$dokka.location:org.team2471.frc.lib.math$intersects(kotlin.ranges.ClosedFloatingPointRange((kotlin.Double)), kotlin.ranges.ClosedFloatingPointRange((kotlin.Double)))org.team2471.frc.lib.math/kotlin.ranges.-closed-floating-point-range/intersects.md
+$dokka.location:org.team2471.frc.lib.math$log10(kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/log10.md
+$dokka.location:org.team2471.frc.lib.math$mod(kotlin.Double, kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/mod.md
+$dokka.location:org.team2471.frc.lib.math$squareRootWithSign(kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/square-root-with-sign.md
+$dokka.location:org.team2471.frc.lib.math$squareWithSign(kotlin.Double)org.team2471.frc.lib.math/kotlin.-double/square-with-sign.md
+$dokka.location:org.team2471.frc.lib.units$cm#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/cm.md
+$dokka.location:org.team2471.frc.lib.units$degrees#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/degrees.md
+$dokka.location:org.team2471.frc.lib.units$feet#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/feet.md
+$dokka.location:org.team2471.frc.lib.units$inches#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/inches.md
+$dokka.location:org.team2471.frc.lib.units$meters#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/meters.md
+$dokka.location:org.team2471.frc.lib.units$radians#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/radians.md
+$dokka.location:org.team2471.frc.lib.units$seconds#kotlin.Numberorg.team2471.frc.lib.units/kotlin.-number/seconds.md
+org.team2471.frc.lib.actuators
+org.team2471.frc.lib.control
+org.team2471.frc.lib.coroutines
+org.team2471.frc.lib.data
+org.team2471.frc.lib.framework
+org.team2471.frc.lib.math
+org.team2471.frc.lib.motion.following
+org.team2471.frc.lib.motion_profiling
+org.team2471.frc.lib.motion_profiling.following
+org.team2471.frc.lib.sensors
+org.team2471.frc.lib.testing
+org.team2471.frc.lib.units
+org.team2471.frc.lib.util
+org.team2471.frc.lib.vector
