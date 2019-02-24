@@ -1,13 +1,17 @@
 package org.team2471.frc.lib.motion.following
 
-import kotlinx.coroutines.withTimeout
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
-import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.AngularVelocity
+import org.team2471.frc.lib.units.Length
+import org.team2471.frc.lib.units.asDegrees
+import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.radians
 import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
 import kotlin.math.cos
@@ -67,12 +71,14 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
         return stop()
     }
-    val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
     recordOdometry()
 
-    translation.let { (x, y) ->
-        translation.x = -y * heading.sin() + x * heading.cos()
-        translation.y = y * heading.cos() + x * heading.sin()
+    if (fieldCentric) {
+        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+        translation.let { (x, y) ->
+            translation.x = -y * heading.sin() + x * heading.cos()
+            translation.y = y * heading.cos() + x * heading.sin()
+        }
     }
 
     val a = translation.x - turn * parameters.lengthComponent
