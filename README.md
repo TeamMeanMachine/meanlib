@@ -83,3 +83,7 @@ Done.
 ```
 
 _TODO: More complete examples coming soon._
+
+## Credits
+
+Special thanks to Team 2521 for their outstanding contributions!
