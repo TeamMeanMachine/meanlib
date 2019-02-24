@@ -1,13 +1,17 @@
 package org.team2471.frc.lib.motion.following
 
-import kotlinx.coroutines.withTimeout
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
-import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.AngularVelocity
+import org.team2471.frc.lib.units.Length
+import org.team2471.frc.lib.units.asDegrees
+import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.radians
 import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
 import kotlin.math.cos
