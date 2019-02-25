@@ -1,30 +1,32 @@
 package org.team2471.frc.lib.motion.following
 
-import edu.wpi.first.networktables.NetworkTableInstance
-import kotlinx.coroutines.withTimeout
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
-import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.AngularVelocity
+import org.team2471.frc.lib.units.Length
+import org.team2471.frc.lib.units.asDegrees
+import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.radians
 import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 
+private var prevPosition = Vector2(0.0, 0.0)
+private var prevPathPosition = Vector2(0.0, 0.0)
+private var prevTime = 0.0
+
 interface SwerveDrive {
     val parameters: SwerveParameters
-    val heading: Angle
+    var heading: Angle
     val headingRate: AngularVelocity
-    val headingWithDashboardSwitch: Angle
-    val headingRateWithDashboardSwitch: AngularVelocity
     var position: Vector2
-    var prevPosition: Vector2
-    var prevTime: Double
     var velocity: Vector2
-    var prevPathPosition: Vector2
 
     val frontLeftModule: Module
     val frontRightModule: Module
@@ -38,8 +40,8 @@ interface SwerveDrive {
     interface Module {
         val angle: Angle
         val speed: Double
-        val currentDistance: Double
-        var previousDistance: Double
+        val currDistance: Double
+        var prevDistance: Double
 
         fun drive(angle: Angle, power: Double)
 
@@ -73,7 +75,7 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     recordOdometry()
 
     if (fieldCentric) {
-        val heading = (headingWithDashboardSwitch + (-headingRateWithDashboardSwitch * parameters.gyroRateCorrection).changePerSecond).wrap()
+        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         translation.let { (x, y) ->
             translation.x = -y * heading.sin() + x * heading.cos()
             translation.y = y * heading.cos() + x * heading.sin()
@@ -137,10 +139,6 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-private val table = NetworkTableInstance.getDefault().getTable("PathVisualizer")
-private val positionXEntry = table.getEntry("positionX")
-private val positionYEntry = table.getEntry("positionY")
-
 fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
     val v0 = frontLeftModule.recordOdometry(heading)
@@ -159,26 +157,26 @@ fun SwerveDrive.recordOdometry() {
     velocity = (position - prevPosition)/deltaTime
     prevTime = time
     prevPosition = position
-
-    positionXEntry.setDouble(position.x)
-    positionYEntry.setDouble(position.y)
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     val angleInFieldSpace = heading + angle
-    val deltaDistance = currentDistance - previousDistance
-    previousDistance = currentDistance
+    val deltaDistance = currDistance - prevDistance
+    prevDistance = currDistance
     return Vector2(
         deltaDistance * sin(angleInFieldSpace.asRadians),
         deltaDistance * cos(angleInFieldSpace.asRadians)
     )
 }
 
-suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
+suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, resetOdometry: Boolean = false) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
-
-    zeroEncoders()
+    if (resetOdometry) {
+        zeroEncoders()
+        position = path.getPosition(0.0)
+        heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+    }
     var prevTime = 0.0
 
     val timer = Timer()
@@ -200,7 +198,6 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
         prevPathPosition = pathPosition
 
         val translationControlField = pathVelocity * parameters.kFeedForward + positionError * parameters.kPosition
-        //val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
         // apply gyro corrections
         val gyroAngle = heading
@@ -214,9 +211,10 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0) {
         if (t >= path.durationWithSpeed + extraTime)
             stop()
 
-//        println("Time=$t Path Position=$pathPosition Position=$position")
-        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
         prevTime = t
+
+//        println("Time=$t Path Position=$pathPosition Position=$position")
+//        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
     drive(Vector2(0.0,0.0), 0.0, true)
 }
