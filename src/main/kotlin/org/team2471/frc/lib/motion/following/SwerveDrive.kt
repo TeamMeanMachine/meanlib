@@ -79,7 +79,7 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     val speeds = Array(modules.size) { 0.0 }
 
     for (i in 0 until modules.size) {
-        speeds[i] = modules[i].calculateAngleReturnSpeed(translation, robotPivot)
+        speeds[i] = modules[i].calculateAngleReturnSpeed(translation, turn, robotPivot)
     }
 
     val maxSpeed = speeds.maxBy(Math::abs)!!
@@ -111,10 +111,11 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 
 private fun SwerveDrive.Module.calculateAngleReturnSpeed(
     translation: Vector2,
+    turn: Double,
     robotPivot: Vector2
 ) : Double {
 
-    val localGoal = translation + (modulePosition - robotPivot).perpendicular()
+    val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
     var power = localGoal.length
     var setPoint = localGoal.angle.radians
     val angleError = (setPoint - angle).wrap()
