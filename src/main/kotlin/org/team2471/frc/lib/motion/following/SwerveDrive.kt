@@ -71,15 +71,17 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
         return stop()
     }
 
-    if (fieldCentric) {
+    val adjustedTranslation = if (fieldCentric) {
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         translation.rotateRadians(heading.asRadians)
+    } else {
+        translation
     }
 
     val speeds = Array(modules.size) { 0.0 }
 
     for (i in 0 until modules.size) {
-        speeds[i] = modules[i].calculateAngleReturnSpeed(translation, robotPivot)
+        speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, turn, robotPivot)
     }
 
     val maxSpeed = speeds.maxBy(Math::abs)!!
@@ -137,7 +139,7 @@ fun SwerveDrive.recordOdometry() {
     for (i in 0 until modules.size) {
         translation += translations[i]
     }
-    translation /= 4.0
+    translation /= modules.size.toDouble()
 
     position += translation
     val time = System.currentTimeMillis().toDouble()/1000.0
@@ -161,9 +163,15 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
     if (resetOdometry) {
+        for (module in modules) {
+            module.prevDistance = 0.0
+        }
         zeroEncoders()
+        println("Position = $position Heading = $heading")
         position = path.getPosition(0.0)
         heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+        println("After Reset Position = $position Heading = $heading")
+
     }
     var prevTime = 0.0
 
@@ -188,10 +196,12 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
 
         // apply gyro corrections
         val gyroAngle = heading
-        val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
-        val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
+        val pathAngleRadiansDouble = path.getTangent(t).angle + path.headingCurve.getValue(t)
+        val pathAngle = pathAngleRadiansDouble.radians
+        val angleError = pathAngle - windRelativeAngles(pathAngle.asDegrees, gyroAngle.asDegrees).degrees
+        println("GyroAngle=$gyroAngle PathAngle=$pathAngle AngleError=$angleError")
 
-        val turnControl = angleError * parameters.kTurn
+        val turnControl = angleError.asDegrees * parameters.kTurn
 
         drive(translationControlField, turnControl, true)
 
