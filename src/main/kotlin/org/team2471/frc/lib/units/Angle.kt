@@ -38,24 +38,24 @@ inline class Angle(val asDegrees: Double) {
         fun tan(angle: Angle) = Math.tan(angle.asRadians)
 
         @JvmStatic
-        fun asin(value: Double) = Angle(Math.asin(value))
+        fun asin(value: Double) = Angle(Math.toDegrees(Math.asin(value)))
 
         @JvmStatic
-        fun acos(value: Double) = Angle(Math.acos(value))
+        fun acos(value: Double) = Angle(Math.toDegrees(Math.acos(value)))
 
         @JvmStatic
-        fun atan(value: Double) = Angle(Math.atan(value))
+        fun atan(value: Double) = Angle(Math.toDegrees(Math.atan(value)))
 
         @JvmStatic
-        fun atan2(y: Double, x: Double) = Angle(Math.atan2(y, x))
+        fun atan2(y: Double, x: Double) = Angle(Math.toDegrees(Math.atan2(y, x)))
 
         @JvmStatic
-        fun atan2(y: Length, x: Length) = Angle(Math.atan2(y.asInches, x.asInches))
+        fun atan2(y: Length, x: Length) = Angle(Math.toDegrees(Math.atan2(y.asInches, x.asInches)))
     }
 }
 
 // constructors
-inline val Number.radians get() = Angle(Math.toRadians(this.toDouble()))
+inline val Number.radians get() = Angle(Math.toDegrees(this.toDouble()))
 inline val Number.degrees get() = Angle(this.toDouble())
 
 // destructors
