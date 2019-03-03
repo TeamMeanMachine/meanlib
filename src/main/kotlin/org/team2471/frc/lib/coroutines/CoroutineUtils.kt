@@ -1,12 +1,14 @@
 package org.team2471.frc.lib.coroutines
 
 import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.Watchdog
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.yield
 import org.team2471.frc.lib.units.Time
 import org.team2471.frc.lib.util.measureTimeFPGA
-import kotlin.coroutines.resume
 
 class PeriodicScope @PublishedApi internal constructor(val period: Double) {
     @PublishedApi

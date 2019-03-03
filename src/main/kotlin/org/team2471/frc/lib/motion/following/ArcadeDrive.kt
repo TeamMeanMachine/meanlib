@@ -30,6 +30,12 @@ interface ArcadeDrive {
     }
 }
 
+/**
+ * Follows a specified [path] using the robot's [ArcadeParameters].
+ *
+ * @param path the [Path2D] to follow
+ * @param extraTime the amount of extra time to wait for minor corrections to the path after its completion
+ */
 suspend fun <T> T.driveAlongPath(
         path: Path2D,
         extraTime: Double = 0.0
@@ -68,7 +74,6 @@ suspend fun <T> T.driveAlongPath(
 
             // update left/right path positions
 
-
             val leftDistance = arcadePath.getLeftDistance(t) + gyroCorrection
             val rightDistance = arcadePath.getRightDistance(t) - gyroCorrection
 
@@ -99,6 +104,14 @@ suspend fun <T> T.driveAlongPath(
     }
 }
 
+/**
+ * Allows for teleoperated hybrid drive of the robot, with optional heading correction and turning
+ * correction if specified in the [ArcadeParameters].
+ *
+ * @param throttle the forward percent speed to drive at
+ * @param softTurn an amount of turn proportional to the [throttle]
+ * @param hardTurn a raw turn value, added to the left output and subtracted from the right output
+ */
 fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double) {
     val totalTurn = (softTurn * Math.abs(throttle)) + hardTurn
     val velocitySetpoint = totalTurn * 250.0

@@ -54,6 +54,10 @@ open class Subsystem(
             enabledEntry.setBoolean(value)
         }
 
+    init {
+        println("Initializing $name Subsystem")
+    }
+
     /**
      * An optionally overloadable method. This method is automatically run whenever any [use] call completes,
      * regardless of if it completed or canceled.
