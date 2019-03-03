@@ -282,4 +282,10 @@ public class Path2D {
         Vector2 velocity = getVelocityAtEase(ease);
         return velocity.dot(velocity) / radius;
     }
+
+    public double getAbsoluteHeadingDegreesAt(double time) {
+        Vector2 tangent = getTangent(time);
+        double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
+        return pathHeading + m_headingCurve.getValue(time);
+    }
 }
