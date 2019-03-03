@@ -4,7 +4,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import org.team2471.frc.lib.framework.internal.EventHandler
+import org.team2471.frc.lib.framework.internal.SubsystemCoordinator
 
 /**
  * An individually requirable component of your robot.
@@ -82,7 +82,7 @@ open class Subsystem(
      *
      * Note that enables are asynchronous, so it may take some time for the [Subsystem] to be enabled.
      */
-    fun enable() = EventHandler.enableSubsystem(this)
+    fun enable() = SubsystemCoordinator.enableSubsystem(this)
 
     /**
      * Disables the [Subsystem].
@@ -91,7 +91,7 @@ open class Subsystem(
      *
      * Note that disables are asynchronous, so it may take some time for the [Subsystem] to be disabled.
      */
-    fun disable() = EventHandler.disableSubsystem(this)
+    fun disable() = SubsystemCoordinator.disableSubsystem(this)
 
     /**
      * Cancels any active coroutine that is currently using the [Subsystem].
@@ -99,7 +99,7 @@ open class Subsystem(
      * If a [use] call requires more than one [Subsystem], calling [cancelActive] on any of them will have the
      * same effect.
      */
-    fun cancelActive() = EventHandler.cancelSubsystem(this)
+    fun cancelActive() = SubsystemCoordinator.cancelSubsystem(this)
 
     init {
         enabledEntry.setBoolean(false)
@@ -120,4 +120,4 @@ open class Subsystem(
  */
 @UseExperimental(ExperimentalCoroutinesApi::class)
 suspend fun <R> use(vararg subsystems: Subsystem, cancelConflicts: Boolean = true, body: suspend CoroutineScope.()  -> R) =
-    EventHandler.useSubsystems(setOf(*subsystems), cancelConflicts, body)
+    SubsystemCoordinator.useSubsystems(setOf(*subsystems), cancelConflicts, body)

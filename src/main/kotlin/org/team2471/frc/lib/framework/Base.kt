@@ -8,9 +8,6 @@ import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
-import org.team2471.frc.lib.coroutines.MeanlibScope
-import org.team2471.frc.lib.coroutines.parallel
-import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
@@ -79,7 +76,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
         }
 
         // process joystick inputs
-        InputMapper.process()
+        Events.process()
 
         val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
