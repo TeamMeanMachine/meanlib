@@ -120,9 +120,14 @@ public class Path2DPoint {
     }
 
     public void setPrevTangent(Vector2 prevTangent) {
+        m_prevTangent = prevTangent;
         if (m_prevPoint!=null) {
-            m_prevTangent = prevTangent;
             calculatePrevAngleAndMagnitudeFromTangent();
+        } else {
+            m_nextTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
+            m_nextSlopeMethod = SLOPE_MANUAL;
+            m_prevTangent = new Vector2(prevTangent.getX(), prevTangent.getY());
+            m_prevSlopeMethod = SLOPE_MANUAL;
         }
         onPositionChanged();
     }
@@ -135,9 +140,15 @@ public class Path2DPoint {
     }
 
     public void setNextTangent(Vector2 nextTangent) {
+        m_nextTangent = nextTangent;
         if (m_nextPoint != null) {
-            m_nextTangent = nextTangent;
             calculateNextAngleAndMagnitudeFromTangent();
+        }
+        else {
+            m_nextTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
+            m_nextSlopeMethod = SLOPE_MANUAL;
+            m_prevTangent = new Vector2(nextTangent.getX(), nextTangent.getY());
+            m_prevSlopeMethod = SLOPE_MANUAL;
         }
         onPositionChanged();
     }
