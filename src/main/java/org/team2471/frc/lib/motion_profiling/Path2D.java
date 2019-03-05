@@ -270,6 +270,13 @@ public class Path2D {
         return velocity;
     }
 
+    public Vector2 getVelocityAtTime(double time) {
+        Vector2 tangent = getTangent(time);
+        tangent.normalize();
+        Vector2 velocity = tangent.times( m_easeCurve.getDerivative(time) * m_xyCurve.getLength());
+        return velocity;
+    }
+
     public double getCurvatureAtEase(double ease) {
         double radius = 0.0;
         Vector2 velocity = getVelocityAtEase(ease);

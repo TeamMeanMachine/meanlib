@@ -34,12 +34,11 @@ data class ArcadeParameters(
 ) : DrivetrainParameters()
 
 data class SwerveParameters(
-        val trackWidth: Double,
-        val trackLength: Double,
-        val gyroRateCorrection: Double
-
+    val gyroRateCorrection: Double,
+    val kPositionFeedForward: Double,
+    val kPosition: Double,
+    val kHeadingFeedForward: Double,
+    val kHeading: Double
 
 ) : DrivetrainParameters() {
-    val lengthComponent = trackLength / Math.hypot(trackLength, trackWidth)
-    val widthComponent = trackWidth / Math.hypot(trackLength, trackWidth)
 }

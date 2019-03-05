@@ -9,7 +9,7 @@ import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
 
 @ExperimentalCoroutinesApi
-internal object EventHandler {
+internal object SubsystemCoordinator {
     private val messageChannel = Channel<Message>(capacity = Channel.UNLIMITED)
 
     init {
@@ -21,7 +21,7 @@ internal object EventHandler {
     suspend fun <R> useSubsystems(
         subsystems: Set<Subsystem>,
         cancelConflicts: Boolean,
-        body: suspend () -> R
+        body: suspend CoroutineScope.() -> R
     ): R {
         val context = coroutineContext
 
@@ -46,10 +46,14 @@ internal object EventHandler {
         messageChannel.offer(Message.Disable(subsystem))
     }
 
+    fun cancelSubsystem(subsystem: Subsystem) {
+        messageChannel.offer(Message.CancelActiveAction(subsystem))
+    }
+
     private fun resetSubsystem(subsystem: Subsystem) {
         if (subsystem.hasDefault) {
             GlobalScope.launch(MeanlibDispatcher) {
-                useSubsystems(setOf(subsystem), false, subsystem::default)
+                useSubsystems(setOf(subsystem), false) { subsystem.default() }
             }
         }
     }
@@ -58,7 +62,6 @@ internal object EventHandler {
     // MESSAGE HANDLING
     //
 
-    @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
         when (message) {
             is Message.NewAction -> {
@@ -109,7 +112,7 @@ internal object EventHandler {
                         }
 
                         // run provided code
-                        val result = message.body()
+                        val result = coroutineScope { message.body(this) }
 
                         // resume calling coroutine
                         message.continuation.resume(result)
@@ -117,7 +120,7 @@ internal object EventHandler {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
                     } finally {
-                        allSubsystems.forEach { it.reset() }
+                        newSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
                         messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
                     }
@@ -143,6 +146,8 @@ internal object EventHandler {
                     }
                 }
             }
+
+            is Message.CancelActiveAction -> message.subsystem.activeJob?.cancel()
 
             is Message.Clean -> {
                 message.subsystems
@@ -173,10 +178,12 @@ internal object EventHandler {
         class NewAction(
             val subsystems: Set<Subsystem>,
             val callerContext: CoroutineContext,
-            val body: suspend () -> Any?,
+            val body: suspend CoroutineScope.() -> Any?,
             val cancelConflicts: Boolean,
             val continuation: CancellableContinuation<Any?>
         ) : Message()
+
+        class CancelActiveAction(val subsystem: Subsystem) : Message()
 
         class Clean(val subsystems: Set<Subsystem>, val job: Job) : Message()
 

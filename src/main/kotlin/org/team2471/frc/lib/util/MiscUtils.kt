@@ -30,5 +30,4 @@ class Timer {
     }
 
     fun get() : Double = (currentTimeMillis() - startTime) / 1000.0
-
 }

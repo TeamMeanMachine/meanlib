@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
     }
 }
 
@@ -16,6 +17,7 @@ plugins {
 
 apply {
     plugin("kotlin")
+    plugin("org.jetbrains.dokka")
 }
 
 group = "org.team2471.lib"
@@ -29,15 +31,15 @@ repositories {
 
 dependencies {
     // kotlin libs
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
+    compile(kotlin("stdlib-jdk8", "1.3.10"))
+    compile(kotlin("reflect", "1.3.10"))
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
 
     // frc libs
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2019.1.1")
-    implementation("edu.wpi.first.hal:hal-java:2019.1.1")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.1.1")
-    implementation("edu.wpi.first.ntcore:ntcore-java:2019.1.1")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:2019.3.1")
+    implementation("edu.wpi.first.hal:hal-java:2019.3.1")
+    implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.3.1")
+    implementation("edu.wpi.first.ntcore:ntcore-java:2019.3.1")
     implementation("com.ctre.phoenix:api-java:5.12.0")
 
     // other

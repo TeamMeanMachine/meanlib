@@ -3,9 +3,11 @@ package org.team2471.frc.lib.actuators
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.DemandType
 import com.ctre.phoenix.motorcontrol.NeutralMode
+import org.team2471.frc.lib.math.DoubleRange
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 
+@Deprecated("Replaced with MotorController")
 class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     private val talon = CTRETalonSRX(deviceId)
 
@@ -63,7 +65,7 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
         talon.neutralOutput()
     }
 
-    inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
+    inline fun config(timeoutMs: Int = 20, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
     }
 
@@ -99,8 +101,6 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
             talon.configOpenloopRamp(secondsToFull)
         }
 
-        inline fun pid(slot: Int, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
-
         fun pidSlot(slot: Int) = talon.selectProfileSlot(slot, 0)
 
         fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
@@ -110,6 +110,18 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
             allTalons { it.configPeakCurrentDuration(peakDuration, timeoutMs) }
             allTalons { it.enableCurrentLimit(true) }
         }
+
+        fun nominalOutputRange(range: DoubleRange) {
+            talon.configNominalOutputReverse(range.start, timeoutMs)
+            talon.configNominalOutputForward(range.endInclusive, timeoutMs)
+        }
+
+        fun peakOutputRange(range: DoubleRange) {
+            talon.configPeakOutputReverse(range.start, timeoutMs)
+            talon.configPeakOutputForward(range.endInclusive, timeoutMs)
+        }
+
+        inline fun pid(slot: Int, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {

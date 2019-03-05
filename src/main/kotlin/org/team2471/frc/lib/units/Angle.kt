@@ -1,8 +1,5 @@
 package org.team2471.frc.lib.units
 
-import org.team2471.frc.lib.Unproven
-
-@Unproven
 inline class Angle(val asRadians: Double) {
     operator fun plus(other: Angle) = Angle(asRadians + other.asRadians)
 
@@ -20,11 +17,15 @@ inline class Angle(val asRadians: Double) {
 
     operator fun compareTo(other: Angle) = asRadians.compareTo(other.asRadians)
 
-    override fun toString() = "$asRadians radians"
+    override fun toString() = "$asDegrees degrees"
 
     fun sin() = Angle.sin(this)
+
     fun cos() = Angle.cos(this)
+
     fun tan() = Angle.tan(this)
+
+    fun wrap() = Angle(Math.IEEEremainder(asRadians, 2 * Math.PI))
 
     companion object {
         @JvmStatic
@@ -54,11 +55,8 @@ inline class Angle(val asRadians: Double) {
 }
 
 // constructors
-@Unproven
 inline val Number.radians get() = Angle(this.toDouble())
-@Unproven
 inline val Number.degrees get() = Angle(Math.toRadians(this.toDouble()))
 
 // destructors
-@Unproven
 inline val Angle.asDegrees get() = Math.toDegrees(asRadians)

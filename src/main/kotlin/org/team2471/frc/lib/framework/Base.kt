@@ -1,30 +1,48 @@
 package org.team2471.frc.lib.framework
 
-import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.wpilibj.*
 import edu.wpi.first.hal.FRCNetComm
 import edu.wpi.first.hal.HAL
+import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
-import org.team2471.frc.lib.coroutines.MeanlibScope
-import org.team2471.frc.lib.coroutines.parallel
-import org.team2471.frc.lib.framework.internal.InputMapper
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
 
+/**
+ * The core robot program to run. The methods in this interface can be overridden in order to
+ * execute code in the specified mode.
+ */
 interface RobotProgram {
-    suspend fun autonomous() { /* NOOP */ }
-
-    suspend fun teleop() { /* NOOP */ }
-
-    suspend fun test() { /* NOOP */ }
-
+    /**
+     * Called immediately when the robot becomes enabled. This method must exit before [autonomous],
+     * [teleop] or [test] will be called.
+     */
     suspend fun enable() { /* NOOP */}
 
+    /**
+     * Called immediately when the robot becomes disabled.
+     */
     suspend fun disable() { /* NOOP */ }
+
+    /**
+     * Called immediately after [enable] when the robot's mode transitions to autonomous.
+     */
+    suspend fun autonomous() { /* NOOP */ }
+
+    /**
+     * Called immediately after [enable] when the robot's mode transitions to teleoperated.
+     */
+    suspend fun teleop() { /* NOOP */ }
+
+    /**
+     * Called immediately after [enable] when the robot's mode transitions to test.
+     */
+    suspend fun test() { /* NOOP */ }
 }
 
 private enum class RobotMode {
@@ -34,6 +52,9 @@ private enum class RobotMode {
     TEST,
 }
 
+/**
+ * Initializes the HAL and core WPILib features, including the NetworkTables server and versioning.
+ */
 fun initializeWpilib() {
     // set up network tables
     val ntInstance = NetworkTableInstance.getDefault()
@@ -53,6 +74,10 @@ fun initializeWpilib() {
     println("wpilib initialized successfully.")
 }
 
+
+/**
+ * Runs a given [robotProgram].
+ */
 fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     println("********** Robot program starting! **********")
 
@@ -79,9 +104,9 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
         }
 
         // process joystick inputs
-        InputMapper.process()
+        Events.process()
 
-        val wasDisabled = previousRobotMode == RobotMode.DISABLED
+        val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
         if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
             HAL.observeUserProgramAutonomous()
@@ -89,11 +114,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.autonomous() })
-                    } else {
-                        robotProgram.autonomous()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.autonomous()
                 }
             }
         } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
@@ -102,11 +124,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.teleop() })
-                    } else {
-                        robotProgram.teleop()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.teleop()
                 }
             }
         } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
@@ -115,11 +134,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
             GlobalScope.launch(MeanlibDispatcher) {
                 use(mainSubsystem) {
-                    if (wasDisabled) {
-                        parallel({ robotProgram.enable() }, { robotProgram.test() })
-                    } else {
-                        robotProgram.autonomous()
-                    }
+                    if (wasDisabled) robotProgram.enable()
+                    robotProgram.test()
                 }
             }
         }
