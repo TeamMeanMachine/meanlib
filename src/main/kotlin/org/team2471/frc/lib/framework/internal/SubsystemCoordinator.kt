@@ -9,7 +9,7 @@ import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
 
 @ExperimentalCoroutinesApi
-internal object EventHandler {
+internal object SubsystemCoordinator {
     private val messageChannel = Channel<Message>(capacity = Channel.UNLIMITED)
 
     init {
@@ -62,7 +62,6 @@ internal object EventHandler {
     // MESSAGE HANDLING
     //
 
-    @ExperimentalCoroutinesApi
     private fun handleMessage(message: Message) {
         when (message) {
             is Message.NewAction -> {
