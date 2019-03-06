@@ -284,8 +284,9 @@ public class Path2D {
     }
 
     public double getAbsoluteHeadingDegreesAt(double time) {
-        Vector2 tangent = getTangent(time);
-        double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
-        return pathHeading + m_headingCurve.getValue(time);
+//        Vector2 tangent = getTangent(time);
+//        double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
+//        return pathHeading + m_headingCurve.getValue(time);
+        return m_headingCurve.getValue(time);
     }
 }

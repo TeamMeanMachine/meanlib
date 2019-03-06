@@ -211,7 +211,6 @@ suspend fun SwerveDrive.driveAlongPath(
         val robotHeading = heading
         val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (pathHeading - robotHeading).wrap()
-        println("RobotHeading=$robotHeading PathHeading=$pathHeading HeadingError=$headingError")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees)/dt
