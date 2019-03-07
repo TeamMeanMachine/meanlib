@@ -14,7 +14,7 @@ object Events {
 
     @Synchronized
     fun whenActive(condition: () -> Boolean, action: suspend () -> Unit) {
-        var prevState = condition()
+        var prevState = false
         var job: Job? = null
 
         functions.add {
@@ -35,7 +35,7 @@ object Events {
 
     @Synchronized
     fun whileActive(condition: () -> Boolean, action: suspend () -> Unit) {
-        var prevState = condition()
+        var prevState = false
         var job: Job? = null
 
         functions.add {
@@ -58,7 +58,7 @@ object Events {
 
     @Synchronized
     fun toggleWhenActive(condition: () -> Boolean, action: suspend () -> Unit) {
-        var prevState = condition()
+        var prevState = false
         var job: Job? = null
 
         functions.add {
