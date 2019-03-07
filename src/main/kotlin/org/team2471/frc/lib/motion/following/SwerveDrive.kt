@@ -64,6 +64,7 @@ fun SwerveDrive.zeroEncoders() {
     position = Vector2(0.0, 0.0)
 }
 
+// temporary to measure maximum turn speed
 fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
     recordOdometry()
 
@@ -101,7 +102,6 @@ private fun SwerveDrive.Module.calculateAngleReturnSpeed(
     turn: Double,
     robotPivot: Vector2
 ) : Double {
-
     val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
     var power = localGoal.length
     var setPoint = localGoal.angle.radians
@@ -169,7 +169,11 @@ fun SwerveDrive.resetOdometry() {
     heading = 0.0.degrees
 }
 
-suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, resetOdometry: Boolean = false) {
+suspend fun SwerveDrive.driveAlongPath(
+    path: Path2D,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0
+) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
     if (resetOdometry) {
@@ -186,6 +190,7 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
     val timer = Timer()
     timer.start()
     prevPathPosition = path.getPosition(0.0)
+    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -204,10 +209,8 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
 
         // heading error
         val robotHeading = heading
-        val pathHeadingRadiansDouble = path.getTangent(t).angle + path.headingCurve.getValue(t)
-        val pathHeading = pathHeadingRadiansDouble.radians
+        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (pathHeading - robotHeading).wrap()
-        //println("GyroHeading=$robotHeading PathHeading=$pathHeading AngleError=$angleError")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees)/dt
