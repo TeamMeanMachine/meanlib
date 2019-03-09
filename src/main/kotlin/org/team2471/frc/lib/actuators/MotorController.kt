@@ -140,7 +140,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     fun setPositionSetpoint(position: Double, feedForward: Double) =
         ctreMotorController.set(
-            ControlMode.Position, position / feedbackCoefficient,
+            ControlMode.Position, position / feedbackCoefficient - rawOffset,
             DemandType.ArbitraryFeedForward, feedForward
         )
 
@@ -191,7 +191,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CTREMotorController.set
      */
     fun setMotionMagicSetpoint(position: Double) =
-        ctreMotorController.set(ControlMode.MotionMagic, position / feedbackCoefficient)
+        ctreMotorController.set(ControlMode.MotionMagic, position / feedbackCoefficient - rawOffset)
 
     /**
      * Sets the closed-loop Motion Magic position setpoint with a specified [feedForward] value.
@@ -418,7 +418,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
             fun f(f: Double) {
-                ctreMotorController.config_kF(slot, f / feedbackCoefficient, timeoutMs)
+                ctreMotorController.config_kF(slot, f / feedbackCoefficient / 10.0, timeoutMs)
             }
 
             fun iZone(iZone: Double) {
