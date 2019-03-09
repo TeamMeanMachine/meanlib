@@ -77,7 +77,7 @@ Number 2!
 Number 3!
 Number 4!
 Number 5!
-Hello meablib!
+Hello meanlib!
 Number 6!
 Done.
 ```

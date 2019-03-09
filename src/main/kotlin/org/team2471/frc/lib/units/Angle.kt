@@ -1,21 +1,21 @@
 package org.team2471.frc.lib.units
 
-inline class Angle(val asRadians: Double) {
-    operator fun plus(other: Angle) = Angle(asRadians + other.asRadians)
+inline class Angle(val asDegrees: Double) {
+    operator fun plus(other: Angle) = Angle(asDegrees + other.asDegrees)
 
-    operator fun minus(other: Angle) = Angle(asRadians - other.asRadians)
+    operator fun minus(other: Angle) = Angle(asDegrees - other.asDegrees)
 
-    operator fun times(factor: Double) = Angle(asRadians * factor)
+    operator fun times(factor: Double) = Angle(asDegrees * factor)
 
-    operator fun div(factor: Double) = Angle(asRadians / factor)
+    operator fun div(factor: Double) = Angle(asDegrees / factor)
 
-    operator fun rem(other: Angle) = Angle(asRadians % other.asRadians)
+    operator fun rem(other: Angle) = Angle(asDegrees % other.asDegrees)
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus() = Angle(-asRadians)
+    operator fun unaryMinus() = Angle(-asDegrees)
 
-    operator fun compareTo(other: Angle) = asRadians.compareTo(other.asRadians)
+    operator fun compareTo(other: Angle) = asDegrees.compareTo(other.asDegrees)
 
     override fun toString() = "$asDegrees degrees"
 
@@ -25,7 +25,7 @@ inline class Angle(val asRadians: Double) {
 
     fun tan() = Angle.tan(this)
 
-    fun wrap() = Angle(Math.IEEEremainder(asRadians, 2 * Math.PI))
+    fun wrap() = Angle(Math.IEEEremainder(asDegrees, 360.0))
 
     companion object {
         @JvmStatic
@@ -38,25 +38,25 @@ inline class Angle(val asRadians: Double) {
         fun tan(angle: Angle) = Math.tan(angle.asRadians)
 
         @JvmStatic
-        fun asin(value: Double) = Angle(Math.asin(value))
+        fun asin(value: Double) = Angle(Math.toDegrees(Math.asin(value)))
 
         @JvmStatic
-        fun acos(value: Double) = Angle(Math.acos(value))
+        fun acos(value: Double) = Angle(Math.toDegrees(Math.acos(value)))
 
         @JvmStatic
-        fun atan(value: Double) = Angle(Math.atan(value))
+        fun atan(value: Double) = Angle(Math.toDegrees(Math.atan(value)))
 
         @JvmStatic
-        fun atan2(y: Double, x: Double) = Angle(Math.atan2(y, x))
+        fun atan2(y: Double, x: Double) = Angle(Math.toDegrees(Math.atan2(y, x)))
 
         @JvmStatic
-        fun atan2(y: Length, x: Length) = Angle(Math.atan2(y.asInches, x.asInches))
+        fun atan2(y: Length, x: Length) = Angle(Math.toDegrees(Math.atan2(y.asInches, x.asInches)))
     }
 }
 
 // constructors
-inline val Number.radians get() = Angle(this.toDouble())
-inline val Number.degrees get() = Angle(Math.toRadians(this.toDouble()))
+inline val Number.radians get() = Angle(Math.toDegrees(this.toDouble()))
+inline val Number.degrees get() = Angle(this.toDouble())
 
 // destructors
-inline val Angle.asDegrees get() = Math.toDegrees(asRadians)
+inline val Angle.asRadians get() = Math.toRadians(asDegrees)

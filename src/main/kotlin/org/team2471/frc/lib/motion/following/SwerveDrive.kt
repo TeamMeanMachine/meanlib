@@ -3,7 +3,6 @@ package org.team2471.frc.lib.motion.following
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -15,6 +14,7 @@ import kotlin.math.sin
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = 0.0
+private var prevPathHeading = 0.0.radians
 
 interface SwerveDrive {
     val parameters: SwerveParameters
@@ -64,6 +64,7 @@ fun SwerveDrive.zeroEncoders() {
     position = Vector2(0.0, 0.0)
 }
 
+// temporary to measure maximum turn speed
 fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
     recordOdometry()
 
@@ -71,15 +72,17 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
         return stop()
     }
 
-    if (fieldCentric) {
+    val adjustedTranslation = if (fieldCentric) {
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         translation.rotateRadians(heading.asRadians)
+    } else {
+        translation
     }
 
     val speeds = Array(modules.size) { 0.0 }
 
     for (i in 0 until modules.size) {
-        speeds[i] = modules[i].calculateAngleReturnSpeed(translation, turn, robotPivot)
+        speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, turn, robotPivot)
     }
 
     val maxSpeed = speeds.maxBy(Math::abs)!!
@@ -92,6 +95,23 @@ fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean 
     for (i in 0 until modules.size) {
         modules[i].setDrivePower(speeds[i])
     }
+}
+
+private fun SwerveDrive.Module.calculateAngleReturnSpeed(
+    translation: Vector2,
+    turn: Double,
+    robotPivot: Vector2
+) : Double {
+    val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
+    var power = localGoal.length
+    var setPoint = localGoal.angle.radians
+    val angleError = (setPoint - angle).wrap()
+    if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
+        setPoint -= Math.PI.radians
+        power = -power
+    }
+    angleSetpoint = setPoint
+    return power
 }
 
 suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
@@ -109,24 +129,6 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-private fun SwerveDrive.Module.calculateAngleReturnSpeed(
-    translation: Vector2,
-    turn: Double,
-    robotPivot: Vector2
-) : Double {
-
-    val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
-    var power = localGoal.length
-    var setPoint = localGoal.angle.radians
-    val angleError = (setPoint - angle).wrap()
-    if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
-        setPoint -= Math.PI.radians
-        power = -power
-    }
-    angleSetpoint = setPoint
-    return power
-}
-
 fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
 
@@ -138,7 +140,7 @@ fun SwerveDrive.recordOdometry() {
     for (i in 0 until modules.size) {
         translation += translations[i]
     }
-    translation /= 4.0
+    translation /= modules.size.toDouble()
 
     position += translation
     val time = System.currentTimeMillis().toDouble()/1000.0
@@ -158,19 +160,37 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     )
 }
 
-suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, resetOdometry: Boolean = false) {
+fun SwerveDrive.resetOdometry() {
+    for (module in modules) {
+        module.prevDistance = 0.0
+    }
+    zeroEncoders()
+    position = Vector2(0.0, 0.0)
+    heading = 0.0.degrees
+}
+
+suspend fun SwerveDrive.driveAlongPath(
+    path: Path2D,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0
+) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
     if (resetOdometry) {
-        zeroEncoders()
+        println("Position = $position Heading = $heading")
+        resetOdometry()
+
+        // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
         heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+        println("After Reset Position = $position Heading = $heading")
     }
     var prevTime = 0.0
 
     val timer = Timer()
     timer.start()
     prevPathPosition = path.getPosition(0.0)
+    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -179,23 +199,29 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
         // position error
         val pathPosition = path.getPosition(t)
         val positionError = pathPosition - position
-
-        // velocity feed forward
-        val pathVelocity = (pathPosition - prevPathPosition)/dt
         //println("pathPosition=$pathPosition position=$position positionError=$positionError")
+
+        // position feed forward
+        val pathVelocity = (pathPosition - prevPathPosition)/dt
         prevPathPosition = pathPosition
 
-        val translationControlField = pathVelocity * parameters.kFeedForward + positionError * parameters.kPosition
+        val translationControlField = pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
 
-        // apply gyro corrections
-        val gyroAngle = heading
-        val pathAngle = path.getTangent(t).angle + path.headingCurve.getValue(t)
-        val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle.asDegrees)
+        // heading error
+        val robotHeading = heading
+        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val headingError = (pathHeading - robotHeading).wrap()
 
-        val turnControl = angleError * parameters.kTurn
+        // heading feed forward
+        val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees)/dt
+        prevPathHeading = pathHeading
 
+        val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+
+        // send it
         drive(translationControlField, turnControl, true)
 
+        // are we done yet?
         if (t >= path.durationWithSpeed + extraTime)
             stop()
 
@@ -204,5 +230,7 @@ suspend fun SwerveDrive.driveAlongPath(path: Path2D, extraTime: Double = 0.0, re
 //        println("Time=$t Path Position=$pathPosition Position=$position")
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
+
+    // shut it down
     drive(Vector2(0.0,0.0), 0.0, true)
 }
