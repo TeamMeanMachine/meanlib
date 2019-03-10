@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
-import org.team2471.frc.lib.coroutines.MeanlibScope
 import org.team2471.frc.lib.framework.Subsystem
 import kotlin.coroutines.*
 
@@ -24,11 +23,13 @@ internal object SubsystemCoordinator {
         body: suspend CoroutineScope.() -> R
     ): R {
         val context = coroutineContext
+        val caller = Thread.currentThread().stackTrace[3]
 
         @Suppress("UNCHECKED_CAST")
         return suspendCancellableCoroutine<Any?> { cont ->
             val message = Message.NewAction(
                 subsystems,
+                caller,
                 context,
                 body,
                 cancelConflicts,
@@ -136,7 +137,7 @@ internal object SubsystemCoordinator {
                     while (!actionJob.isCompleted) {
                         if (actionJob.isCancelled) {
                             if (i > 0) reportError(
-                                "Action job hanging up subsystems " +
+                                "Action job at ${message.caller} hanging up subsystems " +
                                         "{ ${newSubsystems.joinToString { it.name }} } (${i * 2.5}s)", false
                             )
                             i++
@@ -177,6 +178,7 @@ internal object SubsystemCoordinator {
     private sealed class Message {
         class NewAction(
             val subsystems: Set<Subsystem>,
+            val caller: StackTraceElement,
             val callerContext: CoroutineContext,
             val body: suspend CoroutineScope.() -> Any?,
             val cancelConflicts: Boolean,
