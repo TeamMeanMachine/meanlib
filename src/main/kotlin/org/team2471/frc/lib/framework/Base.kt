@@ -89,6 +89,8 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
     while (true) {
+        Events.process()
+
         ds.waitForData()
 
         if (ds.isDisabled) {
@@ -102,9 +104,6 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             }
             continue
         }
-
-        // process joystick inputs
-        Events.process()
 
         val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 

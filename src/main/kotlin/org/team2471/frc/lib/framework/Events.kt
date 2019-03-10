@@ -64,11 +64,13 @@ object Events {
         functions.add {
             val state = condition()
 
+            val prevJob = job
             if (state && !prevState) {
-                if (job == null) {
+                if (prevJob != null && prevJob.isActive) {
                     job!!.cancel()
                 } else {
                     job = GlobalScope.launch(MeanlibDispatcher) {
+                        prevJob?.join()
                         action()
                     }
                 }
