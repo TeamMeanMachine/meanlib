@@ -41,13 +41,13 @@ dependencies {
     implementation("edu.wpi.first.hal:hal-java:2019.4.1")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.4.1")
     implementation("edu.wpi.first.ntcore:ntcore-java:2019.4.1")
-    implementation("com.ctre.phoenix:api-java:5.12.0")
+    implementation("com.ctre.phoenix:api-java:5.14.1")
 
     // other
     implementation("com.google.code.gson:gson:2.8.2")
-    implementation("com.squareup.moshi:moshi:1.8.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
-    implementation("com.squareup.moshi:moshi-adapters:1.8.0")
+    compile("com.squareup.moshi:moshi:1.8.0")
+    compile("com.squareup.moshi:moshi-kotlin:1.8.0")
+    compile("com.squareup.moshi:moshi-adapters:1.8.0")
 
 }
 
