@@ -221,7 +221,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param timeoutMs the timeout to use on various motor functions
      * @param body the function which configures this [MotorController]
      */
-    inline fun config(timeoutMs: Int = Int.MAX_VALUE, body: ConfigScope.() -> Unit) = apply {
+    inline fun config(timeoutMs: Int = 100, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
     }
 
