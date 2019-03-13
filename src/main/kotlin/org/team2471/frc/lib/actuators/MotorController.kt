@@ -51,6 +51,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }.toTypedArray()
 
     /**
+     * The selected PID slot.
+     */
+    var pidSlot: Int = 0
+        set(value) {
+            ctreMotorController.selectProfileSlot(value, 0)
+            field = value
+        }
+
+    /**
      * The current being drawn by the [MotorController].
      * Note that this will only work if the [MotorController] is a Talon SRX. Attempts to use this method on
      * non-Talons will result in an [IllegalStateException].

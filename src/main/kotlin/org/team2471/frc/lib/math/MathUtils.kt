@@ -50,6 +50,9 @@ fun linearMap(inLo: Double, inHi: Double, outLo: Double, outHi: Double, inAlpha:
     return (inAlpha - inLo) / (inHi - inLo) * (outHi - outLo) + outLo
 }
 
+fun Double.linearMap(inRange: DoubleRange, outRange: DoubleRange): Double =
+    linearMap(inRange.start, inRange.endInclusive, outRange.start, outRange.endInclusive, this)
+
 fun cubicMap(inLo: Double, inHi: Double, outLo: Double, outHi: Double, inAlpha: Double): Double {
     val x = (inAlpha - inLo) / (inHi - inLo)
     val cubic = (3 - 2 * x) * x * x
