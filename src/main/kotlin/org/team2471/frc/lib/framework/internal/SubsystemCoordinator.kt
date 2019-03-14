@@ -19,6 +19,7 @@ internal object SubsystemCoordinator {
 
     suspend fun <R> useSubsystems(
         subsystems: Set<Subsystem>,
+        name: String?,
         cancelConflicts: Boolean,
         body: suspend CoroutineScope.() -> R
     ): R {
@@ -32,6 +33,7 @@ internal object SubsystemCoordinator {
                 caller,
                 context,
                 body,
+                name,
                 cancelConflicts,
                 cont
             )
@@ -54,7 +56,7 @@ internal object SubsystemCoordinator {
     private fun resetSubsystem(subsystem: Subsystem) {
         if (subsystem.hasDefault) {
             GlobalScope.launch(MeanlibDispatcher) {
-                useSubsystems(setOf(subsystem), false) { subsystem.default() }
+                useSubsystems(setOf(subsystem), "Default", false) { subsystem.default() }
             }
         }
     }
@@ -105,6 +107,8 @@ internal object SubsystemCoordinator {
                     CoroutineStart.ATOMIC
                 ) {
                     try {
+                        println("Subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
+
                         // Cancel conflicting jobs. It is critical that coroutines must not complete until
                         // it's conflict's jobs have finished execution
                         withContext(NonCancellable) {
@@ -121,6 +125,7 @@ internal object SubsystemCoordinator {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
                     } finally {
+                        println("Freeing subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
                         newSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
                         messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
@@ -181,6 +186,7 @@ internal object SubsystemCoordinator {
             val caller: StackTraceElement,
             val callerContext: CoroutineContext,
             val body: suspend CoroutineScope.() -> Any?,
+            val name: String?,
             val cancelConflicts: Boolean,
             val continuation: CancellableContinuation<Any?>
         ) : Message()

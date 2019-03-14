@@ -123,5 +123,5 @@ open class Subsystem(
  * cancelling itself.
  */
 @UseExperimental(ExperimentalCoroutinesApi::class)
-suspend fun <R> use(vararg subsystems: Subsystem, cancelConflicts: Boolean = true, body: suspend CoroutineScope.()  -> R) =
-    SubsystemCoordinator.useSubsystems(setOf(*subsystems), cancelConflicts, body)
+suspend fun <R> use(vararg subsystems: Subsystem, name: String? = null, cancelConflicts: Boolean = true, body: suspend CoroutineScope.()  -> R) =
+    SubsystemCoordinator.useSubsystems(setOf(*subsystems), name, cancelConflicts, body)
