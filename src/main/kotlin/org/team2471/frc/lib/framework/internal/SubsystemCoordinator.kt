@@ -24,7 +24,7 @@ internal object SubsystemCoordinator {
         body: suspend CoroutineScope.() -> R
     ): R {
         val context = coroutineContext
-        val caller = Thread.currentThread().stackTrace[3]
+        val caller = Thread.currentThread().stackTrace
 
         @Suppress("UNCHECKED_CAST")
         return suspendCancellableCoroutine<Any?> { cont ->
@@ -142,7 +142,7 @@ internal object SubsystemCoordinator {
                     while (!actionJob.isCompleted) {
                         if (actionJob.isCancelled) {
                             if (i > 0) reportError(
-                                "Action job at ${message.caller} hanging up subsystems " +
+                                "Action job ${message.name} at \n${message.caller.joinToString("\n")}\n hanging up subsystems " +
                                         "{ ${newSubsystems.joinToString { it.name }} } (${i * 2.5}s)", false
                             )
                             i++
@@ -183,7 +183,7 @@ internal object SubsystemCoordinator {
     private sealed class Message {
         class NewAction(
             val subsystems: Set<Subsystem>,
-            val caller: StackTraceElement,
+            val caller: Array<StackTraceElement>,
             val callerContext: CoroutineContext,
             val body: suspend CoroutineScope.() -> Any?,
             val name: String?,
