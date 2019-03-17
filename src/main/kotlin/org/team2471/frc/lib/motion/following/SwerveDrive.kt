@@ -24,7 +24,7 @@ interface SwerveDrive {
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
 
-    val modules: Array <Module>
+    val modules: Array<Module>
 
     fun startFollowing() = Unit
 
@@ -65,24 +65,33 @@ fun SwerveDrive.zeroEncoders() {
 }
 
 // temporary to measure maximum turn speed
-fun SwerveDrive.drive(translation: Vector2, turn: Double, fieldCentric: Boolean = true) {
+fun SwerveDrive.drive(
+    translation: Vector2,
+    turn: Double,
+    fieldCentric: Boolean = true,
+    softTranslation: Vector2 = Vector2(0.0, 0.0),
+    softTurn: Double = 0.0
+) {
     recordOdometry()
 
-    if (translation.x == 0.0 && translation.y == 0.0 && turn == 0.0) {
+    var adjustedTranslation = translation
+    if (fieldCentric) {
+        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+        adjustedTranslation = adjustedTranslation.rotateDegrees(heading.asDegrees)
+    }
+    adjustedTranslation += softTranslation
+
+    val totalTurn = turn + softTurn
+
+    if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
         return stop()
     }
 
-    val adjustedTranslation = if (fieldCentric) {
-        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
-        translation.rotateRadians(heading.asRadians)
-    } else {
-        translation
-    }
 
     val speeds = Array(modules.size) { 0.0 }
 
     for (i in 0 until modules.size) {
-        speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, turn, robotPivot)
+        speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, totalTurn, robotPivot)
     }
 
     val maxSpeed = speeds.maxBy(Math::abs)!!
@@ -101,7 +110,7 @@ private fun SwerveDrive.Module.calculateAngleReturnSpeed(
     translation: Vector2,
     turn: Double,
     robotPivot: Vector2
-) : Double {
+): Double {
     val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
     var power = localGoal.length
     var setPoint = localGoal.angle.radians
@@ -143,9 +152,9 @@ fun SwerveDrive.recordOdometry() {
     translation /= modules.size.toDouble()
 
     position += translation
-    val time = System.currentTimeMillis().toDouble()/1000.0
+    val time = System.currentTimeMillis().toDouble() / 1000.0
     val deltaTime = time - prevTime
-    velocity = (position - prevPosition)/deltaTime
+    velocity = (position - prevPosition) / deltaTime
     prevTime = time
     prevPosition = position
 }
@@ -202,10 +211,11 @@ suspend fun SwerveDrive.driveAlongPath(
         //println("pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
-        val pathVelocity = (pathPosition - prevPathPosition)/dt
+        val pathVelocity = (pathPosition - prevPathPosition) / dt
         prevPathPosition = pathPosition
 
-        val translationControlField = pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+        val translationControlField =
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
 
         // heading error
         val robotHeading = heading
@@ -213,10 +223,11 @@ suspend fun SwerveDrive.driveAlongPath(
         val headingError = (pathHeading - robotHeading).wrap()
 
         // heading feed forward
-        val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees)/dt
+        val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
         prevPathHeading = pathHeading
 
-        val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+        val turnControl =
+            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
 
         // send it
         drive(translationControlField, turnControl, true)
@@ -232,5 +243,5 @@ suspend fun SwerveDrive.driveAlongPath(
     }
 
     // shut it down
-    drive(Vector2(0.0,0.0), 0.0, true)
+    drive(Vector2(0.0, 0.0), 0.0, true)
 }
