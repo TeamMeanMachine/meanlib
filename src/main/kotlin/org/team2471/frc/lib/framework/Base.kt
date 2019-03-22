@@ -101,6 +101,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
         ds.waitForData()
 
+        // TODO: see if the alliance check is really necessary
         if (previousRobotMode == null && ds.alliance != DriverStation.Alliance.Invalid) {
             robotProgram.comms()
         }
