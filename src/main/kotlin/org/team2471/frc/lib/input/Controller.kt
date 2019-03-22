@@ -35,7 +35,7 @@ open class Controller(val port: Int) {
         val currentTime = Timer.getFPGATimestamp()
         if (ds.isEnabled && currentTime - lastErrorReported >= JOYSTICK_WARNING_INTERVAL) {
             lastErrorReported = currentTime
-            DriverStation.reportWarning("Joystick on port $port is disconnected", false)
+            DriverStation.reportWarning("Controller on port $port is disconnected", false)
         }
 
         backup
