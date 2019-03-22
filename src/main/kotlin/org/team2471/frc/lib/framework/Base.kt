@@ -43,6 +43,14 @@ interface RobotProgram {
      * Called immediately after [enable] when the robot's mode transitions to test.
      */
     suspend fun test() { /* NOOP */ }
+
+    /**
+     * Called every time communications are established between the robot and the driver station.
+     * This method can be used to make use of functions that require communication with the driver
+     * station, e.g. [DriverStation.getAlliance] or [DriverStation.getMatchType]. Note that data
+     * from the driver station may not be immediately available and may need to be rechecked.
+     */
+    fun comms() { /* NOOP */ }
 }
 
 private enum class RobotMode {
@@ -92,6 +100,10 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
         Events.process()
 
         ds.waitForData()
+
+        if (previousRobotMode == null && ds.alliance != DriverStation.Alliance.Invalid) {
+            robotProgram.comms()
+        }
 
         if (ds.isDisabled) {
             if (previousRobotMode != RobotMode.DISABLED) {
