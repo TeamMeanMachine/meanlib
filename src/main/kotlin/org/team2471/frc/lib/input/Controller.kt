@@ -7,7 +7,7 @@ import java.lang.IllegalStateException
 private val ds = DriverStation.getInstance()
 
 open class Controller(val port: Int) {
-    private var lastErrorReported = 0.0
+    private var lastWarningReported = 0.0
 
     val isXbox
         get() = ds.getJoystickIsXbox(port)
@@ -33,8 +33,8 @@ open class Controller(val port: Int) {
         body()
     } else {
         val currentTime = Timer.getFPGATimestamp()
-        if (ds.isEnabled && currentTime - lastErrorReported >= JOYSTICK_WARNING_INTERVAL) {
-            lastErrorReported = currentTime
+        if (ds.isEnabled && currentTime - lastWarningReported >= JOYSTICK_WARNING_INTERVAL) {
+            lastWarningReported = currentTime
             DriverStation.reportWarning("Controller on port $port is disconnected", false)
         }
 
