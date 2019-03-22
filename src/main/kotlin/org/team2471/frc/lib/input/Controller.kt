@@ -65,6 +65,6 @@ open class Controller(val port: Int) {
     enum class Direction { IDLE, UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT }
 
     companion object {
-        private const val JOYSTICK_WARNING_INTERVAL = 2.0
+        private const val JOYSTICK_WARNING_INTERVAL = 5.0
     }
 }
