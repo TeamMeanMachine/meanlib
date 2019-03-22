@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
+import org.team2471.frc.lib.coroutines.periodic
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
@@ -88,9 +89,14 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
-    while (true) {
-        Events.process()
+    GlobalScope.launch(MeanlibDispatcher) {
+        periodic {
+            Events.process()
+            if (!ds.isDSAttached) previousRobotMode = null
+        }
+    }
 
+    while (true) {
         ds.waitForData()
 
         if (ds.isDisabled) {
