@@ -99,7 +99,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
                 previousRobotMode = RobotMode.DISABLED
 
                 GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem) { robotProgram.disable() }
+                    use(mainSubsystem, name = "Disabled") { robotProgram.disable() }
                 }
             }
             continue
@@ -112,7 +112,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             previousRobotMode = RobotMode.AUTONOMOUS
 
             GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem) {
+                use(mainSubsystem, name = "Autonomous") {
                     if (wasDisabled) robotProgram.enable()
                     robotProgram.autonomous()
                 }
@@ -122,7 +122,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             previousRobotMode = RobotMode.TELEOP
 
             GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem) {
+                use(mainSubsystem, name = "Teleop") {
                     if (wasDisabled) robotProgram.enable()
                     robotProgram.teleop()
                 }
@@ -132,7 +132,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
             previousRobotMode = RobotMode.TEST
 
             GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem) {
+                use(mainSubsystem, name = "Test") {
                     if (wasDisabled) robotProgram.enable()
                     robotProgram.test()
                 }

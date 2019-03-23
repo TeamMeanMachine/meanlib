@@ -39,7 +39,7 @@ interface ArcadeDrive {
 suspend fun <T> T.driveAlongPath(
         path: Path2D,
         extraTime: Double = 0.0
-) where T : ArcadeDrive, T : Subsystem = use(this) {
+) where T : ArcadeDrive, T : Subsystem = use(this, name = "Drive Along Path") {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, " +
             "travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
 
