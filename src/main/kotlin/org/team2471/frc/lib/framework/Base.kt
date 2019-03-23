@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
+import org.team2471.frc.lib.coroutines.periodic
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
@@ -54,6 +55,7 @@ interface RobotProgram {
 }
 
 private enum class RobotMode {
+    DISCONNECTED,
     DISABLED,
     AUTONOMOUS,
     TELEOP,
@@ -101,9 +103,10 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
         ds.waitForData()
 
-        // TODO: see if the alliance check is really necessary
-        if (previousRobotMode == null && ds.alliance != DriverStation.Alliance.Invalid) {
+        if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
             robotProgram.comms()
+
+            if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
         }
 
         if (ds.isDisabled) {
