@@ -47,6 +47,7 @@ interface RobotProgram {
 }
 
 private enum class RobotMode {
+    DISCONNECTED,
     DISABLED,
     AUTONOMOUS,
     TELEOP,
@@ -92,7 +93,7 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     GlobalScope.launch(MeanlibDispatcher) {
         periodic {
             Events.process()
-            if (!ds.isDSAttached) previousRobotMode = null
+            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
         }
     }
 
