@@ -20,7 +20,7 @@ open class Controller(val port: Int) {
         get() = ds.getStickPOVCount(port)
 
     val isConnected
-        get() = buttonCount == 0 && axisCount == 0 && povCount == 0
+        get() = buttonCount != 0 || axisCount != 0 || povCount != 0
 
     /**
      * Ensures the [Controller] is connected, and, if not, returns a [backup] value and prints a
