@@ -99,9 +99,12 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
     while (true) {
-        Events.process()
+        val hasNewData = ds.waitForData(0.02)
 
-        ds.waitForData()
+        Events.process()
+        if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
+
+        if (!hasNewData) continue
 
         if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
             robotProgram.comms()
