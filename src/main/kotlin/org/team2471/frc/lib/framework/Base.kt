@@ -90,15 +90,13 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
 
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
-    GlobalScope.launch(MeanlibDispatcher) {
-        periodic {
-            Events.process()
-            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
-        }
-    }
-
     while (true) {
-        ds.waitForData()
+        val hasNewData = ds.waitForData(0.02)
+
+        Events.process()
+        if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
+
+        if (!hasNewData) continue
 
         if (ds.isDisabled) {
             if (previousRobotMode != RobotMode.DISABLED) {
