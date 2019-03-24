@@ -1,16 +1,20 @@
 package org.team2471.frc.lib.motion.following
 
+import com.team254.lib.util.Interpolable
+import com.team254.lib.util.InterpolatingDouble
+import com.team254.lib.util.InterpolatingTreeMap
+import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 
+private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = 0.0
@@ -43,13 +47,27 @@ interface SwerveDrive {
 
         // motor interface
         var angleSetpoint: Angle
+
         fun setDrivePower(power: Double)
 
         fun stop()
         fun zeroEncoder()
         fun driveWithDistance(angle: Angle, distance: Length)
     }
+
+    data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose> {
+        override fun interpolate(other: Pose, x: Double): Pose = when {
+            x <= 0.0 -> this
+            x >= 1.0 -> other
+            else -> Pose(position.interpolate(other.position, x), (other.heading - heading) * x + heading)
+        }
+    }
 }
+
+val SwerveDrive.pose: SwerveDrive.Pose
+    get() = SwerveDrive.Pose(position, heading)
+
+fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose = poseHistory.getInterpolated(InterpolatingDouble(time))
 
 fun SwerveDrive.stop() {
     for (module in modules) {
@@ -138,27 +156,6 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-fun SwerveDrive.recordOdometry() {
-    var translation = Vector2(0.0, 0.0)
-
-    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
-    for (i in 0 until modules.size) {
-        translations[i] = modules[i].recordOdometry(heading)
-    }
-
-    for (i in 0 until modules.size) {
-        translation += translations[i]
-    }
-    translation /= modules.size.toDouble()
-
-    position += translation
-    val time = System.currentTimeMillis().toDouble() / 1000.0
-    val deltaTime = time - prevTime
-    velocity = (position - prevPosition) / deltaTime
-    prevTime = time
-    prevPosition = position
-}
-
 fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     val angleInFieldSpace = heading + angle
     val deltaDistance = currDistance - prevDistance
@@ -245,3 +242,27 @@ suspend fun SwerveDrive.driveAlongPath(
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
 }
+
+private fun SwerveDrive.recordOdometry() {
+    var translation = Vector2(0.0, 0.0)
+
+    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
+    for (i in 0 until modules.size) {
+        translations[i] = modules[i].recordOdometry(heading)
+    }
+
+    for (i in 0 until modules.size) {
+        translation += translations[i]
+    }
+    translation /= modules.size.toDouble()
+
+    position += translation
+    val time = Timer.getFPGATimestamp()
+    val deltaTime = time - prevTime
+    velocity = (position - prevPosition) / deltaTime
+
+    poseHistory[InterpolatingDouble(time)] = pose
+    prevTime = time
+    prevPosition = position
+}
+
