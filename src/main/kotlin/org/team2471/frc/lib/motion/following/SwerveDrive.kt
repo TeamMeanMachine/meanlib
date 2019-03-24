@@ -120,7 +120,7 @@ private fun SwerveDrive.Module.calculateAngleReturnSpeed(
         power = -power
     }
     angleSetpoint = setPoint
-    return power
+    return power * Math.abs(angleError.cos())
 }
 
 suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
