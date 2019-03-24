@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
+import org.team2471.frc.lib.coroutines.periodic
 import java.io.File
 
 const val LANGUAGE_KOTLIN = 6
@@ -43,9 +44,18 @@ interface RobotProgram {
      * Called immediately after [enable] when the robot's mode transitions to test.
      */
     suspend fun test() { /* NOOP */ }
+
+    /**
+     * Called every time communications are established between the robot and the driver station.
+     * This method can be used to make use of functions that require communication with the driver
+     * station, e.g. [DriverStation.getAlliance] or [DriverStation.getMatchType]. Note that data
+     * from the driver station may not be immediately available and may need to be rechecked.
+     */
+    fun comms() { /* NOOP */ }
 }
 
 private enum class RobotMode {
+    DISCONNECTED,
     DISABLED,
     AUTONOMOUS,
     TELEOP,
@@ -89,9 +99,18 @@ fun runRobotProgram(robotProgram: RobotProgram): Nothing {
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
     while (true) {
-        Events.process()
+        val hasNewData = ds.waitForData(0.02)
 
-        ds.waitForData()
+        Events.process()
+        if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
+
+        if (!hasNewData) continue
+
+        if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
+            robotProgram.comms()
+
+            if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
+        }
 
         if (ds.isDisabled) {
             if (previousRobotMode != RobotMode.DISABLED) {
