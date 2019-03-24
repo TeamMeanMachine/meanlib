@@ -1,6 +1,8 @@
 package org.team2471.frc.lib.math
 
-data class Vector2(var x: Double, var y: Double) {
+import com.team254.lib.util.Interpolable
+
+data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
     val angle: Double get() = Math.atan2(x, y)
 
@@ -44,5 +46,13 @@ data class Vector2(var x: Double, var y: Double) {
     fun set(X: Double, Y: Double) {
         x = X
         y = Y
+    }
+
+    override fun interpolate(other: Vector2, x: Double): Vector2 {
+        return when {
+            x <= 0.0 -> this
+            x >= 1.0 -> other
+            else -> Vector2(x * (other.x - this.x) + this.x, x * (other.y - this.y) + this.y)
+        }
     }
 }
