@@ -3,6 +3,7 @@ package org.team2471.frc.lib.coroutines
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -18,6 +19,16 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
         isDone = true
     }
 }
+
+/**
+ * An alias of `launch(MeanlibDispatcher)`.
+ *
+ * @see CoroutineScope.launch
+ */
+fun CoroutineScope.meanlibLaunch(
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+) = launch(MeanlibDispatcher, start, block)
 
 /**
  * Runs the provided [body] of code periodically per [period] seconds.
