@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.input
 
+import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
 import java.lang.IllegalStateException
@@ -41,6 +42,7 @@ open class Controller(val port: Int) {
         backup
     }
 
+
     fun getButton(button: Int) = ensureConnection(false) { ds.getStickButton(port, button) }
 
     fun getAxis(axis: Int) = ensureConnection(0.0) { ds.getStickAxis(port, axis) }
@@ -61,6 +63,13 @@ open class Controller(val port: Int) {
             }
         }
     }
+
+    var rumble: Double = 0.0
+        set(value) {
+            field = value
+            val rumble = (value * 65535).toShort()
+            HAL.setJoystickOutputs(port.toByte(), 0, rumble, rumble)
+        }
 
     enum class Direction { IDLE, UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT }
 
