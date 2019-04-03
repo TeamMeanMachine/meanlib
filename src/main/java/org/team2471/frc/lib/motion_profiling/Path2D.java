@@ -287,6 +287,9 @@ public class Path2D {
 //        Vector2 tangent = getTangent(time);
 //        double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
 //        return pathHeading + m_headingCurve.getValue(time);
-        return m_headingCurve.getValue(time);
+        if (isMirrored())
+            return -m_headingCurve.getValue(time);
+        else
+            return m_headingCurve.getValue(time);
     }
 }
