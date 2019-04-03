@@ -248,7 +248,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     path: Path2D,
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
-    strafeAlpha: () -> Double,
+    strafeAlpha: (time: Double) -> Double,
     getStrafe: () -> Double,
     earlyExit: () -> Boolean
 ) {
@@ -294,14 +294,16 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
         prevPathHeading = pathHeading
 
-        val turnControl =
+        var turnControl =
             headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
 
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         var translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
-        if (strafeAlpha() > 0.0) {
-            translationControlRobot.x = translationControlRobot.x * (1.0 - strafeAlpha()) + getStrafe() * strafeAlpha()
+        val alpha = strafeAlpha(t)
+        if (alpha > 0.0) {
+            translationControlRobot.x = translationControlRobot.x * (1.0 - alpha) + getStrafe() * alpha
+            turnControl = 0.0
         }
 
         // send it
@@ -311,9 +313,9 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         if (t >= path.durationWithSpeed + extraTime)
             stop()
 
-        if (earlyExit()) {
+/*        if (earlyExit()) {
             stop()
-        }
+        }*/
 
         prevTime = t
 
