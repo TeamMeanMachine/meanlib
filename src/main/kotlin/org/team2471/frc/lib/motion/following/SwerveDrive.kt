@@ -243,6 +243,87 @@ suspend fun SwerveDrive.driveAlongPath(
     drive(Vector2(0.0, 0.0), 0.0, true)
 }
 
+
+suspend fun SwerveDrive.driveAlongPathWithStrafe(
+    path: Path2D,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0,
+    strafeAlpha: () -> Double,
+    getStrafe: () -> Double,
+    earlyExit: () -> Boolean
+) {
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
+    if (resetOdometry) {
+        println("Position = $position Heading = $heading")
+        resetOdometry()
+
+        // set to the numbers required for the start of the path
+        position = path.getPosition(0.0)
+        heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+        println("After Reset Position = $position Heading = $heading")
+    }
+    var prevTime = 0.0
+
+    val timer = Timer()
+    timer.start()
+    prevPathPosition = path.getPosition(0.0)
+    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
+    periodic {
+        val t = timer.get()
+        val dt = t - prevTime
+
+
+        // position error
+        val pathPosition = path.getPosition(t)
+        val positionError = pathPosition - position
+        //println("pathPosition=$pathPosition position=$position positionError=$positionError")
+
+        // position feed forward
+        val pathVelocity = (pathPosition - prevPathPosition) / dt
+        prevPathPosition = pathPosition
+
+        val translationControlField =
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+
+        // heading error
+        val robotHeading = heading
+        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val headingError = (pathHeading - robotHeading).wrap()
+
+        // heading feed forward
+        val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
+        prevPathHeading = pathHeading
+
+        val turnControl =
+            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+
+        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
+        var translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
+
+        if (strafeAlpha() > 0.0) {
+            translationControlRobot.x = translationControlRobot.x * (1.0 - strafeAlpha()) + getStrafe() * strafeAlpha()
+        }
+
+        // send it
+        drive(translationControlRobot, turnControl, false)
+
+        // are we done yet?
+        if (t >= path.durationWithSpeed + extraTime)
+            stop()
+
+        if (earlyExit()) {
+            stop()
+        }
+
+        prevTime = t
+
+//        println("Time=$t Path Position=$pathPosition Position=$position")
+//        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
+    }
+
+    // shut it down
+    drive(Vector2(0.0, 0.0), 0.0, true)
+}
 private fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
 
