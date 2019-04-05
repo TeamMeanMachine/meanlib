@@ -313,9 +313,9 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         if (t >= path.durationWithSpeed + extraTime)
             stop()
 
-/*        if (earlyExit()) {
+        if (earlyExit()) {
             stop()
-        }*/
+        }
 
         prevTime = t
 
