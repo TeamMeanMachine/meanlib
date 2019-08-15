@@ -9,6 +9,9 @@ import com.ctre.phoenix.motorcontrol.can.BaseMotorController as CTREMotorControl
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
+import com.revrobotics.CANSparkMax
+import com.revrobotics.SparkMax
+import edu.wpi.first.wpilibj.Spark
 
 sealed class MotorControllerID
 
@@ -26,10 +29,15 @@ data class TalonID(val value: Int) : MotorControllerID()
  */
 data class VictorID(val value: Int) : MotorControllerID()
 
+//data class SparkID(val value: Int) : MotorControllerID()
+
+
 private fun CTREMotorController(id: MotorControllerID) = when (id) {
     is TalonID -> CTRETalonSRX(id.value)
     is VictorID -> CTREVictorSPX(id.value)
+
 }
+
 
 /**
  * A single motor controller or combination of motor controllers which follow a primary device.
