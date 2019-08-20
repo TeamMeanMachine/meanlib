@@ -108,13 +108,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var position: Double
         get() = (ctreMotorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient
         set(value) {
-            if (ctreMotorController is CTREMotorController) {
-                // handle Talon & Victors
-                ctreMotorController.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
-            } else {
-                // handle SparkMax
-                (ctreMotorController as SparkMaxWrapper).selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
-            }
+            ctreMotorController.setSelectedSensorPosition((value / feedbackCoefficient).roundToInt(), 0, 0)
         }
 
     /**
@@ -130,11 +124,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     val closedLoopError: Double
         get() {
-            return if (ctreMotorController is CTREMotorController) {
-                ctreMotorController.closedLoopError * feedbackCoefficient
-            } else {
-                (ctreMotorController as SparkMaxWrapper).closedLoopError * feedbackCoefficient
-            }
+            return ctreMotorController.getClosedLoopError(0) * feedbackCoefficient
         }
 
 
@@ -143,8 +133,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.configFactoryDefault(20)
             it.setNeutralMode(NeutralMode.Coast)
         }
-        ctreMotorController.selectedSensorPosition = 0
-
+        ctreMotorController.setSelectedSensorPosition(0, 0, 0)
     }
 
     /**
