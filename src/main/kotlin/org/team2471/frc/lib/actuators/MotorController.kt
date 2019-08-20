@@ -1,14 +1,13 @@
 package org.team2471.frc.lib.actuators
 
-import com.ctre.phoenix.motorcontrol.ControlMode
-import com.ctre.phoenix.motorcontrol.DemandType
-import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.NeutralMode
+import com.ctre.phoenix.motorcontrol.*
 import org.team2471.frc.lib.math.DoubleRange
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController as CTREMotorController
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
+
+
 
 sealed class MotorControllerID
 
@@ -28,9 +27,9 @@ data class VictorID(val value: Int) : MotorControllerID()
 
 
 /**
- * The ID of a Victor SPX motor controller.
+ * The ID of a Spark MAX motor controller.
  *
- * @param value the Victor's CAN ID
+ * @param value the SparkMax's CAN ID
  */
 data class SparkMaxID(val value: Int) : MotorControllerID()
 
@@ -109,7 +108,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var position: Double
         get() = (ctreMotorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient
         set(value) {
-            ctreMotorController.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
+            if (ctreMotorController is CTREMotorController) {
+                // handle Talon & Victors
+                ctreMotorController.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
+            } else {
+                // handle SparkMax
+                (ctreMotorController as SparkMaxWrapper).selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
+            }
         }
 
     /**
@@ -124,7 +129,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
      */
     val closedLoopError: Double
-        get() = ctreMotorController.closedLoopError * feedbackCoefficient
+        get() {
+            return if (ctreMotorController is CTREMotorController) {
+                ctreMotorController.closedLoopError * feedbackCoefficient
+            } else {
+                (ctreMotorController as SparkMaxWrapper).closedLoopError * feedbackCoefficient
+            }
+        }
+
 
     init {
         allTalons {

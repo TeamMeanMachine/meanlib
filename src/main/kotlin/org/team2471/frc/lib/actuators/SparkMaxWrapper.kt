@@ -9,13 +9,18 @@ import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
-    private val internalController  = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless)
+    private val _motorController  = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless)
+    var selectedSensorPosition: Int = 0
+    var closedLoopError : Double = 0.0
+
+
+
     fun init() {
 
     }
 
     override fun follow(followerID: IMotorController) {
-        internalController.follow(followerID as CANSparkMax)
+        _motorController.follow(followerID as CANSparkMax)
         // do nothing .. do not allow follower
     }
 
