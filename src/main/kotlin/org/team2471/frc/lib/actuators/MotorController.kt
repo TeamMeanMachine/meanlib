@@ -423,8 +423,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @param feedbackDevice the [FeedbackDevice] to use
          * @see MotorController.configSelectedFeedbackSensor
          */
-        fun encoderType(feedbackDevice: RemoteFeedbackDevice) {
-            iMotorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
+        fun encoderType(feedbackDevice: FeedbackDevice) {
+            when (iMotorController) {
+                is CTREVictorSPX -> iMotorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
+                is CTRETalonSRX -> iMotorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
+                is SparkMaxWrapper -> iMotorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
+            }
         }
 
         /**

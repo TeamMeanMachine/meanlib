@@ -362,7 +362,9 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Int, timeoutMs: Int): ErrorCode {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
+    fun configSelectedFeedbackSensor(feedbackDevice: FeedbackDevice?, pidIdx: Int, timeoutMs: Int) : ErrorCode {
+        TODO("not implemented")
+    }
     override fun configSelectedFeedbackSensor(
         feedbackDevice: RemoteFeedbackDevice?,
         pidIdx: Int,
