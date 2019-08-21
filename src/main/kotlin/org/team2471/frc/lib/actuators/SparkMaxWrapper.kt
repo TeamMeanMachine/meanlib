@@ -5,12 +5,13 @@ import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motion.MotionProfileStatus
 import com.ctre.phoenix.motion.TrajectoryPoint
 import com.ctre.phoenix.motorcontrol.*
+import com.ctre.phoenix.motorcontrol.can.BaseMotorController
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
+import com.ctre.phoenix.motorcontrol.ControlMode
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     private val _motorController  = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless)
-    var selectedSensorPosition: Int = 0
     var closedLoopError : Double = 0.0
 
 
@@ -305,7 +306,10 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
 
     override fun set(Mode: ControlMode?, demand: Double) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        when (controlMode) {
+            ControlMode.PercentOutput -> _motorController.set(demand)
+            else -> {}
+        }
     }
 
     override fun set(Mode: ControlMode?, demand0: Double, demand1Type: DemandType?, demand1: Double) {
@@ -402,4 +406,10 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun configClosedLoopPeriod(slotIdx: Int, loopTimeMs: Int, timeoutMs: Int): ErrorCode {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    fun restoreFactoryDefaults() {
+        _motorController.restoreFactoryDefaults()
+    }
+
+
 }
