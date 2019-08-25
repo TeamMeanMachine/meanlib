@@ -9,9 +9,15 @@ import com.ctre.phoenix.motorcontrol.can.BaseMotorController
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.ctre.phoenix.motorcontrol.ControlMode
+import com.revrobotics.SensorType
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
-    private val _motorController  = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless)
+    private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+        val enc = getEncoder(SensorType.kHallSensor, 4096)
+        println("encoder value: " + enc.position + "; id: " + deviceNumber)
+        restoreFactoryDefaults()
+    }
+
     var closedLoopError : Double = 0.0
 
 
@@ -30,56 +36,58 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 //    }
 
     override fun getSelectedSensorPosition(pidIdx: Int): Int {
-        TODO()
+        return 0
 
     }
 
     override fun setNeutralMode(neutralMode: NeutralMode?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        when (neutralMode) {
+            NeutralMode.Brake -> _motorController.idleMode = CANSparkMax.IdleMode.kBrake
+            NeutralMode.Coast -> _motorController.idleMode = CANSparkMax.IdleMode.kCoast
+            NeutralMode.EEPROMSetting -> {}
+        }
     }
 
     override fun setInverted(invert: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getInverted(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return true
     }
 
     override fun configNeutralDeadband(percentDeadband: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configVoltageCompSaturation(voltage: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configVoltageMeasurementFilter(filterWindowSamples: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun enableVoltageCompensation(enable: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getBusVoltage(): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun getMotorOutputPercent(): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun getMotorOutputVoltage(): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun getTemperature(): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun configSelectedFeedbackCoefficient(coefficient: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configRemoteFeedbackFilter(
@@ -88,31 +96,31 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         remoteOrdinal: Int,
         timeoutMs: Int
     ): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configSensorTerm(sensorTerm: SensorTerm?, feedbackDevice: FeedbackDevice?, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getSelectedSensorVelocity(pidIdx: Int): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun setSelectedSensorPosition(sensorPos: Int, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+       return ErrorCode.OK
     }
 
     override fun setControlFramePeriod(frame: ControlFrame?, periodMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun setStatusFramePeriod(frame: StatusFrame?, periodMs: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getStatusFramePeriod(frame: StatusFrame?, timeoutMs: Int): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun configForwardLimitSwitchSource(
@@ -121,7 +129,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         deviceID: Int,
         timeoutMs: Int
     ): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configReverseLimitSwitchSource(
@@ -130,107 +138,105 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         deviceID: Int,
         timeoutMs: Int
     ): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun overrideLimitSwitchesEnable(enable: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun configForwardSoftLimitEnable(enable: Boolean, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configReverseSoftLimitThreshold(reverseSensorLimit: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configForwardSoftLimitThreshold(forwardSensorLimit: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun overrideSoftLimitsEnable(enable: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun configAuxPIDPolarity(invert: Boolean, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun setIntegralAccumulator(iaccum: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getClosedLoopError(pidIdx: Int): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun getIntegralAccumulator(pidIdx: Int): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun getErrorDerivative(pidIdx: Int): Double {
-        TODO()
+        return 0.0
     }
 
     override fun getClosedLoopTarget(pidIdx: Int): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun getActiveTrajectoryPosition(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun getActiveTrajectoryVelocity(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun getActiveTrajectoryHeading(): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun configMotionProfileTrajectoryPeriod(baseTrajDurationMs: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configMotionSCurveStrength(curveStrength: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun clearMotionProfileHasUnderrun(timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun changeMotionControlFramePeriod(periodMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun clearMotionProfileTrajectories(): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun clearStickyFaults(timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configGetCustomParam(paramIndex: Int, timeoutMs: Int): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+       return 0
     }
 
     override fun configGetParameter(paramEnum: Int, ordinal: Int, timeoutMs: Int): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0.0
     }
 
     override fun configGetParameter(paramEnum: ParamEnum?, ordinal: Int, timeoutMs: Int): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+       return 0.0
     }
 
     override fun configReverseSoftLimitEnable(enable: Boolean, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configSetCustomParam(newValue: Int, paramIndex: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configSetParameter(
@@ -240,68 +246,65 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         ordinal: Int,
         timeoutMs: Int
     ): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configSetParameter(param: Int, value: Double, subValue: Int, ordinal: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getBaseID(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun getControlMode(): ControlMode {
-        TODO()
-
+        return ControlMode.PercentOutput
     }
 
     override fun getDeviceID(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun getFaults(toFill: Faults?): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getMotionProfileTopLevelBufferCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun pushMotionProfileTrajectory(trajPt: TrajectoryPoint?): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun isMotionProfileTopLevelBufferFull(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return true
     }
 
     override fun processMotionProfileBuffer() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getLastError(): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getStickyFaults(toFill: StickyFaults?): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun getFirmwareVersion(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
     override fun hasResetOccurred(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return true
     }
 
     override fun getMotionProfileStatus(statusToFill: MotionProfileStatus?): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun valueUpdated() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 
@@ -313,50 +316,45 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun set(Mode: ControlMode?, demand0: Double, demand1Type: DemandType?, demand1: Double) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun set (Mode : ControlMode, demand0 : Double, demand1: Double) {
-
     }
     override fun selectProfileSlot(slotIdx: Int, pidIdx: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun neutralOutput() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun setSensorPhase(PhaseSensor: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun configClosedloopRamp(secondsFromNeutralToFull: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configOpenloopRamp(secondsFromNeutralToFull: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configNominalOutputReverse(percentOut: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configNominalOutputForward(percentOut: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configPeakOutputReverse(percentOut: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configPeakOutputForward(percentOut: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configMotionAcceleration(sensorUnitsPer100msPerSec: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Int, timeoutMs: Int): ErrorCode {
@@ -370,43 +368,43 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         pidIdx: Int,
         timeoutMs: Int
     ): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun config_kP(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun config_kD(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun config_kF(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun config_kI(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun config_IntegralZone(slotIdx: Int, izone: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configAllowableClosedloopError(slotIdx: Int, allowableCloseLoopError: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configMaxIntegralAccumulator(slotIdx: Int, iaccum: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configClosedLoopPeakOutput(slotIdx: Int, percentOut: Double, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     override fun configClosedLoopPeriod(slotIdx: Int, loopTimeMs: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ErrorCode.OK
     }
 
     fun restoreFactoryDefaults() {

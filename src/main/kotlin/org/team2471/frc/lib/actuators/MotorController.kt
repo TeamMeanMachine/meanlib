@@ -138,10 +138,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                     val ctre = it as CTREVictorSPX
                     ctre.configFactoryDefault()
                 }
-                is SparkMaxWrapper -> {
-                    val sparkMax = it as SparkMaxWrapper
-                    sparkMax.restoreFactoryDefaults()
-                }
+//                is SparkMaxWrapper -> {
+//                    val sparkMax = it as SparkMaxWrapper
+//                    sparkMax.restoreFactoryDefaults()
+//                }
             }
             it.setNeutralMode(NeutralMode.Coast)
         }
