@@ -12,6 +12,15 @@ class PDController(var p: Double, var d: Double) {
     private var lastError: Double = Double.NaN
     private var lastTime: Double = Double.NaN
 
+    fun updatePD(newP: Double, newD: Double)  {
+        if (p != newP || d != newD) {
+            p = newP
+            d = newD
+            println("New newP: $p ;  New newD: $d")
+
+        }
+    }
+
     /**
      * Updates the [PDController] with a new [error], and returns an output.
      *
@@ -28,7 +37,7 @@ class PDController(var p: Double, var d: Double) {
         }
 
         val dt = time - lastTime
-        val deltaError = (error - lastError) / dt
+        val deltaError = (error - lastError) // dt
         lastError = error
         lastTime = time
 
