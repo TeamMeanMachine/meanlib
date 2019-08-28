@@ -324,6 +324,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun neutralOutput() {
+        _motorController.set(0.0)
     }
 
     override fun setSensorPhase(PhaseSensor: Boolean) {
@@ -358,10 +359,11 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Int, timeoutMs: Int): ErrorCode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return ErrorCode.OK
     }
+
     fun configSelectedFeedbackSensor(feedbackDevice: FeedbackDevice?, pidIdx: Int, timeoutMs: Int) : ErrorCode {
-        TODO("not implemented")
+        return ErrorCode.OK
     }
     override fun configSelectedFeedbackSensor(
         feedbackDevice: RemoteFeedbackDevice?,
