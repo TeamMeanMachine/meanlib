@@ -409,6 +409,10 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
+    val current: Double
+        get() = _motorController.outputCurrent
+
+
     fun restoreFactoryDefaults() {
         _motorController.restoreFactoryDefaults()
     }

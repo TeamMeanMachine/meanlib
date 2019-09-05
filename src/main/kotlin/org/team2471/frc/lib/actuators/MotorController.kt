@@ -480,4 +480,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
         }
     }
+
+    fun getAmperage(): Double {
+        when(motorController) {
+            is CTRETalonSRX -> { return (motorController as CTRETalonSRX).outputCurrent }
+            is SparkMaxWrapper -> { return (motorController as SparkMaxWrapper).current }
+            else -> { return 1.0 }
+        }
+
+    }
 }
+
