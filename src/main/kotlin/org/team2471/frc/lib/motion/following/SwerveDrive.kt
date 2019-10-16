@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -89,6 +90,7 @@ fun SwerveDrive.drive(
     fieldCentric: Boolean = true,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0
+
 ) {
     recordOdometry()
 
@@ -99,12 +101,18 @@ fun SwerveDrive.drive(
     }
     adjustedTranslation += softTranslation
 
-    val totalTurn = turn + softTurn
+    var totalTurn = turn + softTurn
+    val velocitySetpoint = totalTurn * 250.0  // degrees per second
+    val gyroRate = headingRate.changePerSecond.asDegrees
+    val velocityError = velocitySetpoint - gyroRate
+    //println("Error is $velocityError , Setpoint is $velocitySetpoint and Gyro Rate is $gyroRate")
+
+    val turnAdjust = (velocityError * parameters.turningKP).deadband( 1.0e-2)
+    totalTurn += turnAdjust
 
     if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
         return stop()
     }
-
 
     val speeds = Array(modules.size) { 0.0 }
 
@@ -332,7 +340,9 @@ private fun SwerveDrive.recordOdometry() {
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in 0 until modules.size) {
         translations[i] = modules[i].recordOdometry(heading)
+        //print("module $i=${translations[i]}")
     }
+    //println(" ")
 
     for (i in 0 until modules.size) {
         translation += translations[i]
@@ -347,5 +357,8 @@ private fun SwerveDrive.recordOdometry() {
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
+
+    //println("Position is $position and heading is $heading")
 }
+
 

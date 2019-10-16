@@ -38,7 +38,8 @@ data class SwerveParameters(
     val kPositionFeedForward: Double,
     val kPosition: Double,
     val kHeadingFeedForward: Double,
-    val kHeading: Double
+    val kHeading: Double,
+    val turningKP: Double
 
 ) : DrivetrainParameters() {
 }

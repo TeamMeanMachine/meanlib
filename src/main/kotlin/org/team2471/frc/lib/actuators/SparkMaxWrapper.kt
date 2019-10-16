@@ -36,8 +36,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 //    }
 
     override fun getSelectedSensorPosition(pidIdx: Int): Int {
-        return 0
-
+        return _motorController.getEncoder().position.toInt()
     }
 
     override fun setNeutralMode(neutralMode: NeutralMode?) {
@@ -108,7 +107,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun setSelectedSensorPosition(sensorPos: Int, pidIdx: Int, timeoutMs: Int): ErrorCode {
-       return ErrorCode.OK
+       _motorController.getEncoder().setPosition(sensorPos.toDouble())
+        return ErrorCode.OK
     }
 
     override fun setControlFramePeriod(frame: ControlFrame?, periodMs: Int): ErrorCode {
