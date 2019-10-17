@@ -6,8 +6,6 @@ import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
 
-
-
 sealed class MotorControllerID
 
 /**
@@ -24,7 +22,6 @@ data class TalonID(val value: Int) : MotorControllerID()
  */
 data class VictorID(val value: Int) : MotorControllerID()
 
-
 /**
  * The ID of a Spark MAX motor controller.
  *
@@ -32,14 +29,11 @@ data class VictorID(val value: Int) : MotorControllerID()
  */
 data class SparkMaxID(val value: Int) : MotorControllerID()
 
-
-
 private fun internalMotorController(id: MotorControllerID) = when (id) {
     is TalonID -> CTRETalonSRX(id.value)
     is VictorID -> CTREVictorSPX(id.value)
     is SparkMaxID -> SparkMaxWrapper(id.value)
 }
-
 
 /**
  * A single motor controller or combination of motor controllers which follow a primary device.
@@ -70,16 +64,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
 
     /**
-     * The current being drawn by the [internalMotorController].
-     * Note that this will only work if the [internalMotorController] is a Talon SRX. Attempts to use this method on
-     * non-Talons will result in an [IllegalStateException].
-     *
-     * @see internalMotorController.getMotorOutputPercent
+     * The current being drawn by this [MotorController].
+     * Note that this will only work if the [MotorController] is a Talon SRX or Spark Max. Attempts
+     * to use this method on any other motor controller will result in an [IllegalStateException].
      */
     val current: Double
-        get() {
-            check(motorController is CTRETalonSRX) { "Current can only be read from talons" }
-            return motorController.outputCurrent
+        get() = when (motorController) {
+            is CTRETalonSRX -> motorController.outputCurrent
+            is SparkMaxWrapper -> motorController.current
+            else -> throw IllegalStateException("Current cannot be read from this motor controller")
         }
 
     /**
@@ -122,29 +115,19 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
      */
     val closedLoopError: Double
-        get() {
-            return motorController.getClosedLoopError(0) * feedbackCoefficient
-        }
-
+        get() = motorController.getClosedLoopError(0) * feedbackCoefficient
 
     init {
         allMotorControllers {
             when (motorController) {
-                is CTRETalonSRX -> {
-                    val ctre = it as CTRETalonSRX
-                    ctre.configFactoryDefault()
-                }
-                is CTREVictorSPX -> {
-                    val ctre = it as CTREVictorSPX
-                    ctre.configFactoryDefault()
-                }
-//                is SparkMaxWrapper -> {
-//                    val sparkMax = it as SparkMaxWrapper
-//                    sparkMax.restoreFactoryDefaults()
-//                }
+                is CTRETalonSRX -> motorController.configFactoryDefault()
+                is CTREVictorSPX -> motorController.configFactoryDefault()
+//                is SparkMaxWrapper -> motorController.restoreFactoryDefaults()
             }
+
             it.setNeutralMode(NeutralMode.Coast)
         }
+
         motorController.setSelectedSensorPosition(0, 0, 0)
     }
 
@@ -237,7 +220,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
         motorController.set(
-            ControlMode.MotionMagic, (position / feedbackCoefficient) - rawOffset,
+            ControlMode.MotionMagic,
+            (position / feedbackCoefficient) - rawOffset,
             DemandType.ArbitraryFeedForward, feedForward
         )
 
@@ -481,14 +465,4 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
         }
     }
-
-    fun getAmperage(): Double {
-        when(motorController) {
-            is CTRETalonSRX -> { return (motorController as CTRETalonSRX).outputCurrent }
-            is SparkMaxWrapper -> { return (motorController as SparkMaxWrapper).current }
-            else -> { return 1.0 }
-        }
-
-    }
 }
-
