@@ -8,6 +8,7 @@ import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.ArcadeParameters
+import org.team2471.frc.lib.units.degrees
 
 interface ArcadeDrive {
     val heading: Double
@@ -101,6 +102,62 @@ suspend fun <T> T.driveAlongPath(
     } finally {
         stop()
         stopFollowing()
+    }
+}
+
+suspend fun ArcadeDrive.tuneDrivePositionController(controller: org.team2471.frc.lib.input.XboxController)
+{
+    var prevLeftDistance = 0.0
+    var prevRightDistance = 0.0
+    var prevTime = 0.0
+
+    val timer = Timer().apply { start() }
+
+    var angleErrorAccum = 0.0.degrees
+    try {
+        periodic {
+            val t = timer.get()
+            val dt = t - prevTime
+
+            // apply gyro corrections to the distances
+            val gyroAngle = heading
+            val joystickHeading = 90.0.degrees * controller.rightThumbstickX
+            val angleError = (joystickHeading - gyroAngle.degrees).wrap()
+
+            angleErrorAccum = angleErrorAccum * parameters.headingCorrectionIDecay + angleError
+
+            val gyroCorrection = if (parameters.doHeadingCorrection) {
+                angleError.asDegrees * parameters.headingCorrectionP + angleErrorAccum.asDegrees * parameters.headingCorrectionI
+            } else {
+                0.0
+            }
+
+            // update left/right positions
+
+            val leftDistance = controller.leftThumbstickY + gyroCorrection
+            val rightDistance = controller.leftThumbstickY - gyroCorrection
+
+            val leftVelocity = (leftDistance - prevLeftDistance) / dt
+            val rightVelocity = (rightDistance - prevRightDistance) / dt
+
+            val velocityDeltaTimesCoefficient = (leftVelocity - rightVelocity) * parameters.headingFeedForward
+
+            val leftFeedForward = leftVelocity * parameters.leftFeedForwardCoefficient +
+                    (parameters.leftFeedForwardOffset * Math.signum(leftVelocity)) +
+                    velocityDeltaTimesCoefficient
+
+            val rightFeedForward = rightVelocity * parameters.rightFeedForwardCoefficient +
+                    (parameters.rightFeedForwardOffset * Math.signum(rightVelocity)) -
+                    velocityDeltaTimesCoefficient
+
+            driveClosedLoop(leftDistance, leftFeedForward, rightDistance, rightFeedForward)
+
+            prevTime = t
+            prevLeftDistance = leftDistance
+            prevRightDistance = rightDistance
+        }
+    } finally {
+        stop()
     }
 }
 

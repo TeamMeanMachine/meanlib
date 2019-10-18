@@ -166,6 +166,33 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     )
 }
 
+private fun SwerveDrive.recordOdometry() {
+    var translation = Vector2(0.0, 0.0)
+
+    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
+    for (i in 0 until modules.size) {
+        translations[i] = modules[i].recordOdometry(heading)
+        //print("module $i=${translations[i]}")
+    }
+    //println(" ")
+
+    for (i in 0 until modules.size) {
+        translation += translations[i]
+    }
+    translation /= modules.size.toDouble()
+
+    position += translation
+    val time = Timer.getFPGATimestamp()
+    val deltaTime = time - prevTime
+    velocity = (position - prevPosition) / deltaTime
+
+    poseHistory[InterpolatingDouble(time)] = pose
+    prevTime = time
+    prevPosition = position
+
+    //println("Position is $position and heading is $heading")
+}
+
 fun SwerveDrive.resetOdometry() {
     for (module in modules) {
         module.prevDistance = 0.0
@@ -326,26 +353,3 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
 }
-private fun SwerveDrive.recordOdometry() {
-    var translation = Vector2(0.0, 0.0)
-
-    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
-    for (i in 0 until modules.size) {
-        translations[i] = modules[i].recordOdometry(heading)
-    }
-
-    for (i in 0 until modules.size) {
-        translation += translations[i]
-    }
-    translation /= modules.size.toDouble()
-
-    position += translation
-    val time = Timer.getFPGATimestamp()
-    val deltaTime = time - prevTime
-    velocity = (position - prevPosition) / deltaTime
-
-    poseHistory[InterpolatingDouble(time)] = pose
-    prevTime = time
-    prevPosition = position
-}
-
