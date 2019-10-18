@@ -4,13 +4,18 @@ import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.XboxController
+import org.team2471.frc.lib.control.PDController
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.framework.use
+import org.team2471.frc.lib.input.Joystick
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import java.text.DecimalFormat
 import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
@@ -205,6 +210,10 @@ suspend fun SwerveDrive.driveAlongPath(
     timer.start()
     prevPathPosition = path.getPosition(0.0)
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
+
+    val positionXController = PDController(parameters.kpPosition, parameters.kdPosition)
+    val positionYController = PDController(parameters.kpPosition, parameters.kdPosition)
+    val headingController = PDController(parameters.kpHeading, parameters.kdHeading)
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -218,9 +227,9 @@ suspend fun SwerveDrive.driveAlongPath(
         // position feed forward
         val pathVelocity = (pathPosition - prevPathPosition) / dt
         prevPathPosition = pathPosition
+        val positionFeedForward = pathVelocity * parameters.kPositionFeedForward
 
-        val translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+        val positionControlField = Vector2(positionXController.update(positionError.x), positionYController.update(positionError.y)) + positionFeedForward
 
         // heading error
         val robotHeading = heading
@@ -230,12 +239,12 @@ suspend fun SwerveDrive.driveAlongPath(
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
         prevPathHeading = pathHeading
+        val headingFeedForward = headingVelocity * parameters.kHeadingFeedForward
 
-        val turnControl =
-            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+        val turnControl = headingController.update(headingError.asDegrees) + headingFeedForward
 
         // send it
-        drive(translationControlField, turnControl, true)
+        drive(positionControlField, turnControl, true)
 
         // are we done yet?
         if (t >= path.durationWithSpeed + extraTime)
@@ -291,7 +300,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         prevPathPosition = pathPosition
 
         val translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition
 
         // heading error
         val robotHeading = heading
@@ -303,7 +312,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         prevPathHeading = pathHeading
 
         var turnControl =
-            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading
 
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         var translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
@@ -334,6 +343,61 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
 }
+
+suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc.lib.input.XboxController) {
+    var prevTime = 0.0
+
+    resetOdometry()
+    val timer = Timer()
+    timer.start()
+
+    val df = DecimalFormat("#.####")
+
+    val positionXController = PDController(parameters.kpPosition, parameters.kdPosition)
+    val positionYController = PDController(parameters.kpPosition, parameters.kdPosition)
+    val headingController = PDController(0.004, 0.005)
+    var prevHeading = 0.0.degrees
+    var prevPosition = Vector2(0.0, 0.0)
+
+    periodic {
+        val t = timer.get()
+        val dt = t - prevTime
+
+        val joystickPosition = Vector2(controller.leftThumbstickX, -controller.leftThumbstickY)
+
+        // position error
+        val positionError = joystickPosition - position
+        //println("pathPosition=$pathPosition position=$position positionError=$positionError")
+
+        // position feed forward
+        val positionVelocity = (joystickPosition - prevPosition) / dt
+        prevPosition = joystickPosition
+        val positionFeedForward = positionVelocity * parameters.kPositionFeedForward
+
+        val translationControlField = Vector2(positionXController.update(positionError.x), positionYController.update(positionError.y)) + positionFeedForward
+
+        //println("jsPos= (x: ${df.format(joystickPosition.x)} y: ${df.format((joystickPosition.y))}) pos= (x: ${df.format(position.x)} y: ${df.format((position.y))}) posErr= (x: ${df.format(positionError.x)} y: ${df.format((positionError.y))})")
+
+        // heading error
+        val robotHeading = heading
+        val joystickHeading = controller.rightThumbstickX.degrees * 90.0
+        val headingError = (joystickHeading - robotHeading).wrap()
+
+        // println("jsHeading = $joystickHeading robotHeading = $robotHeading headingError = $headingError")
+
+        // heading feed forward
+        val headingVelocity = (joystickHeading - prevHeading) / dt
+        prevHeading = joystickHeading
+        val headingFeedForward = headingVelocity * parameters.kHeadingFeedForward
+
+        val turnControl = headingController.update(headingError.asDegrees) + headingFeedForward.asDegrees
+        // send it
+        drive(translationControlField, turnControl, true)
+
+        prevTime = t
+    }
+}
+
 private fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
 
