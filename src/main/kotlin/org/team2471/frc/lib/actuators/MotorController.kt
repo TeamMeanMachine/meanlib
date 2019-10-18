@@ -207,9 +207,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param position the closed-loop Motion Magic position setpoint
      * @see internalMotorController.set
      */
-    fun setMotionMagicSetpoint(position: Double) =
+    fun setMotionMagicSetpoint(position: Double) = {
+        println("magicSetpoint = " + (position / feedbackCoefficient - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
         motorController.set(ControlMode.MotionMagic, position / feedbackCoefficient - rawOffset)
-
+    }
     /**
      * Sets the closed-loop Motion Magic position setpoint with a specified [feedForward] value.
      *
@@ -428,15 +429,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) {
-                motorController.config_kP(slot, p / feedbackCoefficient, timeoutMs)
+                motorController.config_kP(slot, p / feedbackCoefficient * 1024.0, timeoutMs)
             }
 
             fun i(i: Double) {
-                motorController.config_kI(slot, i / feedbackCoefficient, timeoutMs)
+                motorController.config_kI(slot, i / feedbackCoefficient * 1024.0, timeoutMs)
             }
 
             fun d(d: Double) {
-                motorController.config_kD(slot, d / feedbackCoefficient, timeoutMs)
+                motorController.config_kD(slot, d / feedbackCoefficient * 1024.0, timeoutMs)
             }
 
             fun f(f: Double) {
