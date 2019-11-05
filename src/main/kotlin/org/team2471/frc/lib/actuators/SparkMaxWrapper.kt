@@ -6,24 +6,32 @@ import com.ctre.phoenix.motion.MotionProfileStatus
 import com.ctre.phoenix.motion.TrajectoryPoint
 import com.ctre.phoenix.motorcontrol.*
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController
-import com.revrobotics.CANSparkMax
-import com.revrobotics.CANSparkMaxLowLevel
 import com.ctre.phoenix.motorcontrol.ControlMode
-import com.revrobotics.SensorType
+import com.revrobotics.*
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.degrees
+
+const val TICKS_PER_REVOLUTION = 42.0
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
+    var positionSetpoint: Double = 0.0
+
     private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         val enc = getEncoder(SensorType.kHallSensor, 4096)
         println("encoder value: " + enc.position + "; id: " + deviceNumber)
         restoreFactoryDefaults()
     }
 
-    var closedLoopError : Double = 0.0
+    val analogPosition: Double
+        get() = _motorController.getAnalog(CANAnalog.AnalogMode.kAbsolute).position
+
+    val analogAngle: Double
+        get() = analogPosition * 360.0/3.036 - 15.65
 
 
+//    var closedLoopError : Double = 0.0
 
     fun init() {
-
     }
 
     override fun follow(followerID: IMotorController) {
@@ -36,7 +44,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 //    }
 
     override fun getSelectedSensorPosition(pidIdx: Int): Int {
-        return _motorController.getEncoder().position.toInt()
+        return (_motorController.getEncoder().position * TICKS_PER_REVOLUTION).toInt()
     }
 
     override fun setNeutralMode(neutralMode: NeutralMode?) {
@@ -48,10 +56,11 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun setInverted(invert: Boolean) {
+        _motorController.inverted = invert
     }
 
     override fun getInverted(): Boolean {
-        return true
+        return _motorController.inverted
     }
 
     override fun configNeutralDeadband(percentDeadband: Double, timeoutMs: Int): ErrorCode {
@@ -168,7 +177,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getClosedLoopError(pidIdx: Int): Int {
-        return 0
+        return (positionSetpoint * TICKS_PER_REVOLUTION).toInt() - getSelectedSensorPosition(pidIdx)
     }
 
     override fun getIntegralAccumulator(pidIdx: Int): Double {
@@ -309,8 +318,13 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
 
     override fun set(Mode: ControlMode?, demand: Double) {
-        when (controlMode) {
+        when (Mode) {
             ControlMode.PercentOutput -> _motorController.set(demand)
+            ControlMode.Position -> {
+                positionSetpoint = demand / TICKS_PER_REVOLUTION
+                _motorController.pidController.setReference(positionSetpoint, ControlType.kPosition)
+//                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
+            }
             else -> {}
         }
     }
@@ -320,6 +334,11 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun set (Mode : ControlMode, demand0 : Double, demand1: Double) {
     }
+
+    fun setAngle(setPoint : Angle){
+        set(ControlMode.Position, ((setPoint - getSelectedSensorPosition(0).degrees).wrap()).asDegrees)
+    }
+
     override fun selectProfileSlot(slotIdx: Int, pidIdx: Int) {
     }
 
@@ -374,18 +393,22 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun config_kP(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
+        _motorController.pidController.p = value
         return ErrorCode.OK
     }
 
     override fun config_kD(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
+        _motorController.pidController.d = value
         return ErrorCode.OK
     }
 
     override fun config_kF(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
+        _motorController.pidController.ff = value
         return ErrorCode.OK
     }
 
     override fun config_kI(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
+        _motorController.pidController.i = value
         return ErrorCode.OK
     }
 

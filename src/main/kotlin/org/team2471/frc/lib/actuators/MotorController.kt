@@ -103,6 +103,24 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             motorController.setSelectedSensorPosition((value / feedbackCoefficient).roundToInt(), 0, 0)
         }
 
+    var angle: Double
+        get() = position* 360.0/3.036 - 15.65
+        set(value) {}
+
+    var analogPosition: Double
+        get() = when (motorController) {
+            is SparkMaxWrapper -> motorController.analogPosition
+            else -> throw IllegalStateException("Current cannot be read from this motor controller")
+        }
+        set(value) {}
+
+    var analogAngle: Double
+        get() = when(motorController) {
+            is SparkMaxWrapper -> motorController.analogAngle
+            else -> throw IllegalStateException("Current cannot be read from this motor controller")
+        }
+        set(value) {}
+
     /**
      * The raw position of the selected sensor in encoder ticks.
      *
@@ -122,7 +140,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             when (motorController) {
                 is CTRETalonSRX -> motorController.configFactoryDefault()
                 is CTREVictorSPX -> motorController.configFactoryDefault()
-//                is SparkMaxWrapper -> motorController.restoreFactoryDefaults()
+                is SparkMaxWrapper -> {
+                    /*motorController.restoreFactoryDefaults()*/
+                }
             }
 
             it.setNeutralMode(NeutralMode.Coast)
@@ -130,6 +150,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         motorController.setSelectedSensorPosition(0, 0, 0)
     }
+
+
 
     /**
      * Sets the percent output.
@@ -248,6 +270,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         body(motorController)
         followers.forEach(body)
     }
+    fun setRawOffsetBasedOnAnalog() {
+        when (motorController) {
+            is SparkMaxWrapper -> {
+                rawOffset = (motorController.analogAngle / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
+                println("Current Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+            }
+        }
+    }
 
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
@@ -270,6 +300,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             set(value) {
                 this@MotorController.feedbackCoefficient = value
             }
+
+
+        /**
+         * Initializes the incremental encoder to match the analog encoder.
+         */
+        fun setRawOffsetBasedOnAnalogConfig() {
+            setRawOffsetBasedOnAnalog()
+        }
 
         /**
          * Sets whether the motor should be inverted.
@@ -424,7 +462,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see internalMotorController.configFeedbackNotContinuous
          */
         fun encoderContinuous(continuous: Boolean) {
-            (motorController as? CTRETalonSRX)?.configFeedbackNotContinuous(!continuous, timeoutMs)
+            when (motorController) {
+                is CTRETalonSRX -> motorController.configFeedbackNotContinuous(!continuous, timeoutMs)
+                else -> {}
+            }
         }
 
         inner class PIDConfigScope(private val slot: Int) {
@@ -465,4 +506,5 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
         }
     }
+
 }
