@@ -94,17 +94,17 @@ fun SwerveDrive.drive(
 
     var adjustedTranslation = translation
     if (fieldCentric) {
-        val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         adjustedTranslation = adjustedTranslation.rotateDegrees(heading.asDegrees)
     }
     adjustedTranslation += softTranslation
 
-    val totalTurn = turn + softTurn
+    var totalTurn = turn + softTurn
 
     if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
         return stop()
     }
 
+    totalTurn += (totalTurn * 300.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
 
     val speeds = Array(modules.size) { 0.0 }
 
@@ -239,7 +239,7 @@ suspend fun SwerveDrive.driveAlongPath(
         prevPathPosition = pathPosition
 
         val translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kdPosition
 
         // heading error
         val robotHeading = heading
@@ -251,7 +251,7 @@ suspend fun SwerveDrive.driveAlongPath(
         prevPathHeading = pathHeading
 
         val turnControl =
-            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kdHeading
 
         // send it
         drive(translationControlField, turnControl, true)
@@ -310,7 +310,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         prevPathPosition = pathPosition
 
         val translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kPosition
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition
 
         // heading error
         val robotHeading = heading
@@ -322,7 +322,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         prevPathHeading = pathHeading
 
         var turnControl =
-            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kHeading
+            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading
 
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
         var translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
