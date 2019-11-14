@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTranslationInput
+import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -55,6 +57,11 @@ interface SwerveDrive {
         fun driveWithDistance(angle: Angle, distance: Length)
     }
 
+    companion object {
+        var prevTranslationInput = Vector2(0.0,0.0)
+        var prevTurn = 0.0
+    }
+
     data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose> {
         override fun interpolate(other: Pose, x: Double): Pose = when {
             x <= 0.0 -> this
@@ -82,23 +89,33 @@ fun SwerveDrive.zeroEncoders() {
     position = Vector2(0.0, 0.0)
 }
 
-// temporary to measure maximum turn speed
+
 fun SwerveDrive.drive(
     translation: Vector2,
     turn: Double,
     fieldCentric: Boolean = true,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
-    softTurn: Double = 0.0
-) {
+    softTurn: Double = 0.0,
+    inputDamping: Double = 1.0 )
+{
     recordOdometry()
 
     var adjustedTranslation = translation
+
+    adjustedTranslation = prevTranslationInput + (adjustedTranslation - prevTranslationInput) * inputDamping
+    prevTranslationInput = adjustedTranslation
+
     if (fieldCentric) {
         adjustedTranslation = adjustedTranslation.rotateDegrees(heading.asDegrees)
     }
     adjustedTranslation += softTranslation
 
     var totalTurn = turn + softTurn
+
+    totalTurn = prevTurn + (totalTurn - prevTurn) * inputDamping
+    prevTurn = totalTurn
+
+    totalTurn += (totalTurn * 600.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
 
     if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
         return stop()
