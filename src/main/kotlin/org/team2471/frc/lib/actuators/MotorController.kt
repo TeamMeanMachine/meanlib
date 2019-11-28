@@ -2,12 +2,12 @@ package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
 import org.team2471.frc.lib.math.DoubleRange
+import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
 
 sealed class MotorControllerID
-
 /**
  * The ID of a Talon SRX motor controller.
  *
@@ -45,8 +45,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private val motorController = internalMotorController(deviceId)
 
     private var feedbackCoefficient = 1.0
-
+    private val storedID = (deviceId as SparkMaxID).value
     private var rawOffset = 0
+
+    val canID = storedID
 
     private val followers = followerIds.map { id ->
         val follower = internalMotorController(id)
@@ -270,10 +272,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         body(motorController)
         followers.forEach(body)
     }
-    fun setRawOffsetBasedOnAnalog() {
+    fun setRawOffset(offsetAngle: Angle) {
         when (motorController) {
             is SparkMaxWrapper -> {
-                rawOffset = (motorController.analogAngle / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
+                rawOffset = (offsetAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
                 println("Current Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
@@ -305,8 +307,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         /**
          * Initializes the incremental encoder to match the analog encoder.
          */
-        fun setRawOffsetBasedOnAnalogConfig() {
-            setRawOffsetBasedOnAnalog()
+        fun setRawOffsetConfig(offsetAngle: Angle) {
+            setRawOffset(offsetAngle)
         }
 
         /**
@@ -316,6 +318,19 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see internalMotorController.setInverted
          */
         fun inverted(inverted: Boolean) = allMotorControllers { it.inverted = inverted }
+
+        /**
+        * makes the encoder reading backwards
+        *
+        * @param PhaseSensor false is forwards, true is backwards
+        */
+        fun setSensorPhase(PhaseSensor: Boolean) {
+            when(motorController) {
+                is SparkMaxWrapper -> {
+                    motorController.setSensorPhase(PhaseSensor)
+                }
+            }
+        }
 
         /**
          * Enables brake mode.

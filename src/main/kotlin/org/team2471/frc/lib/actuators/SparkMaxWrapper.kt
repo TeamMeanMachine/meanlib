@@ -15,11 +15,13 @@ const val TICKS_PER_REVOLUTION = 42.0
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     var positionSetpoint: Double = 0.0
+    val canID = deviceNumber
 
     private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         val enc = getEncoder(SensorType.kHallSensor, 4096)
-        println("encoder value: " + enc.position + "; id: " + deviceNumber)
+        println("encoder value: " + enc.position + "; id: " + deviceNumber + "-------------------------------------------------------------")
         restoreFactoryDefaults()
+        //println("encoder value2: " + enc.position + "; id: " + deviceNumber + "-----------------------------------")
     }
 
     val analogPosition: Double
@@ -347,6 +349,11 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun setSensorPhase(PhaseSensor: Boolean) {
+        if(PhaseSensor) {
+            _motorController.encoder.positionConversionFactor = 1.0
+        } else {
+            _motorController.encoder.positionConversionFactor = -1.0
+        }
     }
 
     override fun configClosedloopRamp(secondsFromNeutralToFull: Double, timeoutMs: Int): ErrorCode {

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTranslationInput
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
@@ -138,7 +139,9 @@ fun SwerveDrive.drive(
 
     for (i in 0 until modules.size) {
         modules[i].setDrivePower(speeds[i])
+        print("A=${(round(modules[i].angle.asDegrees, 1))} - ")
     }
+    println("")
 }
 
 private fun SwerveDrive.Module.calculateAngleReturnSpeed(
