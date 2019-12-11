@@ -21,6 +21,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         val enc = getEncoder(SensorType.kHallSensor, 4096)
         println("encoder value: " + enc.position + "; id: " + deviceNumber + "-------------------------------------------------------------")
         restoreFactoryDefaults()
+
         //println("encoder value2: " + enc.position + "; id: " + deviceNumber + "-----------------------------------")
     }
 
@@ -35,6 +36,9 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     fun init() {
     }
+
+    val hasErrors: Boolean
+        get() = _motorController.faults > 0
 
     override fun follow(followerID: IMotorController) {
         _motorController.follow(followerID as CANSparkMax)
@@ -56,6 +60,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
             NeutralMode.EEPROMSetting -> {}
         }
     }
+
 
     override fun setInverted(invert: Boolean) {
         _motorController.inverted = invert
@@ -277,6 +282,9 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getFaults(toFill: Faults?): ErrorCode {
+        var revRetFaults = Faults()
+        revRetFaults.APIError = _motorController.faults > 0
+        //toFill = revRetFaults
         return ErrorCode.OK
     }
 

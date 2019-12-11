@@ -153,7 +153,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.setSelectedSensorPosition(0, 0, 0)
     }
 
-
+    fun hasfaults() {
+        //return motorController.getFaults()
+    }
 
     /**
      * Sets the percent output.
@@ -272,11 +274,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         body(motorController)
         followers.forEach(body)
     }
-    fun setRawOffset(offsetAngle: Angle) {
+    fun setRawOffset(analogAngle: Angle) {
         when (motorController) {
             is SparkMaxWrapper -> {
-                rawOffset = (offsetAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
-                println("Current Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+                rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
+                println("Analog Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
     }

@@ -113,7 +113,9 @@ fun SwerveDrive.drive(
 
     var totalTurn = turn + softTurn
 
-    totalTurn = prevTurn + (totalTurn - prevTurn) * inputDamping
+    if (inputDamping != 1.0)
+        totalTurn = prevTurn + (totalTurn - prevTurn) * inputDamping
+
     prevTurn = totalTurn
 
     totalTurn += (totalTurn * 600.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
@@ -139,9 +141,7 @@ fun SwerveDrive.drive(
 
     for (i in 0 until modules.size) {
         modules[i].setDrivePower(speeds[i])
-        print("A=${(round(modules[i].angle.asDegrees, 1))} - ")
     }
-    println("")
 }
 
 private fun SwerveDrive.Module.calculateAngleReturnSpeed(
@@ -192,9 +192,7 @@ private fun SwerveDrive.recordOdometry() {
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in 0 until modules.size) {
         translations[i] = modules[i].recordOdometry(heading)
-        //print("module $i=${translations[i]}")
     }
-    //println(" ")
 
     for (i in 0 until modules.size) {
         translation += translations[i]
@@ -209,8 +207,6 @@ private fun SwerveDrive.recordOdometry() {
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
-
-    //println("Position is $position and heading is $heading")
 }
 
 fun SwerveDrive.resetOdometry() {
