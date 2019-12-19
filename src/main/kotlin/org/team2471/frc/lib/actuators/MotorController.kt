@@ -45,10 +45,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private val motorController = internalMotorController(deviceId)
 
     private var feedbackCoefficient = 1.0
-    private val storedID = (deviceId as SparkMaxID).value
     private var rawOffset = 0
-
-    val canID = storedID
 
     private val followers = followerIds.map { id ->
         val follower = internalMotorController(id)
@@ -278,7 +275,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         when (motorController) {
             is SparkMaxWrapper -> {
                 rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
-                println("Analog Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
     }

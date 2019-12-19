@@ -124,7 +124,7 @@ fun SwerveDrive.drive(
         return stop()
     }
 
-    totalTurn += (totalTurn * 300.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
+   // totalTurn += (totalTurn * 300.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection //problem?
 
     val speeds = Array(modules.size) { 0.0 }
 
