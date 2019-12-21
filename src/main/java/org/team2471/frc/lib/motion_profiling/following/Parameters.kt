@@ -35,7 +35,6 @@ data class ArcadeParameters(
 
 data class SwerveParameters(
     val gyroRateCorrection: Double,
-    val turningKP: Double,
     val kpPosition: Double,
     val kdPosition: Double,
     val kPositionFeedForward: Double,

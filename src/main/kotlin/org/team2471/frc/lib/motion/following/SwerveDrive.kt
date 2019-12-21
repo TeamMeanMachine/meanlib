@@ -140,8 +140,10 @@ fun SwerveDrive.drive(
     }
 
     for (i in 0 until modules.size) {
+        //print("${modules[i].currDistance} ")
         modules[i].setDrivePower(speeds[i])
     }
+    //println()
 }
 
 private fun SwerveDrive.Module.calculateAngleReturnSpeed(
@@ -207,6 +209,7 @@ private fun SwerveDrive.recordOdometry() {
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
+    println("Position: $position")
 }
 
 fun SwerveDrive.resetOdometry() {
@@ -244,7 +247,6 @@ suspend fun SwerveDrive.driveAlongPath(
         val t = timer.get()
         val dt = t - prevTime
 
-
         // position error
         val pathPosition = path.getPosition(t)
         val positionError = pathPosition - position
@@ -261,6 +263,8 @@ suspend fun SwerveDrive.driveAlongPath(
         val robotHeading = heading
         val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (pathHeading - robotHeading).wrap()
+
+        println("Heading: $robotHeading")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
