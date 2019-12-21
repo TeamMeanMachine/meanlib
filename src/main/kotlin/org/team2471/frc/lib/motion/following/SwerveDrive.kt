@@ -209,7 +209,7 @@ private fun SwerveDrive.recordOdometry() {
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
-    println("Position: $position")
+    //println("Position: $position")
 }
 
 fun SwerveDrive.resetOdometry() {
@@ -264,7 +264,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (pathHeading - robotHeading).wrap()
 
-        println("Heading: $robotHeading")
+        //println("Heading: $robotHeading")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
