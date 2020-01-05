@@ -190,8 +190,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param velocity the closed-loop velocity setpoint
      * @see internalMotorController.set
      */
-    fun setVelocitySetpoint(velocity: Double) =
-        motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
+    fun setVelocitySetpoint(velocity: Double) {
+        if (motorController is SparkMaxWrapper) {
+            return motorController.set(ControlMode.Velocity, velocity / motorController.maxRPM)
+        } else {
+            return motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
+        }
+    }
 
     /**
      * Sets the closed-loop velocity setpoint with a specified [feedForward] value.

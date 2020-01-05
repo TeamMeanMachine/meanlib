@@ -10,11 +10,14 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.revrobotics.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
+import kotlin.math.max
 
 const val TICKS_PER_REVOLUTION = 42.0
 
 class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     var positionSetpoint: Double = 0.0
+    var velocitySetPoint: Double = 0.0
+    val maxRPM = 5700.0
     val canID = deviceNumber
 
     private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
@@ -329,6 +332,19 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun set(Mode: ControlMode?, demand: Double) {
         when (Mode) {
+            ControlMode.Velocity ->  {
+                velocitySetPoint = demand * maxRPM
+
+                // handle out of bounds conditions
+                if (velocitySetPoint > maxRPM) {
+                    velocitySetPoint = maxRPM
+                } else if(velocitySetPoint < (-1 * maxRPM)) {
+                    velocitySetPoint = -1 * maxRPM
+                }
+
+                // set reference point of
+                _motorController.pidController.setReference(velocitySetPoint, ControlType.kVelocity)
+            }
             ControlMode.PercentOutput -> _motorController.set(demand)
             ControlMode.Position -> {
                 positionSetpoint = demand / TICKS_PER_REVOLUTION
