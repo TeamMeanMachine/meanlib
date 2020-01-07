@@ -6,8 +6,8 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
     }
 }
 
@@ -22,11 +22,12 @@ apply {
 }
 
 group = "org.team2471.lib"
-version = "2019"
+version = "2020"
 
 repositories {
     mavenCentral()
     maven { setUrl("http://first.wpi.edu/FRC/roborio/maven/release") }
+    maven { setUrl("https://plugins.gradle.org/m2/")}
     maven { setUrl("http://devsite.ctr-electronics.com/maven/release/") }
     maven { setUrl("http://www.revrobotics.com/content/sw/max/sdk/maven/") }
 
@@ -34,8 +35,8 @@ repositories {
 
 dependencies {
     // kotlin libs
-    compile(kotlin("stdlib-jdk8", "1.3.10"))
-    compile(kotlin("reflect", "1.3.10"))
+    compile(kotlin("stdlib-jdk8", "1.3.61"))
+    compile(kotlin("reflect", "1.3.61"))
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
 
     // frc libs
