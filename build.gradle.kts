@@ -26,7 +26,7 @@ version = "2020"
 
 repositories {
     mavenCentral()
-    maven { setUrl("http://first.wpi.edu/FRC/roborio/maven/release") }
+    maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/")}
     maven { setUrl("https://plugins.gradle.org/m2/")}
     maven { setUrl("http://devsite.ctr-electronics.com/maven/release/") }
     maven { setUrl("http://www.revrobotics.com/content/sw/max/sdk/maven/") }
@@ -40,10 +40,10 @@ dependencies {
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
 
     // frc libs
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2019.4.1")
-    implementation("edu.wpi.first.hal:hal-java:2019.4.1")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.4.1")
-    implementation("edu.wpi.first.ntcore:ntcore-java:2019.4.1")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:2020.1.2")
+    implementation("edu.wpi.first.hal:hal-java:2020.1.2")
+    implementation("edu.wpi.first.wpiutil:wpiutil-java:2020.1.2")
+    implementation("edu.wpi.first.ntcore:ntcore-java:2020.1.2")
     implementation("com.ctre.phoenix:api-java:5.14.1")
     implementation("com.revrobotics.frc:SparkMax-java:1.4.1")
 
