@@ -285,6 +285,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
     }
 
+    fun follow(shootingMotor: MotorController) {
+
+    }
+
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
          * The primary, "master" [internalMotorController].

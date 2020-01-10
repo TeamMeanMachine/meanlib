@@ -45,7 +45,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun follow(followerID: IMotorController) {
         _motorController.follow(followerID as CANSparkMax)
-        // do nothing .. do not allow follower
     }
 
 //    override fun motorOutputPercent(): Double {
