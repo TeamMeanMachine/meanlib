@@ -192,9 +192,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     fun setVelocitySetpoint(velocity: Double) {
         if (motorController is SparkMaxWrapper) {
-            return motorController.set(ControlMode.Velocity, velocity / motorController.maxRPM)
-        } else {
-            return motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
+            motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
         }
     }
 
@@ -276,6 +274,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         body(motorController)
         followers.forEach(body)
     }
+    private inline fun allFollowers(body: (IMotorController) -> Unit) {
+        followers.forEach(body)
+    }
     fun setRawOffset(analogAngle: Angle) {
         when (motorController) {
             is SparkMaxWrapper -> {
@@ -283,10 +284,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                 println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
-    }
-
-    fun follow(shootingMotor: MotorController) {
-
     }
 
     inner class ConfigScope(private val timeoutMs: Int) {
@@ -326,6 +323,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see internalMotorController.setInverted
          */
         fun inverted(inverted: Boolean) = allMotorControllers { it.inverted = inverted }
+
+        /**
+         * Sets whether the motor should be inverted.
+         *
+         * @param inverted whether the motor should be inverted
+         * @see internalMotorController.setInverted
+         */
+        fun followersInverted(inverted: Boolean) = allFollowers { it.inverted = inverted }
 
         /**
         * makes the encoder reading backwards

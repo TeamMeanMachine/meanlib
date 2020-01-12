@@ -44,7 +44,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         get() = _motorController.faults > 0
 
     override fun follow(followerID: IMotorController) {
-        _motorController.follow(followerID as CANSparkMax)
+        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted == (followerID as SparkMaxWrapper).inverted)
     }
 
 //    override fun motorOutputPercent(): Double {
@@ -121,7 +121,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getSelectedSensorVelocity(pidIdx: Int): Int {
-        return 0
+        return (_motorController.getEncoder().velocity * TICKS_PER_REVOLUTION / 10.0).toInt()
+        //return 0
     }
 
     override fun setSelectedSensorPosition(sensorPos: Int, pidIdx: Int, timeoutMs: Int): ErrorCode {
@@ -328,11 +329,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun valueUpdated() {
     }
 
-
     override fun set(Mode: ControlMode?, demand: Double) {
         when (Mode) {
             ControlMode.Velocity ->  {
-                velocitySetPoint = demand * maxRPM
+                velocitySetPoint = demand / TICKS_PER_REVOLUTION * 10.0
+
+                //println("Velocity = $velocitySetPoint")
 
                 // handle out of bounds conditions
                 if (velocitySetPoint > maxRPM) {
