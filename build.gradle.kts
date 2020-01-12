@@ -14,6 +14,7 @@ buildscript {
 plugins {
     java
     maven
+   `java-library`
 }
 
 apply {
@@ -35,24 +36,25 @@ repositories {
 
 dependencies {
     // kotlin libs
-    compile(kotlin("stdlib-jdk8", "1.3.61"))
-    compile(kotlin("reflect", "1.3.61"))
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
+    implementation(kotlin("stdlib-jdk8", "1.3.61"))
+    implementation(kotlin("reflect", "1.3.61"))
+//    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
 
     // frc libs
     implementation("edu.wpi.first.wpilibj:wpilibj-java:2020.1.2")
     implementation("edu.wpi.first.hal:hal-java:2020.1.2")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2020.1.2")
     implementation("edu.wpi.first.ntcore:ntcore-java:2020.1.2")
-    implementation("com.ctre.phoenix:api-java:5.14.1")
-    implementation("com.revrobotics.frc:SparkMax-java:1.4.1")
+    implementation("com.ctre.phoenix:api-java:5.17.3")
+    implementation("com.revrobotics.frc:SparkMax-java:1.5.1")
 
 
     // other
     implementation("com.google.code.gson:gson:2.8.2")
-    compile("com.squareup.moshi:moshi:1.8.0")
-    compile("com.squareup.moshi:moshi-kotlin:1.8.0")
-    compile("com.squareup.moshi:moshi-adapters:1.8.0")
+    implementation("com.squareup.moshi:moshi:1.8.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.8.0")
 
 }
 
