@@ -18,7 +18,7 @@ const val LANGUAGE_KOTLIN = 6
  * The core robot program to run. The methods in this interface can be overridden in order to
  * execute code in the specified mode.
  */
-abstract class RobotProgram : RobotBase() {
+abstract class MeanlibRobot : RobotBase() {
     override fun startCompetition() {
         init()
 
@@ -147,26 +147,4 @@ private enum class RobotMode {
     AUTONOMOUS,
     TELEOP,
     TEST,
-}
-
-/**
- * Initializes the HAL and core WPILib features, including the NetworkTables server and versioning.
- */
-fun initializeWpilib() {
-    // set up network tables
-    val ntInstance = NetworkTableInstance.getDefault()
-    ntInstance.setNetworkIdentity("Robot")
-    ntInstance.startServer("/home/lvuser/networktables.ini")
-
-    // initialize hardware configuration
-    check(HAL.initialize(500, 0)) { "Failed to initialize. Terminating." }
-
-    // Report our robot's language as Java
-    HAL.report(FRCNetComm.tResourceType.kResourceType_Language, LANGUAGE_KOTLIN)
-
-    if (RobotBase.isReal()) {
-        File("/tmp/frc_versions/FRC_Lib_Version.ini").writeText("Java ${WPILibVersion.Version}")
-    }
-
-    println("wpilib initialized successfully.")
 }
