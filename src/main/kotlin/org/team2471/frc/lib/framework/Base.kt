@@ -18,32 +18,119 @@ const val LANGUAGE_KOTLIN = 6
  * The core robot program to run. The methods in this interface can be overridden in order to
  * execute code in the specified mode.
  */
-interface RobotProgram {
+abstract class RobotProgram : RobotBase() {
+    override fun startCompetition() {
+        init()
+
+        HAL.observeUserProgramStarting()
+
+        val ds = DriverStation.getInstance()
+
+        var previousRobotMode: RobotMode? = null
+
+        val mainSubsystem = Subsystem("Robot").apply { enable() }
+
+        while (true) {
+            val hasNewData = ds.waitForData(0.02)
+
+            Events.process()
+            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
+
+            if (!hasNewData) continue
+
+            if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
+                comms()
+
+                if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
+            }
+
+            if (ds.isDisabled) {
+                if (previousRobotMode != RobotMode.DISABLED) {
+                    HAL.observeUserProgramDisabled()
+                    previousRobotMode = RobotMode.DISABLED
+
+                    GlobalScope.launch(MeanlibDispatcher) {
+                        use(mainSubsystem, name = "Disabled") { disable() }
+                    }
+                }
+                continue
+            }
+
+            val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
+
+            if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
+                HAL.observeUserProgramAutonomous()
+                previousRobotMode = RobotMode.AUTONOMOUS
+
+                GlobalScope.launch(MeanlibDispatcher) {
+                    use(mainSubsystem, name = "Autonomous") {
+                        if (wasDisabled) enable()
+                        autonomous()
+                    }
+                }
+            } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
+                HAL.observeUserProgramTeleop()
+                previousRobotMode = RobotMode.TELEOP
+
+                GlobalScope.launch(MeanlibDispatcher) {
+                    use(mainSubsystem, name = "Teleop") {
+                        if (wasDisabled) enable()
+                        teleop()
+                    }
+                }
+            } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
+                HAL.observeUserProgramTest()
+                previousRobotMode = RobotMode.TEST
+
+                GlobalScope.launch(MeanlibDispatcher) {
+                    use(mainSubsystem, name = "Test") {
+                        if (wasDisabled) enable()
+                        test()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun endCompetition() { /* NOOP */ }
+
+    /**
+     * Robot-wide initialization code should go here.
+     *
+     * Users should override this method for default Robot-wide initialization which will be called
+     * when the robot is first powered on. It will be called exactly one time.
+     *
+     * Warning: the Driver Station "Robot Code" light and FMS "Robot Ready" indicators will be off
+     * until RobotInit() exits. Code in RobotInit() that waits for enable will cause the robot to
+     * never indicate that the code is ready, causing the robot to be bypassed in a match.
+     */
+    open fun init() { /* NOOP */ }
+
     /**
      * Called immediately when the robot becomes enabled. This method must exit before [autonomous],
      * [teleop] or [test] will be called.
      */
-    suspend fun enable() { /* NOOP */}
+    open suspend fun enable() { /* NOOP */}
 
     /**
      * Called immediately when the robot becomes disabled.
      */
-    suspend fun disable() { /* NOOP */ }
+    open suspend fun disable() { /* NOOP */ }
 
     /**
      * Called immediately after [enable] when the robot's mode transitions to autonomous.
      */
-    suspend fun autonomous() { /* NOOP */ }
+    open suspend fun autonomous() { /* NOOP */ }
 
     /**
      * Called immediately after [enable] when the robot's mode transitions to teleoperated.
      */
-    suspend fun teleop() { /* NOOP */ }
+    open suspend fun teleop() { /* NOOP */ }
 
     /**
      * Called immediately after [enable] when the robot's mode transitions to test.
      */
-    suspend fun test() { /* NOOP */ }
+    open suspend fun test() { /* NOOP */ }
 
     /**
      * Called every time communications are established between the robot and the driver station.
@@ -51,7 +138,7 @@ interface RobotProgram {
      * station, e.g. [DriverStation.getAlliance] or [DriverStation.getMatchType]. Note that data
      * from the driver station may not be immediately available and may need to be rechecked.
      */
-    fun comms() { /* NOOP */ }
+    open fun comms() { /* NOOP */ }
 }
 
 private enum class RobotMode {
@@ -82,80 +169,4 @@ fun initializeWpilib() {
     }
 
     println("wpilib initialized successfully.")
-}
-
-
-/**
- * Runs a given [robotProgram].
- */
-fun runRobotProgram(robotProgram: RobotProgram): Nothing {
-    println("********** Robot program starting! **********")
-
-    HAL.observeUserProgramStarting()
-    val ds = DriverStation.getInstance()
-
-    var previousRobotMode: RobotMode? = null
-
-    val mainSubsystem = Subsystem("Robot").apply { enable() }
-
-    while (true) {
-        val hasNewData = ds.waitForData(0.02)
-
-        Events.process()
-        if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
-
-        if (!hasNewData) continue
-
-        if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
-            robotProgram.comms()
-
-            if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
-        }
-
-        if (ds.isDisabled) {
-            if (previousRobotMode != RobotMode.DISABLED) {
-                HAL.observeUserProgramDisabled()
-                previousRobotMode = RobotMode.DISABLED
-
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Disabled") { robotProgram.disable() }
-                }
-            }
-            continue
-        }
-
-        val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
-
-        if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
-            HAL.observeUserProgramAutonomous()
-            previousRobotMode = RobotMode.AUTONOMOUS
-
-            GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem, name = "Autonomous") {
-                    if (wasDisabled) robotProgram.enable()
-                    robotProgram.autonomous()
-                }
-            }
-        } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
-            HAL.observeUserProgramTeleop()
-            previousRobotMode = RobotMode.TELEOP
-
-            GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem, name = "Teleop") {
-                    if (wasDisabled) robotProgram.enable()
-                    robotProgram.teleop()
-                }
-            }
-        } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
-            HAL.observeUserProgramTest()
-            previousRobotMode = RobotMode.TEST
-
-            GlobalScope.launch(MeanlibDispatcher) {
-                use(mainSubsystem, name = "Test") {
-                    if (wasDisabled) robotProgram.enable()
-                    robotProgram.test()
-                }
-            }
-        }
-    }
 }
