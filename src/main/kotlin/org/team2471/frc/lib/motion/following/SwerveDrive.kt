@@ -188,7 +188,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
     )
 }
 
-private fun SwerveDrive.recordOdometry() {
+fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
 
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
