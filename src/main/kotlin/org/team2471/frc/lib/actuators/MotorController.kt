@@ -297,6 +297,20 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
     }
 
+    /**
+     * Enables brake mode.
+     *
+     * @see internalMotorController.setNeutralMode
+     */
+    fun brakeMode() = allMotorControllers { it.setNeutralMode(NeutralMode.Brake) }
+
+    /**
+     * Enables coast mode.
+     *
+     * @see internalMotorController.setNeutralMode
+     */
+    fun coastMode() = allMotorControllers { it.setNeutralMode(NeutralMode.Coast) }
+
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
          * The primary, "master" [internalMotorController].
