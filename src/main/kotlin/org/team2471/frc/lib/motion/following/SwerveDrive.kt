@@ -217,8 +217,8 @@ fun SwerveDrive.resetOdometry() {
         module.prevDistance = 0.0
     }
     zeroEncoders()
-    position = Vector2(11.855676, 32.951713)
-    heading = ((-10.93).degrees)
+    position = Vector2(0.0, 0.0)
+    heading = ((0.0).degrees)
 }
 
 suspend fun SwerveDrive.driveAlongPath(
