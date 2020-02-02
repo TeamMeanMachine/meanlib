@@ -6,6 +6,7 @@ import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
+import com.ctre.phoenix.motorcontrol.can.TalonFX as CTRETalonFX
 
 sealed class MotorControllerID
 /**
@@ -29,9 +30,17 @@ data class VictorID(val value: Int) : MotorControllerID()
  */
 data class SparkMaxID(val value: Int) : MotorControllerID()
 
+/**
+ * The ID of a Talon FX motor controller.
+ *
+ * @param value the Falcon's CAN ID
+ */
+data class FalconID(val value: Int) : MotorControllerID()
+
 private fun internalMotorController(id: MotorControllerID) = when (id) {
     is TalonID -> CTRETalonSRX(id.value)
     is VictorID -> CTREVictorSPX(id.value)
+    is FalconID -> CTRETalonFX(id.value)
     is SparkMaxID -> SparkMaxWrapper(id.value)
 }
 
@@ -69,7 +78,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     val current: Double
         get() = when (motorController) {
-            is CTRETalonSRX -> motorController.outputCurrent
+            is CTRETalonSRX -> motorController.statorCurrent
+            is CTRETalonFX -> motorController.statorCurrent
             is SparkMaxWrapper -> motorController.current
             else -> throw IllegalStateException("Current cannot be read from this motor controller")
         }
@@ -139,6 +149,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             when (motorController) {
                 is CTRETalonSRX -> motorController.configFactoryDefault()
                 is CTREVictorSPX -> motorController.configFactoryDefault()
+                is CTRETalonFX -> motorController.configFactoryDefault()
                 is SparkMaxWrapper -> {
                     /*motorController.restoreFactoryDefaults()*/
                 }
@@ -285,6 +296,20 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
         }
     }
+
+    /**
+     * Enables brake mode.
+     *
+     * @see internalMotorController.setNeutralMode
+     */
+    fun brakeMode() = allMotorControllers { it.setNeutralMode(NeutralMode.Brake) }
+
+    /**
+     * Enables coast mode.
+     *
+     * @see internalMotorController.setNeutralMode
+     */
+    fun coastMode() = allMotorControllers { it.setNeutralMode(NeutralMode.Coast) }
 
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
@@ -478,6 +503,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             when (motorController) {
                 is CTREVictorSPX -> motorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
                 is CTRETalonSRX -> motorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
+                is CTRETalonFX -> motorController.configSelectedFeedbackSensor(feedbackDevice,0,timeoutMs)
                 is SparkMaxWrapper -> motorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)
             }
         }
@@ -492,6 +518,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         fun encoderContinuous(continuous: Boolean) {
             when (motorController) {
                 is CTRETalonSRX -> motorController.configFeedbackNotContinuous(!continuous, timeoutMs)
+                is CTRETalonFX -> motorController.configFeedbackNotContinuous(!continuous, timeoutMs)
                 else -> {}
             }
         }
