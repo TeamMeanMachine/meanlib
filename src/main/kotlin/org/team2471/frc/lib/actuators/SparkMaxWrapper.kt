@@ -21,8 +21,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     val canID = deviceNumber
 
     private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        val enc = getEncoder(EncoderType.kHallSensor, 4096)
-        println("encoder value: " + enc.position + "; id: " + deviceNumber + "-------------------------------------------------------------")
         restoreFactoryDefaults()
 
         //println("encoder value2: " + enc.position + "; id: " + deviceNumber + "-----------------------------------")
