@@ -536,9 +536,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
             fun d(d: Double) {
+                println("d=$d")
                 motorController.config_kD(slot, d / feedbackCoefficient * 1024.0, timeoutMs)
             }
 
+//            fun getD() - >Double  {
+//                return (motorController as SparkMaxWrapper).getDValue()
+//            }
             fun f(f: Double) {
                 motorController.config_kF(slot, f / feedbackCoefficient / 10.0, timeoutMs)
             }

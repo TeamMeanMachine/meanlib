@@ -429,7 +429,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun config_kD(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
         _motorController.pidController.d = value
+        println("kD=$value")
         return ErrorCode.OK
+    }
+
+    fun getDValue() : Double {
+        return _motorController.pidController.d;
     }
 
     override fun config_kF(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {

@@ -468,8 +468,8 @@ public class MotionKey {
         m_xCoeff = new CubicCoefficients1D(pointax, pointbx, pointcx, pointdx);
     }
 
-    public boolean isMarkbeginOrEndKeysToZeroSlope() {
-        return m_markBeginOrEndKeysToZeroSlope;
+    public boolean getMarkbeginOrEndKeysToZeroSlope() {
+        return m_markBeginOrEndKeysToZeroSlope && getMotionCurve().getMarkbeginOrEndKeysToZeroSlope();
     }
 
     public void setMarkBeginOrEndKeysToZeroSlope(boolean m_setBeginOrEndKeysToZeroSlope) {
