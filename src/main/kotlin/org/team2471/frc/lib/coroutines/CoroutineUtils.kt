@@ -123,4 +123,4 @@ suspend inline fun delay(time: Time) = delay(time.asSeconds)
  *
  * A halted coroutine can still be canceled.
  */
-suspend inline fun halt(): Nothing = suspendCancellableCoroutine {}
+suspend inline fun halt(): Unit = suspendCancellableCoroutine {}
