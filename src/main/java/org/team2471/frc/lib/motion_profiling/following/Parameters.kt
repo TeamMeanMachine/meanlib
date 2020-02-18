@@ -30,7 +30,8 @@ data class ArcadeParameters(
         var doHeadingCorrection: Boolean = false,
         var headingCorrectionP: Double = 0.0,
         var headingCorrectionI: Double = 0.0,
-        var headingCorrectionIDecay: Double = 1.0
+        var headingCorrectionIDecay: Double = 1.0,
+        val alignRobotToPath: Boolean = true
 ) : DrivetrainParameters()
 
 data class SwerveParameters(
@@ -40,6 +41,7 @@ data class SwerveParameters(
     val kPositionFeedForward: Double,
     val kpHeading: Double,
     val kdHeading: Double,
-    val kHeadingFeedForward: Double
+    val kHeadingFeedForward: Double,
+    val alignRobotToPath: Boolean = false
 ) : DrivetrainParameters() {
 }

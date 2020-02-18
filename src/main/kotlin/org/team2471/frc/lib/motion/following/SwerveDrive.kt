@@ -234,7 +234,10 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
-        heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+        heading = path.headingCurve.getValue(0.0).degrees
+        if(parameters.alignRobotToPath) {
+            heading += path.getTangent(0.0).angle.degrees
+        }
         println("After Reset Position = $position Heading = $heading")
     }
     var prevTime = 0.0
@@ -243,6 +246,8 @@ suspend fun SwerveDrive.driveAlongPath(
     timer.start()
     prevPathPosition = path.getPosition(0.0)
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
+    var prevPositionError = Vector2(0.0, 0.0)
+    var prevHeadingError = 0.0.degrees
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -256,22 +261,30 @@ suspend fun SwerveDrive.driveAlongPath(
         val pathVelocity = (pathPosition - prevPathPosition) / dt
         prevPathPosition = pathPosition
 
+        // position d
+        val deltaPositionError = positionError - prevPositionError
+        prevPositionError = positionError
+
         val translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kdPosition
+            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
 
         // heading error
         val robotHeading = heading
         val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (pathHeading - robotHeading).wrap()
+        //println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
 
-        //println("Heading: $robotHeading")
+        println("Heading: $robotHeading")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
         prevPathHeading = pathHeading
 
-        val turnControl =
-            headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kdHeading
+        // heading d
+        val deltaHeadingError = headingError - prevHeadingError
+        prevHeadingError = headingError
+
+        val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
         // send it
         drive(translationControlField, turnControl, true)
@@ -372,4 +385,56 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
+}
+
+suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc.lib.input.XboxController) {
+    var prevX = 0.0
+    var prevY = 0.0
+    var prevTime = 0.0
+    var prevPositionError = Vector2(0.0, 0.0)
+    var prevHeadingError = 0.0.degrees
+
+    val timer = Timer().apply { start() }
+
+    var angleErrorAccum = 0.0.degrees
+    try {
+        resetOdometry()
+        periodic {
+            val t = timer.get()
+            val dt = t - prevTime
+
+            val x = controller.leftThumbstickX
+            val y = controller.leftThumbstickY
+            val turn = 90*controller.rightThumbstickX
+
+            // position error
+            val pathPosition = Vector2(x, y)
+            val positionError = pathPosition - position
+
+            // position d
+            val deltaPositionError = positionError - prevPositionError
+            prevPositionError = positionError
+
+            val translationControlField = positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
+
+            // heading error
+            val robotHeading = heading.asDegrees
+            val pathHeading = turn.degrees
+            val headingError = (pathHeading - robotHeading.degrees).wrap()
+            println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+            // heading d
+            val deltaHeadingError = headingError - prevHeadingError
+            prevHeadingError = headingError
+
+            val turnControl = headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+
+            println("Error ${headingError.asDegrees}, setpoint ${pathHeading}, current pos $robotHeading")
+            drive(translationControlField, turnControl, true)
+
+            prevTime = t
+        }
+    } finally {
+        stop()
+    }
 }
