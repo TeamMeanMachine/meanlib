@@ -405,7 +405,7 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
             val x = controller.leftThumbstickX
             val y = controller.leftThumbstickY
-            val turn = 90*controller.rightThumbstickX
+            val turn = 75.0*controller.rightThumbstickX
 
             // position error
             val pathPosition = Vector2(x, y)
@@ -421,7 +421,7 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             val robotHeading = heading.asDegrees
             val pathHeading = turn.degrees
             val headingError = (pathHeading - robotHeading.degrees).wrap()
-            println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
+//            println("Heading Error: $headingError. Hi.")
 
             // heading d
             val deltaHeadingError = headingError - prevHeadingError
