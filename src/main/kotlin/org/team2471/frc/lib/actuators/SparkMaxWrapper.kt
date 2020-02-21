@@ -62,6 +62,10 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
 
+    fun burnFlash(){
+        println("Burned Flash for ${_motorController.deviceId}")
+        _motorController.burnFlash()
+    }
     override fun setInverted(invert: Boolean) {
         _motorController.inverted = invert
     }

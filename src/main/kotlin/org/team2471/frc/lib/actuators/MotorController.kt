@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
+import edu.wpi.first.wpilibj.Spark
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
@@ -282,6 +283,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     inline fun config(timeoutMs: Int = 100, body: ConfigScope.() -> Unit) = apply {
         body(ConfigScope(timeoutMs))
+
     }
 
     private inline fun allMotorControllers(body: (IMotorController) -> Unit) {
@@ -336,6 +338,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                 this@MotorController.feedbackCoefficient = value
             }
 
+        // burns spark max to retain settings between boot
+        fun burnSettings(){
+            if (motorController is SparkMaxWrapper) {
+                motorController.burnFlash()
+            }
+        }
 
         /**
          * Initializes the incremental encoder to match the analog encoder.
