@@ -7,10 +7,10 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.MeanlibDispatcher
+import org.team2471.frc.lib.coroutines.meanlibLaunch
 import org.team2471.frc.lib.coroutines.periodic
 import java.io.File
+import kotlin.reflect.KFunction0
 
 const val LANGUAGE_KOTLIN = 6
 
@@ -31,12 +31,13 @@ abstract class MeanlibRobot : RobotBase() {
         val mainSubsystem = Subsystem("Robot").apply { enable() }
 
         while (true) {
+            Events.process()
+
             val hasNewData = ds.waitForData(0.02)
 
-            Events.process()
-            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
-
             if (!hasNewData) continue
+
+            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
 
             if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
                 comms()
@@ -44,50 +45,18 @@ abstract class MeanlibRobot : RobotBase() {
                 if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
             }
 
-            if (ds.isDisabled) {
-                if (previousRobotMode != RobotMode.DISABLED) {
-                    HAL.observeUserProgramDisabled()
-                    previousRobotMode = RobotMode.DISABLED
-
-                    GlobalScope.launch(MeanlibDispatcher) {
-                        use(mainSubsystem, name = "Disabled") { disable() }
-                    }
-                }
-                continue
-            }
-
-            val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
-
-            if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
-                HAL.observeUserProgramAutonomous()
-                previousRobotMode = RobotMode.AUTONOMOUS
-
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Autonomous") {
+            val current = RobotMode.current
+            if (previousRobotMode != current) {
+                current.HalObserveUserProgram()
+                val thisRobot = this // why tho
+                val wasDisabled = previousRobotMode == RobotMode.DISABLED
+                GlobalScope.meanlibLaunch {
+                    use(mainSubsystem, name = current.name) {
                         if (wasDisabled) enable()
-                        autonomous()
+                        current.action.invoke(thisRobot) // why tho
                     }
                 }
-            } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
-                HAL.observeUserProgramTeleop()
-                previousRobotMode = RobotMode.TELEOP
-
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Teleop") {
-                        if (wasDisabled) enable()
-                        teleop()
-                    }
-                }
-            } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
-                HAL.observeUserProgramTest()
-                previousRobotMode = RobotMode.TEST
-
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Test") {
-                        if (wasDisabled) enable()
-                        test()
-                    }
-                }
+                previousRobotMode = RobotMode.current
             }
         }
     }
@@ -141,10 +110,25 @@ abstract class MeanlibRobot : RobotBase() {
     open fun comms() { /* NOOP */ }
 }
 
-private enum class RobotMode {
-    DISCONNECTED,
-    DISABLED,
-    AUTONOMOUS,
-    TELEOP,
-    TEST,
+private enum class RobotMode(val action: suspend MeanlibRobot.() -> Unit, val HalObserveUserProgram: KFunction0<Unit>) {
+    DISCONNECTED({ comms() }, {} as KFunction0<Unit>),
+    DISABLED(MeanlibRobot::disable, HAL::observeUserProgramDisabled),
+    AUTONOMOUS(MeanlibRobot::autonomous, HAL::observeUserProgramAutonomous),
+    TELEOP(MeanlibRobot::teleop, HAL::observeUserProgramTeleop),
+    TEST(MeanlibRobot::test, HAL::observeUserProgramTest);
+
+    companion object {
+        val current: RobotMode
+            get() {
+                val ds = DriverStation.getInstance()
+                return when {
+                    ds.isDisabled -> DISABLED
+                    ds.isAutonomous -> AUTONOMOUS
+                    ds.isOperatorControl -> TELEOP
+                    ds.isTest -> TEST
+                    !ds.isDSAttached -> DISCONNECTED
+                    else -> DISCONNECTED
+                }
+            }
+    }
 }
