@@ -48,12 +48,11 @@ abstract class MeanlibRobot : RobotBase() {
             val current = RobotMode.current
             if (previousRobotMode != current) {
                 current.HalObserveUserProgram()
-                val thisRobot = this // why tho
                 val wasDisabled = previousRobotMode == RobotMode.DISABLED
                 GlobalScope.meanlibLaunch {
                     use(mainSubsystem, name = current.name) {
                         if (wasDisabled) enable()
-                        current.action.invoke(thisRobot) // why tho
+                        current.action.invoke(this@MeanlibRobot)
                     }
                 }
                 previousRobotMode = RobotMode.current
@@ -110,8 +109,8 @@ abstract class MeanlibRobot : RobotBase() {
     open fun comms() { /* NOOP */ }
 }
 
-private enum class RobotMode(val action: suspend MeanlibRobot.() -> Unit, val HalObserveUserProgram: KFunction0<Unit>) {
-    DISCONNECTED({ comms() }, {} as KFunction0<Unit>),
+private enum class RobotMode(val action: suspend MeanlibRobot.() -> Unit, val HalObserveUserProgram: () -> Unit) {
+    DISCONNECTED({ comms() }, {}),
     DISABLED(MeanlibRobot::disable, HAL::observeUserProgramDisabled),
     AUTONOMOUS(MeanlibRobot::autonomous, HAL::observeUserProgramAutonomous),
     TELEOP(MeanlibRobot::teleop, HAL::observeUserProgramTeleop),
