@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTranslationInput
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
@@ -22,6 +21,8 @@ private var prevPosition = Vector2(0.0, 0.0)
 private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = 0.0
 private var prevPathHeading = 0.0.radians
+private val MAXHEADINGSPEED_DEGREES_PER_SECOND = 600.0
+private var prevHeadingError = 0.0.degrees
 
 interface SwerveDrive {
     val parameters: SwerveParameters
@@ -30,6 +31,7 @@ interface SwerveDrive {
     var position: Vector2
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
+    var headingSetpoint: Angle
 
     val modules: Array<Module>
 
@@ -91,13 +93,14 @@ fun SwerveDrive.zeroEncoders() {
 }
 
 
-public fun SwerveDrive.drive(
+fun SwerveDrive.drive(
     translation: Vector2,
     turn: Double,
     fieldCentric: Boolean = true,
+    teleopClosedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0,
-    inputDamping: Double = 1.0 )
+    inputDamping: Double = 1.0)
 {
     recordOdometry()
 
@@ -118,7 +121,30 @@ public fun SwerveDrive.drive(
 
     prevTurn = totalTurn
 
-    totalTurn += (totalTurn * 600.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
+    // consider only doing this if one of the sticks is out of deadband to prevent wheels going in a circle for slight turning
+    if (adjustedTranslation.length > 0.01 && totalTurn.absoluteValue < 0.01) {
+        if (teleopClosedLoopHeading) {  // closed loop on heading position
+            val headingVelocity = totalTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND
+
+            // heading setpoint
+            headingSetpoint += headingVelocity.degrees / 50.0  // 50 hz
+
+            // heading error
+            val headingError = (headingSetpoint - heading).wrap()
+            //println("Heading Error: $headingError.")
+
+            // heading d
+            val deltaHeadingError = headingError - prevHeadingError
+            prevHeadingError = headingError
+
+            totalTurn =
+                headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+        } else if (parameters.gyroRateCorrection > 0.0) {  // closed loop on heading velocity
+            totalTurn += (totalTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
+        }
+    } else {
+        headingSetpoint = heading
+    }
 
     if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
         return stop()
@@ -247,7 +273,7 @@ suspend fun SwerveDrive.driveAlongPath(
     prevPathPosition = path.getPosition(0.0)
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     var prevPositionError = Vector2(0.0, 0.0)
-    var prevHeadingError = 0.0.degrees
+    prevHeadingError = 0.0.degrees
     periodic {
         val t = timer.get()
         val dt = t - prevTime

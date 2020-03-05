@@ -302,6 +302,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
     }
 
+    fun restoreFactoryDefaults() {
+        when (motorController) {
+            is SparkMaxWrapper -> {
+                motorController.restoreFactoryDefaults()
+            }
+        }
+    }
+
     /**
      * Enables brake mode.
      *
