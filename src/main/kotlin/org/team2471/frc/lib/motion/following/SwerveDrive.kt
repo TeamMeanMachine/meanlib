@@ -124,11 +124,6 @@ fun SwerveDrive.drive(
     // consider only doing this if one of the sticks is out of deadband to prevent wheels going in a circle for slight turning
     if (adjustedTranslation.length > 0.01 && totalTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
-            val headingVelocity = totalTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND
-
-            // heading setpoint
-            headingSetpoint += headingVelocity.degrees / 50.0  // 50 hz
-
             // heading error
             val headingError = (headingSetpoint - heading).wrap()
             //println("Heading Error: $headingError.")
@@ -137,8 +132,7 @@ fun SwerveDrive.drive(
             val deltaHeadingError = headingError - prevHeadingError
             prevHeadingError = headingError
 
-            totalTurn =
-                headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+            totalTurn = headingError.asDegrees * parameters.kpHeading * 0.60 + deltaHeadingError.asDegrees * parameters.kdHeading
         } else if (parameters.gyroRateCorrection > 0.0) {  // closed loop on heading velocity
             totalTurn += (totalTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
         }

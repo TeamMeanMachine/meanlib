@@ -3,6 +3,8 @@ package org.team2471.frc.lib.input
 import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.degrees
 import java.lang.IllegalStateException
 
 private val ds = DriverStation.getInstance()
@@ -63,6 +65,9 @@ open class Controller(val port: Int) {
             }
         }
     }
+
+    val povDirection : Angle
+        get() = ds.getStickPOV(port, 0).degrees
 
     var rumble: Double = 0.0
         set(value) {
