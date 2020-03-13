@@ -67,7 +67,7 @@ open class Controller(val port: Int) {
     }
 
     val povDirection : Angle
-        get() = ds.getStickPOV(port, 0).degrees
+        get() = ds.getStickPOV(port, 0).toFloat().degrees
 
     var rumble: Double = 0.0
         set(value) {
