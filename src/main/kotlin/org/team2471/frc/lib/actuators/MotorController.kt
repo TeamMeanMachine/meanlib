@@ -297,7 +297,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         when (motorController) {
             is SparkMaxWrapper -> {
                 rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
-                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+//                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
     }

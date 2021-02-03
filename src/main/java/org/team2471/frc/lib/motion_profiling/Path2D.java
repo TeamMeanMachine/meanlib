@@ -91,15 +91,23 @@ public class Path2D {
 
     public Vector2 getPosition(double time) {
         if (m_easeCurve.getHeadKey() != null) {
-            if (speed > 0)
+            if (speed > 0) {
+                //System.out.println("ease curve speed > 0. Hi." + getPositionAtEase(m_easeCurve.getValue(time * speed)).toString() + " --Hi");
+                //System.out.println("time: " + time);
+                //System.out.println("speed: " + speed);
                 return getPositionAtEase(m_easeCurve.getValue(time * speed));
-            else
+            } else {
+                //System.out.println("ease curve speed <= 0. Hi." + getPositionAtEase(m_easeCurve.getValue(getDuration() - time * -speed)).toString() + " --Hi");
                 return getPositionAtEase(m_easeCurve.getValue(getDuration() - time * -speed));
+            }
         } else {
-            if (speed > 0)
+            if (speed > 0) {
+                //System.out.println("ease curve no headkey > 0");
                 return getPositionAtEase(time / 5.0 * speed);  // take 5 seconds to finish path (linear motion)
-            else
+            } else {
+                //System.out.println("ease curve no headkey < 0");
                 return getPositionAtEase(getDuration() - time / 5.0 * -speed);
+            }
         }
     }
 
@@ -131,6 +139,7 @@ public class Path2D {
     public Vector2 getPositionAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
         Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
+        System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         return rValue;

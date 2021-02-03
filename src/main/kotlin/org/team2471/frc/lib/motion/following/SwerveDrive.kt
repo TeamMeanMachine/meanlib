@@ -238,28 +238,51 @@ fun SwerveDrive.resetOdometry() {
     }
     zeroEncoders()
     position = Vector2(0.0, 0.0)
+    
+}
+
+fun SwerveDrive.resetHeading() {
     heading = ((0.0).degrees)
+
 }
 
 suspend fun SwerveDrive.driveAlongPath(
     path: Path2D,
     resetOdometry: Boolean = false,
-    extraTime: Double = 0.0
-) {
+    extraTime: Double = 0.0,
+    inResetGyro: Boolean? = null,
+    earlyExit: () -> Boolean = {false}
+    ) {
+    var resetGyro : Boolean = false
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
+    if (inResetGyro == null) {
+        // default to resetOdometry for backward compatibility
+        resetGyro = resetOdometry
+    } else {
+        resetGyro = inResetGyro
 
-    if (resetOdometry) {
-        println("Position = $position Heading = $heading")
-        resetOdometry()
-
-        // set to the numbers required for the start of the path
-        position = path.getPosition(0.0)
+    }
+    
+    if (resetGyro) {
+        println("Heading = $heading")
+        resetHeading()
         heading = path.headingCurve.getValue(0.0).degrees
         if(parameters.alignRobotToPath) {
             heading += path.getTangent(0.0).angle.degrees
         }
-        println("After Reset Position = $position Heading = $heading")
+        println("After Reset Heading = $heading")
     }
+    
+    if (resetOdometry) {
+        println("Position = $position")
+        resetOdometry()
+
+        // set to the numbers required for the start of the path
+        position = path.getPosition(0.0)
+       
+        println("After Reset Position = $position")
+    }
+
     var prevTime = 0.0
 
     val timer = Timer()
@@ -308,7 +331,7 @@ suspend fun SwerveDrive.driveAlongPath(
         drive(translationControlField, turnControl, true)
 
         // are we done yet?
-        if (t >= path.durationWithSpeed + extraTime)
+        if (t >= path.durationWithSpeed + extraTime || earlyExit())
             stop()
 
         prevTime = t
@@ -334,6 +357,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     if (resetOdometry) {
         println("Position = $position Heading = $heading")
         resetOdometry()
+        resetHeading()
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
@@ -417,6 +441,7 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
     var angleErrorAccum = 0.0.degrees
     try {
         resetOdometry()
+        resetHeading()
         periodic {
             val t = timer.get()
             val dt = t - prevTime
