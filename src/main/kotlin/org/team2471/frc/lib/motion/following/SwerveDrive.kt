@@ -3,6 +3,7 @@ package org.team2471.frc.lib.motion.following
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
+import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
@@ -269,6 +270,7 @@ suspend fun SwerveDrive.driveAlongPath(
         heading = path.headingCurve.getValue(0.0).degrees
         if(parameters.alignRobotToPath) {
             heading += path.getTangent(0.0).angle.degrees
+            println("path tangent = ${path.getTangent(0.0).angle.degrees}")
         }
         println("After Reset Heading = $heading")
     }
@@ -288,9 +290,12 @@ suspend fun SwerveDrive.driveAlongPath(
     val timer = Timer()
     timer.start()
     prevPathPosition = path.getPosition(0.0)
-    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
+    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0, parameters.alignRobotToPath).degrees
     var prevPositionError = Vector2(0.0, 0.0)
     prevHeadingError = 0.0.degrees
+    val table = NetworkTableInstance.getDefault().getTable("driveTable")
+
+    val outputEntry = table.getEntry("Output")
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -313,7 +318,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // heading error
         val robotHeading = heading
-        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val pathHeading = path.getAbsoluteHeadingDegreesAt(t, parameters.alignRobotToPath).degrees
         val headingError = (pathHeading - robotHeading).wrap()
         //println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
 
@@ -327,6 +332,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
+        outputEntry.setDouble(translationControlField.length)
+//        print("stuff maybe happening")
         // send it
         drive(translationControlField, turnControl, true)
 
@@ -369,7 +376,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     val timer = Timer()
     timer.start()
     prevPathPosition = path.getPosition(0.0)
-    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
+    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0, parameters.alignRobotToPath).degrees
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -389,7 +396,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
 
         // heading error
         val robotHeading = heading
-        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val pathHeading = path.getAbsoluteHeadingDegreesAt(t, parameters.alignRobotToPath).degrees
         val headingError = (pathHeading - robotHeading).wrap()
 
         // heading feed forward

@@ -112,7 +112,7 @@ public class Path2D {
     }
 
     public Vector2 getTangent(double time) {
-        double flipTangent = getRobotDirection() == RobotDirection.FORWARD ? 1.0 : -1.0;
+        double flipTangent = getRobotDirection() == RobotDirection.FORWARD ? -1.0 : 1.0;
         Vector2 rValue;
 
         if (m_easeCurve.getHeadKey() != null) {
@@ -139,7 +139,7 @@ public class Path2D {
     public Vector2 getPositionAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
         Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
-        System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
+//        System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         return rValue;
@@ -292,13 +292,17 @@ public class Path2D {
         return velocity.dot(velocity) / radius;
     }
 
-    public double getAbsoluteHeadingDegreesAt(double time) {
-//        Vector2 tangent = getTangent(time);
-//        double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
-//        return pathHeading + m_headingCurve.getValue(time);
-        if (isMirrored())
+    public double getAbsoluteHeadingDegreesAt(double time, boolean alignRobotToPath) {
+        if (alignRobotToPath) {
+            Vector2 tangent = getTangent(time);
+            double pathHeading = Math.toDegrees(Math.atan2(tangent.getX(), tangent.getY()));
+            return pathHeading + m_headingCurve.getValue(time);
+        } else {
+            if (isMirrored())
             return -m_headingCurve.getValue(time);
         else
             return m_headingCurve.getValue(time);
+        }
+
     }
 }
