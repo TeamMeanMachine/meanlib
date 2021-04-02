@@ -39,12 +39,17 @@ dependencies {
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0")
 
     // frc libs
+
+//    compile group: "edu.wpi.first.ntcore", name: "ntcore-java", version: "4.+"
+//    runtime group: "edu.wpi.first.ntcore", name: "ntcore-jni", version: "4.+", classifier: "all"
+//    runtime group: "edu.wpi.first.wpiutil", name: "wpiutil-java", version: "3.+", classifier: "all"
+//    runtime group: "edu.wpi.first.hal", name: "hal-java", version: "2019+", classifier: "all"
     implementation("edu.wpi.first.wpilibj:wpilibj-java:2019.4.1")
     implementation("edu.wpi.first.hal:hal-java:2019.4.1")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2019.4.1")
     implementation("edu.wpi.first.ntcore:ntcore-java:2019.4.1")
     implementation("com.ctre.phoenix:api-java:5.14.1")
-    implementation("com.revrobotics.frc:SparkMax-java:1.4.0")
+    implementation("com.revrobotics.frc:SparkMax-java:1.5.2")
 
 
     // other

@@ -84,6 +84,21 @@ public class MotionCurve {
         return getTailKey() != null ? getTailKey().getTime() : 0;
     }
 
+    public void scaleLength(double length) {
+        double origLength = getLength();
+        if (origLength > 0) {
+            double scaleFactor = length / origLength;
+
+            MotionKey nextKey;
+            for (MotionKey pKey = m_headKey; pKey != null; pKey = nextKey) {
+                nextKey = pKey.getNextKey();
+                double currTime = pKey.getTime();
+                pKey.setTime(scaleFactor * currTime);
+                System.out.println(pKey.getTime());
+            }
+        }
+    }
+
     public void removeAllPoints() {
         MotionKey nextKey;
         for (MotionKey pKey = m_headKey; pKey != null; pKey = nextKey) {
