@@ -299,6 +299,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                 rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
 //                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
+            else -> {
+                rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt()
+                println("Motor Angle: ${analogAngle.asDegrees}; rawOffset: $rawOffset. Hi.")
+            }
         }
     }
 
