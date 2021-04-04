@@ -82,7 +82,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             is CTRETalonSRX -> motorController.statorCurrent
             is CTRETalonFX -> motorController.statorCurrent
             is SparkMaxWrapper ->  {
-                println("Spark current is ${motorController.current}")
                 motorController.current
             }
             else -> throw IllegalStateException("Current cannot be read from this motor controller")
@@ -514,6 +513,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                     controller.configPeakCurrentLimit(peakLimit, timeoutMs)
                     controller.configPeakCurrentDuration(peakDuration, timeoutMs)
                     controller.enableCurrentLimit(true)
+                }
+                if (controller is SparkMaxWrapper) {
+                    println("TODO: currentLimit for SparkMax")
                 }
             }
         }
