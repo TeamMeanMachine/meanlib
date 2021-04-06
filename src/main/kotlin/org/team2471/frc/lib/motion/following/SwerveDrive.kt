@@ -332,7 +332,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
-        outputEntry.setDouble(translationControlField.length)
+        outputEntry.setDouble(translationControlField.length.coerceAtMost(1.5))
 //        print("stuff maybe happening")
         // send it
         drive(translationControlField, turnControl, true)
