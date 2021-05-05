@@ -479,5 +479,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         _motorController.restoreFactoryDefaults()
     }
 
-
+    fun setSmartCurrentLimit(limit: Int): ErrorCode {
+        _motorController.setSmartCurrentLimit(limit)
+        return ErrorCode.OK
+    }
 }

@@ -505,17 +505,17 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CTRETalonSRX.configPeakCurrentLimit
          * @see CTRETalonSRX.configPeakCurrentDuration
          */
-        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
+        fun currentLimit(continuousLimit: Int) {
             // apply to following
             allMotorControllers { controller ->
                 if (controller is CTRETalonSRX) {
                     controller.configContinuousCurrentLimit(continuousLimit, timeoutMs)
-                    controller.configPeakCurrentLimit(peakLimit, timeoutMs)
-                    controller.configPeakCurrentDuration(peakDuration, timeoutMs)
+                    controller.configPeakCurrentLimit(0, timeoutMs)
+                    controller.configPeakCurrentDuration(0, timeoutMs)
                     controller.enableCurrentLimit(true)
                 }
                 if (controller is SparkMaxWrapper) {
-                    println("TODO: currentLimit for SparkMax")
+                    controller.setSmartCurrentLimit(continuousLimit)
                 }
             }
         }
