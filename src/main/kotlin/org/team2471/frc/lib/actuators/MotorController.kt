@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
-import edu.wpi.first.wpilibj.Spark
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
@@ -51,7 +50,7 @@ private fun internalMotorController(id: MotorControllerID) = when (id) {
  * @param deviceId the [MotorControllerID] of the primary, "master" motor controller
  * @param followerIds optional [MotorControllerID]s of motor controllers which should follow the primary
  */
-class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorControllerID) {
+class MotorController(deviceId: org.team2471.frc2020.Falcons, vararg followerIds: MotorControllerID) {
     private val motorController = internalMotorController(deviceId)
 
     private var feedbackCoefficient = 1.0
