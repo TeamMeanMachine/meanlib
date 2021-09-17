@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.units
 
+import kotlin.math.IEEErem
+
 inline class Angle(val asDegrees: Double) {
     operator fun plus(other: Angle) = Angle(asDegrees + other.asDegrees)
 
@@ -25,7 +27,7 @@ inline class Angle(val asDegrees: Double) {
 
     fun tan() = Angle.tan(this)
 
-    fun wrap() = Angle(Math.IEEEremainder(asDegrees, 360.0))
+    fun wrap() = Angle(asDegrees.IEEErem(360.0))
 
     companion object {
         @JvmStatic
