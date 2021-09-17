@@ -66,4 +66,12 @@ public class Autonomi {
         NetworkTableEntry entry = table.getEntry("Autonomi");
         entry.setString(json);
     }
+
+
+    public String readFromNetworkTables(NetworkTableInstance networkTableInstance) {
+        NetworkTable table = networkTableInstance.getTable("PathVisualizer");
+        NetworkTableEntry entry = table.getEntry("Autonomi");
+        System.out.println(entry.getString("default"));
+        return entry.getString("");
+    }
 }
