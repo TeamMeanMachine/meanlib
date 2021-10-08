@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
+import com.ctre.phoenix.motorcontrol.can.BaseTalon
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
@@ -513,8 +514,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                     controller.configPeakCurrentDuration(0, timeoutMs)
                     controller.enableCurrentLimit(true)
                 }
-                if (controller is SparkMaxWrapper) {
+                else if (controller is SparkMaxWrapper) {
                     controller.setSmartCurrentLimit(continuousLimit)
+                }
+                else if (controller is CTRETalonFX) {
+                    val limitConfig = StatorCurrentLimitConfiguration(true, continuousLimit.toDouble(), 0.0, 0.0)
+                    controller.configStatorCurrentLimit(limitConfig, timeoutMs)
                 }
             }
         }
