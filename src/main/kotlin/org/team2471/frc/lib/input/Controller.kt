@@ -72,7 +72,7 @@ open class Controller(val port: Int) {
     var rumble: Double = 0.0
         set(value) {
             field = value
-            val rumble = (value * 65535).toShort()
+            val rumble = (value * 65535).toInt().toShort()
             HAL.setJoystickOutputs(port.toByte(), 0, rumble, rumble)
         }
 

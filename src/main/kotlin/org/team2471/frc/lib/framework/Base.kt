@@ -6,6 +6,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.util.WPILibVersion
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
@@ -19,6 +20,7 @@ const val LANGUAGE_KOTLIN = 6
  * execute code in the specified mode.
  */
 abstract class MeanlibRobot : RobotBase() {
+    @OptIn(DelicateCoroutinesApi::class)
     override fun startCompetition() {
         init()
 
@@ -61,7 +63,6 @@ abstract class MeanlibRobot : RobotBase() {
             if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
                 HAL.observeUserProgramAutonomous()
                 previousRobotMode = RobotMode.AUTONOMOUS
-
                 GlobalScope.launch(MeanlibDispatcher) {
                     use(mainSubsystem, name = "Autonomous") {
                         if (wasDisabled) enable()
@@ -71,7 +72,6 @@ abstract class MeanlibRobot : RobotBase() {
             } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
                 HAL.observeUserProgramTeleop()
                 previousRobotMode = RobotMode.TELEOP
-
                 GlobalScope.launch(MeanlibDispatcher) {
                     use(mainSubsystem, name = "Teleop") {
                         if (wasDisabled) enable()

@@ -1,17 +1,17 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import edu.wpi.first.wpilibj.PIDInterface;
+import edu.wpi.first.wpilibj.controller.PIDController;
 
 public class MotionProfileCurve extends MotionCurve {
 
-    private PIDInterface pidInterface;
+    private PIDController pidInterface;
     private double offset = 0.0;
 
-    public MotionProfileCurve(PIDInterface pidInterface) {
+    public MotionProfileCurve(PIDController pidInterface) {
         this.pidInterface = pidInterface;
     }
 
-    public MotionProfileCurve(PIDInterface pidInterface, MotionProfileAnimation animation) {
+    public MotionProfileCurve(PIDController pidInterface, MotionProfileAnimation animation) {
         this.pidInterface = pidInterface;
         animation.addMotionProfileCurve(this);
     }

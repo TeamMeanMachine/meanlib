@@ -42,7 +42,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         get() = _motorController.faults > 0
 
     override fun follow(followerID: IMotorController) {
-        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted == (followerID as SparkMaxWrapper).inverted)
+        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted == followerID.inverted)
     }
 
 //    override fun motorOutputPercent(): Double {

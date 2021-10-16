@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.units
 
-inline class Length(val asInches: Double) {
+@JvmInline
+value class Length(val asInches: Double) {
     operator fun plus(other: Length) = Length(asInches + other.asInches)
 
     operator fun minus(other: Length) = Length(asInches - other.asInches)

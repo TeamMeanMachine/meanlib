@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.units
 
-inline class Angle(val asDegrees: Double) {
+@JvmInline
+value class Angle(val asDegrees: Double) {
     operator fun plus(other: Angle) = Angle(asDegrees + other.asDegrees)
 
     operator fun minus(other: Angle) = Angle(asDegrees - other.asDegrees)

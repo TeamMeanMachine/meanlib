@@ -2,7 +2,8 @@
 
 package org.team2471.frc.lib.units
 
-inline class LinearVelocity(val lengthPerSecond: Length) {
+@JvmInline
+value class LinearVelocity(val lengthPerSecond: Length) {
     operator fun plus(other: LinearVelocity) = LinearVelocity(lengthPerSecond + other.lengthPerSecond)
 
     operator fun minus(other: LinearVelocity) = LinearVelocity(lengthPerSecond - other.lengthPerSecond)

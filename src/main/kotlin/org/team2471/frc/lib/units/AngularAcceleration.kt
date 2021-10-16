@@ -2,7 +2,8 @@
 
 package org.team2471.frc.lib.units
 
-inline class AngularAcceleration(val velocityPerSecond: AngularVelocity) {
+@JvmInline
+value class AngularAcceleration(val velocityPerSecond: AngularVelocity) {
     operator fun plus(other: AngularAcceleration) = AngularAcceleration(velocityPerSecond + other.velocityPerSecond)
 
     operator fun minus(other: AngularAcceleration) = AngularAcceleration(velocityPerSecond - other.velocityPerSecond)

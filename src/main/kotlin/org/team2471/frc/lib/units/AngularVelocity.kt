@@ -1,8 +1,8 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
 package org.team2471.frc.lib.units
-
-inline class AngularVelocity(val changePerSecond: Angle) {
+@JvmInline
+value class AngularVelocity(val changePerSecond: Angle) {
     operator fun plus(other: AngularVelocity) = AngularVelocity(changePerSecond + other.changePerSecond)
 
     operator fun minus(other: AngularVelocity) = AngularVelocity(changePerSecond - other.changePerSecond)

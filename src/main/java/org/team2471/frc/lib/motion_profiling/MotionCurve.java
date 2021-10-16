@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import org.team2471.frc.lib.vector.Vector2;
+import org.team2471.frc.lib.math.Vector2;
 
 public class MotionCurve {
     private transient final double MAXFRAMEERROR = 0.003;

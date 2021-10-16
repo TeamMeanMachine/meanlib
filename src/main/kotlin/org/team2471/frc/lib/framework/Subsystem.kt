@@ -22,7 +22,7 @@ import org.team2471.frc.lib.framework.internal.SubsystemCoordinator
  *
  * @see use
  */
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 open class Subsystem(
     /**
      * The name of your Subsystem, required for debugging purposes.
@@ -122,6 +122,6 @@ open class Subsystem(
  * the code inside the nested [use] call's [body] will effectively be using subsystems A, B, and C, instead of
  * cancelling itself.
  */
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun <R> use(vararg subsystems: Subsystem, name: String? = null, cancelConflicts: Boolean = true, body: suspend CoroutineScope.()  -> R) =
     SubsystemCoordinator.useSubsystems(setOf(*subsystems), name, cancelConflicts, body)

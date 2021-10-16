@@ -148,18 +148,18 @@ fun SwerveDrive.drive(
 
     val speeds = Array(modules.size) { 0.0 }
 
-    for (i in 0 until modules.size) {
+    for (i in modules.indices) {
         speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, totalTurn, robotPivot)
     }
 
-    val maxSpeed = speeds.maxBy(Math::abs)!!
+    val maxSpeed = speeds.maxByOrNull(Math::abs)!!
     if (maxSpeed > 1.0) {
-        for (i in 0 until speeds.size) {
+        for (i in speeds.indices) {
             speeds[i] /= maxSpeed
         }
     }
 
-    for (i in 0 until modules.size) {
+    for (i in modules.indices) {
         //print("${modules[i].currDistance} ")
         modules[i].setDrivePower(speeds[i])
     }
@@ -212,11 +212,11 @@ fun SwerveDrive.recordOdometry() {
     var translation = Vector2(0.0, 0.0)
 
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
-    for (i in 0 until modules.size) {
+    for (i in modules.indices) {
         translations[i] = modules[i].recordOdometry(heading)
     }
 
-    for (i in 0 until modules.size) {
+    for (i in modules.indices) {
         translation += translations[i]
     }
     translation /= modules.size.toDouble()
@@ -253,17 +253,9 @@ suspend fun SwerveDrive.driveAlongPath(
     inResetGyro: Boolean? = null,
     earlyExit: () -> Boolean = {false}
     ) {
-    var resetGyro : Boolean = false
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
-    if (inResetGyro == null) {
-        // default to resetOdometry for backward compatibility
-        resetGyro = resetOdometry
-    } else {
-        resetGyro = inResetGyro
 
-    }
-    
-    if (resetGyro) {
+    if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         resetHeading()
         heading = path.headingCurve.getValue(0.0).degrees
@@ -430,21 +422,21 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
 }
 
 suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc.lib.input.XboxController) {
-    var prevX = 0.0
-    var prevY = 0.0
-    var prevTime = 0.0
+//    var prevX = 0.0
+//    var prevY = 0.0
+//    var prevTime = 0.0
     var prevPositionError = Vector2(0.0, 0.0)
     var prevHeadingError = 0.0.degrees
 
-    val timer = Timer().apply { start() }
+    //val timer = Timer().apply { start() }
 
-    var angleErrorAccum = 0.0.degrees
+//    var angleErrorAccum = 0.0.degrees
     try {
         resetOdometry()
         resetHeading()
         periodic {
-            val t = timer.get()
-            val dt = t - prevTime
+           // val t = timer.get()
+//            val dt = t - prevTime
 
             val x = controller.leftThumbstickX
             val y = controller.leftThumbstickY
@@ -475,7 +467,7 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             println("Error ${headingError.asDegrees}, setpoint ${pathHeading}, current pos $robotHeading")
             drive(translationControlField, turnControl, true)
 
-            prevTime = t
+           // prevTime = t
         }
     } finally {
         stop()

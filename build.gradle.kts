@@ -6,14 +6,14 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
     }
 }
 
 plugins {
     java
-    maven
+    `maven-publish`
    `java-library`
 }
 
@@ -29,20 +29,16 @@ repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/")}
     maven { setUrl("https://plugins.gradle.org/m2/")}
-    maven { setUrl("http://devsite.ctr-electronics.com/maven/release/") }
-    maven { setUrl("http://www.revrobotics.com/content/sw/max/sdk/maven/") }
-
 }
 
 dependencies {
     // kotlin libs
-    implementation(kotlin("stdlib-jdk8", "1.3.61"))
-    implementation(kotlin("reflect", "1.3.61"))
-//    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
+    implementation(kotlin("stdlib-jdk8", "1.5.31"))
+    implementation(kotlin("reflect", "1.5.31"))
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
 
     // frc libs
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2020.1.2")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:2021.3.1")
     implementation("edu.wpi.first.hal:hal-java:2020.1.2")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2020.1.2")
     implementation("edu.wpi.first.ntcore:ntcore-java:2020.1.2")
@@ -51,10 +47,10 @@ dependencies {
 
 
     // other
-    implementation("com.google.code.gson:gson:2.8.2")
-    implementation("com.squareup.moshi:moshi:1.8.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
-    implementation("com.squareup.moshi:moshi-adapters:1.8.0")
+    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("com.squareup.moshi:moshi:1.12.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.12.0")
 
 }
 
@@ -69,5 +65,5 @@ tasks.withType<KotlinCompile> {
 val compileKotlin: KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses", "-Xuse-experimental=kotlin.Experimental")
+    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses","-Xopt-in=kotlin.RequiresOptIn")
 }

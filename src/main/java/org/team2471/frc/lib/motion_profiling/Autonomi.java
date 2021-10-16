@@ -17,7 +17,7 @@ public class Autonomi {
 
     public Map<String, Autonomous> mapAutonomous = new LinkedHashMap<>();
 
-    private static JsonAdapter<Autonomi> jsonAdapter = new Moshi.Builder()
+    private static final JsonAdapter<Autonomi> jsonAdapter = new Moshi.Builder()
             .add(DrivetrainParameters.getMoshiAdapter())
             .build()
             .adapter(Autonomi.class).indent("\t");

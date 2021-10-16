@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.units
 
-inline class Time(val asSeconds: Double) {
+@JvmInline
+value class Time(val asSeconds: Double) {
     operator fun plus(other: Time) = Time(asSeconds + other.asSeconds)
 
     operator fun minus(other: Time) = Time(asSeconds - other.asSeconds)

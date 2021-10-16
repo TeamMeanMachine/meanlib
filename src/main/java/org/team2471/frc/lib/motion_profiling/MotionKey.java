@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import org.team2471.frc.lib.vector.Vector2;
+import org.team2471.frc.lib.math.Vector2;
 
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_MANUAL;
 import static org.team2471.frc.lib.motion_profiling.MotionKey.SlopeMethod.SLOPE_PLATEAU;
@@ -231,11 +231,12 @@ public class MotionKey {
             case SLOPE_MANUAL:
                 m_prevTangent.set(Math.cos(getPrevAngleAndMagnitude().getX()), Math.sin(getPrevAngleAndMagnitude().getX()));
                 if (m_prevKey != null)
-                    Vector2.Companion.multiply(m_prevTangent, getTimeAndValue().getX() - m_prevKey.getTimeAndValue().getX());
+                    // TODO: result is unused
+                    m_prevTangent.times(getTimeAndValue().getX() - m_prevKey.getTimeAndValue().getX());
                 break;
             case SLOPE_LINEAR:
                 if (m_prevKey != null)
-                    m_prevTangent = Vector2.Companion.subtract(getTimeAndValue(), m_prevKey.getTimeAndValue());
+                    m_prevTangent = getTimeAndValue().minus(m_prevKey.getTimeAndValue());
                 break;
             case SLOPE_FLAT:
                 if (m_prevKey != null)
@@ -271,7 +272,7 @@ public class MotionKey {
                         fPrevTangentValue = m_prevKey.getValue(); // This way we don't get an infinite recursion
                     else {
                         Vector2 vPrevPos = m_prevKey.getTimeAndValue();
-                        Vector2 vPrevTangent = Vector2.Companion.add(Vector2.Companion.multiply(m_prevKey.getNextTangent(), 1.0 / 3.0), vPrevPos);
+                        Vector2 vPrevTangent = m_prevKey.getNextTangent().times( 1.0 / 3.0).plus(vPrevPos);
                         fPrevTangentValue = vPrevTangent.getY();
                     }
 
@@ -280,7 +281,7 @@ public class MotionKey {
                         fNextTangentValue = m_nextKey.getValue(); // This way we don't get an infinite recursion
                     else {
                         Vector2 vNextPos = m_nextKey.getTimeAndValue();
-                        Vector2 vNextTangent = Vector2.Companion.subtract(vNextPos, Vector2.Companion.multiply(m_nextKey.getPrevTangent(), 1.0 / 3.0));
+                        Vector2 vNextTangent = vNextPos.minus(m_nextKey.getPrevTangent().times(1.0 / 3.0));
                         fNextTangentValue = vNextTangent.getY();
                     }
 
@@ -303,11 +304,12 @@ public class MotionKey {
             case SLOPE_MANUAL:
                 m_nextTangent.set(Math.cos(getNextAngleAndMagnitude().getX()), Math.sin(getNextAngleAndMagnitude().getX()));
                 if (m_nextKey != null)
-                    Vector2.Companion.multiply(m_nextTangent, m_nextKey.getTimeAndValue().getX() - getTimeAndValue().getX());
+                    m_nextTangent.times(m_nextKey.getTimeAndValue().getX() - getTimeAndValue().getX());
+                    // TODO: unused result
                 break;
             case SLOPE_LINEAR:
                 if (m_nextKey != null)
-                    m_nextTangent = Vector2.Companion.subtract(m_nextKey.getTimeAndValue(), getTimeAndValue());
+                    m_nextTangent = m_nextKey.getTimeAndValue().minus(getTimeAndValue());
                 break;
             case SLOPE_FLAT:
                 if (m_nextKey != null)
@@ -343,7 +345,7 @@ public class MotionKey {
                         fPrevTangentValue = m_prevKey.getValue(); // This way we don't get an infinite recursion
                     else {
                         Vector2 vPrevPos = new Vector2(m_prevKey.getTime(), m_prevKey.getValue());
-                        Vector2 vPrevTangent = Vector2.Companion.add(Vector2.Companion.multiply(m_prevKey.getNextTangent(), 1.0 / 3.0), vPrevPos);
+                        Vector2 vPrevTangent = m_prevKey.getNextTangent().times(1.0 / 3.0).plus(vPrevPos);
                         fPrevTangentValue = vPrevTangent.getY();
                     }
 
@@ -352,7 +354,7 @@ public class MotionKey {
                         fNextTangentValue = m_nextKey.getValue(); // This way we don't get an infinite recursion
                     else {
                         Vector2 vNextPos = new Vector2(m_nextKey.getTime(), m_nextKey.getValue());
-                        Vector2 vNextTangent = Vector2.Companion.subtract(vNextPos, Vector2.Companion.multiply(m_nextKey.getPrevTangent(), 1.0 / 3.0));
+                        Vector2 vNextTangent = vNextPos.minus(m_nextKey.getPrevTangent().times(1.0 / 3.0));
                         fNextTangentValue = vNextTangent.getY();
                     }
 
@@ -372,7 +374,7 @@ public class MotionKey {
 
         if (bCalcSmoothPrev || bCalcSmoothNext) {
             if (m_prevKey != null && m_nextKey != null) {
-                Vector2 delta = Vector2.Companion.subtract(m_nextKey.getTimeAndValue(), m_prevKey.getTimeAndValue());
+                Vector2 delta = m_nextKey.getTimeAndValue().minus(m_prevKey.getTimeAndValue());
                 double weight = Math.abs(delta.getX());
                 if (weight == 0) // if keys are on top of one another (no tangents)
                 {
@@ -381,38 +383,38 @@ public class MotionKey {
                     if (bCalcSmoothNext)
                         m_nextTangent.set(0, 0);
                 } else {
-                    delta = Vector2.Companion.divide(delta, weight);
+                    delta = delta.div(weight);
 
                     if (bCalcSmoothPrev) {
                         double prevWeight = getTimeAndValue().getX() - m_prevKey.getTimeAndValue().getX();
-                        m_prevTangent = Vector2.Companion.multiply(delta, prevWeight);
+                        m_prevTangent = delta.times(prevWeight);
                     }
                     if (bCalcSmoothNext) {
                         double nextWeight = m_nextKey.getTimeAndValue().getX() - getTimeAndValue().getX();
-                        m_nextTangent = Vector2.Companion.multiply(delta, nextWeight);
+                        m_nextTangent = delta.times(nextWeight);
                     }
                 }
             } else {
                 if (m_nextKey != null) {
                     if (bCalcSmoothPrev)
-                        m_prevTangent = Vector2.Companion.subtract(m_nextKey.getTimeAndValue(), getTimeAndValue());
+                        m_prevTangent = m_nextKey.getTimeAndValue().minus(getTimeAndValue());
 
                     if (bCalcSmoothNext)
-                        m_nextTangent = Vector2.Companion.subtract(m_nextKey.getTimeAndValue(), getTimeAndValue());
+                        m_nextTangent = m_nextKey.getTimeAndValue().minus(getTimeAndValue());
                 }
 
                 if (m_prevKey != null) {
                     if (bCalcSmoothPrev)
-                        m_prevTangent = Vector2.Companion.subtract(getTimeAndValue(), m_prevKey.getTimeAndValue());
+                        m_prevTangent = getTimeAndValue().minus(m_prevKey.getTimeAndValue());
 
                     if (bCalcSmoothNext)
-                        m_nextTangent = Vector2.Companion.subtract(getTimeAndValue(), m_prevKey.getTimeAndValue());
+                        m_nextTangent = getTimeAndValue().minus(m_prevKey.getTimeAndValue());
                 }
             }
         }
 
-        m_prevTangent = Vector2.Companion.multiply(m_prevTangent, getPrevAngleAndMagnitude().getY()); // / 3.0 it seems like this is more of a UI only thing, and shouldn't really be done in this case.  But maybe I'm wrong.  Subtract the points, then take a third to get a good default tangent.  Does that still appear too long in the UI?  So we divide by 3 again.
-        m_nextTangent = Vector2.Companion.multiply(m_nextTangent, getNextAngleAndMagnitude().getY()); // / 3.0
+        m_prevTangent = m_prevTangent.times(getPrevAngleAndMagnitude().getY()); // / 3.0 it seems like this is more of a UI only thing, and shouldn't really be done in this case.  But maybe I'm wrong.  Subtract the points, then take a third to get a good default tangent.  Does that still appear too long in the UI?  So we divide by 3 again.
+        m_nextTangent = m_nextTangent.times(getNextAngleAndMagnitude().getY()); // / 3.0
     }
 
     public CubicCoefficients1D getXCoefficients() {

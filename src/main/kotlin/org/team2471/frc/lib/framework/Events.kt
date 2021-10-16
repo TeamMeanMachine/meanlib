@@ -1,9 +1,6 @@
 package org.team2471.frc.lib.framework
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 
 object Events {
@@ -12,6 +9,7 @@ object Events {
     @Synchronized
     internal fun process() = functions.forEach { it() }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Synchronized
     fun whenActive(condition: () -> Boolean, action: suspend () -> Unit) {
         var prevState = false
@@ -33,6 +31,7 @@ object Events {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Synchronized
     fun whileActive(condition: () -> Boolean, action: suspend () -> Unit) {
         var prevState = false
@@ -56,6 +55,7 @@ object Events {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Synchronized
     fun toggleWhenActive(condition: () -> Boolean, action: suspend () -> Unit) {
         var prevState = false

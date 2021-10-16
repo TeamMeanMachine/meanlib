@@ -12,6 +12,7 @@ internal object SubsystemCoordinator {
     private val messageChannel = Channel<Message>(capacity = Channel.UNLIMITED)
 
     init {
+        @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(MeanlibDispatcher) {
             for (message in messageChannel) handleMessage(message)
         }
@@ -37,22 +38,23 @@ internal object SubsystemCoordinator {
                 cancelConflicts,
                 cont
             )
-            messageChannel.offer(message)
+            messageChannel.trySend(message).isSuccess
         } as R
     }
 
     fun enableSubsystem(subsystem: Subsystem) {
-        messageChannel.offer(Message.Enable(subsystem))
+        messageChannel.trySend(Message.Enable(subsystem)).isSuccess
     }
 
     fun disableSubsystem(subsystem: Subsystem) {
-        messageChannel.offer(Message.Disable(subsystem))
+        messageChannel.trySend(Message.Disable(subsystem)).isSuccess
     }
 
     fun cancelSubsystem(subsystem: Subsystem) {
-        messageChannel.offer(Message.CancelActiveAction(subsystem))
+        messageChannel.trySend(Message.CancelActiveAction(subsystem)).isSuccess
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun resetSubsystem(subsystem: Subsystem) {
         if (subsystem.hasDefault) {
             GlobalScope.launch(MeanlibDispatcher) {
@@ -65,6 +67,7 @@ internal object SubsystemCoordinator {
     // MESSAGE HANDLING
     //
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun handleMessage(message: Message) {
         when (message) {
             is Message.NewAction -> {
@@ -128,7 +131,7 @@ internal object SubsystemCoordinator {
                         println("Freeing subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
                         newSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
-                        messageChannel.offer(Message.Clean(newSubsystems, coroutineContext[Job]!!))
+                        messageChannel.trySend(Message.Clean(newSubsystems, coroutineContext[Job]!!)).isSuccess
                     }
                 }
 

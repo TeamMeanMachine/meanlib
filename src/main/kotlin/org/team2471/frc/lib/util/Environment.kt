@@ -36,7 +36,7 @@ object Environment {
         val sdf = SimpleDateFormat("MM-dd-h:mm:ss-a")
         sdf.timeZone = TimeZone.getTimeZone("America/Los_Angeles") // PST
         sessionID = sdf.format(Date()) +
-                "-${allianceStationID.name.toLowerCase()}" +
+                "-${allianceStationID.name.lowercase(Locale.getDefault())}" +
                 if (fmsAttached) ".fms" else ""
     }
 }
