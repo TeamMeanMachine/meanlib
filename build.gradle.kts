@@ -40,8 +40,8 @@ dependencies {
     // frc libs
     implementation("edu.wpi.first.wpilibj:wpilibj-java:2021.3.1")
     implementation("edu.wpi.first.hal:hal-java:2020.1.2")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:2020.1.2")
-    implementation("edu.wpi.first.ntcore:ntcore-java:2020.1.2")
+    implementation("edu.wpi.first.wpiutil:wpiutil-java:2021.3.1")
+    implementation("edu.wpi.first.ntcore:ntcore-java:2021.3.1")
     implementation("com.ctre.phoenix:api-java:5.17.3")
     implementation("com.revrobotics.frc:SparkMax-java:1.5.1")
 
