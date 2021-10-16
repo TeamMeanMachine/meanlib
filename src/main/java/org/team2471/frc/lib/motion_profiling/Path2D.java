@@ -79,6 +79,22 @@ public class Path2D {
         m_easeCurve.storeValue(time, value);
     }
 
+    public void removeEasePoint(MotionKey motionKey) {
+        m_easeCurve.removeKey(motionKey);
+    }
+
+    public void removeHeadingPoint(MotionKey motionKey) {
+        if (m_headingCurve.getTailKey().getTime() == motionKey.getTime() && m_headingCurve.getHeadKey().getTime() == motionKey.getTime()) {
+            System.out.println("cannot delete only heading entry");
+        } else {
+            m_headingCurve.removeKey(motionKey);
+        }
+    }
+
+    public void scaleEasePoints(double newTime) {
+        m_easeCurve.scaleLength(newTime);
+        m_headingCurve.scaleLength(newTime);
+    }
     public void addHeadingPoint(double time, double value) { m_headingCurve.storeValue(time, value); }
 
     public void removeAllEasePoints() {
