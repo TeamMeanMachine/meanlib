@@ -44,6 +44,8 @@ dependencies {
     implementation("edu.wpi.first.wpimath:wpimath-java:2021.3.1")
     implementation ("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:windowsx86-64")
     implementation ("edu.wpi.first.wpimath:wpimath-jni:$wpiLibVersion:windowsx86-64")
+    implementation ("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:osxx86-64")
+    implementation ("edu.wpi.first.wpimath:wpimath-jni:$wpiLibVersion:osxx86-64")
 
     implementation("edu.wpi.first.ntcore:ntcore-java:2021.3.1")
     implementation("com.ctre.phoenix:api-java:5.17.3")
