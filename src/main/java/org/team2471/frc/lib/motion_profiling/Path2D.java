@@ -155,7 +155,7 @@ public class Path2D {
     public Vector2 getPositionAtEase(double ease) {
         double totalDistance = m_xyCurve.getLength();
         Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
-        System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
+        //System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         return rValue;
