@@ -33,24 +33,17 @@ repositories {
 
 dependencies {
     // kotlin libs
-    implementation(kotlin("stdlib-jdk8", "1.5.31"))
-    implementation(kotlin("reflect", "1.5.31"))
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
 
     // frc libs
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2021.3.1")
     implementation("edu.wpi.first.hal:hal-java:2020.1.2")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:2021.3.1")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:2021.3.1")
     implementation("edu.wpi.first.wpimath:wpimath-java:2021.3.1")
-    implementation ("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:windowsx86-64")
-    implementation ("edu.wpi.first.wpimath:wpimath-jni:$wpiLibVersion:windowsx86-64")
-    implementation ("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:osxx86-64")
-    implementation ("edu.wpi.first.wpimath:wpimath-jni:$wpiLibVersion:osxx86-64")
-
+    implementation("edu.wpi.first.ntcore:ntcore-jni:2021.3.1")
     implementation("edu.wpi.first.ntcore:ntcore-java:2021.3.1")
     implementation("com.ctre.phoenix:api-java:5.17.3")
     implementation("com.revrobotics.frc:SparkMax-java:1.5.1")
-
 
     // other
     implementation("com.google.code.gson:gson:2.8.8")
