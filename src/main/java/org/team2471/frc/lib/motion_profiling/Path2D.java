@@ -321,7 +321,7 @@ public class Path2D {
             return m_headingCurve.getValue(time);
     }
 
-    public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
+    public Trajectory generateTrajectory(TrajectoryConfig config) {
         var currPoint = m_xyCurve.getHeadPoint();
         var tailPoint = m_xyCurve.getTailPoint();
         var interiorWaypoints = new ArrayList<Pose2d>();
@@ -332,8 +332,11 @@ public class Path2D {
             currPoint = currPoint.getNextPoint();
             interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
         }
+        return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
+    }
+    public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
         TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration);
         config.setReversed(m_mirrored);
-        return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
+        return generateTrajectory(config);
     }
 }
