@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.networktables.NetworkTableEntry
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil
 import java.lang.Exception
 import java.util.LinkedHashMap
 
@@ -63,7 +64,7 @@ class Autonomi {
 
         fun fromJsonString(json: String?): Autonomi? {
             val autonomi: Autonomi? = try {
-                jsonAdapter.fromJson(json)
+                jsonAdapter.fromJson(json!!)
             } catch (e: Exception) {
                 println("Constructing Autonomi class from json failed.")
                 return null

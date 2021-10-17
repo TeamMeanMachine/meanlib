@@ -2,15 +2,25 @@ package org.team2471.frc.lib.motion_profiling;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
+import edu.wpi.first.wpilibj.spline.*;
+import edu.wpi.first.wpilibj.util.Units;
 import org.team2471.frc.lib.math.Vector2;
+import java.util.ArrayList;
 
 public class Path2D {
 
     public String name;
 
-    private Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
-    private MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
-    private MotionCurve m_headingCurve; // the angle from the path which the robot is headed
+    private final Path2DCurve m_xyCurve;    // positive y is forward in robot space, and positive x is to the robot's right
+    private final MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
+    private final MotionCurve m_headingCurve; // the angle from the path which the robot is headed
 
     public enum RobotDirection {
         FORWARD, BACKWARD
@@ -23,8 +33,8 @@ public class Path2D {
     private double speed = 1.0;
     private RobotDirection robotDirection = RobotDirection.FORWARD;
     public CurveType curveType = CurveType.EASE;
-    private double trackWidth = 25.0 / 12.0;
-    private double scrubFactor = 1.12;
+//    private double trackWidth = 25.0 / 12.0;
+//    private double scrubFactor = 1.12;
     private boolean m_mirrored = false;
 
     private transient Autonomous autonomous;
@@ -180,21 +190,15 @@ public class Path2D {
     }
 
     public double getDuration() {
-        if (m_easeCurve != null)
-            return m_easeCurve.getLength();
-        else
-            return 5.0;
+        return m_easeCurve.getLength();
     }
 
     public double getDurationWithSpeed() {
-        if (m_easeCurve != null)
-            return m_easeCurve.getLength() / Math.abs(speed);
-        else
-            return 5.0;
+        return m_easeCurve.getLength() / Math.abs(speed);
     }
 
     public void setDuration(double seconds) {
-        if (m_easeCurve != null && m_easeCurve.getTailKey() != null)
+        if (m_easeCurve.getTailKey() != null)
             m_easeCurve.getTailKey().setTime(seconds);
     }
 
@@ -298,15 +302,14 @@ public class Path2D {
     public Vector2 getVelocityAtTime(double time) {
         Vector2 tangent = getTangent(time);
         tangent.normalize();
-        Vector2 velocity = tangent.times( m_easeCurve.getDerivative(time) * m_xyCurve.getLength());
-        return velocity;
+        return tangent.times( m_easeCurve.getDerivative(time) * m_xyCurve.getLength());
     }
 
-    public double getCurvatureAtEase(double ease) {
-        double radius = 0.0;
-        Vector2 velocity = getVelocityAtEase(ease);
-        return velocity.dot(velocity) / radius;
-    }
+//    public double getCurvatureAtEase(double ease) {
+//        double radius = 0.0;
+//        Vector2 velocity = getVelocityAtEase(ease);
+//        return velocity.dot(velocity) / radius;
+//    }
 
     public double getAbsoluteHeadingDegreesAt(double time) {
 //        Vector2 tangent = getTangent(time);
@@ -316,5 +319,21 @@ public class Path2D {
             return -m_headingCurve.getValue(time);
         else
             return m_headingCurve.getValue(time);
+    }
+
+    public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
+        var currPoint = m_xyCurve.getHeadPoint();
+        var tailPoint = m_xyCurve.getTailPoint();
+        var interiorWaypoints = new ArrayList<Pose2d>();
+        // add first point
+        interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
+        while (currPoint != tailPoint) {
+            // add all subsequent points until we reach the end
+            currPoint = currPoint.getNextPoint();
+            interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
+        }
+        TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration);
+        config.setReversed(m_mirrored);
+        return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
     }
 }
