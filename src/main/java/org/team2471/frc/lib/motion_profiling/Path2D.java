@@ -320,7 +320,12 @@ public class Path2D {
         else
             return m_headingCurve.getValue(time);
     }
-
+    private double[] getTrajectoryDerivative(Boolean isX, Path2DPoint currPoint){
+        double val0 = isX ? currPoint.getPosition().getX() : currPoint.getPosition().getY();
+        double val1 = isX ? currPoint.getPrevTangent().getX() : currPoint.getPrevTangent().getY();
+        double val2 = isX ? currPoint.getNextTangent().getX() : currPoint.getNextTangent().getY();
+        return new double[]{Units.feetToMeters(val0), Units.feetToMeters(val1),Units.feetToMeters(val2)};
+    }
     public Trajectory generateTrajectory(TrajectoryConfig config) {
         var currPoint = m_xyCurve.getHeadPoint();
         var tailPoint = m_xyCurve.getTailPoint();
@@ -334,9 +339,22 @@ public class Path2D {
         }
         return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
     }
+    public Trajectory generateTrajectoryAdvanced(TrajectoryConfig config) {
+        var currPoint = m_xyCurve.getHeadPoint();
+        var tailPoint = m_xyCurve.getTailPoint();
+        // add first point
+        var controlVectors = new TrajectoryGenerator.ControlVectorList();
+        controlVectors.add(new Spline.ControlVector(getTrajectoryDerivative(true, currPoint), getTrajectoryDerivative(false, currPoint)));
+        while (currPoint != tailPoint) {
+            // add all subsequent points until we reach the end
+            currPoint = currPoint.getNextPoint();
+            controlVectors.add(new Spline.ControlVector(getTrajectoryDerivative(true, currPoint), getTrajectoryDerivative(false, currPoint)));
+        }
+        return TrajectoryGenerator.generateTrajectory(controlVectors, config);
+    }
     public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
         TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration);
         config.setReversed(m_mirrored);
-        return generateTrajectory(config);
+        return generateTrajectoryAdvanced(config);
     }
 }
