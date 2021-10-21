@@ -326,7 +326,7 @@ public class Path2D {
         double val2 = isX ? currPoint.getNextTangent().getX() : currPoint.getNextTangent().getY();
         return new double[]{Units.feetToMeters(val0), Units.feetToMeters(val1),Units.feetToMeters(val2)};
     }
-    public Trajectory generateTrajectory(TrajectoryConfig config) {
+    public Trajectory generateTrajectoryBasic(TrajectoryConfig config) {
         var currPoint = m_xyCurve.getHeadPoint();
         var tailPoint = m_xyCurve.getTailPoint();
         var interiorWaypoints = new ArrayList<Pose2d>();

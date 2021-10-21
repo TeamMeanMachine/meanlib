@@ -152,6 +152,7 @@ fun SwerveDrive.drive(
         speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, totalTurn, robotPivot)
     }
 
+    // adjust wheels to account for velocity of highest speed wheel
     val maxSpeed = speeds.maxByOrNull(Math::abs)!!
     if (maxSpeed > 1.0) {
         for (i in speeds.indices) {
