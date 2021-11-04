@@ -7,6 +7,8 @@ import com.ctre.phoenix.motion.TrajectoryPoint
 import com.ctre.phoenix.motorcontrol.*
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController
 import com.ctre.phoenix.motorcontrol.ControlMode
+import com.ctre.phoenix.motorcontrol.can.BaseTalon
+import com.ctre.phoenix.sensors.CANCoder
 import com.revrobotics.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
@@ -49,8 +51,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 //        return 0.0
 //    }
 
-    override fun getSelectedSensorPosition(pidIdx: Int): Int {
-        return (_motorController.getEncoder().position * TICKS_PER_REVOLUTION).toInt()
+    override fun getSelectedSensorPosition(pidIdx: Int): Double {
+        return (_motorController.getEncoder().position * TICKS_PER_REVOLUTION)
     }
 
     override fun setNeutralMode(neutralMode: NeutralMode?) {
@@ -68,6 +70,14 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
     override fun setInverted(invert: Boolean) {
         _motorController.inverted = invert
+    }
+
+    override fun setInverted(invertType: InvertType?) {
+        if (invertType == InvertType.FollowMaster || invertType == InvertType.OpposeMaster) {
+            println("ERROR!!!   SparkMax motor ${_motorController.deviceId} setInverted attempted to follow. This only works for CTRE motors.")
+        } else {
+            _motorController.inverted = (invertType == InvertType.InvertMotorOutput)
+        }
     }
 
     override fun getInverted(): Boolean {
@@ -109,6 +119,14 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
+    override fun configRemoteFeedbackFilter(canCoderRef: CANCoder?, remoteOrdinal: Int, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
+    override fun configRemoteFeedbackFilter(talonRef: BaseTalon?, remoteOrdinal: Int, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
     override fun configRemoteFeedbackFilter(
         deviceID: Int,
         remoteSensorSource: RemoteSensorSource?,
@@ -122,13 +140,13 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
-    override fun getSelectedSensorVelocity(pidIdx: Int): Int {
-        return (_motorController.getEncoder().velocity * TICKS_PER_REVOLUTION / 10.0).toInt()
+    override fun getSelectedSensorVelocity(pidIdx: Int): Double {
+        return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
         //return 0
     }
 
-    override fun setSelectedSensorPosition(sensorPos: Int, pidIdx: Int, timeoutMs: Int): ErrorCode {
-       _motorController.getEncoder().setPosition(sensorPos.toDouble())
+    override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
+        _motorController.encoder.position = sensorPos
         return ErrorCode.OK
     }
 
@@ -165,15 +183,15 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun overrideLimitSwitchesEnable(enable: Boolean) {
     }
 
+    override fun configForwardSoftLimitThreshold(forwardSensorLimit: Double, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
+    override fun configReverseSoftLimitThreshold(reverseSensorLimit: Double, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
     override fun configForwardSoftLimitEnable(enable: Boolean, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
-    }
-
-    override fun configReverseSoftLimitThreshold(reverseSensorLimit: Int, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
-    }
-
-    override fun configForwardSoftLimitThreshold(forwardSensorLimit: Int, timeoutMs: Int): ErrorCode {
         return ErrorCode.OK
     }
 
@@ -188,8 +206,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
-    override fun getClosedLoopError(pidIdx: Int): Int {
-        return (positionSetpoint * TICKS_PER_REVOLUTION).toInt() - getSelectedSensorPosition(pidIdx)
+    override fun getClosedLoopError(pidIdx: Int): Double {
+        return (positionSetpoint * TICKS_PER_REVOLUTION)- getSelectedSensorPosition(pidIdx)
     }
 
     override fun getIntegralAccumulator(pidIdx: Int): Double {
@@ -204,16 +222,20 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return 0.0
     }
 
-    override fun getActiveTrajectoryPosition(): Int {
-        return 0
-    }
-
-    override fun getActiveTrajectoryVelocity(): Int {
-        return 0
-    }
-
-    override fun getActiveTrajectoryHeading(): Double {
+    override fun getActiveTrajectoryPosition(): Double {
         return 0.0
+    }
+
+    override fun getActiveTrajectoryVelocity(): Double {
+        return 0.0
+    }
+
+    override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Double, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
+    override fun configMotionAcceleration(sensorUnitsPer100msPerSec: Double, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
     }
 
     override fun configMotionProfileTrajectoryPeriod(baseTrajDurationMs: Int, timeoutMs: Int): ErrorCode {
@@ -361,8 +383,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun set(Mode: ControlMode?, demand0: Double, demand1Type: DemandType?, demand1: Double) {
     }
 
-    override fun set (Mode : ControlMode, demand0 : Double, demand1: Double) {
-    }
 
     fun setAngle(setPoint : Angle){
         set(ControlMode.Position, ((setPoint - getSelectedSensorPosition(0).degrees).wrap()).asDegrees)
@@ -407,14 +427,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
-    override fun configMotionAcceleration(sensorUnitsPer100msPerSec: Int, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
-    }
-
-    override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Int, timeoutMs: Int): ErrorCode {
-    return ErrorCode.OK
-    }
-
     fun configSelectedFeedbackSensor(feedbackDevice: FeedbackDevice?, pidIdx: Int, timeoutMs: Int) : ErrorCode {
         return ErrorCode.OK
     }
@@ -446,16 +458,20 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
+    override fun config_IntegralZone(slotIdx: Int, izone: Double, timeoutMs: Int): ErrorCode {
+        return ErrorCode.OK
+    }
+
+    override fun configAllowableClosedloopError(
+        slotIdx: Int,
+        allowableCloseLoopError: Double,
+        timeoutMs: Int
+    ): ErrorCode {
+        return ErrorCode.OK
+    }
+
     override fun config_kI(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {
         _motorController.pidController.i = value
-        return ErrorCode.OK
-    }
-
-    override fun config_IntegralZone(slotIdx: Int, izone: Int, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
-    }
-
-    override fun configAllowableClosedloopError(slotIdx: Int, allowableCloseLoopError: Int, timeoutMs: Int): ErrorCode {
         return ErrorCode.OK
     }
 

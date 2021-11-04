@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.motion_profiling;
 
-import edu.wpi.first.wpilibj.controller.PIDController;
+
+import edu.wpi.first.math.controller.PIDController;
 
 public class MotionProfileCurve extends MotionCurve {
 

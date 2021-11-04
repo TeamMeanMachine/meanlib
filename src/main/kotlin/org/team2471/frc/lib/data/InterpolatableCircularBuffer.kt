@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.data
 
-import edu.wpi.first.wpiutil.CircularBuffer
+import edu.wpi.first.util.CircularBuffer
 import org.team2471.frc.lib.math.lerp
 import java.lang.Math.ceil
 import java.lang.Math.floor

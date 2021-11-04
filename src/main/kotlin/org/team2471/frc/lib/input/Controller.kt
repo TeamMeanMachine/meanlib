@@ -7,20 +7,19 @@ import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 import java.lang.IllegalStateException
 
-private val ds = DriverStation.getInstance()
 
 open class Controller(val port: Int) {
     private var lastWarningReported = 0.0
 
     val isXbox
-        get() = ds.getJoystickIsXbox(port)
+        get() = DriverStation.getJoystickIsXbox(port)
 
     val buttonCount
-        get() = ds.getStickButtonCount(port)
+        get() = DriverStation.getStickButtonCount(port)
     val axisCount
-        get() = ds.getStickAxisCount(port)
+        get() = DriverStation.getStickAxisCount(port)
     val povCount
-        get() = ds.getStickPOVCount(port)
+        get() = DriverStation.getStickPOVCount(port)
 
     val isConnected
         get() = buttonCount != 0 || axisCount != 0 || povCount != 0
@@ -36,7 +35,7 @@ open class Controller(val port: Int) {
         body()
     } else {
         val currentTime = Timer.getFPGATimestamp()
-        if (ds.isEnabled && currentTime - lastWarningReported >= JOYSTICK_WARNING_INTERVAL) {
+        if (DriverStation.isEnabled() && currentTime - lastWarningReported >= JOYSTICK_WARNING_INTERVAL) {
             lastWarningReported = currentTime
             DriverStation.reportWarning("Controller on port $port is disconnected", false)
         }
@@ -45,12 +44,12 @@ open class Controller(val port: Int) {
     }
 
 
-    fun getButton(button: Int) = ensureConnection(false) { ds.getStickButton(port, button) }
+    fun getButton(button: Int) = ensureConnection(false) { DriverStation.getStickButton(port, button) }
 
-    fun getAxis(axis: Int) = ensureConnection(0.0) { ds.getStickAxis(port, axis) }
+    fun getAxis(axis: Int) = ensureConnection(0.0) { DriverStation.getStickAxis(port, axis) }
 
     fun getPOV(pov: Int = 0) = ensureConnection(Direction.IDLE) {
-        ds.getStickPOV(port, pov).let { value ->
+        DriverStation.getStickPOV(port, pov).let { value ->
             when (value) {
                 -1 -> Direction.IDLE
                 0 -> Direction.UP
@@ -67,7 +66,7 @@ open class Controller(val port: Int) {
     }
 
     val povDirection : Angle
-        get() = ds.getStickPOV(port, 0).toFloat().degrees
+        get() = DriverStation.getStickPOV(port, 0).toFloat().degrees
 
     var rumble: Double = 0.0
         set(value) {

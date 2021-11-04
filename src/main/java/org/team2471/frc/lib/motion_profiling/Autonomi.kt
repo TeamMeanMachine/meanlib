@@ -4,13 +4,10 @@ import org.team2471.frc.lib.motion_profiling.following.DrivetrainParameters.Comp
 import org.team2471.frc.lib.motion_profiling.following.RobotParameters
 import org.team2471.frc.lib.motion_profiling.following.DrivetrainParameters
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
-import org.team2471.frc.lib.motion_profiling.Autonomous
-import org.team2471.frc.lib.motion_profiling.Autonomi
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.networktables.NetworkTableEntry
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil
+
 import java.lang.Exception
 import java.util.LinkedHashMap
 

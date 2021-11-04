@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 import org.team2471.frc.lib.coroutines.periodic
 import java.io.File
+import java.sql.Driver
 
 const val LANGUAGE_KOTLIN = 6
 
@@ -26,17 +27,15 @@ abstract class MeanlibRobot : RobotBase() {
 
         HAL.observeUserProgramStarting()
 
-        val ds = DriverStation.getInstance()
-
         var previousRobotMode: RobotMode? = null
 
         val mainSubsystem = Subsystem("Robot").apply { enable() }
 
         while (true) {
-            val hasNewData = ds.waitForData(0.02)
+            val hasNewData = DriverStation.waitForData(0.02)
 
             Events.process()
-            if (!ds.isDSAttached) previousRobotMode = RobotMode.DISCONNECTED
+            if (!DriverStation.isDSAttached()) previousRobotMode = RobotMode.DISCONNECTED
 
             if (!hasNewData) continue
 
@@ -46,7 +45,7 @@ abstract class MeanlibRobot : RobotBase() {
                 if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
             }
 
-            if (ds.isDisabled) {
+            if (DriverStation.isDisabled()) {
                 if (previousRobotMode != RobotMode.DISABLED) {
                     HAL.observeUserProgramDisabled()
                     previousRobotMode = RobotMode.DISABLED
@@ -60,7 +59,7 @@ abstract class MeanlibRobot : RobotBase() {
 
             val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
-            if (previousRobotMode != RobotMode.AUTONOMOUS && ds.isAutonomous) {
+            if (previousRobotMode != RobotMode.AUTONOMOUS && DriverStation.isAutonomous()) {
                 HAL.observeUserProgramAutonomous()
                 previousRobotMode = RobotMode.AUTONOMOUS
                 GlobalScope.launch(MeanlibDispatcher) {
@@ -69,7 +68,7 @@ abstract class MeanlibRobot : RobotBase() {
                         autonomous()
                     }
                 }
-            } else if (previousRobotMode != RobotMode.TELEOP && ds.isOperatorControl) {
+            } else if (previousRobotMode != RobotMode.TELEOP && DriverStation.isTeleop()) {
                 HAL.observeUserProgramTeleop()
                 previousRobotMode = RobotMode.TELEOP
                 GlobalScope.launch(MeanlibDispatcher) {
@@ -78,7 +77,7 @@ abstract class MeanlibRobot : RobotBase() {
                         teleop()
                     }
                 }
-            } else if (previousRobotMode != RobotMode.TEST && ds.isTest) {
+            } else if (previousRobotMode != RobotMode.TEST && DriverStation.isTest()) {
                 HAL.observeUserProgramTest()
                 previousRobotMode = RobotMode.TEST
 

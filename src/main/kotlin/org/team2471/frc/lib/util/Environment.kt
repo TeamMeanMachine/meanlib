@@ -6,8 +6,6 @@ import edu.wpi.first.hal.HAL
 import java.text.SimpleDateFormat
 import java.util.*
 
-internal val ds = DriverStation.getInstance()
-
 object Environment {
     val station: AllianceStation
     val fmsAttached: Boolean
@@ -31,7 +29,7 @@ object Environment {
             AllianceStationID.Blue3 -> AllianceStation(Alliance.BLUE, 3)
         }
 
-        fmsAttached = ds.isFMSAttached
+        fmsAttached = DriverStation.isFMSAttached()
 
         val sdf = SimpleDateFormat("MM-dd-h:mm:ss-a")
         sdf.timeZone = TimeZone.getTimeZone("America/Los_Angeles") // PST

@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
-import edu.wpi.first.wpilibj.Spark
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import kotlin.math.roundToInt
@@ -113,7 +112,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var position: Double
         get() = (motorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient
         set(value) {
-            motorController.setSelectedSensorPosition((value / feedbackCoefficient).roundToInt(), 0, 0)
+            motorController.setSelectedSensorPosition((value / feedbackCoefficient), 0, 0)
         }
 
     var angle: Double
@@ -139,7 +138,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see internalMotorController.getSelectedSensorPosition
      */
-    val rawPosition: Int
+    val rawPosition: Double
         get() = motorController.getSelectedSensorPosition(0)
 
     /**
@@ -162,7 +161,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.setNeutralMode(NeutralMode.Coast)
         }
 
-        motorController.setSelectedSensorPosition(0, 0, 0)
+        motorController.setSelectedSensorPosition(0.0, 0, 0)
     }
 
     fun hasfaults() {
@@ -296,7 +295,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setRawOffset(analogAngle: Angle) {
         when (motorController) {
             is SparkMaxWrapper -> {
-                rawOffset = (analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)
+                rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 //                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
         }
@@ -466,8 +465,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see internalMotorController.configMotionCruiseVelocity
          */
         fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-            val srxAcceleration = (acceleration / feedbackCoefficient / 10.0).toInt()
-            val srxCruisingVelocity = (cruisingVelocity / feedbackCoefficient / 10.0).toInt()
+            val srxAcceleration = (acceleration / feedbackCoefficient / 10.0)
+            val srxCruisingVelocity = (cruisingVelocity / feedbackCoefficient / 10.0)
             motorController.configMotionAcceleration(srxAcceleration, 20)
             motorController.configMotionCruiseVelocity(srxCruisingVelocity, 20)
         }
@@ -564,11 +563,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
             fun iZone(iZone: Double) {
-                motorController.config_IntegralZone(slot, (iZone / feedbackCoefficient).toInt(), timeoutMs)
+                motorController.config_IntegralZone(slot, (iZone / feedbackCoefficient), timeoutMs)
             }
 
             fun allowableError(allowableError: Double) {
-                motorController.configAllowableClosedloopError(slot, (allowableError / feedbackCoefficient).toInt(), timeoutMs)
+                motorController.configAllowableClosedloopError(slot, (allowableError / feedbackCoefficient), timeoutMs)
             }
 
             fun maxIntegralAccumulator(maxIntegralAccumulator: Double) {

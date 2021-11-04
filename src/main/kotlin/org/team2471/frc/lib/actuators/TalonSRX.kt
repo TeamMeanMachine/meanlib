@@ -21,7 +21,7 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
 
     init {
         allTalons { it.configFactoryDefault(Int.MAX_VALUE) }
-        talon.selectedSensorPosition = 0
+        talon.selectedSensorPosition = 0.0
     }
 
     fun setPercentOutput(percent: Double) = talon.set(ControlMode.PercentOutput, percent)
@@ -55,7 +55,7 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
     var position: Double
         get() = talon.getSelectedSensorPosition(0) * feedbackCoefficient
         set(value) {
-            talon.selectedSensorPosition = (value / feedbackCoefficient).roundToInt()
+            talon.selectedSensorPosition = (value / feedbackCoefficient)
         }
 
     val closedLoopError: Double
@@ -140,11 +140,11 @@ class TalonSRX(deviceId: Int, vararg followerIds: Int) {
                 talon.config_kF(slot, f, timeoutMs)
             }
 
-            fun iZone(iZone: Int) {
+            fun iZone(iZone: Double) {
                 talon.config_IntegralZone(slot, iZone, timeoutMs)
             }
 
-            fun allowableError(allowableError: Int) {
+            fun allowableError(allowableError: Double) {
                 talon.configAllowableClosedloopError(slot, allowableError, timeoutMs)
             }
 

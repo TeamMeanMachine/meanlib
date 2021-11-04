@@ -4,7 +4,6 @@ buildscript {
     repositories {
         mavenCentral()
     }
-
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
@@ -16,34 +15,35 @@ plugins {
     `maven-publish`
    `java-library`
 }
-
 apply {
     plugin("kotlin")
     plugin("org.jetbrains.dokka")
 }
 
 group = "org.team2471.lib"
-version = "2020"
-var wpiLibVersion = "2021.3.1"
+version = "2022"
+var wpiLibVersion = "2022.1.1-beta-1"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/")}
     maven { setUrl("https://plugins.gradle.org/m2/")}
+    maven {setUrl("https://maven.ctr-electronics.com/release/")}
+    maven {setUrl("https://www.revrobotics.com/content/sw/max/sdk/maven/")}
 }
 
 dependencies {
     // kotlin libs
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // frc libs
-    implementation("edu.wpi.first.hal:hal-java:2020.1.2")
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:2021.3.1")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:2021.3.1")
-    implementation("edu.wpi.first.wpimath:wpimath-java:2021.3.1")
-    implementation("edu.wpi.first.ntcore:ntcore-jni:2021.3.1")
-    implementation("edu.wpi.first.ntcore:ntcore-java:2021.3.1")
-    implementation("com.ctre.phoenix:api-java:5.17.3")
-    implementation("com.revrobotics.frc:SparkMax-java:1.5.1")
+    implementation("edu.wpi.first.hal:hal-java:$wpiLibVersion")
+    implementation("edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion")
+    implementation("edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion")
+    implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
+    implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
+    implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
+    implementation("com.ctre.phoenix:api-java:5.20.0-beta-1")
+    implementation("com.revrobotics.frc:SparkMax-java:1.5.4")
 
     // other
     implementation("com.google.code.gson:gson:2.8.8")
@@ -56,10 +56,11 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
 }
 
 val compileKotlin: KotlinCompile by tasks
