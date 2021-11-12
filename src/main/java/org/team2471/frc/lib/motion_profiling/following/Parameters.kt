@@ -19,19 +19,19 @@ sealed class DrivetrainParameters {
 }
 
 data class ArcadeParameters(
-        var trackWidth: Double,
-        var scrubFactor: Double,
-        var leftFeedForwardCoefficient: Double,
-        var leftFeedForwardOffset: Double,
-        var rightFeedForwardCoefficient: Double,
-        var rightFeedForwardOffset: Double,
-        var driveTurningP: Double = 0.0,
-        var headingFeedForward: Double = 0.0,
-        var doHeadingCorrection: Boolean = false,
-        var headingCorrectionP: Double = 0.0,
-        var headingCorrectionI: Double = 0.0,
-        var headingCorrectionIDecay: Double = 1.0,
-        val alignRobotToPath: Boolean = true
+    var trackWidth: Double,
+    var scrubFactor: Double,
+    var leftFeedForwardCoefficient: Double,
+    var leftFeedForwardOffset: Double,
+    var rightFeedForwardCoefficient: Double,
+    var rightFeedForwardOffset: Double,
+    var driveTurningP: Double = 0.0,
+    var headingFeedForward: Double = 0.0,
+    var doHeadingCorrection: Boolean = false,
+    var headingCorrectionP: Double = 0.0,
+    var headingCorrectionI: Double = 0.0,
+    var headingCorrectionIDecay: Double = 1.0,
+    var alignRobotToPath: Boolean = true
 ) : DrivetrainParameters()
 
 data class SwerveParameters(
@@ -42,6 +42,6 @@ data class SwerveParameters(
     val kpHeading: Double,
     val kdHeading: Double,
     val kHeadingFeedForward: Double,
-    val alignRobotToPath: Boolean = false
+    var alignRobotToPath: Boolean = false
 ) : DrivetrainParameters() {
 }
