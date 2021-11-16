@@ -8,11 +8,11 @@ import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.windRelativeAngles
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.ArcadeParameters
-import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.*
 
 interface ArcadeDrive {
-    val heading: Double
-    val headingRate: Double
+    val heading: Angle
+    val headingRate: AngularVelocity
     val parameters: ArcadeParameters
 
     fun driveOpenLoop(leftPower: Double, rightPower: Double)
@@ -61,7 +61,7 @@ suspend fun <T> T.driveAlongPath(
             val dt = t - prevTime
 
             // apply gyro corrections to the distances
-            val gyroAngle = heading
+            val gyroAngle = heading.asDegrees
             val pathAngle = Math.toDegrees(path.getTangent(t).angle)
             val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle)
 
@@ -122,7 +122,7 @@ suspend fun ArcadeDrive.tuneDrivePositionController(controller: org.team2471.frc
             // apply gyro corrections to the distances
             val gyroAngle = heading
             val joystickHeading = 90.0.degrees * controller.rightThumbstickX
-            val angleError = (joystickHeading - gyroAngle.degrees).wrap()
+            val angleError = (joystickHeading - gyroAngle).wrap()
 
             angleErrorAccum = angleErrorAccum * parameters.headingCorrectionIDecay + angleError
 
@@ -171,12 +171,12 @@ suspend fun ArcadeDrive.tuneDrivePositionController(controller: org.team2471.frc
  */
 fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double) {
     val totalTurn = (softTurn * Math.abs(throttle)) + hardTurn
-    val velocitySetpoint = totalTurn * 250.0
+    val velocitySetpoint = AngularVelocity( 250.0.degrees) * totalTurn
 
-    val gyroRate = if (parameters.doHeadingCorrection) headingRate else 0.0
+    val gyroRate = if (parameters.doHeadingCorrection) headingRate else AngularVelocity(0.0.degrees)
     val velocityError = velocitySetpoint - gyroRate
 
-    val turnAdjust = (velocityError * parameters.driveTurningP).deadband(1.0e-2)
+    val turnAdjust = (velocityError.changePerSecond.asDegrees * parameters.driveTurningP).deadband(1.0e-2)
 
     var leftPower = throttle + totalTurn + turnAdjust
     var rightPower = throttle - totalTurn - turnAdjust
