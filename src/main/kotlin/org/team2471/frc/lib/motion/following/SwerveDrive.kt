@@ -135,7 +135,7 @@ fun SwerveDrive.drive(
     // directional and rotational interpolation from robot state towards joystick request
     if (maxChangeInOneFrame > 0.0) {
         if (velocity.length > 0.1) {  // not valid if the robot is stopped
-            val normalizedRobotDirection = velocity.normalize()
+            val normalizedRobotDirection = velocity.normalize().rotateDegrees(heading.asDegrees)
             val translateDelta = adjustedTranslation - normalizedRobotDirection
             val length = min(translateDelta.length, maxChangeInOneFrame)
             adjustedTranslation = normalizedRobotDirection + translateDelta.normalize() * length
