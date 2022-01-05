@@ -7,14 +7,10 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTranslationInput
-import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import kotlin.math.absoluteValue
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -100,14 +96,11 @@ fun SwerveDrive.drive(
     teleopClosedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0,
-    inputDamping: Double = 1.0)
+    maxChangeInOneFrame: Double = 0.0)
 {
     recordOdometry()
 
     var adjustedTranslation = translation
-
-    adjustedTranslation = prevTranslationInput + (adjustedTranslation - prevTranslationInput) * inputDamping
-    prevTranslationInput = adjustedTranslation
 
     if (fieldCentric) {
         adjustedTranslation = adjustedTranslation.rotateDegrees(heading.asDegrees)
@@ -116,12 +109,6 @@ fun SwerveDrive.drive(
 
     var totalTurn = turn + softTurn
 
-    if (inputDamping != 1.0)
-        totalTurn = prevTurn + (totalTurn - prevTurn) * inputDamping
-
-    prevTurn = totalTurn
-
-    // consider only doing this if one of the sticks is out of deadband to prevent wheels going in a circle for slight turning
     if (adjustedTranslation.length > 0.01 && totalTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
             // heading error
@@ -144,7 +131,23 @@ fun SwerveDrive.drive(
         return stop()
     }
 
-   // totalTurn += (totalTurn * 300.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection //problem?
+    // the beginning of Bryce's idea of how to drive more smoothly, but maintain responsiveness
+    // directional and rotational interpolation from robot state towards joystick request
+    if (maxChangeInOneFrame > 0.0) {
+        if (velocity.length > 0.1) {  // not valid if the robot is stopped
+            val normalizedRobotDirection = velocity.normalize()
+            val translateDelta = adjustedTranslation - normalizedRobotDirection
+            val length = min(translateDelta.length, maxChangeInOneFrame)
+            adjustedTranslation = normalizedRobotDirection + translateDelta.normalize() * length
+        }
+
+        if (headingRate.changePerSecond.asDegrees.absoluteValue > 0.1) {  // not valid if the robot is stopped
+            val normalizedTurnRate = headingRate.changePerSecond.asDegrees / MAXHEADINGSPEED_DEGREES_PER_SECOND
+            val turnDelta = totalTurn - normalizedTurnRate
+            val length = min(turnDelta, maxChangeInOneFrame)
+            totalTurn = normalizedTurnRate + turnDelta.sign * length
+        }
+    }
 
     val speeds = Array(modules.size) { 0.0 }
 
@@ -239,12 +242,10 @@ fun SwerveDrive.resetOdometry() {
     }
     zeroEncoders()
     position = Vector2(0.0, 0.0)
-    
 }
 
 fun SwerveDrive.resetHeading() {
     heading = ((0.0).degrees)
-
 }
 
 suspend fun SwerveDrive.driveAlongPath(
@@ -255,7 +256,6 @@ suspend fun SwerveDrive.driveAlongPath(
     earlyExit: () -> Boolean = {false}
     ) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
-
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         resetHeading()
