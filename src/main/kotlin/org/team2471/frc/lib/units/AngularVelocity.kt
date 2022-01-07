@@ -15,7 +15,7 @@ inline class AngularVelocity(val changePerSecond: Angle) {
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus() = AngularVelocity(-changePerSecond)
+    operator fun unaryMinus(): AngularVelocity = AngularVelocity(-changePerSecond)
 
     operator fun compareTo(other: AngularVelocity) = changePerSecond.compareTo(other.changePerSecond)
 
