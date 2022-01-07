@@ -13,9 +13,7 @@ import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import kotlin.math.absoluteValue
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -23,6 +21,8 @@ private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = 0.0
 private var prevPathHeading = 0.0.radians
 private val MAXHEADINGSPEED_DEGREES_PER_SECOND = 600.0
+private val MAXTRANSLATIONSPEED_FEET_PER_SECOND = 15.0
+
 private var prevHeadingError = 0.0.degrees
 
 interface SwerveDrive {
@@ -101,29 +101,20 @@ fun SwerveDrive.drive(
     teleopClosedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0,
-    inputDamping: Double = 1.0)
+    maxChangeInOneFrame: Double = 0.0)
 {
     recordOdometry()
 
-    var adjustedTranslation = translation
-
-    adjustedTranslation = prevTranslationInput + (adjustedTranslation - prevTranslationInput) * inputDamping
-    prevTranslationInput = adjustedTranslation
+    var requestedTranslation = translation
 
     if (fieldCentric) {
-        adjustedTranslation = adjustedTranslation.rotateDegrees(heading.asDegrees)
+        requestedTranslation = requestedTranslation.rotateDegrees(heading.asDegrees)
     }
-    adjustedTranslation += softTranslation
+    requestedTranslation += softTranslation
 
-    var totalTurn = turn + softTurn
+    var requestedTurn = turn + softTurn
 
-    if (inputDamping != 1.0)
-        totalTurn = prevTurn + (totalTurn - prevTurn) * inputDamping
-
-    prevTurn = totalTurn
-
-    // consider only doing this if one of the sticks is out of deadband to prevent wheels going in a circle for slight turning
-    if (adjustedTranslation.length > 0.01 && totalTurn.absoluteValue < 0.01) {
+    if (requestedTranslation.length > 0.01 && requestedTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
             // heading error
             val headingError = (headingSetpoint - heading).wrap()
@@ -133,55 +124,82 @@ fun SwerveDrive.drive(
             val deltaHeadingError = headingError - prevHeadingError
             prevHeadingError = headingError
 
-            totalTurn = headingError.asDegrees * parameters.kpHeading * 0.60 + deltaHeadingError.asDegrees * parameters.kdHeading
+            requestedTurn = headingError.asDegrees * parameters.kpHeading * 0.60 + deltaHeadingError.asDegrees * parameters.kdHeading
         } else if (parameters.gyroRateCorrection > 0.0) {  // closed loop on heading velocity
-            totalTurn += (totalTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
+            requestedTurn += (requestedTurn * MAXHEADINGSPEED_DEGREES_PER_SECOND - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection
         }
     } else {
         headingSetpoint = heading
     }
 
-    if (adjustedTranslation.x == 0.0 && adjustedTranslation.y == 0.0 && totalTurn == 0.0) {
+    if (requestedTranslation.x == 0.0 && requestedTranslation.y == 0.0 && requestedTurn == 0.0) {
         return stop()
     }
 
-   // totalTurn += (totalTurn * 300.0 - headingRate.changePerSecond.asDegrees) * parameters.gyroRateCorrection //problem?
+    val requestedLocalGoals = Array(modules.size) { Vector2(0.0, 0.0) }
+    for (i in modules.indices) {
+        requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize() * requestedTurn
+    }
 
     val speeds = Array(modules.size) { 0.0 }
 
-    for (i in 0 until modules.size) {
-        speeds[i] = modules[i].calculateAngleReturnSpeed(adjustedTranslation, totalTurn, robotPivot)
+    // the beginning of Bryce's idea of how to drive more smoothly, but maintain responsiveness
+    // directional and rotational interpolation from robot state towards joystick request
+    if (maxChangeInOneFrame > 0.0) {
+        val normalizedRobotDirection = velocity.rotateDegrees(heading.asDegrees) / MAXTRANSLATIONSPEED_FEET_PER_SECOND
+        val translateDelta = requestedTranslation - normalizedRobotDirection
+        val length1 = min(translateDelta.length, maxChangeInOneFrame)
+        val interpolatedTranslation = normalizedRobotDirection + translateDelta.normalize() * length1
+
+        val normalizedTurnRate = headingRate.changePerSecond.asDegrees / MAXHEADINGSPEED_DEGREES_PER_SECOND
+        val turnDelta = requestedTurn - normalizedTurnRate
+        val length2 = min(turnDelta.absoluteValue, maxChangeInOneFrame)
+        val interpolatedTurn = normalizedTurnRate + turnDelta.sign * length2
+
+        for (i in modules.indices) {
+            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize() * interpolatedTurn
+            val bHat = interpolatedLocalGoal.normalize()
+            val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
+            val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
+            modules[i].angleSetpoint = angleAndSpeed.angle
+            speeds[i] = angleAndSpeed.power
+        }
+    }
+    else {
+        for (i in modules.indices) {
+            val angleAndSpeed = modules[i].calculateAngleAndSpeed(requestedLocalGoals[i])
+            modules[i].angleSetpoint = angleAndSpeed.angle
+            speeds[i] = angleAndSpeed.power
+        }
     }
 
     val maxSpeed = speeds.maxBy(Math::abs)!!
     if (maxSpeed > 1.0) {
-        for (i in 0 until speeds.size) {
+        for (i in speeds.indices) {
             speeds[i] /= maxSpeed
         }
     }
 
-    for (i in 0 until modules.size) {
+    for (i in modules.indices) {
         //print("${modules[i].currDistance} ")
         modules[i].setDrivePower(speeds[i])
     }
     //println()
 }
 
-private fun SwerveDrive.Module.calculateAngleReturnSpeed(
-    translation: Vector2,
-    turn: Double,
-    robotPivot: Vector2
-): Double {
-    val localGoal = translation + (modulePosition - robotPivot).perpendicular().normalize() * turn
+data class AngleAndSpeed(val angle: Angle, val power: Double)
+
+private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
+
     var power = localGoal.length
+    if( power == 0.0 ) println("Need more power scotty!")
     var setPoint = localGoal.angle.radians
     val angleError = (setPoint - angle).wrap()
     if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
         setPoint -= Math.PI.radians
         power = -power
     }
-    angleSetpoint = setPoint
-    return power * Math.abs(angleError.cos())
+    return AngleAndSpeed(setPoint, power * Math.abs(angleError.cos()))
 }
 
 suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
