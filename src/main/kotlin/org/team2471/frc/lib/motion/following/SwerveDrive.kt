@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTranslationInput
-import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.prevTurn
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -158,18 +156,40 @@ fun SwerveDrive.drive(
 
         for (i in modules.indices) {
             val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize() * interpolatedTurn
-            val bHat = interpolatedLocalGoal.normalize()
-            val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
-            val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
-            modules[i].angleSetpoint = angleAndSpeed.angle
-            speeds[i] = angleAndSpeed.power
+            if (i==0) {
+                print("ilg=$interpolatedLocalGoal")
+            }
+            if (interpolatedLocalGoal.length>0.001) {
+                val bHat = interpolatedLocalGoal.normalize()
+                val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
+                if (i==0) {
+                    print(" plg=$projectedLocalGoal")
+                }
+                val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
+                if (angleAndSpeed.status) {
+                    modules[i].angleSetpoint = angleAndSpeed.angle
+                    speeds[i] = angleAndSpeed.power
+                    if (i==0) {
+                        print(" aas=$angleAndSpeed")
+                    }
+                } else {
+                    speeds[i] = 0.0
+                }
+            } else {
+                speeds[i] = 0.0
+            }
+            println()
         }
     }
     else {
         for (i in modules.indices) {
             val angleAndSpeed = modules[i].calculateAngleAndSpeed(requestedLocalGoals[i])
-            modules[i].angleSetpoint = angleAndSpeed.angle
-            speeds[i] = angleAndSpeed.power
+            if (angleAndSpeed.status) {
+                modules[i].angleSetpoint = angleAndSpeed.angle
+                speeds[i] = angleAndSpeed.power
+            } else {
+                speeds[i] = 0.0
+            }
         }
     }
 
@@ -187,19 +207,31 @@ fun SwerveDrive.drive(
     //println()
 }
 
-data class AngleAndSpeed(val angle: Angle, val power: Double)
+data class AnglePowerAndStatus(val angle: Angle, val power: Double, val status: Boolean)
 
-private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
+private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AnglePowerAndStatus {
 
+    var angle = 0.0.degrees
     var power = localGoal.length
-    if( power == 0.0 ) println("Need more power scotty!")
-    var setPoint = localGoal.angle.radians
-    val angleError = (setPoint - angle).wrap()
-    if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
-        setPoint -= Math.PI.radians
-        power = -power
+    var status = false
+
+    if ( power.absoluteValue < 0.01 ) {
+//        var temp = localGoal.angle.radians
+//        println("setPoint=$temp")
+        status = false
     }
-    return AngleAndSpeed(setPoint, power * Math.abs(angleError.cos()))
+    else {
+        angle = localGoal.angle.radians
+        val angleError = (angle - this.angle).wrap()
+        if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
+            angle -= Math.PI.radians
+            power = -power
+        }
+        power *= Math.abs(angleError.cos())
+        status = true
+    }
+
+    return AnglePowerAndStatus(angle, power, status)
 }
 
 suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
