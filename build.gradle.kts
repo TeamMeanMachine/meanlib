@@ -28,7 +28,7 @@ repositories {
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/")}
     maven { setUrl("https://plugins.gradle.org/m2/")}
     maven {setUrl("https://maven.ctr-electronics.com/release/")}
-    maven {setUrl("https://www.revrobotics.com/content/sw/max/sdk/maven/")}
+    maven {setUrl("https://maven.revrobotics.com/")}
 }
 
 dependencies {
@@ -43,7 +43,7 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("com.ctre.phoenix:api-java:5.20.2")
-    implementation("com.revrobotics.frc:SparkMax-java:1.5.4")
+    implementation("com.revrobotics.frc:REVLib-java:2022.1.1")
 
     // other
     implementation("com.google.code.gson:gson:2.8.8")
