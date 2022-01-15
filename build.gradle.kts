@@ -42,7 +42,7 @@ dependencies {
     implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix:api-java:5.20.0-beta-1")
+    implementation("com.ctre.phoenix:api-java:5.20.2")
     implementation("com.revrobotics.frc:SparkMax-java:1.5.4")
 
     // other
