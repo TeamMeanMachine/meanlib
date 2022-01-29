@@ -207,6 +207,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setVelocitySetpoint(velocity: Double) {
         if (motorController is SparkMaxWrapper) {
             motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
+        } else {
+            motorController.set(ControlMode.Velocity, velocity / feedbackCoefficient / 10.0)
         }
     }
 

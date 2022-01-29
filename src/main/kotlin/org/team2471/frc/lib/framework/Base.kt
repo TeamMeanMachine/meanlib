@@ -119,7 +119,9 @@ abstract class MeanlibRobot : RobotBase() {
     /**
      * Called immediately after [enable] when the robot's mode transitions to autonomous.
      */
-    open suspend fun autonomous() { /* NOOP */ }
+    open suspend fun autonomous() {
+    println("started autonomous")
+    /* NOOP */ }
 
     /**
      * Called immediately after [enable] when the robot's mode transitions to teleoperated.
