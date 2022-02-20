@@ -56,7 +56,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private var feedbackCoefficient = 1.0
     private var rawOffset = 0
 
-    private val followers = followerIds.map { id ->
+    val followers = followerIds.map { id ->
         val follower = internalMotorController(id)
         follower.follow(motorController)
         follower
@@ -299,6 +299,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             is SparkMaxWrapper -> {
                 rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 //                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+            }
+            is CTRETalonFX -> {
+                rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
+
             }
         }
     }

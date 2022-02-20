@@ -1,5 +1,4 @@
 package org.team2471.frc.lib.framework.internal
-
 import edu.wpi.first.wpilibj.DriverStation.reportError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel

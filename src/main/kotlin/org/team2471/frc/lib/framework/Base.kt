@@ -56,7 +56,6 @@ abstract class MeanlibRobot : RobotBase() {
                 }
                 continue
             }
-
             val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
             if (previousRobotMode != RobotMode.AUTONOMOUS && DriverStation.isAutonomous()) {
@@ -80,7 +79,6 @@ abstract class MeanlibRobot : RobotBase() {
             } else if (previousRobotMode != RobotMode.TEST && DriverStation.isTest()) {
                 HAL.observeUserProgramTest()
                 previousRobotMode = RobotMode.TEST
-
                 GlobalScope.launch(MeanlibDispatcher) {
                     use(mainSubsystem, name = "Test") {
                         if (wasDisabled) enable()
