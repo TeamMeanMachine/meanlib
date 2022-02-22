@@ -86,8 +86,11 @@ open class Subsystem(
      *
      * Note that enables are asynchronous, so it may take some time for the [Subsystem] to be enabled.
      */
-    fun enable() = SubsystemCoordinator.enableSubsystem(this)
-
+    fun enable() {
+        preEnable()
+        SubsystemCoordinator.enableSubsystem(this)
+    }
+    open fun preEnable() { /* NOOP */ }
     /**
      * Disables the [Subsystem].
      *
@@ -95,8 +98,11 @@ open class Subsystem(
      *
      * Note that disables are asynchronous, so it may take some time for the [Subsystem] to be disabled.
      */
-    fun disable() = SubsystemCoordinator.disableSubsystem(this)
-
+    fun disable()  {
+        SubsystemCoordinator.disableSubsystem(this)
+        onDisable()
+    }
+    open fun onDisable() { /* NOOP */}
     /**
      * Cancels any active coroutine that is currently using the [Subsystem].
      *
