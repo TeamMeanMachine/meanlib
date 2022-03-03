@@ -304,6 +304,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                 rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 
             }
+            else -> {
+                println("NO SET RAW OFFSET FOR THIS MOTOR CONTROLLER")
+            }
         }
     }
 

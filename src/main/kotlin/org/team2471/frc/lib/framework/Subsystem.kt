@@ -89,8 +89,11 @@ open class Subsystem(
     fun enable() {
         preEnable()
         SubsystemCoordinator.enableSubsystem(this)
+        postEnable()
     }
     open fun preEnable() { /* NOOP */ }
+
+    open fun postEnable() { /* NOOP */}
     /**
      * Disables the [Subsystem].
      *
