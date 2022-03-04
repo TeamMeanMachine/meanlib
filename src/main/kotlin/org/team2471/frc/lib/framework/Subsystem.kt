@@ -102,8 +102,8 @@ open class Subsystem(
      * Note that disables are asynchronous, so it may take some time for the [Subsystem] to be disabled.
      */
     fun disable()  {
-        SubsystemCoordinator.disableSubsystem(this)
         onDisable()
+        SubsystemCoordinator.disableSubsystem(this)
     }
     open fun onDisable() { /* NOOP */}
     /**
