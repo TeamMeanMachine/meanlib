@@ -167,7 +167,19 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun hasfaults() {
         //return motorController.getFaults()
     }
+    fun getStatusFramePeriod(frame: StatusFrame, timeoutMs: Int = 100) : Int {
+        return motorController.getStatusFramePeriod(frame, timeoutMs)
+    }
+    fun getFollowerStatusFramePeriod(frame: StatusFrame, timeoutMs: Int = 100) : Int {
+        return if (followers.isNotEmpty()) {
+            followers[0].getStatusFramePeriod(frame, timeoutMs)
+        } else {
+            -1
+        }
+    }
+    fun setStatusFramePeriod(frame: StatusFrame, periodMs: Int, timeoutMs: Int = 100) = allMotorControllers { it.setStatusFramePeriod(frame, periodMs, timeoutMs) }
 
+    fun setFollowerStatusFramePeriod(frame: StatusFrame, periodMs: Int, timeoutMs: Int = 100) = allFollowers { it.setStatusFramePeriod(frame, periodMs, timeoutMs) }
     /**
      * Sets the percent output.
      *
