@@ -206,7 +206,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     fun setPositionSetpoint(position: Double, feedForward: Double) =
         motorController.set(
-            ControlMode.Position, position / feedbackCoefficient - rawOffset,
+            ControlMode.Position, (position / feedbackCoefficient) - rawOffset,
             DemandType.ArbitraryFeedForward, feedForward
         )
 
