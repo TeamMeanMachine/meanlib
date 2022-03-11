@@ -62,6 +62,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         follower
     }.toTypedArray()
 
+    val motorID = deviceId
+
     /**
      * The selected PID slot.
      */
@@ -528,6 +530,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                     controller.configPeakCurrentLimit(peakLimit, timeoutMs)
                     controller.configPeakCurrentDuration(peakDuration, timeoutMs)
                     controller.enableCurrentLimit(true)
+                }
+                if (controller is CTRETalonFX) {
+                    controller.configStatorCurrentLimit(StatorCurrentLimitConfiguration(true, continuousLimit.toDouble(), peakLimit.toDouble(), peakDuration.toDouble()))
                 }
             }
         }
