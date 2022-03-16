@@ -31,6 +31,9 @@ interface SwerveDrive {
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
+    val carpetFlow: Vector2
+    val kCarpet: Double
+    val kTread: Double
 
     val modules: Array<Module>
 
@@ -51,6 +54,8 @@ interface SwerveDrive {
 
         // motor interface
         var angleSetpoint: Angle
+
+        val treadWear: Double
 
         fun setDrivePower(power: Double)
 
@@ -215,9 +220,10 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-fun SwerveDrive.Module.recordOdometry(heading: Angle): Vector2 {
+fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, kTread: Double): Vector2 {
     val angleInFieldSpace = heading + angle
-    val deltaDistance = currDistance - prevDistance
+    val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos() )
+    val deltaDistance = (currDistance - prevDistance) * (1.0 + wheelDir.dot(carpetFlow) * kCarpet) * (1.0 - kTread) + (kTread * treadWear)
     prevDistance = currDistance
     return Vector2(
         deltaDistance * sin(angleInFieldSpace.asRadians),
@@ -230,7 +236,7 @@ fun SwerveDrive.recordOdometry() {
 
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        translations[i] = modules[i].recordOdometry(heading)
+        translations[i] = modules[i].recordOdometry(heading, carpetFlow, kCarpet, kTread)
     }
 
     for (i in modules.indices) {
