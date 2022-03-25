@@ -51,11 +51,12 @@ interface SwerveDrive {
         val speed: Double
         val currDistance: Double
         var prevDistance: Double
+        val treadWear: Double
+        var odometer: Double
 
         // motor interface
         var angleSetpoint: Angle
 
-        val treadWear: Double
 
         fun setDrivePower(power: Double)
 
@@ -237,6 +238,7 @@ fun SwerveDrive.recordOdometry() {
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
         translations[i] = modules[i].recordOdometry(heading, carpetFlow, kCarpet, kTread)
+        modules[i].odometer += translations[i].length
     }
 
     for (i in modules.indices) {
