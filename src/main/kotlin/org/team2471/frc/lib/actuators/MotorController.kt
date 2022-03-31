@@ -315,7 +315,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 //                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
             is CTRETalonFX -> {
-                println("Set raw offset to $rawOffset")
+//                println("Set raw offset to $rawOffset")
                 rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 
             }
