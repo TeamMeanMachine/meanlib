@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.motion.following
 
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.framework.use
@@ -170,7 +171,10 @@ suspend fun ArcadeDrive.tuneDrivePositionController(controller: org.team2471.frc
  * @param hardTurn a raw turn value, added to the left output and subtracted from the right output
  */
 fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double) {
-    val totalTurn = (softTurn * Math.abs(throttle)) + hardTurn
+    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+    var cappedThrottle = throttle * SmartDashboard.getNumber("DemoSpeed", 1.0)
+    var cappedHardTurn = hardTurn * SmartDashboard.getNumber("DemoSpeed", 1.0)
+    val totalTurn = (softTurn * Math.abs(cappedThrottle)) + cappedHardTurn
     val velocitySetpoint = AngularVelocity( 250.0.degrees) * totalTurn
 
     val gyroRate = if (parameters.doHeadingCorrection) headingRate else AngularVelocity(0.0.degrees)
@@ -178,8 +182,8 @@ fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double
 
     val turnAdjust = (velocityError.changePerSecond.asDegrees * parameters.driveTurningP).deadband(1.0e-2)
 
-    var leftPower = throttle + totalTurn + turnAdjust
-    var rightPower = throttle - totalTurn - turnAdjust
+    var leftPower = cappedThrottle + totalTurn + turnAdjust
+    var rightPower = cappedThrottle - totalTurn - turnAdjust
 
     val maxPower = Math.max(Math.abs(leftPower), Math.abs(rightPower))
     if (maxPower > 1) {

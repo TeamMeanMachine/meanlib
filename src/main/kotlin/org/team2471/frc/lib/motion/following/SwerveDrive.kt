@@ -4,6 +4,7 @@ import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
@@ -56,7 +57,6 @@ interface SwerveDrive {
 
         // motor interface
         var angleSetpoint: Angle
-
 
         fun setDrivePower(power: Double)
 
@@ -116,7 +116,12 @@ fun SwerveDrive.drive(
     }
     requestedTranslation += softTranslation
 
+    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+    requestedTranslation *= SmartDashboard.getNumber("DemoSpeed", 1.0)
+
     var requestedTurn = turn + softTurn
+
+    requestedTurn *= SmartDashboard.getNumber("DemoSpeed", 1.0)
 
     if (requestedTranslation.length > 0.01 && requestedTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
