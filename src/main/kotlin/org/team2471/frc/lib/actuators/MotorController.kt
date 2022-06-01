@@ -564,7 +564,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
             fun d(d: Double) {
-                println("d=$d")
                 motorController.config_kD(slot, d / feedbackCoefficient * 1024.0, timeoutMs)
             }
 
