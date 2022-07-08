@@ -230,11 +230,15 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     val angleInFieldSpace = heading + angle
     val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos() )
     val deltaDistance = (currDistance - prevDistance) * (1.0 + wheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
-    prevDistance = currDistance
-    return Vector2(
-        deltaDistance * sin(angleInFieldSpace.asRadians),
-        deltaDistance * cos(angleInFieldSpace.asRadians)
-    )
+    if (deltaDistance > 0.5 ) {
+        prevDistance = currDistance
+        return Vector2(
+            deltaDistance * sin(angleInFieldSpace.asRadians),
+            deltaDistance * cos(angleInFieldSpace.asRadians)
+        )
+    } else {
+        return Vector2(0.0,0.0)
+    }
 }
 
 fun SwerveDrive.recordOdometry() {
