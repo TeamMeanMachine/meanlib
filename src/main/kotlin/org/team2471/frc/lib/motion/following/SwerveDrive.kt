@@ -248,7 +248,6 @@ fun SwerveDrive.recordOdometry() {
     for (i in modules.indices) {
         translations[i] = modules[i].recordOdometry(heading, carpetFlow, kCarpet, kTread)
         modules[i].odometer += translations[i].length
-        if (i == 2) println("2 translation = ${translations[i].length}")
     }
 
     for (i in modules.indices) {
