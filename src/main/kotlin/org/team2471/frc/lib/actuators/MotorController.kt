@@ -35,12 +35,12 @@ data class SparkMaxID(val value: Int) : MotorControllerID()
  *
  * @param value the Falcon's CAN ID
  */
-data class FalconID(val value: Int) : MotorControllerID()
+data class FalconID(val value: Int, val canBus:String? = null) : MotorControllerID()
 
 private fun internalMotorController(id: MotorControllerID) = when (id) {
     is TalonID -> CTRETalonSRX(id.value)
     is VictorID -> CTREVictorSPX(id.value)
-    is FalconID -> CTRETalonFX(id.value)
+    is FalconID -> if (id.canBus != null) CTRETalonFX(id.value,id.canBus) else CTRETalonFX(id.value)
     is SparkMaxID -> SparkMaxWrapper(id.value)
 }
 
