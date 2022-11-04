@@ -117,10 +117,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             motorController.setSelectedSensorPosition((value / feedbackCoefficient), 0, 0)
         }
 
-    var angle: Double
-        get() = position* 360.0/3.036 - 15.65
-        set(value) {}
-
     var analogPosition: Double
         get() = when (motorController) {
             is SparkMaxWrapper -> motorController.analogPosition
