@@ -90,8 +90,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun configVoltageCompSaturation(voltage: Double, timeoutMs: Int): ErrorCode {
         return ErrorCode.OK
+        // no var to return :(
     }
-
     override fun configVoltageMeasurementFilter(filterWindowSamples: Int, timeoutMs: Int): ErrorCode {
         return ErrorCode.OK
     }
@@ -100,11 +100,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getBusVoltage(): Double {
-        return 0.0
+        return _motorController.busVoltage
     }
 
     override fun getMotorOutputPercent(): Double {
         return 0.0
+        //cannot find
     }
 
     override fun getMotorOutputVoltage(): Double {
@@ -117,11 +118,13 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun configSelectedFeedbackCoefficient(coefficient: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        return _motorController.
+        return ErrorCode.OK
+        //cannot find
     }
 
     override fun configRemoteFeedbackFilter(canCoderRef: CANCoder?, remoteOrdinal: Int, timeoutMs: Int): ErrorCode {
         return ErrorCode.OK
+
     }
 
     override fun configRemoteFeedbackFilter(talonRef: BaseTalon?, remoteOrdinal: Int, timeoutMs: Int): ErrorCode {
@@ -149,6 +152,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
         _motorController.encoder.position = sensorPos
         return ErrorCode.OK
+        //cant return
     }
 
     override fun setControlFramePeriod(frame: ControlFrame?, periodMs: Int): ErrorCode {
