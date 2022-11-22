@@ -108,15 +108,16 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getMotorOutputVoltage(): Double {
-        return 0.0
+        //No method found
+        return _motorController.outputCurrent
     }
 
     override fun getTemperature(): Double {
-        return 0.0
+        return _motorController.motorTemperature
     }
 
     override fun configSelectedFeedbackCoefficient(coefficient: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
+        return _motorController.
     }
 
     override fun configRemoteFeedbackFilter(canCoderRef: CANCoder?, remoteOrdinal: Int, timeoutMs: Int): ErrorCode {
