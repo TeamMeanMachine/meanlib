@@ -122,14 +122,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var analogPosition: Double
         get() = when (motorController) {
             is SparkMaxWrapper -> motorController.analogPosition
-            else -> throw IllegalStateException("Current cannot be read from this motor controller")
+            else -> throw IllegalStateException("Analog position cannot be read from this motor controller")
         }
         set(value) {}
 
     var analogAngle: Double
         get() = when(motorController) {
             is SparkMaxWrapper -> motorController.analogAngle
-            else -> throw IllegalStateException("Current cannot be read from this motor controller")
+            else -> throw IllegalStateException("Analog angle cannot be read from this motor controller")
         }
         set(value) {}
 
@@ -312,6 +312,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             is SparkMaxWrapper -> {
                 motorController.restoreFactoryDefaults()
             }
+            else -> throw IllegalStateException("restoreFactoryDefaults not implemented for this motor controller")
         }
     }
 
