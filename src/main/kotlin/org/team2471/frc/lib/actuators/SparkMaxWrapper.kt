@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.actuators
 
+import com.ctre.phoenix.CANifier
+import com.ctre.phoenix.CANifierStickyFaults
 import com.ctre.phoenix.ErrorCode
 import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motion.MotionProfileStatus
@@ -97,6 +99,11 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun enableVoltageCompensation(enable: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun enableVoltageCompensation(nominalVoltage: Double): ErrorCode {
+        return ErrorCode.OK
     }
 
     override fun getBusVoltage(): Double {
@@ -104,7 +111,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getMotorOutputPercent(): Double {
-        return 0.0
+        return _motorController.outputCurrent
         //cannot find
     }
 
@@ -144,13 +151,17 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
-    override fun getSelectedSensorVelocity(pidIdx: Int): Double {
-        return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
+    override fun getSelectedSensorVelocity(pidIdx: Int): Int {
+        return ((_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)).toInt()
         //return 0
     }
 
+    override fun setSelectedSensorPosition(sensorPos: Int, pidIdx: Int, timeoutMs: Int): ErrorCode {
+        TODO("Not yet implemented")
+    }
+
     override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
-        _motorController.encoder.position = sensorPos
+        _motorController.encoder = sensorPos
         return ErrorCode.OK
         //cant return
     }
@@ -164,7 +175,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getStatusFramePeriod(frame: StatusFrame?, timeoutMs: Int): Int {
-        return 0
+        return 20 /*NOT DONE PLEASE FIX*/
     }
 
     override fun configForwardLimitSwitchSource(
@@ -186,6 +197,15 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun overrideLimitSwitchesEnable(enable: Boolean) {
+        _motorController.switch(false)
+    }
+
+    override fun configForwardSoftLimitThreshold(forwardSensorLimit: Int, timeoutMs: Int): ErrorCode {
+        TODO("Not yet implemented")
+    }
+
+    override fun configReverseSoftLimitThreshold(reverseSensorLimit: Int, timeoutMs: Int): ErrorCode {
+        TODO("Not yet implemented")
     }
 
     override fun configForwardSoftLimitThreshold(forwardSensorLimit: Double, timeoutMs: Int): ErrorCode {
@@ -211,8 +231,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return ErrorCode.OK
     }
 
-    override fun getClosedLoopError(pidIdx: Int): Double {
-        return (positionSetpoint * TICKS_PER_REVOLUTION)- getSelectedSensorPosition(pidIdx)
+    override fun getClosedLoopError(pidIdx: Int): Int {
+        return ((positionSetpoint * TICKS_PER_REVOLUTION)- getSelectedSensorPosition(pidIdx)).toInt()
     }
 
     override fun getIntegralAccumulator(pidIdx: Int): Double {
@@ -227,12 +247,16 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         return 0.0
     }
 
-    override fun getActiveTrajectoryPosition(): Double {
-        return 0.0
+    override fun getActiveTrajectoryPosition(): Int {
+        return 0
     }
 
-    override fun getActiveTrajectoryVelocity(): Double {
-        return 0.0
+    override fun getActiveTrajectoryVelocity(): Int {
+        return 0
+    }
+
+    override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Int, timeoutMs: Int): ErrorCode {
+        TODO("Not yet implemented")
     }
 
     override fun configMotionCruiseVelocity(sensorUnitsPer100ms: Double, timeoutMs: Int): ErrorCode {
@@ -262,9 +286,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     override fun clearMotionProfileTrajectories(): ErrorCode {
         return ErrorCode.OK
     }
-
-    override fun clearStickyFaults(timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
+    override fun clearStickyFaults(timeoutMs: Int): ErrorCode  {
+            return ErrorCode.OK
     }
 
     override fun configGetCustomParam(paramIndex: Int, timeoutMs: Int): Int {
@@ -333,6 +356,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun processMotionProfileBuffer() {
+        return _motorController.motion()
     }
 
     override fun getLastError(): ErrorCode {
@@ -344,7 +368,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getFirmwareVersion(): Int {
-        return 0
+        return _motorController.firmwareVersion
     }
 
     override fun hasResetOccurred(): Boolean {
@@ -485,7 +509,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun configClosedLoopPeakOutput(slotIdx: Int, percentOut: Double, timeoutMs: Int): ErrorCode {
-        return ErrorCode.OK
+
+        return configClosedLoopPeakOutput(0, 0.0, 0)
     }
 
     override fun configClosedLoopPeriod(slotIdx: Int, loopTimeMs: Int, timeoutMs: Int): ErrorCode {

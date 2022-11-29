@@ -114,7 +114,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var position: Double
         get() = (motorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient
         set(value) {
-            motorController.setSelectedSensorPosition((value / feedbackCoefficient), 0, 0)
+            motorController.setSelectedSensorPosition((value.toInt() / feedbackCoefficient.toInt()), 0, 0)
         }
 
     var analogPosition: Double
@@ -137,7 +137,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see internalMotorController.getSelectedSensorPosition
      */
     val rawPosition: Double
-        get() = motorController.getSelectedSensorPosition(0)
+        get() = motorController.getSelectedSensorPosition(0).toDouble()
 
     /**
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
@@ -159,7 +159,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.setNeutralMode(NeutralMode.Coast)
         }
 
-        motorController.setSelectedSensorPosition(0.0, 0, 0)
+        motorController.setSelectedSensorPosition(0, 0, 0)
     }
 
     fun hasfaults() {
@@ -487,8 +487,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
             val srxAcceleration = (acceleration / feedbackCoefficient / 10.0)
             val srxCruisingVelocity = (cruisingVelocity / feedbackCoefficient / 10.0)
-            motorController.configMotionAcceleration(srxAcceleration, 20)
-            motorController.configMotionCruiseVelocity(srxCruisingVelocity, 20)
+            motorController.configMotionAcceleration(srxAcceleration.toInt(), 20)
+            motorController.configMotionCruiseVelocity(srxCruisingVelocity.toInt(), 20)
         }
 
         /**
@@ -586,11 +586,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
             fun iZone(iZone: Double) {
-                motorController.config_IntegralZone(slot, (iZone / feedbackCoefficient), timeoutMs)
+                motorController.config_IntegralZone(slot, (iZone.toInt() / feedbackCoefficient.toInt()), timeoutMs)
             }
 
             fun allowableError(allowableError: Double) {
-                motorController.configAllowableClosedloopError(slot, (allowableError / feedbackCoefficient), timeoutMs)
+                motorController.configAllowableClosedloopError(slot, (allowableError.toInt() / feedbackCoefficient.toInt()), timeoutMs)
             }
 
             fun maxIntegralAccumulator(maxIntegralAccumulator: Double) {
