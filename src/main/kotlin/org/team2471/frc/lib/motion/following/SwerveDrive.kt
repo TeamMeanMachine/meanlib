@@ -108,7 +108,6 @@ fun SwerveDrive.drive(
     maxChangeInOneFrame: Double = 0.0)
 {
     recordOdometry()
-
     var requestedTranslation = translation
 
     if (fieldCentric) {
