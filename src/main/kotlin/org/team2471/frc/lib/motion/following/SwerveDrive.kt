@@ -13,7 +13,6 @@ import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
 import java.util.*
 import kotlin.math.*
-
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPathPosition = Vector2(0.0, 0.0)
@@ -84,6 +83,12 @@ val SwerveDrive.pose: SwerveDrive.Pose
 
 fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose = poseHistory.getInterpolated(InterpolatingDouble(time))
 
+fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose {
+    val currPose = pose
+    val previousPose = lookupPose( Timer.getFPGATimestamp().minus(latency))
+    return SwerveDrive.Pose(currPose.position - previousPose.position, currPose.heading - previousPose.heading)
+}
+
 fun SwerveDrive.stop() {
     for (module in modules) {
         module.stop()
@@ -108,7 +113,6 @@ fun SwerveDrive.drive(
     maxChangeInOneFrame: Double = 0.0)
 {
     recordOdometry()
-
     var requestedTranslation = translation
 
     if (fieldCentric) {
@@ -230,11 +234,15 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     val angleInFieldSpace = heading + angle
     val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos() )
     val deltaDistance = (currDistance - prevDistance) * (1.0 + wheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
-    prevDistance = currDistance
-    return Vector2(
-        deltaDistance * sin(angleInFieldSpace.asRadians),
-        deltaDistance * cos(angleInFieldSpace.asRadians)
-    )
+    if (deltaDistance.absoluteValue < 0.5) {
+        prevDistance = currDistance
+        return Vector2(
+            deltaDistance * sin(angleInFieldSpace.asRadians),
+            deltaDistance * cos(angleInFieldSpace.asRadians)
+        )
+    } else {
+        return Vector2(0.0,0.0)
+    }
 }
 
 fun SwerveDrive.recordOdometry() {
@@ -259,7 +267,6 @@ fun SwerveDrive.recordOdometry() {
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
-//    println("Position: $position")
 }
 
 fun SwerveDrive.resetOdometry() {
