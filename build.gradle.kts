@@ -21,8 +21,8 @@ apply {
 }
 
 group = "org.team2471.lib"
-version = "2022"
-var wpiLibVersion = "2022.4.1"
+version = "2023"
+var wpiLibVersion =  "2023.1.1-beta-7" //"2022.4.1" //
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -43,7 +43,7 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("com.ctre.phoenix:api-java:5.21.1")
-    implementation("com.revrobotics.frc:REVLib-java:2022.1.1")
+    implementation("com.revrobotics.frc:REVLib-java:2023.0.1")
 
     // other
     implementation("com.google.code.gson:gson:2.8.8")

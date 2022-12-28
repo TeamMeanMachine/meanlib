@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.input
 
+import edu.wpi.first.hal.DriverStationJNI
 import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
@@ -72,7 +73,7 @@ open class Controller(val port: Int) {
         set(value) {
             field = value
             val rumble = (value * 65535).toInt().toShort()
-            HAL.setJoystickOutputs(port.toByte(), 0, rumble, rumble)
+            DriverStationJNI.setJoystickOutputs(port.toByte(), 0, rumble, rumble)
         }
 
     enum class Direction { IDLE, UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT }

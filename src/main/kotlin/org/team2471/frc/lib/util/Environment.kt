@@ -2,6 +2,7 @@ package org.team2471.frc.lib.util
 
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.hal.AllianceStationID
+import edu.wpi.first.hal.DriverStationJNI
 import edu.wpi.first.hal.HAL
 import java.text.SimpleDateFormat
 import java.util.*
@@ -15,7 +16,7 @@ object Environment {
         // load alliance data
         var allianceStationID: AllianceStationID?
         while (true) {
-            allianceStationID = HAL.getAllianceStation()
+            allianceStationID = DriverStationJNI.getAllianceStation()
             if (allianceStationID != null) break
             else Thread.sleep(100)
         }

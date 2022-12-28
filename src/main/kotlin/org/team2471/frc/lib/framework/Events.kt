@@ -20,7 +20,6 @@ object Events {
 
             if (state && !prevState) {
                 val prevJob = job
-
                 job = GlobalScope.launch(MeanlibDispatcher) {
                     prevJob?.cancelAndJoin()
                     action()

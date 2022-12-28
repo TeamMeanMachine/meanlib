@@ -1,20 +1,18 @@
 package org.team2471.frc.lib.framework
 
-import edu.wpi.first.hal.FRCNetComm
-import edu.wpi.first.hal.HAL
-import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.hal.DriverStationJNI
+import edu.wpi.first.wpilibj.DSControlWord
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotBase
-import edu.wpi.first.wpilibj.util.WPILibVersion
+import edu.wpi.first.wpilibj.Timer.delay
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
-import org.team2471.frc.lib.coroutines.periodic
-import java.io.File
-import java.sql.Driver
 
 const val LANGUAGE_KOTLIN = 6
+
+private val m_word = DSControlWord()
 
 /**
  * The core robot program to run. The methods in this interface can be overridden in order to
@@ -24,68 +22,82 @@ abstract class MeanlibRobot : RobotBase() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun startCompetition() {
         init()
-
-        HAL.observeUserProgramStarting()
+        DriverStationJNI.observeUserProgramStarting()
 
         var previousRobotMode: RobotMode? = null
+        var wasConnected = false
 
         val mainSubsystem = Subsystem("Robot").apply { enable() }
 
         while (true) {
-            val hasNewData = DriverStation.waitForData(0.02)
+            delay(0.02) //TODO: Reduce to 0.01? --previously was waitForData(0.02)
+
+            m_word.refresh()
+            val isConnected = m_word.isDSAttached
+
+            // Get current mode
+            var mode: RobotMode? = null
+            if (m_word.isDisabled) {
+                mode = RobotMode.DISABLED
+            } else if (m_word.isAutonomous) {
+                mode = RobotMode.AUTONOMOUS
+            } else if (m_word.isTeleop) {
+                mode = RobotMode.TELEOP
+            } else if (m_word.isTest) {
+                mode = RobotMode.TEST
+            }
+            val modeChanged = (mode != previousRobotMode)
+            val lostConnection = (!isConnected && wasConnected)
+            val gainedConnection = (isConnected && !wasConnected)
+
+//            val hasNewData = DriverStation.waitForData(0.02)
 
             Events.process()
-            if (!DriverStation.isDSAttached()) previousRobotMode = RobotMode.DISCONNECTED
 
-            if (!hasNewData) continue
-
-            if (previousRobotMode == null || previousRobotMode == RobotMode.DISCONNECTED) {
+            if (gainedConnection) {
                 comms()
-
-                if (previousRobotMode != null) previousRobotMode = RobotMode.DISABLED
             }
-
-            if (DriverStation.isDisabled()) {
-                if (previousRobotMode != RobotMode.DISABLED) {
-                    HAL.observeUserProgramDisabled()
-                    previousRobotMode = RobotMode.DISABLED
-
-                    GlobalScope.launch(MeanlibDispatcher) {
-                        use(mainSubsystem, name = "Disabled") { disable() }
+            if (modeChanged || lostConnection) {
+                if (mode == RobotMode.DISABLED || lostConnection) {
+                    if (previousRobotMode != RobotMode.DISABLED) {
+                        mode = RobotMode.DISABLED
+                        DriverStationJNI.observeUserProgramDisabled()
+                        GlobalScope.launch(MeanlibDispatcher) {
+                            use(mainSubsystem, name = "Disabled") { disable() }
+                        }
                     }
-                }
-                continue
-            }
-            val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
+                } else {
+                    val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
 
-            if (previousRobotMode != RobotMode.AUTONOMOUS && DriverStation.isAutonomous()) {
-                HAL.observeUserProgramAutonomous()
-                previousRobotMode = RobotMode.AUTONOMOUS
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Autonomous") {
-                        if (wasDisabled) enable()
-                        autonomous()
-                    }
-                }
-            } else if (previousRobotMode != RobotMode.TELEOP && DriverStation.isTeleop()) {
-                HAL.observeUserProgramTeleop()
-                previousRobotMode = RobotMode.TELEOP
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Teleop") {
-                        if (wasDisabled) enable()
-                        teleop()
-                    }
-                }
-            } else if (previousRobotMode != RobotMode.TEST && DriverStation.isTest()) {
-                HAL.observeUserProgramTest()
-                previousRobotMode = RobotMode.TEST
-                GlobalScope.launch(MeanlibDispatcher) {
-                    use(mainSubsystem, name = "Test") {
-                        if (wasDisabled) enable()
-                        test()
+                    if (mode == RobotMode.AUTONOMOUS) {
+                        DriverStationJNI.observeUserProgramAutonomous()
+                        GlobalScope.launch(MeanlibDispatcher) {
+                            use(mainSubsystem, name = "Autonomous") {
+                                if (wasDisabled) enable()
+                                autonomous()
+                            }
+                        }
+                    } else if (mode == RobotMode.TELEOP) {
+                        DriverStationJNI.observeUserProgramTeleop()
+                        GlobalScope.launch(MeanlibDispatcher) {
+                            use(mainSubsystem, name = "Teleop") {
+                                if (wasDisabled) enable()
+                                teleop()
+                            }
+                        }
+                    } else if (mode == RobotMode.TEST) {
+                        DriverStationJNI.observeUserProgramTest()
+                        GlobalScope.launch(MeanlibDispatcher) {
+                            use(mainSubsystem, name = "Test") {
+                                if (wasDisabled) enable()
+                                test()
+                            }
+                        }
                     }
                 }
             }
+            wasConnected = isConnected
+            previousRobotMode = mode
         }
     }
 
@@ -141,7 +153,6 @@ abstract class MeanlibRobot : RobotBase() {
 }
 
 private enum class RobotMode {
-    DISCONNECTED,
     DISABLED,
     AUTONOMOUS,
     TELEOP,
