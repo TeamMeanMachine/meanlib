@@ -42,7 +42,7 @@ dependencies {
     implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix:api-java:5.21.1")
+    implementation("com.ctre.phoenix:api-java:5.30.1-beta-7")
     implementation("com.revrobotics.frc:REVLib-java:2023.0.1")
 
     // other

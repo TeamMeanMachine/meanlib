@@ -31,6 +31,7 @@ abstract class MeanlibRobot : RobotBase() {
 
         while (true) {
             delay(0.02) //TODO: Reduce to 0.01? --previously was waitForData(0.02)
+            DriverStation.refreshData()
 
             m_word.refresh()
             val isConnected = m_word.isDSAttached
