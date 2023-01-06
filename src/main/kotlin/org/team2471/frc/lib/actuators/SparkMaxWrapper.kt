@@ -47,10 +47,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted == followerID.inverted)
     }
 
-//    override fun motorOutputPercent(): Double {
-//        return 0.0
-//    }
-
     override fun getSelectedSensorPosition(pidIdx: Int): Double {
         return (_motorController.getEncoder().position * TICKS_PER_REVOLUTION)
     }
@@ -104,6 +100,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun getMotorOutputPercent(): Double {
+        println("Error: SparkMaxWrapper.getMotorOutputPercent nonfunctional")
         return 0.0
     }
 
@@ -142,7 +139,6 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun getSelectedSensorVelocity(pidIdx: Int): Double {
         return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
-        //return 0
     }
 
     override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int, timeoutMs: Int): ErrorCode {
@@ -389,6 +385,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun selectProfileSlot(slotIdx: Int, pidIdx: Int) {
+        println("Error: SparkMaxWrapper.selectProfileSlot nonfunctional")
     }
 
     override fun neutralOutput() {

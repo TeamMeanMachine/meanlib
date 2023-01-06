@@ -2,8 +2,6 @@ package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix.motorcontrol.*
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.Angle
-import kotlin.math.roundToInt
 import com.ctre.phoenix.motorcontrol.can.TalonSRX as CTRETalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX as CTREVictorSPX
 import com.ctre.phoenix.motorcontrol.can.TalonFX as CTRETalonFX
@@ -304,15 +302,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private inline fun allFollowers(body: (IMotorController) -> Unit) {
         followers.forEach(body)
     }
-    fun setRawOffset(analogAngle: Angle) {
+    fun setRawOffset(offset: Double) {  //previously analogAngle: Angle
         when (motorController) {
             is SparkMaxWrapper -> {
-                rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
+                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 //                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
             is CTRETalonFX -> {
 //                println("Set raw offset to $rawOffset")
-                rawOffset = ((analogAngle.asDegrees / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
+                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
 
             }
             else -> {
@@ -375,8 +373,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         /**
          * Initializes the incremental encoder to match the analog encoder.
          */
-        fun setRawOffsetConfig(offsetAngle: Angle) {
-            setRawOffset(offsetAngle)
+        fun setRawOffsetConfig(offset: Double) {
+            setRawOffset(offset)
         }
 
         /**
