@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
     }
 }
@@ -22,7 +22,7 @@ apply {
 
 group = "org.team2471.lib"
 version = "2023"
-var wpiLibVersion =  "2023.1.1-beta-7" //"2022.4.1"
+var wpiLibVersion =  "2023.1.1" //"2022.4.1"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -42,8 +42,9 @@ dependencies {
     implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix:api-java:5.30.1-beta-7")
-    implementation("com.revrobotics.frc:REVLib-java:2023.0.1")
+    implementation("com.ctre.phoenix:api-java:5.30.2")
+    implementation("com.revrobotics.frc:REVLib-java:2023.1.1")
+
 
     // other
     implementation("com.google.code.gson:gson:2.8.8")
@@ -55,12 +56,12 @@ dependencies {
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
 }
 
 val compileKotlin: KotlinCompile by tasks

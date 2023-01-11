@@ -56,6 +56,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
             NeutralMode.Brake -> _motorController.idleMode = CANSparkMax.IdleMode.kBrake
             NeutralMode.Coast -> _motorController.idleMode = CANSparkMax.IdleMode.kCoast
             NeutralMode.EEPROMSetting -> {}
+            else -> {}
         }
     }
 
