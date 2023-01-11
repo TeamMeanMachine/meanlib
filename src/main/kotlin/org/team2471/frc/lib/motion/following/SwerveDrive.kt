@@ -11,7 +11,6 @@ import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import java.util.*
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -81,12 +80,12 @@ interface SwerveDrive {
 val SwerveDrive.pose: SwerveDrive.Pose
     get() = SwerveDrive.Pose(position, heading)
 
-fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose = poseHistory.getInterpolated(InterpolatingDouble(time))
+fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = poseHistory.getInterpolated(InterpolatingDouble(time))
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose {
     val currPose = pose
-    val previousPose = lookupPose( Timer.getFPGATimestamp().minus(latency))
-    return SwerveDrive.Pose(currPose.position - previousPose.position, currPose.heading - previousPose.heading)
+    val previousPose = lookupPose(Timer.getFPGATimestamp().minus(latency))
+    return SwerveDrive.Pose(currPose.position - (previousPose?.position ?: currPose.position), currPose.heading - (previousPose?.heading ?: currPose.heading))
 }
 
 fun SwerveDrive.stop() {
