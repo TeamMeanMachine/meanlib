@@ -22,7 +22,7 @@ apply {
 
 group = "org.team2471.lib"
 version = "2023"
-var wpiLibVersion =  "2023.1.1" //"2022.4.1"
+var wpiLibVersion =  "2023.1.1-beta-7" //"2022.4.1"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -56,12 +56,12 @@ dependencies {
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_16.toString()
 }
 
 val compileKotlin: KotlinCompile by tasks
