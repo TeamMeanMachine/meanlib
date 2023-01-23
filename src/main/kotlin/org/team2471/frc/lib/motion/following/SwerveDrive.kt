@@ -112,7 +112,6 @@ fun SwerveDrive.drive(
     softTurn: Double = 0.0,
     maxChangeInOneFrame: Double = 0.0)
 {
-    recordOdometry()
     var requestedTranslation = translation
 
     if (fieldCentric) {
@@ -199,6 +198,7 @@ fun SwerveDrive.drive(
         modules[i].setDrivePower(speeds[i])
     }
     //println()
+    recordOdometry()
 }
 
 data class AngleAndSpeed(val angle: Angle, val power: Double)
@@ -231,15 +231,19 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, kTread: Double): Vector2 {
-    val angleInFieldSpace = heading + angle
-    val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos() )
-    val deltaDistance = (currDistance - prevDistance) * (1.0 + wheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
+    var angleInFieldSpace = heading + angle
+    val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos())
+    var signedWheelDir = wheelDir
+
+    var deltaDistance = (currDistance - prevDistance)
+    if (deltaDistance < 0.0) {
+        signedWheelDir *= -1.0
+    }
+    deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
+//    println("wheelDir = ${wheelDir} carpetFlow = ${carpetFlow} dot = ${wheelDir.dot(carpetFlow)}")
     if (deltaDistance.absoluteValue < 0.5) {
         prevDistance = currDistance
-        return Vector2(
-            deltaDistance * sin(angleInFieldSpace.asRadians),
-            deltaDistance * cos(angleInFieldSpace.asRadians)
-        )
+        return wheelDir * deltaDistance
     } else {
         return Vector2(0.0,0.0)
     }
@@ -324,7 +328,7 @@ suspend fun SwerveDrive.driveAlongPath(
         // position error
         val pathPosition = path.getPosition(t)
         val positionError = pathPosition - position
-        //println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
+//        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
         val pathVelocity = (pathPosition - prevPathPosition) / dt
