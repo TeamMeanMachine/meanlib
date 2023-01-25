@@ -399,11 +399,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         * @param PhaseSensor false is forwards, true is backwards
         */
         fun setSensorPhase(PhaseSensor: Boolean) {
-            when(motorController) {
-                is SparkMaxWrapper -> {
-                    motorController.setSensorPhase(PhaseSensor)
-                }
-            }
+            motorController.setSensorPhase(PhaseSensor)
         }
 
         /**
