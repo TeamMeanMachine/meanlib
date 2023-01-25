@@ -507,3 +507,10 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
         stop()
     }
 }
+
+fun SwerveDrive.xPose() {
+    modules[0].angleSetpoint = -45.0.degrees
+    modules[1].angleSetpoint = 45.0.degrees
+    modules[2].angleSetpoint = -45.0.degrees
+    modules[3].angleSetpoint = 45.0.degrees
+}
