@@ -200,11 +200,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param feedForward the closed-loop feed forward
      * @see internalMotorController.set
      */
-    fun setPositionSetpoint(position: Double, feedForward: Double) =
+    fun setPositionSetpoint(position: Double, feedForward: Double) {
         motorController.set(
             ControlMode.Position, (position / feedbackCoefficient) - rawOffset,
             DemandType.ArbitraryFeedForward, feedForward
         )
+    }
 
     /**
      * Sets the closed-loop velocity setpoint.

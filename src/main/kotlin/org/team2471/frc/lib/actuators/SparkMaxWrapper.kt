@@ -44,7 +44,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         get() = _motorController.faults > 0
 
     override fun follow(followerID: IMotorController) {
-        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted == followerID.inverted)
+        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted != followerID.inverted)
     }
 
     override fun getSelectedSensorPosition(pidIdx: Int): Double {
@@ -365,12 +365,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
                 }
 
                 // set reference point of
-                _motorController.pidController.setReference(velocitySetPoint, ControlType.kVelocity)
+                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity)
             }
             ControlMode.PercentOutput -> _motorController.set(demand)
             ControlMode.Position -> {
                 positionSetpoint = demand / TICKS_PER_REVOLUTION
-                _motorController.pidController.setReference(positionSetpoint, ControlType.kPosition)
+                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity)
 //                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
             }
             else -> {}
@@ -378,6 +378,28 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     override fun set(Mode: ControlMode?, demand0: Double, demand1Type: DemandType?, demand1: Double) {
+        when (Mode) {
+            ControlMode.Velocity ->  {
+                velocitySetPoint = demand0 / TICKS_PER_REVOLUTION * 10.0
+
+                // handle out of bounds conditions
+                if (velocitySetPoint > maxRPM) {
+                    velocitySetPoint = maxRPM
+                } else if(velocitySetPoint < (-1 * maxRPM)) {
+                    velocitySetPoint = -1 * maxRPM
+                }
+
+                // set reference point of
+                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity, 0, demand1)
+            }
+            ControlMode.PercentOutput -> _motorController.set(demand0)
+            ControlMode.Position -> {
+                positionSetpoint = demand0 / TICKS_PER_REVOLUTION
+                _motorController.pidController.setReference(positionSetpoint, CANSparkMax.ControlType.kPosition, 0, demand1)
+//                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
+            }
+            else -> {}
+        }
     }
 
 
