@@ -81,7 +81,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             is CTRETalonSRX -> motorController.statorCurrent
             is CTRETalonFX -> motorController.statorCurrent
             is SparkMaxWrapper ->  {
-                println("Spark current is ${motorController.current}")
                 motorController.current
             }
             else -> throw IllegalStateException("Current cannot be read from this motor controller")
