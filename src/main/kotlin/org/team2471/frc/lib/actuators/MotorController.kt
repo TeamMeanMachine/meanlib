@@ -525,6 +525,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
                 if (controller is CTRETalonFX) {
                     controller.configStatorCurrentLimit(StatorCurrentLimitConfiguration(true, continuousLimit.toDouble(), peakLimit.toDouble(), peakDuration.toDouble()))
                 }
+                if (controller is SparkMaxWrapper) {
+                    controller.setCurrentLimit(peakLimit)
+                }
             }
         }
 

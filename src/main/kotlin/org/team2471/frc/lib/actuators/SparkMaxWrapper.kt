@@ -370,7 +370,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
             ControlMode.PercentOutput -> _motorController.set(demand)
             ControlMode.Position -> {
                 positionSetpoint = demand / TICKS_PER_REVOLUTION
-                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity)
+                _motorController.pidController.setReference(positionSetpoint, CANSparkMax.ControlType.kPosition)
 //                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
             }
             else -> {}
@@ -515,5 +515,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
         _motorController.restoreFactoryDefaults()
     }
 
+    public fun setCurrentLimit(currLimit: Int) {
+        _motorController.setSmartCurrentLimit(currLimit)
+    }
 
 }
