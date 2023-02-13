@@ -512,6 +512,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CTRETalonSRX.configContinuousCurrentLimit
          * @see CTRETalonSRX.configPeakCurrentLimit
          * @see CTRETalonSRX.configPeakCurrentDuration
+         * @see SparkMaxWrapper.setCurrentLimit
          */
         fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
             // apply to following
