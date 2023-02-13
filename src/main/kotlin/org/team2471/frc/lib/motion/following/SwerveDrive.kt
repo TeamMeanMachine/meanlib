@@ -231,22 +231,24 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, kTread: Double): Vector2 {
-    var angleInFieldSpace = heading + angle
+    val angleInFieldSpace = heading + angle
     val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos())
     var signedWheelDir = wheelDir
 
-    var deltaDistance = (currDistance - prevDistance)
+    val holdDistance = currDistance
+    var deltaDistance = (holdDistance - prevDistance)
     if (deltaDistance < 0.0) {
         signedWheelDir *= -1.0
     }
     deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
-//    println("wheelDir = ${wheelDir} carpetFlow = ${carpetFlow} dot = ${wheelDir.dot(carpetFlow)}")
-    if (deltaDistance.absoluteValue < 0.5) {
-        prevDistance = currDistance
+    //println("wheelDir = ${wheelDir} carpetFlow = ${carpetFlow} dot = ${wheelDir.dot(carpetFlow)}")
+//    if (deltaDistance.absoluteValue < 1.0) {
+        prevDistance = holdDistance
         return wheelDir * deltaDistance
-    } else {
-        return Vector2(0.0,0.0)
-    }
+//    } else {
+//        println("TOO MUCH MOVEMENT")
+//        return Vector2(0.0,0.0)
+//    }
 }
 
 fun SwerveDrive.recordOdometry() {
@@ -254,8 +256,9 @@ fun SwerveDrive.recordOdometry() {
 
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        translations[i] = modules[i].recordOdometry(heading, carpetFlow, kCarpet, kTread)
+        translations[i] = modules[i].recordOdometry(heading, carpetFlow,kCarpet, kTread)
         modules[i].odometer += translations[i].length
+
     }
 
     for (i in modules.indices) {
