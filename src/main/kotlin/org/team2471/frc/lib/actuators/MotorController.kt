@@ -323,6 +323,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         when (motorController) {
             is SparkMaxWrapper -> {
                 motorController.restoreFactoryDefaults()
+                println("before followers defaults restored")
+//                (followers[0] as SparkMaxWrapper).restoreFactoryDefaults()
+//                println("followers factory defaults restored")
+            } else -> {
+                println("restoreFactoryDefaults does not work for this motor controller.")
             }
         }
     }
