@@ -372,6 +372,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         fun burnSettings(){
             if (motorController is SparkMaxWrapper) {
                 motorController.burnFlash()
+            } else {
+                println("This motor controller does not burn settings.")
             }
         }
 
