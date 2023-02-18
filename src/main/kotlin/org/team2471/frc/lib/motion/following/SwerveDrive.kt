@@ -130,7 +130,7 @@ fun SwerveDrive.drive(
         if (teleopClosedLoopHeading) {  // closed loop on heading position
             // heading error
             val headingError = (headingSetpoint - heading).wrap()
-            //println("Heading Error: $headingError.")
+            println("Heading Error: $headingError.")
 
             // heading d
             val deltaHeadingError = headingError - prevHeadingError
