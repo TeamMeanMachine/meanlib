@@ -81,12 +81,16 @@ interface SwerveDrive {
 val SwerveDrive.pose: SwerveDrive.Pose
     get() = SwerveDrive.Pose(position, heading)
 
-fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose = poseHistory.getInterpolated(InterpolatingDouble(time))
+fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = poseHistory.getInterpolated(InterpolatingDouble(time))
 
-fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose {
+fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     val currPose = pose
     val previousPose = lookupPose( Timer.getFPGATimestamp().minus(latency))
-    return SwerveDrive.Pose(currPose.position - previousPose.position, currPose.heading - previousPose.heading)
+    return if (previousPose == null) {
+        null
+    } else {
+        SwerveDrive.Pose(currPose.position - previousPose.position, currPose.heading - previousPose.heading)
+    }
 }
 
 fun SwerveDrive.stop() {
