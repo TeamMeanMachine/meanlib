@@ -46,6 +46,8 @@ abstract class MeanlibRobot : RobotBase() {
                 mode = RobotMode.TELEOP
             } else if (m_word.isTest) {
                 mode = RobotMode.TEST
+            } else if (isSimulation()) {
+                mode = RobotMode.SIMULATE
             }
             val modeChanged = (mode != previousRobotMode)
             val lostConnection = (!isConnected && wasConnected)
@@ -92,6 +94,14 @@ abstract class MeanlibRobot : RobotBase() {
                             use(mainSubsystem, name = "Test") {
                                 if (wasDisabled) enable()
                                 test()
+                            }
+                        }
+                    } else if (mode == RobotMode.SIMULATE) {
+//                        DriverStationJNI.observeUserProgramTest()
+                        GlobalScope.launch(MeanlibDispatcher) {
+                            use(mainSubsystem, name = "Simulate") {
+                                if (wasDisabled) enable()
+                                simulate()
                             }
                         }
                     }
@@ -145,12 +155,22 @@ abstract class MeanlibRobot : RobotBase() {
     open suspend fun test() { /* NOOP */ }
 
     /**
+     * Called immediately after [enable] when the robot's mode transitions to simulate.
+     */
+    open suspend fun simulate() { /* NOOP */ }
+
+    /**
      * Called every time communications are established between the robot and the driver station.
      * This method can be used to make use of functions that require communication with the driver
      * station, e.g. [DriverStation.getAlliance] or [DriverStation.getMatchType]. Note that data
      * from the driver station may not be immediately available and may need to be rechecked.
      */
     open fun comms() { /* NOOP */ }
+
+    @Override
+    fun simulationPeriodic() {
+        println("in simulationPeriodic (spam)")
+    }
 }
 
 private enum class RobotMode {
@@ -158,4 +178,5 @@ private enum class RobotMode {
     AUTONOMOUS,
     TELEOP,
     TEST,
+    SIMULATE,
 }

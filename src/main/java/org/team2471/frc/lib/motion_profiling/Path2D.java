@@ -48,7 +48,6 @@ public class Path2D {
         m_xyCurve = new Path2DCurve();
         m_easeCurve = new MotionCurve();
         m_headingCurve = new MotionCurve();
-
     }
 
     public static Path2D fromJsonString(String jsonString) {
