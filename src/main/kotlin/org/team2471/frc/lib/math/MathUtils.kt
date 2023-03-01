@@ -45,8 +45,13 @@ infix fun Double.mod(n: Double) = if (this < 0) {
 }
 
 fun round(number: Double, digits: Int): Double {
-    val modulo = Math.pow(10.0, digits.toDouble())
-    return (number * modulo).roundToInt() / modulo
+    if (!number.isNaN()) {
+        val modulo = Math.pow(10.0, digits.toDouble())
+        return (number * modulo).roundToInt() / modulo
+    }
+    else {
+        return number
+    }
 }
 
 fun linearMap(inLo: Double, inHi: Double, outLo: Double, outHi: Double, inAlpha: Double): Double {
