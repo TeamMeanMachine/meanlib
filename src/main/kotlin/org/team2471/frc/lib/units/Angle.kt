@@ -30,6 +30,10 @@ value class Angle(val asDegrees: Double) {
 
     fun wrap() = Angle(asDegrees.IEEErem(360.0))
 
+    fun unWrap(nearByAngle: Angle) : Angle {
+        return nearByAngle + (this - nearByAngle).wrap()
+    } 
+
     companion object {
         @JvmStatic
         fun sin(angle: Angle) = Math.sin(angle.asRadians)
