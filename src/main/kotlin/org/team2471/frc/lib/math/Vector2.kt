@@ -6,6 +6,10 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
     val angle: Double get() = Math.atan2(x, y)
 
+    override fun toString(): String {
+        return "(${round(x, 1)}, ${round(y, 1)})"
+    }
+
     fun rotateRadians(radians: Double): Vector2 {
         val c = Math.cos(radians)
         val s = Math.sin(radians)
