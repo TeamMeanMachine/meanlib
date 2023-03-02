@@ -11,10 +11,10 @@ import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import java.util.*
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
+private var prevPose = SwerveDrive.Pose(Vector2(0.0, 0.0), 0.0.degrees)
 private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = 0.0
 private var prevPathHeading = 0.0.radians
@@ -28,6 +28,7 @@ interface SwerveDrive {
     var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
+    val combinedPosition: Vector2
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
@@ -40,6 +41,10 @@ interface SwerveDrive {
     fun startFollowing() = Unit
 
     fun stopFollowing() = Unit
+
+    fun poseUpdate(pose: Pose) = Unit
+
+    fun resetOdom() = Unit
 
     interface Module {
         // module fixed parameters
@@ -80,7 +85,6 @@ interface SwerveDrive {
 
 val SwerveDrive.pose: SwerveDrive.Pose
     get() = SwerveDrive.Pose(position, heading)
-
 fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = poseHistory.getInterpolated(InterpolatingDouble(time))
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
@@ -134,7 +138,7 @@ fun SwerveDrive.drive(
         if (teleopClosedLoopHeading) {  // closed loop on heading position
             // heading error
             val headingError = (headingSetpoint - heading).wrap()
-            println("Heading Error: $headingError.")
+//            println("Heading Error: $headingError.")
 
             // heading d
             val deltaHeadingError = headingError - prevHeadingError
@@ -274,10 +278,12 @@ fun SwerveDrive.recordOdometry() {
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
-
+    val poseDifference = SwerveDrive.Pose(pose.position - prevPose.position, pose.heading - prevPose.heading)
+    poseUpdate(poseDifference)
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
     prevPosition = position
+    prevPose = pose
 }
 
 fun SwerveDrive.resetOdometry() {
@@ -286,10 +292,12 @@ fun SwerveDrive.resetOdometry() {
     }
     zeroEncoders()
     position = Vector2(0.0, 0.0)
+    resetOdom()
 }
 
 fun SwerveDrive.resetHeading() {
     heading = ((0.0).degrees)
+    resetOdom()
 }
 
 suspend fun SwerveDrive.driveAlongPath(
@@ -316,7 +324,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
-       
+        resetOdom()
         println("After Reset Position = $position")
     }
 
@@ -334,7 +342,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
-        val positionError = pathPosition - position
+        val positionError = pathPosition - combinedPosition
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
