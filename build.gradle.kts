@@ -22,7 +22,7 @@ apply {
 
 group = "org.team2471.lib"
 version = "2023"
-var wpiLibVersion =  "2023.3.2" //"2022.4.1"
+var wpiLibVersion =  "2023.4.2"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
