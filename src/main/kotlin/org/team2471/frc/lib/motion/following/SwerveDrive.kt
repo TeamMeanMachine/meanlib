@@ -292,6 +292,7 @@ fun SwerveDrive.resetOdometry() {
     }
     zeroEncoders()
     position = Vector2(0.0, 0.0)
+    poseHistory.clear()
     resetOdom()
 }
 
