@@ -96,7 +96,7 @@ public class MotionCurve {
                 nextKey = pKey.getNextKey();
                 double currTime = pKey.getTime();
                 pKey.setTime(scaleFactor * currTime);
-                System.out.println(pKey.getTime());
+//                System.out.println(pKey.getTime());
             }
         }
     }
