@@ -20,6 +20,10 @@ public class Path2D {
     private final MotionCurve m_easeCurve;  // the ease curve is the percentage along the path the robot as a function of time
     private final MotionCurve m_headingCurve; // the angle from the path which the robot is headed
 
+    public Path2DCurve get_xyCurve() {
+        return m_xyCurve;
+    }
+
     public enum RobotDirection {
         FORWARD, BACKWARD
     }
@@ -55,11 +59,11 @@ public class Path2D {
     }
 
     public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
-        m_xyCurve.addPointToEnd(x, y, xTangent, yTangent);
+        get_xyCurve().addPointToEnd(x, y, xTangent, yTangent);
     }
 
     public boolean hasPoints() {
-        return m_xyCurve.getHeadPoint() != null;
+        return get_xyCurve().getHeadPoint() != null;
     }
 
     public Path2DPoint addVector2(Vector2 point) {
@@ -67,19 +71,19 @@ public class Path2D {
     }
 
     public Path2DPoint addVector2After(Vector2 point, Path2DPoint after) {
-        return m_xyCurve.addPointAfter(point, after);
+        return get_xyCurve().addPointAfter(point, after);
     }
 
     public Path2DPoint addPoint(double x, double y) {
-        return m_xyCurve.addPointToEnd(x, y);
+        return get_xyCurve().addPointToEnd(x, y);
     }
 
     public void addPointAngleAndMagnitude(double x, double y, double angle, double magnitude) {
-        m_xyCurve.addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
+        get_xyCurve().addPointAngleAndMagnitudeToEnd(x, y, angle, magnitude);
     }
 
     public void removePoint(Path2DPoint path2DPoint) {
-        m_xyCurve.removePoint(path2DPoint);
+        get_xyCurve().removePoint(path2DPoint);
     }
 
     public void addEasePoint(double time, double value) {
@@ -160,8 +164,8 @@ public class Path2D {
     }
 
     public Vector2 getPositionAtEase(double ease) {
-        double totalDistance = m_xyCurve.getLength();
-        Vector2 rValue = m_xyCurve.getPositionAtDistance(ease * totalDistance);
+        double totalDistance = get_xyCurve().getLength();
+        Vector2 rValue = get_xyCurve().getPositionAtDistance(ease * totalDistance);
         //System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
@@ -169,8 +173,8 @@ public class Path2D {
     }
 
     public Vector2 getTangentAtEase(double ease) {
-        double totalDistance = m_xyCurve.getLength();
-        Vector2 rValue = m_xyCurve.getTangentAtDistance(ease * totalDistance);
+        double totalDistance = get_xyCurve().getLength();
+        Vector2 rValue = get_xyCurve().getTangentAtDistance(ease * totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         return rValue;
@@ -229,14 +233,14 @@ public class Path2D {
 
     public String toString() {
         String rValue = "";
-        for (Path2DPoint point = m_xyCurve.getHeadPoint(); point != null; point = point.getNextPoint()) {
+        for (Path2DPoint point = get_xyCurve().getHeadPoint(); point != null; point = point.getNextPoint()) {
             rValue += point.toString();
         }
         return rValue;
     }
 
     public Path2DCurve getXYCurve() {
-        return m_xyCurve;
+        return get_xyCurve();
     }
 
     public String getName() {
@@ -273,13 +277,13 @@ public class Path2D {
     }
 
     void fixUpTailAndPrevPointers() {
-        m_xyCurve.fixUpTailAndPrevPointers();
+        get_xyCurve().fixUpTailAndPrevPointers();
         m_easeCurve.fixUpTailAndPrevPointers();
         m_headingCurve.fixUpTailAndPrevPointers();
     }
 
     public double getLength() {
-        return m_xyCurve.getLength();
+        return get_xyCurve().getLength();
     }
 
     public double getAccelerationAtEase(double ease) {
@@ -299,7 +303,7 @@ public class Path2D {
     public Vector2 getVelocityAtTime(double time) {
         Vector2 tangent = getTangent(time);
         tangent.normalize();
-        return tangent.times( m_easeCurve.getDerivative(time) * m_xyCurve.getLength());
+        return tangent.times( m_easeCurve.getDerivative(time) * get_xyCurve().getLength());
     }
 
 //    public double getCurvatureAtEase(double ease) {
@@ -324,8 +328,8 @@ public class Path2D {
         return new double[]{Units.feetToMeters(val0), Units.feetToMeters(val1),Units.feetToMeters(val2)};
     }
     public Trajectory generateTrajectoryBasic(TrajectoryConfig config) {
-        var currPoint = m_xyCurve.getHeadPoint();
-        var tailPoint = m_xyCurve.getTailPoint();
+        var currPoint = get_xyCurve().getHeadPoint();
+        var tailPoint = get_xyCurve().getTailPoint();
         var interiorWaypoints = new ArrayList<Pose2d>();
         // add first point
         interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
@@ -337,8 +341,8 @@ public class Path2D {
         return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
     }
     public Trajectory generateTrajectoryAdvanced(TrajectoryConfig config) {
-        var currPoint = m_xyCurve.getHeadPoint();
-        var tailPoint = m_xyCurve.getTailPoint();
+        var currPoint = get_xyCurve().getHeadPoint();
+        var tailPoint = get_xyCurve().getTailPoint();
         // add first point
         var controlVectors = new TrajectoryGenerator.ControlVectorList();
         controlVectors.add(new Spline.ControlVector(getTrajectoryDerivative(true, currPoint), getTrajectoryDerivative(false, currPoint)));
