@@ -427,6 +427,9 @@ public class MotionKey {
     public CubicCoefficients1D getYCoefficients() {
         if (areCoefficientsDirty()) {
             calculateCoefficients();
+        } else if (m_yCoeff==null) {
+            System.out.println("m_yCoeff = null");
+            calculateCoefficients();
         }
         return m_yCoeff;
     }
