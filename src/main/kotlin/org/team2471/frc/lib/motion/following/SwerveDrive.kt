@@ -214,7 +214,7 @@ data class AngleAndSpeed(val angle: Angle, val power: Double)
 private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
 
     var power = localGoal.length
-    var setPoint = localGoal.angle.radians
+    var setPoint = localGoal.angle
     val angleError = (setPoint - angle).wrap()
     if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
         setPoint -= Math.PI.radians
@@ -314,7 +314,7 @@ suspend fun SwerveDrive.driveAlongPath(
         resetHeading()
         heading = path.headingCurve.getValue(0.0).degrees
         if(parameters.alignRobotToPath) {
-            heading += path.getTangent(0.0).angle.degrees
+            heading += path.getTangent(0.0).angle
         }
         println("After Reset Heading = $heading")
     }
@@ -407,7 +407,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
-        heading = path.getTangent(0.0).angle.degrees + path.headingCurve.getValue(0.0).degrees
+        heading = path.getTangent(0.0).angle + path.headingCurve.getValue(0.0).degrees
         println("After Reset Position = $position Heading = $heading")
     }
     var prevTime = 0.0

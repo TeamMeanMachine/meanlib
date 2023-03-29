@@ -63,7 +63,7 @@ suspend fun <T> T.driveAlongPath(
 
             // apply gyro corrections to the distances
             val gyroAngle = heading.asDegrees
-            val pathAngle = Math.toDegrees(path.getTangent(t).angle)
+            val pathAngle = path.getTangent(t).angle.asDegrees
             val angleError = pathAngle - windRelativeAngles(pathAngle, gyroAngle)
 
             angleErrorAccum = angleErrorAccum * parameters.headingCorrectionIDecay + angleError

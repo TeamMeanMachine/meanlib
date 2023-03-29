@@ -1,10 +1,15 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.radians
 
 data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
-    val angle: Double get() = Math.atan2(x, y)
+    val angle: Angle get() = Math.atan2(x, y).radians
+    val angleAsRadians: Double get() = Math.atan2(x, y)
+    val angleAsDegrees: Double get() = Math.toDegrees(Math.atan2(x, y))
 
     override fun toString(): String {
         return "(${round(x, 1)}, ${round(y, 1)})"

@@ -332,11 +332,11 @@ public class Path2D {
         var tailPoint = get_xyCurve().getTailPoint();
         var interiorWaypoints = new ArrayList<Pose2d>();
         // add first point
-        interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
+        interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
         while (currPoint != tailPoint) {
             // add all subsequent points until we reach the end
             currPoint = currPoint.getNextPoint();
-            interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngle())));
+            interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
         }
         return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
     }
