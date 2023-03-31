@@ -110,6 +110,9 @@ internal object SubsystemCoordinator {
                 ) {
                     try {
                         println("Subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
+                        if (message.name == null || message.name.toString() == "null") {
+                            println("message.name = null: ${message.body}")
+                        }
 
                         // Cancel conflicting jobs. It is critical that coroutines must not complete until
                         // it's conflict's jobs have finished execution
