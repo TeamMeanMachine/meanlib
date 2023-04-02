@@ -30,7 +30,7 @@ abstract class MeanlibRobot : RobotBase() {
         val mainSubsystem = Subsystem("Robot").apply { enable() }
 
         while (true) {
-            delay(0.02) //TODO: Reduce to 0.01? --previously was waitForData(0.02)
+            delay(0.01)
             DriverStation.refreshData()
 
             m_word.refresh()
