@@ -85,6 +85,10 @@ interface SwerveDrive {
 
 val SwerveDrive.pose: SwerveDrive.Pose
     get() = SwerveDrive.Pose(position, heading)
+val SwerveDrive.demoMode: Boolean
+    get() = demoSpeed < 1.0
+val SwerveDrive.demoSpeed: Double
+    get() = SmartDashboard.getNumber("DemoSpeed" , 1.0).coerceIn(0.0, 1.0)
 fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = poseHistory.getInterpolated(InterpolatingDouble(time))
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
@@ -128,11 +132,11 @@ fun SwerveDrive.drive(
     requestedTranslation += softTranslation
 
     if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
-    requestedTranslation *= SmartDashboard.getNumber("DemoSpeed", 1.0)
+    requestedTranslation *= demoSpeed
 
     var requestedTurn = turn + softTurn
 
-    requestedTurn *= SmartDashboard.getNumber("DemoSpeed", 1.0)
+    requestedTurn *= demoSpeed
 
     if (requestedTranslation.length > 0.01 && requestedTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
