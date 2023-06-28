@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Timer.delay
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.littletonrobotics.junction.LoggedRobot
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
 
 const val LANGUAGE_KOTLIN = 6
@@ -18,7 +19,7 @@ private val m_word = DSControlWord()
  * The core robot program to run. The methods in this interface can be overridden in order to
  * execute code in the specified mode.
  */
-abstract class MeanlibRobot : RobotBase() {
+abstract class MeanlibRobot : LoggedRobot() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun startCompetition() {
         init()
@@ -168,7 +169,7 @@ abstract class MeanlibRobot : RobotBase() {
     open fun comms() { /* NOOP */ }
 
     @Override
-    fun simulationPeriodic() {
+    override fun simulationPeriodic() {
         println("in simulationPeriodic (spam)")
     }
 }
