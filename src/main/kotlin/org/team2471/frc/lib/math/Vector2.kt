@@ -4,6 +4,8 @@ import com.team254.lib.util.Interpolable
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.radians
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
@@ -19,6 +21,10 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
         val c = Math.cos(radians)
         val s = Math.sin(radians)
         return Vector2(x * c - y * s, x * s + y * c)
+    }
+
+    fun round(decimalPlaces: Int = 0): Vector2 {
+        return Vector2(BigDecimal(this.x).setScale(decimalPlaces, RoundingMode.HALF_EVEN).toDouble(), BigDecimal(this.y).setScale(decimalPlaces, RoundingMode.HALF_EVEN).toDouble())
     }
 
     fun rotateDegrees(degrees: Double): Vector2 = rotateRadians(Math.toRadians(degrees))
