@@ -3,6 +3,8 @@ package org.team2471.frc.lib.motion.following
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
+import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
@@ -35,6 +37,7 @@ interface SwerveDrive {
     val carpetFlow: Vector2
     val kCarpet: Double
     val kTread: Double
+    val plannedPath: NetworkTableEntry
 
     val modules: Array<Module>
 
@@ -332,6 +335,9 @@ suspend fun SwerveDrive.driveAlongPath(
         resetOdom()
         println("After Reset Position = $position")
     }
+
+    plannedPath.setString(path.toJsonString())
+
 
     var prevTime = 0.0
 
