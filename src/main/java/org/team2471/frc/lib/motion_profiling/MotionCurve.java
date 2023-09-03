@@ -1,5 +1,9 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
+import com.google.gson.Gson;
 import org.team2471.frc.lib.math.Vector2;
 
 public class MotionCurve {
@@ -668,5 +672,28 @@ public class MotionCurve {
 
     public void setMarkBeginOrEndKeysToZeroSlope(boolean setBeginOrEndKeysToZeroSlope) {
         this.m_markBeginOrEndKeysToZeroSlope = setBeginOrEndKeysToZeroSlope;
+    }
+    public String toJsonString() {
+        Moshi moshi = new Moshi.Builder().addLast(new KotlinJsonAdapterFactory()).build();
+        JsonAdapter<MotionCurve> jsonAdapter = moshi.adapter(MotionCurve.class);
+
+        String json = jsonAdapter.toJson(this);
+        System.out.println(json);
+        return json;
+    }
+
+    public static MotionCurve fromJsonString(String json) {
+        MotionCurve curve = new Gson().fromJson(json, MotionCurve.class);
+        if (curve != null) {
+            var k = curve.getHeadKey();
+            if (k != null) {
+                while (k.getNextKey() != null) {
+                    k.getNextKey().setPrevKey(k);
+                    k = k.getNextKey();
+                }
+            }
+            curve.setTailKey(k);
+        }
+        return curve;
     }
 }
