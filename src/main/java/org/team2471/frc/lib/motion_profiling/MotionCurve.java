@@ -26,8 +26,8 @@ public class MotionCurve {
         m_headKey = null;
         m_tailKey = null;
         m_defaultValue = 0;
-        m_minValue = -Double.MAX_VALUE;
-        m_maxValue = Double.MAX_VALUE;
+        m_minValue = 0.0;
+        m_maxValue = 0.0;
         m_lastValue = 0;
         m_lastDerivative = 0;
         m_lastTime = 0;

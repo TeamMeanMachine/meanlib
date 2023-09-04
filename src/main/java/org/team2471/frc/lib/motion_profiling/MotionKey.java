@@ -84,6 +84,11 @@ public class MotionKey {
     public void setValue(double value) {
         m_timeAndValue.setY(value);
         onPositionChanged();
+        if (value > getMotionCurve().getMaxValue()) { //set curve min and max
+            getMotionCurve().setMaxValue(value);
+        } else if (value < getMotionCurve().getMinValue()) {
+            getMotionCurve().setMinValue(value);
+        }
     }
 
     public boolean areTangentsDirty() {
