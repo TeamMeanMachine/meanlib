@@ -684,6 +684,10 @@ public class MotionCurve {
 
     public static MotionCurve fromJsonString(String json) {
         MotionCurve curve = new Gson().fromJson(json, MotionCurve.class);
+        return hydrateCurve(curve);
+    }
+
+    public static MotionCurve hydrateCurve(MotionCurve curve) {
         if (curve != null) {
             var k = curve.getHeadKey();
             if (k != null) {
@@ -694,6 +698,7 @@ public class MotionCurve {
             }
             curve.setTailKey(k);
         }
+
         return curve;
     }
 }

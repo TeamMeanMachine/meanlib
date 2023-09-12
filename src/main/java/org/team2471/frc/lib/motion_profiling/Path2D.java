@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion_profiling;
 
+import com.google.gson.Gson;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -55,7 +56,12 @@ public class Path2D {
     }
 
     public static Path2D fromJsonString(String jsonString) {
-        return null; // TODO: parse the json string and return the path
+        Path2D path = new Gson().fromJson(jsonString, Path2D.class);
+
+        MotionCurve.hydrateCurve(path.getHeadingCurve());
+        MotionCurve.hydrateCurve(path.getEaseCurve());
+
+        return path;
     }
 
     public void addPointAndTangent(double x, double y, double xTangent, double yTangent) {
