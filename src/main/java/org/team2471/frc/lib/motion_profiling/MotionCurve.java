@@ -689,10 +689,11 @@ public class MotionCurve {
 
     public static MotionCurve hydrateCurve(MotionCurve curve) {
         if (curve != null) {
-            var k = curve.getHeadKey();
+            MotionKey k = curve.getHeadKey();
             if (k != null) {
                 while (k.getNextKey() != null) {
                     k.getNextKey().setPrevKey(k);
+                    k.setMotionCurve(curve);
                     k = k.getNextKey();
                 }
             }
