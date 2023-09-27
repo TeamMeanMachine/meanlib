@@ -2,7 +2,6 @@ package org.team2471.frc.lib.math
 
 import java.lang.Math.*
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 fun Double.fitToRange(min: Double, max: Double): Double = when {
@@ -42,6 +41,9 @@ infix fun Double.mod(n: Double) = if (this < 0) {
     (this % n + n) % n
 } else {
     this % n
+}
+fun Double.round(digits: Int): Double {
+    return round(this, digits)
 }
 
 fun round(number: Double, digits: Int): Double {
