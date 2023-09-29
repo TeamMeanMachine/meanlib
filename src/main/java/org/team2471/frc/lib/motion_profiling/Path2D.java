@@ -258,12 +258,18 @@ public class Path2D {
     }
 
     public String toJsonString() {
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Path2D> jsonAdapter = moshi.adapter(Path2D.class);
+        try {
+            Moshi moshi = new Moshi.Builder().build();
+            JsonAdapter<Path2D> jsonAdapter = moshi.adapter(Path2D.class);
 
-        String json = jsonAdapter.toJson(this);
-        System.out.println(json);
-        return json;
+            String json = jsonAdapter.toJson(this);
+            System.out.println(json);
+            return json;
+        } catch (Exception ex) {
+            System.out.println("could not convert Path2D to json string");
+            System.out.println(ex.getMessage());
+            return "";
+        }
     }
 
     public double getSpeed() {
