@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion.following
 
+import com.google.gson.Gson
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
@@ -38,6 +39,7 @@ interface SwerveDrive {
     val kCarpet: Double
     val kTread: Double
     val plannedPath: NetworkTableEntry
+    val actualRoute: NetworkTableEntry
 
     val modules: Array<Module>
 
@@ -315,6 +317,9 @@ suspend fun SwerveDrive.driveAlongPath(
     inResetGyro: Boolean? = null,
     earlyExit: () -> Boolean = {false}
     ) {
+
+    var gson = Gson()
+
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
@@ -336,7 +341,7 @@ suspend fun SwerveDrive.driveAlongPath(
         println("After Reset Position = $position")
     }
 
-    plannedPath.setString(path.toJsonString())
+    plannedPath.setString(gson.toJson(path))
 
 
     var prevTime = 0.0
@@ -353,6 +358,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
+        val currentPosition = combinedPosition
         val positionError = pathPosition - combinedPosition
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
@@ -381,15 +387,17 @@ suspend fun SwerveDrive.driveAlongPath(
         val deltaHeadingError = headingError - prevHeadingError
         prevHeadingError = headingError
 
+        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x, currentPosition.y, robotHeading.asDegrees))
+
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
         // send it
         drive(translationControlField, turnControl, true)
 
         // are we done yet?
-        if (t >= path.durationWithSpeed + extraTime || earlyExit())
+        if (t >= path.durationWithSpeed + extraTime || earlyExit()) {
             stop()
-
+        }
         prevTime = t
 
 //        println("Time=$t Path Position=$pathPosition Position=$position")
@@ -398,6 +406,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
+    actualRoute.setDoubleArray(doubleArrayOf())
+    plannedPath.setString("")
 }
 
 
