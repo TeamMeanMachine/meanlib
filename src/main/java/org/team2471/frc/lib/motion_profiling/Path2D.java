@@ -13,6 +13,8 @@ import edu.wpi.first.math.util.Units;
 import org.team2471.frc.lib.math.Vector2;
 import java.util.ArrayList;
 
+import static java.lang.Math.IEEEremainder;
+
 public class Path2D {
 
     public String name;
@@ -112,7 +114,24 @@ public class Path2D {
         m_easeCurve.scaleLength(newTime);
         m_headingCurve.scaleLength(newTime);
     }
-    public void addHeadingPoint(double time, double value) { m_headingCurve.storeValue(time, value); }
+
+    private double javaWrap(double angle) { return IEEEremainder(angle, 360.0); }
+
+    private double javaUnwrap(double angle, double nearByAngle) {
+        return nearByAngle + javaWrap(angle - nearByAngle);
+    }
+    public void addHeadingPoint(double time, double value, boolean unwrap) {
+        if (unwrap) {
+            double preValue = m_headingCurve.getValue(time);
+            value = javaUnwrap(value, preValue);
+        }
+        m_headingCurve.storeValue(time, value);
+    }
+
+    public void addHeadingPoint(double time, double value) {
+
+        addHeadingPoint(time, value, true);
+    }
 
     public void removeAllEasePoints() {
         m_easeCurve.removeAllPoints();
