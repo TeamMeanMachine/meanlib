@@ -133,6 +133,9 @@ fun SwerveDrive.drive(
 
     if (fieldCentric) {
         requestedTranslation = requestedTranslation.rotateDegrees(heading.asDegrees)
+        // Correct for moving while spinning
+        requestedTranslation = requestedTranslation.rotateDegrees(turn * 53.0)
+        //println("Correction: ${turn * 60.0}")
     }
     requestedTranslation += softTranslation
 
