@@ -42,6 +42,7 @@ data class SwerveParameters(
     val kpHeading: Double,
     val kdHeading: Double,
     val kHeadingFeedForward: Double,
-    var alignRobotToPath: Boolean = false
+    var alignRobotToPath: Boolean = false,
+    var kMoveWhileSpin: Double,
 ) : DrivetrainParameters() {
 }

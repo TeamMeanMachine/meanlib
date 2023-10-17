@@ -13,7 +13,7 @@ import java.util.LinkedHashMap
 
 class Autonomi {
     var robotParameters = RobotParameters(0.0, 0.0)
-    var drivetrainParameters: DrivetrainParameters = SwerveParameters(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+    var drivetrainParameters: DrivetrainParameters = SwerveParameters(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0.0)
     var mapAutonomous: MutableMap<String, Autonomous> = LinkedHashMap()
     operator fun get(name: String): Autonomous? {
         return mapAutonomous[name]
