@@ -164,11 +164,6 @@ abstract class MeanlibRobot : RobotBase() {
      * from the driver station may not be immediately available and may need to be rechecked.
      */
     open fun comms() { /* NOOP */ }
-
-    @Override
-    fun simulationPeriodic() {
-        println("in simulationPeriodic (spam)")
-    }
 }
 
 private enum class RobotMode {
