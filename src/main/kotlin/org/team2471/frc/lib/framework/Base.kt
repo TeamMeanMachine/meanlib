@@ -141,8 +141,9 @@ abstract class MeanlibRobot : RobotBase() {
      * Called immediately after [enable] when the robot's mode transitions to autonomous.
      */
     open suspend fun autonomous() {
-    println("started autonomous")
-    /* NOOP */ }
+        // Warn the user that autonomous isn't impemented
+        println("The autonomous mode was called without being overridden, consider overriding it to enable this mode.")
+    }
 
     /**
      * Called immediately after [enable] when the robot's mode transitions to teleoperated.
@@ -166,11 +167,6 @@ abstract class MeanlibRobot : RobotBase() {
      * from the driver station may not be immediately available and may need to be rechecked.
      */
     open fun comms() { /* NOOP */ }
-
-    @Override
-    fun simulationPeriodic() {
-        println("in simulationPeriodic (spam)")
-    }
 }
 
 private enum class RobotMode {
