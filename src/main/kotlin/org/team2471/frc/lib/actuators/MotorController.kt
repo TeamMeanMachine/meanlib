@@ -306,7 +306,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         when (motorController) {
             is SparkMaxWrapper -> {
                 rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
-//                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
+                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
             is CTRETalonFX -> {
 //                println("Set raw offset to $rawOffset")
