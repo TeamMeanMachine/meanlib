@@ -393,7 +393,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         fun inverted(inverted: Boolean) = allMotorControllers { it.inverted = inverted }
 
         /**
-         * Sets whether the motor should be inverted.
+         * Sets whether the motor followers should be inverted relative to the main motor.
          *
          * @param inverted whether the motor should be inverted
          * @see internalMotorController.setInverted
