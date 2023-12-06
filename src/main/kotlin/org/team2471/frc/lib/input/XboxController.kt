@@ -59,4 +59,10 @@ class XboxController(port: Int) : Controller(port) {
 
     val dPad: Controller.Direction
         get() = getPOV(0)
+
+    val rightTriggerFullPress: Boolean
+        get() = rightTrigger > 0.95
+
+    val leftTriggerFullPress: Boolean
+        get() = leftTrigger > 0.95
 }
