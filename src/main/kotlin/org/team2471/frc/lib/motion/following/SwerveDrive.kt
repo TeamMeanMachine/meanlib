@@ -129,7 +129,7 @@ fun SwerveDrive.drive(
     softTurn: Double = 0.0,
     maxChangeInOneFrame: Double = 0.0)
 {
-    var requestedTranslation = translation
+    var requestedTranslation = Vector2(translation.x, -translation.y) //TODO: negative only for Bunny 2023 --remove asap after comp
 
     if (fieldCentric) {
         requestedTranslation = requestedTranslation.rotateDegrees(heading.asDegrees)
