@@ -66,6 +66,6 @@ tasks.withType<KotlinCompile> {
 
 val compileKotlin: KotlinCompile by tasks
 
-compileKotlin.kotlinOptions {
-    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses","-Xopt-in=kotlin.RequiresOptIn")
-}
+//compileKotlin.kotlinOptions {
+//    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses","-Xopt-in=kotlin.RequiresOptIn")
+//}
