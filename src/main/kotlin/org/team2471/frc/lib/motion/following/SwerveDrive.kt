@@ -286,7 +286,7 @@ fun SwerveDrive.recordOdometry() {
     }
     translation /= modules.size.toDouble()
 
-    position += translation
+    position += Vector2(-translation.x, -translation.y)
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
@@ -361,8 +361,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
-        val currentPosition = combinedPosition
-        val positionError = pathPosition - combinedPosition
+        val currentPosition = position
+        val positionError = pathPosition - position
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
