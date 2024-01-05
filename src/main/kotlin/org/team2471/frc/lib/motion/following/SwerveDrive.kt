@@ -286,7 +286,7 @@ fun SwerveDrive.recordOdometry() {
     }
     translation /= modules.size.toDouble()
 
-    position += Vector2(-translation.x, -translation.y)
+    position += Vector2(translation.x, translation.y)
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
