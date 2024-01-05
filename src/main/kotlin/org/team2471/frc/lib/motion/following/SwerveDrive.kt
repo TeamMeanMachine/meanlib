@@ -5,7 +5,6 @@ import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
@@ -321,7 +320,7 @@ suspend fun SwerveDrive.driveAlongPath(
     earlyExit: () -> Boolean = {false}
     ) {
 
-    var gson = Gson()
+    val gson = Gson()
 
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
     if (inResetGyro ?: resetOdometry) {
@@ -469,7 +468,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
             headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading
 
         val heading = (heading + (headingRate * parameters.gyroRateCorrection).changePerSecond).wrap()
-        var translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
+        val translationControlRobot = translationControlField.rotateDegrees(heading.asDegrees)
 
         val alpha = strafeAlpha(t)
         if (alpha > 0.0) {
