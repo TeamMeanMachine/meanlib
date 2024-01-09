@@ -5,8 +5,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.10")
     }
 }
 
@@ -21,8 +21,8 @@ apply {
 }
 
 group = "org.team2471.lib"
-version = "2023"
-var wpiLibVersion =  "2023.4.2"
+version = "2024"
+var wpiLibVersion =  "2024.1.1"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -43,7 +43,7 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("com.ctre.phoenix:api-java:5.31.0")
-    implementation("com.revrobotics.frc:REVLib-java:2023.1.3")
+    implementation("com.revrobotics.frc:REVLib-java:2024.1.1")
 
 
     // other

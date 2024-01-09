@@ -5,14 +5,12 @@ import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motion.MotionProfileStatus
 import com.ctre.phoenix.motion.TrajectoryPoint
 import com.ctre.phoenix.motorcontrol.*
-import com.ctre.phoenix.motorcontrol.can.BaseMotorController
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.can.BaseTalon
 import com.ctre.phoenix.sensors.CANCoder
 import com.revrobotics.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
-import kotlin.math.max
 
 const val TICKS_PER_REVOLUTION = 42.0
 
@@ -22,14 +20,14 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     val maxRPM = 5700.0
     val canID = deviceNumber
 
-    private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val _motorController = CANSparkMax(deviceNumber, CANSparkLowLevel.MotorType.kBrushless ).apply {
         restoreFactoryDefaults()
     
         //println("encoder value2: " + enc.position + "; id: " + deviceNumber + "-----------------------------------")
     }
 
     val analogPosition: Double
-        get() = _motorController.getAnalog(CANAnalog.AnalogMode.kAbsolute).position
+        get() = _motorController.getAnalog(SparkAnalogSensor.Mode.kAbsolute).position //might not work 2024 wpilib 1/8/2024
 
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65
@@ -53,8 +51,8 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
 
     override fun setNeutralMode(neutralMode: NeutralMode?) {
         when (neutralMode) {
-            NeutralMode.Brake -> _motorController.idleMode = CANSparkMax.IdleMode.kBrake
-            NeutralMode.Coast -> _motorController.idleMode = CANSparkMax.IdleMode.kCoast
+            NeutralMode.Brake -> _motorController.idleMode = CANSparkBase.IdleMode.kBrake
+            NeutralMode.Coast -> _motorController.idleMode = CANSparkBase.IdleMode.kCoast
             NeutralMode.EEPROMSetting -> {}
             else -> {}
         }
@@ -365,12 +363,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
                 }
 
                 // set reference point of
-                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity)
+                _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity)
             }
             ControlMode.PercentOutput -> _motorController.set(demand)
             ControlMode.Position -> {
                 positionSetpoint = demand / TICKS_PER_REVOLUTION
-                _motorController.pidController.setReference(positionSetpoint, CANSparkMax.ControlType.kPosition)
+                _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition)
 //                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
             }
             else -> {}
@@ -390,12 +388,12 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
                 }
 
                 // set reference point of
-                _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity, 0, demand1)
+                _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity, 0, demand1)
             }
             ControlMode.PercentOutput -> _motorController.set(demand0)
             ControlMode.Position -> {
                 positionSetpoint = demand0 / TICKS_PER_REVOLUTION
-                _motorController.pidController.setReference(positionSetpoint, CANSparkMax.ControlType.kPosition, 0, demand1)
+                _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, demand1)
 //                println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
             }
             else -> {}
@@ -470,7 +468,7 @@ class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
     }
 
     fun getDValue() : Double {
-        return _motorController.pidController.d;
+        return _motorController.pidController.d
     }
 
     override fun config_kF(slotIdx: Int, value: Double, timeoutMs: Int): ErrorCode {

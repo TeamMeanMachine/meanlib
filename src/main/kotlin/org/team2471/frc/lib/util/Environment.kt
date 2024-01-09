@@ -3,7 +3,6 @@ package org.team2471.frc.lib.util
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.hal.AllianceStationID
 import edu.wpi.first.hal.DriverStationJNI
-import edu.wpi.first.hal.HAL
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +27,7 @@ object Environment {
             AllianceStationID.Blue1 -> AllianceStation(Alliance.BLUE, 1)
             AllianceStationID.Blue2 -> AllianceStation(Alliance.BLUE, 2)
             AllianceStationID.Blue3 -> AllianceStation(Alliance.BLUE, 3)
+            AllianceStationID.Unknown -> AllianceStation(Alliance.UNKNOWN, 0) //added this for 2024 wpilib may break something 1/8/2024
         }
 
         fmsAttached = DriverStation.isFMSAttached()
@@ -42,7 +42,8 @@ object Environment {
 
 enum class Alliance {
     RED,
-    BLUE
+    BLUE,
+    UNKNOWN //added "UNKNOWN" for 2024 wpilib 1/8/2024
 }
 
 data class AllianceStation(val alliance: Alliance, val station: Int)

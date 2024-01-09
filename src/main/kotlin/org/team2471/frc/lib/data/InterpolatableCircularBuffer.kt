@@ -5,15 +5,15 @@ import org.team2471.frc.lib.math.lerp
 import java.lang.Math.ceil
 import java.lang.Math.floor
 
-class InterpolatableCircularBuffer(size: Int) : CircularBuffer(size) {
+class InterpolatableCircularBuffer(size: Int) : CircularBuffer<Int>(size) {
     /**
      * Get the linear interpolation of elements between provided index relative to the start of the buffer.
      *
      * @return Linear interpolation of elements between index starting from front of buffer.
      */
     fun interpolate(index: Double) = lerp(
-            this[floor(index).toInt()], // min
-            this[ceil(index).toInt()], // max
+            this[floor(index)], // min
+            this[ceil(index)], // max
             index % 1) // k
 
     /**
@@ -28,5 +28,5 @@ class InterpolatableCircularBuffer(size: Int) : CircularBuffer(size) {
      *
      * @see interpolate
      */
-    operator fun get(index: Double) = interpolate(index)
+    operator fun get(index: Double): Double = interpolate(index)
 }

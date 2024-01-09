@@ -3,15 +3,12 @@ package org.team2471.frc.lib.motion_profiling;
 import com.google.gson.Gson;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.spline.*;
 import edu.wpi.first.math.util.Units;
 import org.team2471.frc.lib.math.Vector2;
-import java.util.ArrayList;
 
 import static java.lang.Math.IEEEremainder;
 
@@ -358,19 +355,19 @@ public class Path2D {
         double val2 = isX ? currPoint.getNextTangent().getX() : currPoint.getNextTangent().getY();
         return new double[]{Units.feetToMeters(val0), Units.feetToMeters(val1),Units.feetToMeters(val2)};
     }
-    public Trajectory generateTrajectoryBasic(TrajectoryConfig config) {
-        var currPoint = get_xyCurve().getHeadPoint();
-        var tailPoint = get_xyCurve().getTailPoint();
-        var interiorWaypoints = new ArrayList<Pose2d>();
-        // add first point
-        interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
-        while (currPoint != tailPoint) {
-            // add all subsequent points until we reach the end
-            currPoint = currPoint.getNextPoint();
-            interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
-        }
-        return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
-    }
+//    public Trajectory generateTrajectoryBasic(TrajectoryConfig config) {
+//        var currPoint = get_xyCurve().getHeadPoint();
+//        var tailPoint = get_xyCurve().getTailPoint();
+//        var interiorWaypoints = new ArrayList<Pose2d>();
+//        // add first point
+//        interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
+//        while (currPoint != tailPoint) {
+//            // add all subsequent points until we reach the end
+//            currPoint = currPoint.getNextPoint();
+//            interiorWaypoints.add(new Pose2d(Units.feetToMeters(currPoint.getPosition().getX()), Units.feetToMeters(currPoint.getPosition().getY()), Rotation2d.fromDegrees(currPoint.getPosition().getAngleAsDegrees())));
+//        }
+//        return TrajectoryGenerator.generateTrajectory(interiorWaypoints, config);
+//    }
     public Trajectory generateTrajectoryAdvanced(TrajectoryConfig config) {
         var currPoint = get_xyCurve().getHeadPoint();
         var tailPoint = get_xyCurve().getTailPoint();
@@ -384,9 +381,9 @@ public class Path2D {
         }
         return TrajectoryGenerator.generateTrajectory(controlVectors, config);
     }
-    public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
-        TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration);
-        config.setReversed(m_mirrored);
-        return generateTrajectoryAdvanced(config);
-    }
+//    public Trajectory generateTrajectory(Double maxVelocity, Double maxAcceleration) {
+//        TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration);
+//        config.setReversed(m_mirrored);
+//        return generateTrajectoryAdvanced(config);
+//    }
 }
