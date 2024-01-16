@@ -1,20 +1,13 @@
 package org.team2471.frc.lib.actuators
 
-import com.ctre.phoenix.ErrorCode
-import com.ctre.phoenix.ParamEnum
-import com.ctre.phoenix.motion.MotionProfileStatus
-import com.ctre.phoenix.motion.TrajectoryPoint
-import com.ctre.phoenix.motorcontrol.*
-import com.ctre.phoenix.motorcontrol.ControlMode
-import com.ctre.phoenix.motorcontrol.can.BaseTalon
-import com.ctre.phoenix.sensors.CANCoder
+import com.ctre.phoenix6.hardware.core.CoreTalonFX
 import com.revrobotics.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
 const val TICKS_PER_REVOLUTION = 42.0
 
-class SparkMaxWrapper (deviceNumber : Int) : IMotorController {
+class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
     var positionSetpoint: Double = 0.0
     var velocitySetPoint: Double = 0.0
     val maxRPM = 5700.0
