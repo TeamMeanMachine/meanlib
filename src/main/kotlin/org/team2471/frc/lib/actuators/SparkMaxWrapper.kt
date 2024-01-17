@@ -35,11 +35,8 @@ class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
     val hasErrors: Boolean
         get() = _motorController.faults > 0
 
-    val inverted: Boolean
-        get() = _motorController.inverted
-
     fun follow(followerID: CoreTalonFX) {
-        _motorController.follow((followerID as SparkMaxWrapper)._motorController, inverted != followerID.inverted)
+        _motorController.follow((followerID as SparkMaxWrapper)._motorController, getInverted() != followerID.getInverted())
     }
 
     fun getSelectedSensorPosition(): Double {
