@@ -4,11 +4,9 @@ import com.ctre.phoenix6.configs.*
 import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.hardware.core.CoreTalonFX
-import com.ctre.phoenix6.signals.ControlModeValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
-import edu.wpi.first.wpilibj.DutyCycle
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.radians
 
@@ -269,7 +267,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setRawOffset(offset: Double) {  //untested
         when (motorController) {
             is SparkMaxWrapper -> {
-                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
+                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition()).toInt()
                 println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
             is TalonFX -> {
@@ -492,7 +490,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             when (motorController) {
 //                is CTRETalonSRX -> motorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs)'
                 is TalonFX -> motorController.configurator.apply(FeedbackConfigs().withFeedbackSensorSource(feedbackDevice), timeoutMs * 1000.0)
-                is SparkMaxWrapper -> motorController.configSelectedFeedbackSensor(feedbackDevice, 0, timeoutMs * 1000)
             }
         }
 
