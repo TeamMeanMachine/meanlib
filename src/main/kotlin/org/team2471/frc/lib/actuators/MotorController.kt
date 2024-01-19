@@ -181,8 +181,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle
      */
-    fun setPositionSetpoint(position: Double) = //untested
+    fun setPositionSetpoint(position: Double) { //untested
         motorController.setControl(PositionDutyCycle((position / feedbackCoefficient) - rawOffset))
+    }
 
     /**
      * Sets the closed-loop position setpoint with a specified [feedForward] value.
@@ -367,6 +368,20 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             motorConfig.Inverted = invertedValue
             it.configurator.apply(motorConfig)
         }
+        fun inverted(invert: Boolean) = allMotorControllers {//I am very doubtful this will work
+            if (invert) {
+                val config = MotorOutputConfigs()
+                it.configurator.refresh(config) //.refresh populates the passed in config??
+                config.Inverted = when (config.Inverted) {
+                    InvertedValue.CounterClockwise_Positive -> InvertedValue.Clockwise_Positive
+                    InvertedValue.Clockwise_Positive -> InvertedValue.CounterClockwise_Positive
+                    else -> config.Inverted
+                }
+                it.configurator.apply(config)
+            } else {
+                it.configurator.apply(MotorOutputConfigs())
+            }
+        }
 
         /**
          * Sets whether the motor followers should be inverted relative to the main motor.
@@ -379,6 +394,21 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             val motorConfig = MotorOutputConfigs()
             motorConfig.Inverted = invertedValue
             it.configurator.apply(motorConfig)
+        }
+
+        fun followersInverted(invert: Boolean) = allFollowers {//I am very doubtful this will work
+            if (invert) {
+                val config = MotorOutputConfigs()
+                it.configurator.refresh(config) //.refresh populates the passed in config??
+                config.Inverted = when (config.Inverted) {
+                    InvertedValue.CounterClockwise_Positive -> InvertedValue.Clockwise_Positive
+                    InvertedValue.Clockwise_Positive -> InvertedValue.CounterClockwise_Positive
+                    else -> config.Inverted
+                }
+                it.configurator.apply(config)
+            } else {
+                it.configurator.apply(MotorOutputConfigs())
+            }
         }
 
         /**
