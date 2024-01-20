@@ -106,7 +106,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var position: Double //untested
         get() = (motorController.rotorPosition.value.radians.asDegrees + rawOffset) * feedbackCoefficient //untested
         set(value) {
-            motorController.setPosition((value / feedbackCoefficient), 0.0) //untested
+            motorController.setPosition((value / feedbackCoefficient), 0.050) //untested
         }
 
     var analogPosition: Double
@@ -149,7 +149,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.configurator.apply(MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast)) //untested
         }
 
-        motorController.setPosition(0.0, 0.0) //untested
+        motorController.setPosition(0.0, 0.050) //untested
     }
 
 //    fun hasfaults() {
@@ -275,6 +275,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setRawOffset(offset: Double) {  //untested
         when (motorController) {
             is SparkMaxWrapper -> {
+                println("before offset")
                 rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition()).toInt()
                 println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }

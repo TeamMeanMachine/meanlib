@@ -18,14 +18,14 @@ class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
     val maxRPM = 5700.0
     val canID = deviceNumber
 
-    private val _motorController = CANSparkMax(deviceNumber, CANSparkMaxLowLevel.MotorType.kBrushless ).apply {
+    private val _motorController = CANSparkMax(deviceNumber, CANSparkLowLevel.MotorType.kBrushless ).apply {
         restoreFactoryDefaults()
     
         //println("encoder value2: " + enc.position + "; id: " + deviceNumber + "-----------------------------------")
     }
 
     val analogPosition: Double
-        get() = _motorController.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute).position //might not work 2024 wpilib 1/8/2024
+        get() = _motorController.getAnalog(SparkAnalogSensor.Mode.kAbsolute).position //might not work 2024 wpilib 1/8/2024
 
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65
@@ -45,8 +45,8 @@ class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
 
     fun setNeutralMode(neutralMode: NeutralModeValue?) {
         when (neutralMode) {
-            NeutralModeValue.Brake -> _motorController.idleMode = CANSparkMax.IdleMode.kBrake
-            NeutralModeValue.Coast -> _motorController.idleMode = CANSparkMax.IdleMode.kCoast
+            NeutralModeValue.Brake -> _motorController.idleMode = CANSparkBase.IdleMode.kBrake
+            NeutralModeValue.Coast -> _motorController.idleMode = CANSparkBase.IdleMode.kCoast
             else -> {}
         }
     }
@@ -94,12 +94,12 @@ class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
         }
 
 //      set reference point of
-        _motorController.pidController.setReference(velocitySetPoint, CANSparkMax.ControlType.kVelocity, 0, request.FeedForward)
+        _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity, 0, request.FeedForward)
         return StatusCode.OK
     }
     override fun setControl(request: PositionDutyCycle): StatusCode {//untested
         positionSetpoint = request.Position / TICKS_PER_REVOLUTION
-        _motorController.pidController.setReference(positionSetpoint, CANSparkMax.ControlType.kPosition, 0, request.FeedForward)
+        _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, request.FeedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
         return StatusCode.OK
     }
