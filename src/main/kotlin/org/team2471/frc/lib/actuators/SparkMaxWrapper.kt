@@ -40,7 +40,7 @@ class SparkMaxWrapper (deviceNumber : Int) : CoreTalonFX(deviceNumber) {
     }
 
     fun getSelectedSensorPosition(): Double {
-        return (_motorController.getEncoder().position * TICKS_PER_REVOLUTION)
+        return (_motorController.encoder.position * TICKS_PER_REVOLUTION)
     }
 
     fun setNeutralMode(neutralMode: NeutralModeValue?) {
