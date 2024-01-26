@@ -40,6 +40,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private val motorController = internalMotorController(deviceId)
 
     private var feedbackCoefficient = 1.0
+        set(value) {
+            motorController.feedbackCoefficient = value
+            field = value
+        }
     private var rawOffset = 0
 
     val followers = followerIds.map { id -> //untested
@@ -129,7 +133,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.coastMode()
         }
 
-        motorController.setPosition(0.0) //untested
+        motorController.setSelectedSensorPosition(0.0, 0) //untested
     }
 
 //    fun hasfaults() {
@@ -252,7 +256,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         when (motorController) {
             is SparkMaxWrapper -> {
                 println("before offset")
-                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition()).toInt()
+                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
                 println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
             }
             is TalonFXWrapper -> {
@@ -285,7 +289,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getConfigurator
      * @see MotorOutputConfigs.withNeutralMode
      */
-    fun brakeMode() = allMotorControllers { it.breakMode() } //untested
+    fun brakeMode() = allMotorControllers { it.brakeMode() } //untested
 
     /**
      * Enables coast mode.
@@ -367,7 +371,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see MotorOutputConfigs.withNeutralMode
          */
-        fun brakeMode() = allMotorControllers { it.breakMode() } //untested
+        fun brakeMode() = allMotorControllers { it.brakeMode() } //untested
 
         /**
          * Enables coast mode.
@@ -479,15 +483,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
         inner class PIDConfigScope(private val slot: Int) {
             fun p(p: Double) { //untested
-                motorController.p(p)
+                motorController.config_kP(p / feedbackCoefficient * 1024.0)
             }
 
             fun i(i: Double) { //untested
-                motorController.i(i)
+                motorController.config_kI(i / feedbackCoefficient * 1024.0)
             }
 
             fun d(d: Double) { //untested
-                motorController.d(d)
+                motorController.config_kD(d / feedbackCoefficient * 1024.0)
             }
         }
     }

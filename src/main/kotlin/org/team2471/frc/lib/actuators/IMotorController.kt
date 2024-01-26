@@ -8,15 +8,17 @@ interface IMotorController {
     val deviceID: Int
     val motorOutputPercent: Double
     val current: Double
+    var feedbackCoefficient: Double
+    var timeoutMs: Int
+    var rawOffset: Int
 
-    fun breakMode()
+    fun brakeMode()
     fun burnFlash()
     fun closedLoopRamp(secondsToFull: Double)
     fun coastMode()
-    fun config_kP(value: Double)
-    fun config_kD(value: Double)
-    fun config_kF(value: Double)
-    fun config_kI(value: Double)
+    fun config_kP(p: Double)
+    fun config_kD(d: Double)
+    fun config_kI(i: Double)
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean)
     fun follow(followerID: IMotorController)
@@ -35,15 +37,11 @@ interface IMotorController {
     fun setMotionMagicSetpoint(position: Double, feedForward: Double)
     fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
-    fun setPosition(sensorPos: Double)
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)
     fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int)
     fun setStatusFramePeriod(periodMs: Int, timeoutMs: Int = 100)
-    fun stop()
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
-    fun p(p: Double)
-    fun i(i: Double)
-    fun d(d: Double)
+    fun stop()
 }
