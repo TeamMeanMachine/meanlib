@@ -6,7 +6,7 @@ import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOP
 import static org.team2471.frc.lib.motion_profiling.Path2DPoint.SlopeMethod.SLOPE_SMOOTH;
 
 public class Path2DPoint {
-    public static transient final int STEPS = 600;
+    public static final int STEPS = 600;
 
     private Vector2 m_position;
     private Vector2 m_prevAngleAndMagnitude = new Vector2(0, 1.9);
@@ -383,7 +383,7 @@ public class Path2DPoint {
         m_yCoeff = new CubicCoefficients1D(pointay, pointby, pointcy, pointdy);
 
         // calculate segment length
-        Vector2 pos = new Vector2(0, 0);
+        Vector2 pos;
         m_xCoeff.initFD(STEPS);
         m_yCoeff.initFD(STEPS);
         m_segmentLength = 0;

@@ -294,19 +294,16 @@ public class MotionCurve {
 
     public MotionKey storeValue(double time, double value) {
         MotionKey motionKey = createMotionKey(time);
-        if (motionKey != null)
-            motionKey.setValue(value);
+        motionKey.setValue(value);
         return motionKey;
     }
 
     public MotionKey storeValueSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
         MotionKey motionKey = createMotionKey(time);
-        if (motionKey != null) {
-            motionKey.setValue(value);
-            Vector2 angleAndMagnitude = new Vector2(Math.atan(slope), magnitude);
-            motionKey.setNextAngleAndMagnitude(angleAndMagnitude);
-            motionKey.setPrevAngleAndMagnitude(angleAndMagnitude);
-        }
+        motionKey.setValue(value);
+        Vector2 angleAndMagnitude = new Vector2(Math.atan(slope), magnitude);
+        motionKey.setNextAngleAndMagnitude(angleAndMagnitude);
+        motionKey.setPrevAngleAndMagnitude(angleAndMagnitude);
         motionKey.setMarkBeginOrEndKeysToZeroSlope(false);
         return motionKey;
     }

@@ -7,7 +7,7 @@ package com.team254.lib.util;
  */
 public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, InverseInterpolable<InterpolatingDouble>,
         Comparable<InterpolatingDouble> {
-    public Double value = 0.0;
+    public Double value;
 
     public InterpolatingDouble(Double val) {
         value = val;
@@ -15,7 +15,7 @@ public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, I
 
     @Override
     public InterpolatingDouble interpolate(InterpolatingDouble other, double x) {
-        Double dydx = other.value - value;
+        double dydx = other.value - value;
         Double searchY = dydx * x + value;
         return new InterpolatingDouble(searchY);
     }
@@ -35,13 +35,7 @@ public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, I
 
     @Override
     public int compareTo(InterpolatingDouble other) {
-        if (other.value < value) {
-            return 1;
-        } else if (other.value > value) {
-            return -1;
-        } else {
-            return 0;
-        }
+        return value.compareTo(other.value);
     }
 
 }

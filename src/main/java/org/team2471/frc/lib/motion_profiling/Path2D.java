@@ -254,11 +254,11 @@ public class Path2D {
     }
 
     public String toString() {
-        String rValue = "";
+        StringBuilder rValue = new StringBuilder();
         for (Path2DPoint point = get_xyCurve().getHeadPoint(); point != null; point = point.getNextPoint()) {
-            rValue += point.toString();
+            rValue.append(point);
         }
-        return rValue;
+        return rValue.toString();
     }
 
     public Path2DCurve getXYCurve() {
