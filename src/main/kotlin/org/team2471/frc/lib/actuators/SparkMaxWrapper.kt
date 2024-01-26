@@ -28,6 +28,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65
     fun init() {
+        println("creating spark")
     }
 
     val hasErrors: Boolean

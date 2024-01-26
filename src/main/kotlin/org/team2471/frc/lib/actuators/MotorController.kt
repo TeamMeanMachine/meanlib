@@ -26,7 +26,9 @@ data class FalconID(val value: Int, val canBus:String? = null) : MotorController
 
 private fun internalMotorController(id: MotorControllerID): IMotorController = when (id) {
     is TalonID -> TalonFXWrapper(id.value)
-    is FalconID -> if (id.canBus != null) TalonFXWrapper(id.value,id.canBus) else TalonFXWrapper(id.value)
+    is FalconID -> {
+        println("making falcon")
+        if (id.canBus != null) TalonFXWrapper(id.value,id.canBus) else TalonFXWrapper(id.value)}
     is SparkMaxID -> SparkMaxWrapper(id.value)
 }
 
@@ -128,6 +130,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         get() = motorController.getClosedLoopError(0) * feedbackCoefficient
 
     init {
+        println("creating motorController $motorController")
         allMotorControllers {
             it.restoreFactoryDefaults()
             it.coastMode()

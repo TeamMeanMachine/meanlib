@@ -9,7 +9,7 @@ import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
-class TalonFXWrapper(override val deviceID: Int, canBus: String? = null) : IMotorController {
+class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorController {
     private val _motorController = TalonFX(deviceID, canBus).apply { restoreFactoryDefaults() }
 
     override var feedbackCoefficient = 1.0
@@ -22,6 +22,11 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = null) : IMoto
         get() = _motorController.dutyCycle.value
     override val current: Double
         get() = _motorController.statorCurrent.value
+
+
+    init {
+        println("creating talon")
+    }
 
     override fun brakeMode() {
         _motorController.configurator.apply(MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
@@ -63,7 +68,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = null) : IMoto
     }
 
     override fun follow(followerID: IMotorController) {
-        (followerID as TalonFX).setControl(StrictFollower(_motorController.deviceID)) //untested
+        _motorController.setControl(StrictFollower(followerID.deviceID))
     }
 
     override fun getClosedLoopError(pidIdx: Int): Double =
