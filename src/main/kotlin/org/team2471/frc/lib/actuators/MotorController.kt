@@ -136,16 +136,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.setSelectedSensorPosition(0.0, 0) //untested
     }
 
-//    fun hasfaults() {
-        //return motorController.getFaults()
-//    }
-//    fun getFollowerStatusFramePeriod(frame: StatusFrame, timeoutMs: Int = 100) : Int {
-//        return if (followers.isNotEmpty()) {
-//            followers[0].getStatusFramePeriod(frame, timeoutMs)
-//        } else {
-//            -1
-//        }
-//    }
     fun setStatusFramePeriod(periodHz: Int, timeoutMs: Int = 100) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutMs) } //untested
 
     fun setFollowerStatusFramePeriod(periodHz: Int, timeoutMs: Int = 100) = allFollowers { it.setStatusFramePeriod(periodHz, timeoutMs) } //untested
@@ -161,7 +151,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     /**
      * Sets the closed-loop position setpoint.
      *
-     * @param position the closed-loop positon setpoint
+     * @param position the closed-loop position setpoint
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle
      */
@@ -172,7 +162,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     /**
      * Sets the closed-loop position setpoint with a specified [feedForward] value.
      *
-     * @param position the closed-loop positon setpoint
+     * @param position the closed-loop position setpoint
      * @param feedForward the closed-loop feed forward
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle.withFeedForward

@@ -5,8 +5,6 @@ import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
-import com.revrobotics.CANSparkBase
-import edu.wpi.first.wpilibj.DriverStation
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees

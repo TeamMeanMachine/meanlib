@@ -165,13 +165,13 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         setPositionSetpoint(((setPoint - getSelectedSensorPosition(0).degrees).wrap()).asDegrees)
     }
 
-    override fun config_kP(value: Double) {//untested
-        _motorController.pidController.p = value
+    override fun config_kP(p: Double) {//untested
+        _motorController.pidController.p = p
     }
 
-    override fun config_kD(value: Double) {//untested
-        _motorController.pidController.d = value
-        println("kD=$value")
+    override fun config_kD(d: Double) {//untested
+        _motorController.pidController.d = d
+        println("kD=$d")
     }
 
     override fun getDValue() : Double {
@@ -182,8 +182,8 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         _motorController.pidController.ff = value
     }
 
-    override fun config_kI(value: Double) {//untested
-        _motorController.pidController.i = value
+    override fun config_kI(i: Double) {//untested
+        _motorController.pidController.i = i
     }
 
     override val current: Double
