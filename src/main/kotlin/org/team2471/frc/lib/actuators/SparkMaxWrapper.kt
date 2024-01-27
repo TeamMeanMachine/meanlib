@@ -23,7 +23,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     private val _motorController = CANSparkMax(deviceID, CANSparkLowLevel.MotorType.kBrushless ).apply { restoreFactoryDefaults() }
 
     val analogPosition: Double
-        get() = _motorController.getAnalog(SparkAnalogSensor.Mode.kAbsolute).position //might not work 2024 wpilib 1/8/2024
+        get() = _motorController.getAnalog(SparkAnalogSensor.Mode.kAbsolute).position
 
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65

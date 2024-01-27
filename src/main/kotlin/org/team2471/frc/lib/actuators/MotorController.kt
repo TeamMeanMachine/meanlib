@@ -26,9 +26,7 @@ data class FalconID(val value: Int, val canBus:String? = null) : MotorController
 
 private fun internalMotorController(id: MotorControllerID): IMotorController = when (id) {
     is TalonID -> TalonFXWrapper(id.value)
-    is FalconID -> {
-        println("making falcon")
-        if (id.canBus != null) TalonFXWrapper(id.value,id.canBus) else TalonFXWrapper(id.value)}
+    is FalconID -> if (id.canBus != null) TalonFXWrapper(id.value,id.canBus) else TalonFXWrapper(id.value)
     is SparkMaxID -> SparkMaxWrapper(id.value)
 }
 
@@ -246,34 +244,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         followers.forEach(body)
     }
     fun setRawOffset(offset: Double) {  //untested
-        when (motorController) {
-            is SparkMaxWrapper -> {
-                println("before offset")
-                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
-                println("Motor Angle: ${motorController.analogAngle}; rawOffset: $rawOffset. Hi.")
-            }
-            is TalonFXWrapper -> {
-//                println("Set raw offset to $rawOffset")
-                rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
-
-            }
-            else -> {
-                println("NO SET RAW OFFSET FOR THIS MOTOR CONTROLLER")
-            }
-        }
+        rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
     }
 
     fun restoreFactoryDefaults() {
-        when (motorController) {
-            is SparkMaxWrapper -> {
-                motorController.restoreFactoryDefaults()
-                println("before followers defaults restored")
-//                (followers[0] as SparkMaxWrapper).restoreFactoryDefaults()
-//                println("followers factory defaults restored")
-            } else -> {
-                println("restoreFactoryDefaults does not work for this motor controller.")
-            }
-        }
+        motorController.restoreFactoryDefaults()
     }
 
     /**
@@ -315,12 +290,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             }
 
         // burns spark max to retain settings between boot
-        fun burnSettings(){
-            if (motorController is SparkMaxWrapper) {
-                motorController.burnFlash()
-            } else {
-                println("This motor controller does not burn settings.")
-            }
+        fun burnSettings() {
+            motorController.burnFlash()
         }
 
         /**
