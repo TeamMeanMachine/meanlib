@@ -54,15 +54,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     val motorID = deviceId
 
-//    /**
-//     * The selected PID slot.
-//     */
-//    var pidSlot: Int = 0
-//        set(value) {
-//            motorController.selectProfileSlot(value, 0)
-//            field = value
-//        }
-
     /**
      * The current being drawn by this [MotorController].
      * Note that this will only work if the [MotorController] is a Talon FX or Spark Max. Attempts
@@ -128,7 +119,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         get() = motorController.getClosedLoopError(0) * feedbackCoefficient
 
     init {
-        println("creating motorController $motorController")
         allMotorControllers {
             it.restoreFactoryDefaults()
             it.coastMode()
@@ -137,9 +127,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.setSelectedSensorPosition(0.0, 0) //untested
     }
 
-    fun setStatusFramePeriod(periodHz: Int, timeoutMs: Int = 100) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutMs) } //untested
+    fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) } //untested
 
-    fun setFollowerStatusFramePeriod(periodHz: Int, timeoutMs: Int = 100) = allFollowers { it.setStatusFramePeriod(periodHz, timeoutMs) } //untested
+    fun setFollowerStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allFollowers { it.setStatusFramePeriod(periodHz, timeoutSec) } //untested
     /**
      * Sets the percent output.
      *

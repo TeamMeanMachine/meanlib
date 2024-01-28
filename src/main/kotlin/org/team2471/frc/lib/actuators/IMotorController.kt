@@ -9,7 +9,7 @@ interface IMotorController {
     val motorOutputPercent: Double
     val current: Double
     var feedbackCoefficient: Double
-    var timeoutMs: Int
+    var timeoutSec: Double
     var rawOffset: Int
 
     fun brakeMode()
@@ -40,7 +40,7 @@ interface IMotorController {
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)
     fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int)
-    fun setStatusFramePeriod(periodMs: Int, timeoutMs: Int = 100)
+    fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05)
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
     fun stop()

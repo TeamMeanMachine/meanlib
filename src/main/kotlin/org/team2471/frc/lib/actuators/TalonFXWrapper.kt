@@ -9,11 +9,12 @@ import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
-class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorController {
+class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorController {
     private val _motorController = TalonFX(deviceID, canBus).apply { restoreFactoryDefaults() }
+    private lateinit var config: TalonFXConfiguration
 
     override var feedbackCoefficient = 1.0
-    override var timeoutMs = 100
+    override var timeoutSec = 0.050
     override var rawOffset = 0
 
     val rawPosition: Double
@@ -25,46 +26,60 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorC
 
 
     init {
-        println("creating talon")
+        println("Creating TalonFX motor  ID: $deviceID  canBus: $canBus")
+        _motorController.configurator.refresh(config)
     }
 
     override fun brakeMode() {
-        _motorController.configurator.apply(MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake
+        applyConfig()
     }
 
     override fun burnFlash() {
-        println("no")
+        println("burnFlash not supported by TalonFX")
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
-        _motorController.configurator.apply(ClosedLoopRampsConfigs().withDutyCycleClosedLoopRampPeriod(secondsToFull)) //untested
+        config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = secondsToFull
+        config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = secondsToFull
+        config.ClosedLoopRamps.TorqueClosedLoopRampPeriod = secondsToFull
+        applyConfig()
     }
 
     override fun coastMode() {
-        _motorController.configurator.apply(MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast))
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast
+        applyConfig()
     }
 
     override fun config_kP(p: Double) {
-        _motorController.configurator.apply(Slot0Configs().withKP(p / feedbackCoefficient * 1024.0), timeoutMs * 1000.0)
+        config.Slot0.kP = p
+        applyConfig()
     }
 
     override fun config_kD(d: Double) {
-        _motorController.configurator.apply(Slot0Configs().withKP(d / feedbackCoefficient * 1024.0), timeoutMs * 1000.0)
+        config.Slot0.kD = d
+        applyConfig()
     }
 
     override fun config_kI(i: Double) {
-        _motorController.configurator.apply(Slot0Configs().withKI(i / feedbackCoefficient * 1024.0), timeoutMs * 1000.0)
+        config.Slot0.kI = i / feedbackCoefficient * 1024.0
+        applyConfig()
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
-        _motorController.configurator.apply(CurrentLimitsConfigs().withSupplyCurrentLimit(continuousLimit.toDouble()).withStatorCurrentLimit(peakLimit.toDouble()).withSupplyTimeThreshold(peakDuration.toDouble()).withStatorCurrentLimitEnable(true).withSupplyCurrentLimitEnable(true))
-
+        config.CurrentLimits.apply {
+            SupplyCurrentLimit = continuousLimit.toDouble()
+            StatorCurrentLimit = peakLimit.toDouble()
+            SupplyTimeThreshold = peakDuration.toDouble()
+            StatorCurrentLimitEnable = true
+            SupplyCurrentLimitEnable = true
+        }
+        applyConfig()
     }
 
     override fun encoderContinuous(continuous: Boolean) {
-        val config = ClosedLoopGeneralConfigs()
-        config.ContinuousWrap = continuous
-        _motorController.configurator.apply(config)
+        config.ClosedLoopGeneral.ContinuousWrap = continuous
+        applyConfig()
     }
 
     override fun follow(followerID: IMotorController) {
@@ -75,38 +90,38 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorC
         _motorController.closedLoopError.value * feedbackCoefficient
 
     override fun getDValue(): Double {
-        println("no")
+        println("getDValue not supported by TalonFX")
         return 0.0
     }
 
-    override fun getInverted(): Boolean { //untested
-        val config = MotorOutputConfigs()
-        _motorController.configurator.refresh(config)
-        return config.Inverted == InvertedValue.Clockwise_Positive
-    }
+    override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
     override fun getSelectedSensorPosition(pidIdx: Int): Double  = _motorController.position.value
 
     override fun getSelectedSensorVelocity(pidIdx: Int): Double = _motorController.velocity.value
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        val srxAcceleration = (acceleration / feedbackCoefficient / 10.0)
-        val srxCruisingVelocity = (cruisingVelocity / feedbackCoefficient / 10.0)
-        _motorController.configurator.apply(MotionMagicConfigs().withMotionMagicAcceleration(srxAcceleration), 0.020)
-        _motorController.configurator.apply(MotionMagicConfigs().withMotionMagicCruiseVelocity(srxCruisingVelocity), 0.020)
+        config.MotionMagic.MotionMagicAcceleration = acceleration / feedbackCoefficient / 10.0
+        config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / feedbackCoefficient / 10.0
+        applyConfig()
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
-        _motorController.configurator.apply(OpenLoopRampsConfigs().withDutyCycleOpenLoopRampPeriod(secondsToFull), timeoutMs * 1000.0) //untested
+        config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = secondsToFull
+        config.OpenLoopRamps.VoltageOpenLoopRampPeriod = secondsToFull
+        config.OpenLoopRamps.TorqueOpenLoopRampPeriod = secondsToFull
+        applyConfig()
     }
 
     override fun peakOutputRange(range: DoubleRange) {
-        _motorController.configurator.apply(MotorOutputConfigs().withPeakForwardDutyCycle(range.start), timeoutMs * 1000.0) //untested
-        _motorController.configurator.apply(MotorOutputConfigs().withPeakReverseDutyCycle(range.endInclusive), timeoutMs * 1000.0)
+        config.MotorOutput.PeakForwardDutyCycle = range.start
+        config.MotorOutput.PeakReverseDutyCycle = range.endInclusive
+        applyConfig()
     }
 
     override fun restoreFactoryDefaults() {
-        println("no")
+        config = TalonFXConfiguration()
+        applyConfig(config)
     }
 
     override fun setAngle(setPoint: Angle) {
@@ -114,18 +129,10 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorC
     }
 
     override fun setInverted(invert: Boolean) {
-        if (invert) {
-            val config = MotorOutputConfigs()
-            _motorController.configurator.refresh(config) //.refresh populates the passed in config??
-            config.Inverted = when (config.Inverted) {
-                InvertedValue.CounterClockwise_Positive -> InvertedValue.Clockwise_Positive
-                InvertedValue.Clockwise_Positive -> InvertedValue.CounterClockwise_Positive
-                else -> config.Inverted
-            }
-            _motorController.configurator.apply(config)
-        } else {
-            _motorController.configurator.apply(MotorOutputConfigs())
-        }
+        config.MotorOutput.Inverted =
+            if (invert) InvertedValue.CounterClockwise_Positive
+            else InvertedValue.Clockwise_Positive
+        applyConfig()
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
@@ -163,8 +170,8 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorC
         _motorController.setPosition(sensorPos)
     }
 
-    override fun setStatusFramePeriod(periodMs: Int, timeoutMs: Int) {
-        _motorController.position.setUpdateFrequency(periodMs.toDouble(), timeoutMs.toDouble())
+    override fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double) {
+        _motorController.position.setUpdateFrequency(periodMs.toDouble(), timeoutSec)
     }
 
     override fun setVelocitySetpoint(velocity: Double) {
@@ -179,6 +186,10 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String? = "") : IMotorC
 
     override fun stop() {
         _motorController.setControl(NeutralOut())
+    }
+
+    private fun applyConfig(newConfig: TalonFXConfiguration = config) {
+        _motorController.configurator.apply(newConfig, timeoutSec)
     }
 
 
