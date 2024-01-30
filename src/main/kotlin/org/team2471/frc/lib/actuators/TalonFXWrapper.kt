@@ -10,8 +10,8 @@ import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
 class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorController {
-    private val _motorController = TalonFX(deviceID, canBus).apply { restoreFactoryDefaults() }
-    private lateinit var config: TalonFXConfiguration
+    private val _motorController = TalonFX(deviceID, canBus)
+    private var config: TalonFXConfiguration = TalonFXConfiguration()
 
     override var feedbackCoefficient = 1.0
     override var timeoutSec = 0.050
