@@ -44,7 +44,16 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     }
 
     override fun getSelectedSensorPosition(pidIdx: Int): Double {
-        return (_motorController.encoder.position * TICKS_PER_REVOLUTION)
+        return (_motorController.encoder.position/* * TICKS_PER_REVOLUTION*/)
+    }
+
+    /**
+     * Attempt to get encoder plugged directly into SparkMAX. Has not worked yet.
+     *
+     * @param countPerRev the counts per revolution of the alternate encoder. Can be found in the Alternate Encoder SparkMAX guide
+     */
+    fun getAlternateEncoder(countPerRev: Int): Double {
+        return _motorController.getAlternateEncoder(SparkMaxAlternateEncoder.Type.kQuadrature, countPerRev).position
     }
 
     override fun setNeutralMode(neutralMode: NeutralModeValue?) {

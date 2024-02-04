@@ -207,6 +207,21 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.setMotionMagicSetpoint((position / feedbackCoefficient) - rawOffset, feedForward)
 
     /**
+     * Attempt to get encoder plugged directly into SparkMAX. Has not worked yet.
+     *
+     * @param countPerRev the counts per revolution of the alternate encoder. Can be found in the Alternate Encoder SparkMAX guide
+     */
+    fun getAlternateEncoder(countPerRev: Int): Double {
+            return when (motorController) {
+                is SparkMaxWrapper -> {
+//                    println("In alternate encoder spark max")
+                    motorController.getAlternateEncoder(countPerRev)
+                }
+                else -> throw IllegalStateException("No alternate encoder from this motor controller")
+            }
+        }
+
+    /**
      * Neutralizes the motor output.
      *
      * @see CoreTalonFX.setControl
