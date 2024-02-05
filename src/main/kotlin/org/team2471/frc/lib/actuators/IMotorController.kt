@@ -8,7 +8,6 @@ interface IMotorController {
     val deviceID: Int
     val motorOutputPercent: Double
     val current: Double
-    var feedbackCoefficient: Double
     var timeoutSec: Double
     var rawOffset: Int
 
@@ -22,11 +21,11 @@ interface IMotorController {
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean)
     fun follow(followerID: IMotorController)
-    fun getClosedLoopError(pidIdx: Int): Double
+    fun getClosedLoopError(): Double
     fun getDValue() : Double
     fun getInverted(): Boolean
-    fun getSelectedSensorPosition(pidIdx: Int): Double
-    fun getSelectedSensorVelocity(pidIdx: Int): Double
+    fun getSelectedSensorPosition(): Double
+    fun getSelectedSensorVelocity(): Double
     fun motionMagic(acceleration: Double, cruisingVelocity: Double)
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange)
@@ -39,7 +38,7 @@ interface IMotorController {
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)
-    fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int)
+    fun setSelectedSensorPosition(sensorPos: Double)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05)
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)

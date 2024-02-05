@@ -14,7 +14,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     val maxRPM = 5700.0
     val canID = deviceID
 
-    override var feedbackCoefficient: Double = 1.0
+//    override var feedbackCoefficient: Double = 1.0
     override var timeoutSec: Double = 0.050
     override var rawOffset: Int = 0
     override val motorOutputPercent: Double
@@ -39,11 +39,11 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         _motorController.follow((followerID as SparkMaxWrapper)._motorController, getInverted() != followerID.getInverted())
     }
 
-    override fun getClosedLoopError(pidIdx: Int): Double {
-        return (positionSetpoint * TICKS_PER_REVOLUTION) - getSelectedSensorPosition(pidIdx)
+    override fun getClosedLoopError(): Double {
+        return (positionSetpoint * TICKS_PER_REVOLUTION) - getSelectedSensorPosition()
     }
 
-    override fun getSelectedSensorPosition(pidIdx: Int): Double {
+    override fun getSelectedSensorPosition(): Double {
         return (_motorController.encoder.position/* * TICKS_PER_REVOLUTION*/)
     }
 
@@ -93,7 +93,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         return _motorController.inverted
     }
 
-    override fun getSelectedSensorVelocity(pidIdx: Int): Double {//untested
+    override fun getSelectedSensorVelocity(): Double {//untested
         return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
     }
 
@@ -109,7 +109,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         println("peakOutputRange not supported by SparkMax")
     }
 
-    override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int) {//untested
+    override fun setSelectedSensorPosition(sensorPos: Double) {//untested
         _motorController.encoder.position = sensorPos
     }
 
@@ -166,7 +166,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     }
 
     override fun setAngle(setPoint : Angle){//untested
-        setPositionSetpoint(((setPoint - getSelectedSensorPosition(0).degrees).wrap()).asDegrees)
+        setPositionSetpoint(((setPoint - getSelectedSensorPosition().degrees).wrap()).asDegrees)
     }
 
     override fun config_kP(p: Double) {//untested

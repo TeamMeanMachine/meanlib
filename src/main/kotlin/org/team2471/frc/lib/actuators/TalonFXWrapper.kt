@@ -13,7 +13,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     private val _motorController = TalonFX(deviceID, canBus)
     private var config: TalonFXConfiguration = TalonFXConfiguration()
 
-    override var feedbackCoefficient = 1.0
+//    override var feedbackCoefficient = 1.0
     override var timeoutSec = 0.050
     override var rawOffset = 0
 
@@ -62,7 +62,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun config_kI(i: Double) {
-        config.Slot0.kI = i / feedbackCoefficient * 1024.0
+        config.Slot0.kI = i * 1024.0
         applyConfig()
     }
 
@@ -86,8 +86,8 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         _motorController.setControl(StrictFollower(followerID.deviceID))
     }
 
-    override fun getClosedLoopError(pidIdx: Int): Double =
-        _motorController.closedLoopError.value * feedbackCoefficient
+    override fun getClosedLoopError(): Double =
+        _motorController.closedLoopError.value
 
     override fun getDValue(): Double {
         println("getDValue not supported by TalonFX")
@@ -96,13 +96,13 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(pidIdx: Int): Double  = _motorController.position.value
+    override fun getSelectedSensorPosition(): Double  = _motorController.position.value
 
-    override fun getSelectedSensorVelocity(pidIdx: Int): Double = _motorController.velocity.value
+    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        config.MotionMagic.MotionMagicAcceleration = acceleration / feedbackCoefficient / 10.0
-        config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / feedbackCoefficient / 10.0
+        config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
+        config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
         applyConfig()
     }
 
@@ -125,7 +125,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setAngle(setPoint: Angle) {
-        _motorController.setControl(PositionDutyCycle((setPoint - getSelectedSensorPosition(0).degrees).wrap().asDegrees))
+        _motorController.setControl(PositionDutyCycle((setPoint - getSelectedSensorPosition().degrees).wrap().asDegrees))
     }
 
     override fun setInverted(invert: Boolean) {
@@ -136,13 +136,13 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        println("magicSetpoint = " + (position / feedbackCoefficient - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
-        _motorController.setControl(MotionMagicDutyCycle(position / feedbackCoefficient - rawOffset))
+        println("magicSetpoint = " + (position - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: /*feedbackCoefficient.toInt()*/ rawOffset: $rawOffset")
+        _motorController.setControl(MotionMagicDutyCycle(position - rawOffset))
     }
 
     override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
         _motorController.setControl(
-            MotionMagicDutyCycle((position / feedbackCoefficient) - rawOffset).withFeedForward(feedForward)
+            MotionMagicDutyCycle((position) - rawOffset).withFeedForward(feedForward)
         )
     }
 
@@ -159,14 +159,14 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setPositionSetpoint(position: Double) {
-        _motorController.setControl(PositionDutyCycle((position / feedbackCoefficient) - rawOffset))
+        _motorController.setControl(PositionDutyCycle(position).withSlot(0))
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
-        _motorController.setControl(PositionDutyCycle((position / feedbackCoefficient) - rawOffset).withFeedForward(feedForward))
+        _motorController.setControl(PositionDutyCycle(position).withFeedForward(feedForward).withSlot(0))
     }
 
-    override fun setSelectedSensorPosition(sensorPos: Double, pidIdx: Int) {
+    override fun setSelectedSensorPosition(sensorPos: Double) {
         _motorController.setPosition(sensorPos)
     }
 
@@ -175,12 +175,12 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setVelocitySetpoint(velocity: Double) {
-        _motorController.setControl(VelocityDutyCycle(velocity / feedbackCoefficient / 10.0))
+        _motorController.setControl(VelocityDutyCycle(velocity / 10.0).withSlot(0))
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         _motorController.setControl(
-            VelocityDutyCycle(velocity / feedbackCoefficient / 10.0).withFeedForward(feedForward)
+            VelocityDutyCycle(velocity / 10.0).withFeedForward(feedForward).withSlot(0)
         )
     }
 

@@ -41,7 +41,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     private var feedbackCoefficient = 1.0
         set(value) {
-            motorController.feedbackCoefficient = value
+//            motorController.feedbackCoefficient = value
             field = value
         }
     private var rawOffset = 0
@@ -69,7 +69,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getRotorVelocity
      */
     val velocity: Double //untested
-        get() = motorController.getSelectedSensorVelocity(0) * feedbackCoefficient * 10.0 //untested
+        get() = motorController.getSelectedSensorVelocity() * feedbackCoefficient * 10.0 //untested
 
     /**
      * The output percent, from 0 to 1.
@@ -85,9 +85,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getRotorPosition
      */
     var position: Double //untested
-        get() = (motorController.getSelectedSensorPosition(0) + rawOffset) * feedbackCoefficient //untested
+        get() = (motorController.getSelectedSensorPosition() + rawOffset) * feedbackCoefficient //untested
         set(value) {
-            motorController.setSelectedSensorPosition((value / feedbackCoefficient), 0) //untested
+            motorController.setSelectedSensorPosition((value / feedbackCoefficient)) //untested
         }
 
     var analogPosition: Double
@@ -110,13 +110,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getRotorPosition
      */
     val rawPosition: Double //untested
-        get() = motorController.getSelectedSensorPosition(0) //untested
+        get() = motorController.getSelectedSensorPosition() //untested
 
     /**
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
      */
     val closedLoopError: Double //untested
-        get() = motorController.getClosedLoopError(0) * feedbackCoefficient
+        get() = motorController.getClosedLoopError() * feedbackCoefficient
 
     init {
         allMotorControllers {
@@ -124,7 +124,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.coastMode()
         }
 
-        motorController.setSelectedSensorPosition(0.0, 0) //untested
+        motorController.setSelectedSensorPosition(0.0) //untested
     }
 
     fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) } //untested
@@ -147,6 +147,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see PositionDutyCycle
      */
     fun setPositionSetpoint(position: Double) { //untested
+//        println("setting position setpoint ${(position / feedbackCoefficient) - rawOffset}")
         motorController.setPositionSetpoint((position / feedbackCoefficient) - rawOffset)
     }
 
@@ -249,7 +250,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         followers.forEach(body)
     }
     fun setRawOffset(offset: Double) {  //untested
-        rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition(0)).toInt()
+        rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition()).toInt()
     }
 
     fun restoreFactoryDefaults() {
