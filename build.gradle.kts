@@ -39,6 +39,7 @@ dependencies {
     implementation("edu.wpi.first.hal:hal-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion")
+    implementation("edu.wpi.first.wpiunits:wpiunits-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
