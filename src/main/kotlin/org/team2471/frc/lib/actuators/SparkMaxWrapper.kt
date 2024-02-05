@@ -6,7 +6,7 @@ import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
-const val TICKS_PER_REVOLUTION = 42.0
+const val TICKS_PER_REVOLUTION = 1.0
 
 class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     private var positionSetpoint: Double = 0.0

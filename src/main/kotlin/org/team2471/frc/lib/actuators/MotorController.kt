@@ -44,7 +44,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 //            motorController.feedbackCoefficient = value
             field = value
         }
-    private var rawOffset = 0
+    private var rawOffset = 0.0
 
     val followers = followerIds.map { id -> //untested
         val follower = internalMotorController(id)
@@ -250,7 +250,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         followers.forEach(body)
     }
     fun setRawOffset(offset: Double) {  //untested
-        rawOffset = ((offset / feedbackCoefficient).toInt() - motorController.getSelectedSensorPosition()).toInt()
+        rawOffset = ((offset / feedbackCoefficient) - motorController.getSelectedSensorPosition())
     }
 
     fun restoreFactoryDefaults() {
@@ -405,7 +405,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          *
          * @param ticks the number of ticks offset to add to the selected sensor
          */
-        fun rawOffset(ticks: Int) {
+        fun rawOffset(ticks: Double) {
             rawOffset = ticks
         }
 
