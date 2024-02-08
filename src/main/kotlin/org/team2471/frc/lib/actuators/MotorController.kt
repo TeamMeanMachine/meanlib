@@ -1,6 +1,8 @@
 package org.team2471.frc.lib.actuators
 
 import org.team2471.frc.lib.math.DoubleRange
+import org.team2471.frc.lib.math.round
+import kotlin.math.roundToInt
 
 sealed class MotorControllerID
 /**
@@ -45,6 +47,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             field = value
         }
     private var rawOffset = 0.0
+
+    var GetRawOffset: Double = 0.0
+        get() = rawOffset
 
     val followers = followerIds.map { id -> //untested
         val follower = internalMotorController(id)
@@ -105,12 +110,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         set(value) {}
 
     /**
-     * The raw position of the selected sensor in encoder ticks.
-     *
-     * @see CoreTalonFX.getRotorPosition
+     * The raw position of the selected sensor in revolutions for Sparks at least.
      */
-    val rawPosition: Double //untested
-        get() = motorController.getSelectedSensorPosition() //untested
+    val rawPosition: Double
+        get() = motorController.getSelectedSensorPosition()
 
     /**
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
@@ -251,6 +254,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }
     fun setRawOffset(offset: Double) {  //untested
         rawOffset = ((offset / feedbackCoefficient) - motorController.getSelectedSensorPosition())
+        println("offset: $offset fc: ${feedbackCoefficient.roundToInt()} pos: ${motorController.getSelectedSensorPosition()}")
     }
 
     fun restoreFactoryDefaults() {
