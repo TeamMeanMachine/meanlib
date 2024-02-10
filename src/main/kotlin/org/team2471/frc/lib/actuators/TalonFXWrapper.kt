@@ -180,7 +180,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         _motorController.setControl(
-            VelocityDutyCycle(velocity / 10.0).withFeedForward(feedForward).withSlot(0)
+            VelocityDutyCycle(velocity).withFeedForward(feedForward).withSlot(0)
         )
     }
 

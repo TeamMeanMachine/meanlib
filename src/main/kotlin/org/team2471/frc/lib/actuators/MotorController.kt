@@ -74,7 +74,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getRotorVelocity
      */
     val velocity: Double //untested
-        get() = motorController.getSelectedSensorVelocity() * feedbackCoefficient * 10.0 //untested
+        get() = motorController.getSelectedSensorVelocity() //* feedbackCoefficient * 10.0 //untested
 
     /**
      * The output percent, from 0 to 1.
@@ -186,7 +186,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see VelocityDutyCycle.withFeedForward
      */
     fun setVelocitySetpoint(velocity: Double, feedForward: Double) = //untested
-        motorController.setVelocitySetpoint(velocity / feedbackCoefficient / 10.0, feedForward)
+        motorController.setVelocitySetpoint(velocity / feedbackCoefficient /*/ 10.0 from s to 100ms*/, feedForward / feedbackCoefficient)
 
     /**
      * Sets the closed-loop Motion Magic position setpoint.
