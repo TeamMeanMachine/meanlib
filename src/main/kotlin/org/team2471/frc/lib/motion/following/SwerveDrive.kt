@@ -131,7 +131,7 @@ fun SwerveDrive.drive(
     var requestedTranslation = Vector2(translation.x, translation.y)
 
     if (fieldCentric) {
-        requestedTranslation = requestedTranslation.rotateDegrees(heading.asDegrees)
+        requestedTranslation = requestedTranslation.rotateDegrees(-heading.asDegrees)
         // Correct for moving while spinning
         requestedTranslation = requestedTranslation.rotateDegrees(turn * parameters.kMoveWhileSpin)
         //println("Correction: ${turn * 60.0}")

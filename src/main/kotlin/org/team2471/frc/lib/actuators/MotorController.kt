@@ -74,7 +74,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getRotorVelocity
      */
     val velocity: Double //untested
-        get() = motorController.getSelectedSensorVelocity() //* feedbackCoefficient * 10.0 //untested
+        get() = motorController.getSelectedSensorVelocity() * feedbackCoefficient
 
     /**
      * The output percent, from 0 to 1.
