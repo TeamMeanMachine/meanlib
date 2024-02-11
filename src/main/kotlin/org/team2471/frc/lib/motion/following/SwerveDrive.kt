@@ -375,7 +375,7 @@ suspend fun SwerveDrive.driveAlongPath(
         var translationControlField =
             pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
 
-        translationControlField = Vector2(translationControlField.y, -translationControlField.x)
+        translationControlField = Vector2(-translationControlField.y, translationControlField.x)
 
 
         // heading error
