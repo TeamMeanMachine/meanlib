@@ -234,6 +234,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.stop()
     }
 
+
+    fun setP(p: Double) {
+        motorController.config_kP(p / feedbackCoefficient * 1024.0)
+    }
+    fun setD(d: Double) {
+        motorController.config_kD(d / feedbackCoefficient * 1024.0)
+    }
+
+
     /**
      * Configures the [CoreTalonFX] with instructions specified in the [body].
      *
