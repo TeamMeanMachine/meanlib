@@ -372,8 +372,11 @@ suspend fun SwerveDrive.driveAlongPath(
         val deltaPositionError = positionError - prevPositionError
         prevPositionError = positionError
 
-        val translationControlField =
+        var translationControlField =
             pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
+
+        translationControlField = Vector2(translationControlField.y, -translationControlField.x)
+
 
         // heading error
         val robotHeading = heading
