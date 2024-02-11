@@ -376,6 +376,7 @@ suspend fun SwerveDrive.driveAlongPath(
             pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
 
         translationControlField = Vector2(-translationControlField.y, translationControlField.x)
+//        println("translationControlField = $translationControlField")
 
 
         // heading error
@@ -397,7 +398,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
         // send it
-        drive(translationControlField, turnControl, true)
+        drive(translationControlField, 0.0, true)
 
         // are we done yet?
         if (t >= path.durationWithSpeed + extraTime || earlyExit()) {
