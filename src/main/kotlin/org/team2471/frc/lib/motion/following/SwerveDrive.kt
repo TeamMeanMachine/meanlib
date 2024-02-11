@@ -250,8 +250,8 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 }
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, kTread: Double): Vector2 {
-    val angleInFieldSpace = heading + angle
-    val wheelDir = Vector2(angleInFieldSpace.sin(), angleInFieldSpace.cos())
+    val angleInFieldSpace = heading - angle
+    val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
     var signedWheelDir = wheelDir
 
     val holdDistance = currDistance
