@@ -178,9 +178,11 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         println("kD=$d")
     }
 
-    override fun getDValue() : Double {
-        return _motorController.pidController.d
-    }
+    override fun getDValue() : Double = _motorController.pidController.d
+
+    override fun getIValue(): Double = _motorController.pidController.i
+
+    override fun getPValue(): Double = _motorController.pidController.p
 
     fun config_kF(value: Double) {//untested
         _motorController.pidController.ff = value

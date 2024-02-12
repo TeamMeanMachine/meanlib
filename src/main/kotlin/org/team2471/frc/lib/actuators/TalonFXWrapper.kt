@@ -86,13 +86,13 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         _motorController.setControl(StrictFollower(followerID.deviceID))
     }
 
-    override fun getClosedLoopError(): Double =
-        _motorController.closedLoopError.value
+    override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
 
-    override fun getDValue(): Double {
-        println("getDValue not supported by TalonFX")
-        return 0.0
-    }
+    override fun getPValue(): Double = config.Slot0.kP
+
+    override fun getDValue(): Double = config.Slot0.kD
+
+    override fun getIValue(): Double = config.Slot0.kI
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 

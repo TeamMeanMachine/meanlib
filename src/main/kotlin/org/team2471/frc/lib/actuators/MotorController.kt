@@ -242,6 +242,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         motorController.config_kD(d / feedbackCoefficient * 1024.0)
     }
 
+    fun getP() : Double = motorController.getPValue() * feedbackCoefficient / 1024.0
+    fun getD(): Double = motorController.getDValue() * feedbackCoefficient / 1024.0
+    fun getI(): Double = motorController.getIValue() * feedbackCoefficient / 1024.0
+
 
     /**
      * Configures the [CoreTalonFX] with instructions specified in the [body].

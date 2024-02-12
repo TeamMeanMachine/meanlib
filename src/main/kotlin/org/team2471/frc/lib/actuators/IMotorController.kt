@@ -22,7 +22,9 @@ interface IMotorController {
     fun encoderContinuous(continuous: Boolean)
     fun follow(followerID: IMotorController)
     fun getClosedLoopError(): Double
+    fun getPValue(): Double
     fun getDValue() : Double
+    fun getIValue(): Double
     fun getInverted(): Boolean
     fun getSelectedSensorPosition(): Double
     fun getSelectedSensorVelocity(): Double
