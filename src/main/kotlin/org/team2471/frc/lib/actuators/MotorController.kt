@@ -267,7 +267,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }
     fun setRawOffset(offset: Double) {  //untested
         rawOffset = ((offset / feedbackCoefficient) - motorController.getSelectedSensorPosition())
-        println("offset: $offset fc: ${feedbackCoefficient.roundToInt()} pos: ${motorController.getSelectedSensorPosition()}")
+//        println("offset: $offset fc: ${feedbackCoefficient.roundToInt()} pos: ${motorController.getSelectedSensorPosition()}")
     }
 
     fun restoreFactoryDefaults() {
