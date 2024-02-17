@@ -148,7 +148,7 @@ fun SwerveDrive.drive(
     if (requestedTranslation.length > 0.01 && requestedTurn.absoluteValue < 0.01) {
         if (teleopClosedLoopHeading) {  // closed loop on heading position
             // heading error
-            val headingError = (headingSetpoint - heading).wrap()
+            val headingError = (heading - headingSetpoint).wrap()
 //            println("Heading Error: $headingError.")
 
             // heading d
@@ -259,7 +259,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (deltaDistance < 0.0) {
         signedWheelDir *= -1.0
     }
-    deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * ((1.0 - kTread) + (kTread * treadWear))
+    deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
     //println("wheelDir = ${wheelDir} carpetFlow = ${carpetFlow} dot = ${wheelDir.dot(carpetFlow)}")
 //    if (deltaDistance.absoluteValue < 1.0) {
         prevDistance = holdDistance
