@@ -398,7 +398,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
         // send it
-        drive(translationControlField, 0.0, true)
+        drive(translationControlField, turnControl, true)
 
         // are we done yet?
         if (t >= path.durationWithSpeed + extraTime || earlyExit()) {
