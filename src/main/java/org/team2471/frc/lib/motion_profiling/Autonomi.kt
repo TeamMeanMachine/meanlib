@@ -42,6 +42,7 @@ class Autonomi {
         val json = toJsonString()
         val table = networkTableInstance.getTable("PathVisualizer")
         val entry = table.getEntry("Autonomi")
+        println("publishing autonomi to Networktables. Length of string: ${json.length}")
         entry.setString(json)
     }
 
