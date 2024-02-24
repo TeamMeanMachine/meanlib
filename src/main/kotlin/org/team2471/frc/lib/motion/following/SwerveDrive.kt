@@ -360,8 +360,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
-        val currentPosition = position
-        val positionError = pathPosition - position
+        val currentPosition = position//combinedPosition
+        val positionError = pathPosition - currentPosition
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
