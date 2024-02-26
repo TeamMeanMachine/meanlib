@@ -280,7 +280,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getConfigurator
      * @see MotorOutputConfigs.withNeutralMode
      */
-    fun brakeMode() = allMotorControllers { it.brakeMode() } //untested
+    fun brakeMode() = allMotorControllers { it.brakeMode() }
 
     /**
      * Enables coast mode.
@@ -288,7 +288,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.getConfigurator
      * @see MotorOutputConfigs.withNeutralMode
      */
-    fun coastMode() = allMotorControllers { it.coastMode() } //untested
+    fun coastMode() = allMotorControllers { it.coastMode() }
 
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
