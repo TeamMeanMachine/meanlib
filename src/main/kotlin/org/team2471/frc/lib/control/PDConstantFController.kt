@@ -19,7 +19,6 @@ class PDConstantFController(var p: Double, var d: Double, var f: Double) {
             d = newD
             f = newF
             println("New newP: $p ;  New newD: $d ;  New newF: $f")
-
         }
     }
 
@@ -30,13 +29,6 @@ class PDConstantFController(var p: Double, var d: Double, var f: Double) {
      * @return the system output
      */
     fun update(error: Double): Double {
-////        val time = Timer.getFPGATimestamp()
-//
-////        val dt = time - lastTime
-//        val deltaError = (error - lastError) // dt
-//        lastError = error
-////        lastTime = time
-
         val deltaError = (error - lastError)
         lastError = error
 
