@@ -14,7 +14,7 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val angleAsDegrees: Double get() = Math.toDegrees(Math.atan2(x, y))
 
     override fun toString(): String {
-        return "(${round(x, 1)}, ${round(y, 1)})"
+        return "(${round(x, 7)}, ${round(y, 7)})"
     }
 
     fun rotateRadians(radians: Double): Vector2 {
