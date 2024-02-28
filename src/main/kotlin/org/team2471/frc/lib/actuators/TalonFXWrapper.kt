@@ -155,7 +155,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setPercentOutput(percent: Double) {
-        _motorController.setControl(DutyCycleOut(percent))
+        _motorController.setControl(DutyCycleOut(percent).withEnableFOC(true))
     }
 
     override fun setPositionSetpoint(position: Double) {
