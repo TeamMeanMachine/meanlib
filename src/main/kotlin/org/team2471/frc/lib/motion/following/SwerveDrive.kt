@@ -30,7 +30,7 @@ interface SwerveDrive {
     var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
-    val combinedPosition: Vector2
+    var combinedPosition: Vector2
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
@@ -336,6 +336,7 @@ suspend fun SwerveDrive.driveAlongPath(
     if (resetOdometry) {
         println("Position = $position")
         resetOdometry()
+        combinedPosition = position
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
@@ -383,7 +384,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val robotHeading = heading
         val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (robotHeading - pathHeading).wrap()
-        //println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
+//        println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
@@ -396,6 +397,7 @@ suspend fun SwerveDrive.driveAlongPath(
         actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x, currentPosition.y, robotHeading.asDegrees))
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+//        println("Turn Control: $turnControl")
 
         // send it
         drive(translationControlField, turnControl, true)
