@@ -2,7 +2,6 @@ package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
 import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.radians
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -50,6 +49,8 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     fun mirrorXAxis() = Vector2(-x, y)
 
     fun mirrorYAxis() = Vector2(x, -y)
+
+    fun reflectAcrossField(middle: Double = 26.135) = Vector2(middle * 2 - x, y)
 
     fun distance(other: Vector2) = Math.hypot(x - other.x, y - other.y)
 

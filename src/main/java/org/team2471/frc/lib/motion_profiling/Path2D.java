@@ -43,6 +43,7 @@ public class Path2D {
 //    private double trackWidth = 25.0 / 12.0;
 //    private double scrubFactor = 1.12;
     private boolean m_mirrored = false;
+    private boolean m_reflected = false;
 
     private transient Autonomous autonomous;
 
@@ -196,6 +197,8 @@ public class Path2D {
         //System.out.println("ease: " + ease + "Total Distance: " + totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
+        if (isReflected())
+            rValue = rValue.reflectAcrossField(26.135);
         return rValue;
     }
 
@@ -204,6 +207,8 @@ public class Path2D {
         Vector2 rValue = get_xyCurve().getTangentAtDistance(ease * totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
+        if (isReflected())
+            rValue = rValue.reflectAcrossField(26.135);
         return rValue;
     }
 
@@ -256,6 +261,14 @@ public class Path2D {
 
     public void setMirrored(boolean mirrored) {
         m_mirrored = mirrored;
+    }
+
+    public boolean isReflected() {
+        return m_reflected || (autonomous != null && autonomous.isReflected());
+    }
+
+    public void setReflected(boolean reflected) {
+        m_reflected = reflected;
     }
 
     public String toString() {
@@ -352,7 +365,10 @@ public class Path2D {
         if (isMirrored())
             return -m_headingCurve.getValue(time);
         else
-            return m_headingCurve.getValue(time);
+            if (isReflected())
+                return m_headingCurve.getValue(time) + 180.0;
+            else
+                return m_headingCurve.getValue(time);
     }
     private double[] getTrajectoryDerivative(Boolean isX, Path2DPoint currPoint){
         double val0 = isX ? currPoint.getPosition().getX() : currPoint.getPosition().getY();

@@ -10,6 +10,7 @@ public class Autonomous {
     public Map<String, Path2D> paths = new HashMap<>();
 
     private boolean m_mirrored = false;
+    private boolean m_reflected = false;
 
     public Autonomous(String name) {
         this.name = name;
@@ -41,5 +42,13 @@ public class Autonomous {
 
     public void setMirrored(boolean m_mirrored) {
         this.m_mirrored = m_mirrored;
+    }
+
+    public boolean isReflected() {
+        return m_reflected;
+    }
+
+    public void setReflected(boolean m_reflected) {
+        this.m_reflected = m_reflected;
     }
 }

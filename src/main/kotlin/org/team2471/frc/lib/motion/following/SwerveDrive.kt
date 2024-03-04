@@ -322,7 +322,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
     val gson = Gson()
 
-    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}")
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         resetHeading()
@@ -427,7 +427,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     getStrafe: () -> Double,
     earlyExit: () -> Boolean
 ) {
-    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}")
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}")
     if (resetOdometry) {
         println("Position = $position Heading = $heading")
         resetOdometry()
