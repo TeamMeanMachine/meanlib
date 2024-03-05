@@ -366,7 +366,7 @@ public class Path2D {
             return -m_headingCurve.getValue(time);
         else
             if (isReflected())
-                return m_headingCurve.getValue(time) + 180.0;
+                return m_headingCurve.getValue(time) - 180.0;
             else
                 return m_headingCurve.getValue(time);
     }
