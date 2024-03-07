@@ -207,8 +207,9 @@ public class Path2D {
         Vector2 rValue = get_xyCurve().getTangentAtDistance(ease * totalDistance);
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
-        if (isReflected())
-            rValue = rValue.reflectAcrossField(26.135);
+        if (isReflected()) {
+            rValue = rValue.reflectAcrossField(26.135); //new Vector2(-rValue.component1(), rValue.component2());
+        }
         return rValue;
     }
 
@@ -365,8 +366,9 @@ public class Path2D {
         if (isMirrored())
             return -m_headingCurve.getValue(time);
         else
-            if (isReflected())
-                return m_headingCurve.getValue(time) - 180.0;
+            if (isReflected()) {
+                return 180 - m_headingCurve.getValue(time);
+            }
             else
                 return m_headingCurve.getValue(time);
     }
