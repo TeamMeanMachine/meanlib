@@ -317,8 +317,8 @@ suspend fun SwerveDrive.driveAlongPath(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    earlyExit: () -> Boolean = {false},
-    headingOverride: () -> Angle? = {null}
+    headingOverride: () -> Angle? = {null},
+    earlyExit: () -> Boolean = {false}
     ) {
 
     val gson = Gson()
