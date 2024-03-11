@@ -317,17 +317,19 @@ suspend fun SwerveDrive.driveAlongPath(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    earlyExit: () -> Boolean = {false}
+    earlyExit: () -> Boolean = {false},
+    headingOverride: () -> Angle? = {null}
     ) {
 
     val gson = Gson()
 
-    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}")
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}, headingOverride ${headingOverride.invoke() != null}")
     if (inResetGyro ?: resetOdometry) {
+        val hOverride = headingOverride.invoke()
         println("Heading = $heading")
         resetHeading()
-        heading = path.headingCurve.getValue(0.0).degrees
-        if(parameters.alignRobotToPath) {
+        heading = hOverride ?: path.headingCurve.getValue(0.0).degrees
+        if(parameters.alignRobotToPath && hOverride == null) {
             heading += path.getTangent(0.0).angle
         }
         println("After Reset Heading = $heading")
@@ -382,7 +384,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // heading error
         val robotHeading = heading
-        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val pathHeading = headingOverride.invoke() ?: path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
 
