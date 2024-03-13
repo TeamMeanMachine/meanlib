@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Pose2d
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.radians
 import java.math.BigDecimal
