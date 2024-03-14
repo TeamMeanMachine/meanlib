@@ -318,14 +318,14 @@ suspend fun SwerveDrive.driveAlongPath(
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
     headingOverride: () -> Angle? = {null},
-    earlyExit: () -> Boolean = {false}
+    earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
 
     val gson = Gson()
 
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}, headingOverride ${headingOverride.invoke() != null}")
     if (inResetGyro ?: resetOdometry) {
-        val hOverride = headingOverride.invoke()
+        val hOverride = headingOverride()
         println("Heading = $heading")
         resetHeading()
         heading = hOverride ?: path.headingCurve.getValue(0.0).degrees
@@ -384,7 +384,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // heading error
         val robotHeading = heading
-        val pathHeading = headingOverride.invoke() ?: path.getAbsoluteHeadingDegreesAt(t).degrees
+        val pathHeading = headingOverride() ?: path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
 
@@ -405,7 +405,11 @@ suspend fun SwerveDrive.driveAlongPath(
         drive(translationControlField, turnControl, true)
 
         // are we done yet?
-        if (t >= path.durationWithSpeed + extraTime || earlyExit()) {
+        if (t >= path.durationWithSpeed + extraTime) {
+            stop()
+        }
+        if (earlyExit(t / path.durationWithSpeed)) {
+            println("early exiting path. time: $t  duration: ${path.durationWithSpeed}")
             stop()
         }
         prevTime = t
