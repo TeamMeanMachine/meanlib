@@ -316,6 +316,7 @@ suspend fun SwerveDrive.driveAlongPath(
     path: Path2D,
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
+    usePosition: Boolean = true,
     inResetGyro: Boolean? = null,
     headingOverride: () -> Angle? = {null},
     earlyExit: (percentComplete: Double) -> Boolean = {false}
@@ -340,7 +341,11 @@ suspend fun SwerveDrive.driveAlongPath(
         odometryReset()
 
         // set to the numbers required for the start of the path
-        combinedPosition = path.getPosition(0.0)
+        if (usePosition) {
+            position = path.getPosition(0.0)
+        } else {
+            combinedPosition = path.getPosition(0.0)
+        }
 
         resetOdom()
         println("After Reset Position = $position")
@@ -363,7 +368,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
-        val currentPosition = combinedPosition
+        val currentPosition = if (usePosition) position else combinedPosition
         val positionError = pathPosition - currentPosition
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
