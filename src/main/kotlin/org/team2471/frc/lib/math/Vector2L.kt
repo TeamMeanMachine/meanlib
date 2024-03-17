@@ -63,6 +63,13 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
         y = Y
     }
 
+    fun coerceIn(otherMin: Vector2L, otherMax: Vector2L) {
+        set(
+            this.x.asInches.coerceIn(otherMin.x.asInches, otherMax.x.asInches).inches,
+            this.y.asInches.coerceIn(otherMin.y.asInches, otherMax.y.asInches).inches
+        )
+    }
+
     override fun interpolate(other: Vector2L, x: Double): Vector2L {
         return when {
             x <= 0.0 -> this
