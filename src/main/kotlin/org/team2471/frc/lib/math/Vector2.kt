@@ -51,7 +51,7 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
 
     fun mirrorYAxis() = Vector2(x, -y)
 
-    fun reflectAcrossField(middle: Double = 26.135) = Vector2(middle * 2 - x, y)
+    fun reflectAcrossField(middle: Double = 27.135) = Vector2(middle * 2 - x, y)
 
     fun distance(other: Vector2) = Math.hypot(x - other.x, y - other.y)
 

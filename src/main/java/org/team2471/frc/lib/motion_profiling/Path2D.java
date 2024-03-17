@@ -198,7 +198,7 @@ public class Path2D {
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         if (isReflected())
-            rValue = rValue.reflectAcrossField(26.135);
+            rValue = rValue.reflectAcrossField(27.135);
         return rValue;
     }
 
@@ -208,7 +208,7 @@ public class Path2D {
         if (isMirrored())
             rValue = rValue.mirrorXAxis();
         if (isReflected()) {
-            rValue = rValue.reflectAcrossField(26.135); //new Vector2(-rValue.component1(), rValue.component2());
+            rValue = rValue.reflectAcrossField(27.135); //new Vector2(-rValue.component1(), rValue.component2());
         }
         return rValue;
     }

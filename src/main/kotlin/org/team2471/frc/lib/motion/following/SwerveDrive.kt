@@ -329,7 +329,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val hOverride = headingOverride()
         println("Heading = $heading")
         resetHeading()
-        heading = hOverride ?: path.headingCurve.getValue(0.0).degrees
+        heading = hOverride ?: path.getAbsoluteHeadingDegreesAt(0.0).degrees //path.headingCurve.getValue(0.0).degrees
         if(parameters.alignRobotToPath && hOverride == null) {
             heading += path.getTangent(0.0).angle
         }
