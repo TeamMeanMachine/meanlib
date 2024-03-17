@@ -318,6 +318,7 @@ suspend fun SwerveDrive.driveAlongPath(
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
     headingOverride: () -> Angle? = {null},
+    turnOverride: () -> Double? = {null},
     earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
 
@@ -386,7 +387,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val robotHeading = heading
         val pathHeading = headingOverride() ?: path.getAbsoluteHeadingDegreesAt(t).degrees
         val headingError = (robotHeading - pathHeading).wrap()
-//        println("Heading Error: $headingError. Hi. %%%%%%%%%%%%%%%%%%%%%%%%%%")
+//        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
         // heading feed forward
         val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
@@ -402,7 +403,7 @@ suspend fun SwerveDrive.driveAlongPath(
 //        println("Turn Control: $turnControl")
 
         // send it
-        drive(translationControlField, turnControl, true)
+        drive(translationControlField, turnOverride() ?: turnControl, true)
 
         // are we done yet?
         if (t >= path.durationWithSpeed + extraTime) {
