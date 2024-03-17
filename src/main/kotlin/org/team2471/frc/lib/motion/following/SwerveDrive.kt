@@ -297,7 +297,7 @@ fun SwerveDrive.recordOdometry() {
     prevPose = pose
 }
 
-fun SwerveDrive.resetOdometry() {
+fun SwerveDrive.odometryReset() {
     for (module in modules) {
         module.prevDistance = 0.0
     }
@@ -337,11 +337,11 @@ suspend fun SwerveDrive.driveAlongPath(
     
     if (resetOdometry) {
         println("Position = $position")
-        resetOdometry()
-        combinedPosition = position
+        odometryReset()
 
         // set to the numbers required for the start of the path
-        position = path.getPosition(0.0)
+        combinedPosition = path.getPosition(0.0)
+
         resetOdom()
         println("After Reset Position = $position")
     }
@@ -436,7 +436,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}")
     if (resetOdometry) {
         println("Position = $position Heading = $heading")
-        resetOdometry()
+        odometryReset()
         resetHeading()
 
         // set to the numbers required for the start of the path
@@ -520,7 +520,7 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
 //    var angleErrorAccum = 0.0.degrees
     try {
-        resetOdometry()
+        odometryReset()
         resetHeading()
         periodic {
            // val t = timer.get()
