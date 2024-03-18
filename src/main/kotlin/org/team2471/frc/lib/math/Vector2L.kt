@@ -2,10 +2,7 @@ package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.networktables.NetworkTableInstance
 import org.team2471.frc.lib.units.*
-import java.math.BigDecimal
-import java.math.RoundingMode
 import kotlin.math.*
 
 data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
@@ -109,7 +106,10 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     }
     this.setAdvantagePoses(pos, rot.toTypedArray())
 }
+fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
+    setAdvantagePoses(pos.toTypedArray())
 
+}
 // untested
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
     require(pos.size == rot.size)
