@@ -35,6 +35,7 @@ interface SwerveDrive {
     var position: Vector2
     var combinedPosition: Vector2L
     var velocity: Vector2
+    var deltaPos: Vector2L
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
     val carpetFlow: Vector2
@@ -289,6 +290,7 @@ fun SwerveDrive.recordOdometry() {
     translation /= modules.size.toDouble()
 
     position += Vector2(translation.x, translation.y)
+    deltaPos = Vector2L(translation.x.feet, translation.y.feet)
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
@@ -345,6 +347,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // set to the numbers required for the start of the path
         combinedPosition = path.getPosition(0.0).feet
+        position = combinedPosition.asFeet
+        prevPosition = position
 
         resetOdom()
         println("After Reset Position = $position")
