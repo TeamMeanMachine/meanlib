@@ -10,6 +10,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asFeet
+import org.team2471.frc.lib.math.feet
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -30,7 +33,7 @@ interface SwerveDrive {
     var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
-    var combinedPosition: Vector2
+    var combinedPosition: Vector2L
     var velocity: Vector2
     var robotPivot: Vector2 // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
@@ -341,7 +344,7 @@ suspend fun SwerveDrive.driveAlongPath(
         odometryReset()
 
         // set to the numbers required for the start of the path
-        combinedPosition = path.getPosition(0.0)
+        combinedPosition = path.getPosition(0.0).feet
 
         resetOdom()
         println("After Reset Position = $position")
@@ -365,7 +368,7 @@ suspend fun SwerveDrive.driveAlongPath(
         // position error
         val pathPosition = path.getPosition(t)
         val currentPosition = combinedPosition
-        val positionError = pathPosition - currentPosition
+        val positionError = pathPosition - currentPosition.asFeet
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
@@ -397,7 +400,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val deltaHeadingError = headingError - prevHeadingError
         prevHeadingError = headingError
 
-        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x, currentPosition.y, robotHeading.asDegrees))
+        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x.asFeet, currentPosition.y.asFeet, robotHeading.asDegrees))
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 //        println("Turn Control: $turnControl")
