@@ -345,6 +345,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // set to the numbers required for the start of the path
         combinedPosition = path.getPosition(0.0).feet
+        position = combinedPosition.asFeet
+        prevPosition = position
 
         resetOdom()
         println("After Reset Position = $position")
