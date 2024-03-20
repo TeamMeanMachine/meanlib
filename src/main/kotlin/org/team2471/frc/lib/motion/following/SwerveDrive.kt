@@ -127,7 +127,7 @@ fun SwerveDrive.drive(
     translation: Vector2,
     turn: Double,
     fieldCentric: Boolean = true,
-    teleopClosedLoopHeading: Boolean = false,
+    closedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0,
     maxChangeInOneFrame: Double = 0.0)
@@ -150,7 +150,7 @@ fun SwerveDrive.drive(
     requestedTurn *= demoSpeed
 
     if (requestedTranslation.length > 0.01 && requestedTurn.absoluteValue < 0.01) {
-        if (teleopClosedLoopHeading) {  // closed loop on heading position
+        if (closedLoopHeading) {  // closed loop on heading position
             // heading error
             val headingError = (heading - headingSetpoint).wrap()
 //            println("Heading Error: $headingError.")
