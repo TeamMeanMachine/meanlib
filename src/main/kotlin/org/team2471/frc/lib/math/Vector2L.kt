@@ -108,7 +108,6 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
 }
 fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
     setAdvantagePoses(pos.toTypedArray())
-
 }
 // untested
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
