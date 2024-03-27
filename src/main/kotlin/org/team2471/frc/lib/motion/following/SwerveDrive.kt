@@ -327,7 +327,7 @@ suspend fun SwerveDrive.driveAlongPath(
     earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
 
-    val gson = Gson()
+//    val gson = Gson()
 
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}, turnOverride ${turnOverride() != null}")
     if (inResetGyro ?: resetOdometry) {
@@ -339,7 +339,7 @@ suspend fun SwerveDrive.driveAlongPath(
         }
         println("After Reset Heading = $heading")
     }
-    
+
     if (resetOdometry) {
         println("Position = $position")
         odometryReset()
@@ -353,7 +353,7 @@ suspend fun SwerveDrive.driveAlongPath(
         println("After Reset Position = $position")
     }
 
-    plannedPath.setString(gson.toJson(path))
+//    plannedPath.setString(gson.toJson(path))
 
 
     var prevTime = 0.0

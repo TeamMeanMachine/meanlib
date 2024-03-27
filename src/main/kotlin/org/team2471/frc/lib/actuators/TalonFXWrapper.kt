@@ -189,7 +189,7 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
-        _motorController.configurator.apply(newConfig, timeoutSec)
+        _motorController.configurator.apply(newConfig)
     }
 
 
