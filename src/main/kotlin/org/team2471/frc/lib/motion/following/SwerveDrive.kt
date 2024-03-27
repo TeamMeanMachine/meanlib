@@ -327,9 +327,9 @@ suspend fun SwerveDrive.driveAlongPath(
     earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
 
-    val gson = Gson()
+//    val gson = Gson()
 
-    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, travel direction: ${path.robotDirection}, mirrored: ${path.isMirrored}, reflected ${path.isReflected}, turnOverride ${turnOverride() != null}")
+    println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, reflected ${path.isReflected}, turnOverride ${turnOverride() != null}")
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         resetHeading()
@@ -353,7 +353,7 @@ suspend fun SwerveDrive.driveAlongPath(
         println("After Reset Position = $position")
     }
 
-    plannedPath.setString(gson.toJson(path))
+//    plannedPath.setString(gson.toJson(path))
 
 
     var prevTime = 0.0
@@ -403,7 +403,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val deltaHeadingError = headingError - prevHeadingError
         prevHeadingError = headingError
 
-        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x.asFeet, currentPosition.y.asFeet, robotHeading.asDegrees))
+//        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x.asFeet, currentPosition.y.asFeet, robotHeading.asDegrees))
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 //        println("Turn Control: $turnControl")
@@ -427,8 +427,8 @@ suspend fun SwerveDrive.driveAlongPath(
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
-    actualRoute.setDoubleArray(doubleArrayOf())
-    plannedPath.setString("")
+//    actualRoute.setDoubleArray(doubleArrayOf())
+//    plannedPath.setString("")
 }
 
 
