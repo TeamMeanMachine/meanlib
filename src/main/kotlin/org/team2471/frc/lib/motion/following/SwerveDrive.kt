@@ -105,7 +105,7 @@ fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     return if (previousPose == null) {
         null
     } else {
-        SwerveDrive.Pose(currPose.position - previousPose.position, currPose.heading - previousPose.heading)
+        SwerveDrive.Pose(currPose.position - previousPose.position, (currPose.heading - previousPose.heading).wrap())
     }
 }
 
