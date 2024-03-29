@@ -35,7 +35,6 @@ class LimelightCamera(
 
         if (estimatedPose == Vector2L(0.0.meters, 0.0.meters)) return null // estimatedPose returns origin if no tags seen
 
-
         lastGlobalPose = GlobalPose(estimatedPose, poseArray.rotation.z.degrees, 0.1, Timer.getFPGATimestamp())
 
         advantagePoseEntry.setAdvantagePose(estimatedPose, poseArray.rotation.z.degrees)
