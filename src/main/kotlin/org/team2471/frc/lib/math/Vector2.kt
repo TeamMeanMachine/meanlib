@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Translation2d
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.radians
 import java.math.BigDecimal
@@ -78,4 +79,8 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
             else -> Vector2(x * (other.x - this.x) + this.x, x * (other.y - this.y) + this.y)
         }
     }
+}
+
+fun Vector2.toTranslation2d(): Translation2d {
+    return Translation2d(this.x, this.y)
 }

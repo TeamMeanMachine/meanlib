@@ -29,6 +29,7 @@ repositories {
     maven { setUrl("https://plugins.gradle.org/m2/") }
     maven { setUrl("https://maven.ctr-electronics.com/release/") }
     maven { setUrl("https://maven.revrobotics.com/") }
+    maven { setUrl("https://maven.photonvision.org/repository/internal")}
 }
 
 dependencies {
@@ -36,6 +37,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // frc libs
+    implementation("edu.wpi.first.apriltag:apriltag-java:$wpiLibVersion")
     implementation("edu.wpi.first.hal:hal-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion")
@@ -53,6 +55,9 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
     implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     implementation( "org.ejml:ejml-simple:0.41")
+
+    implementation("org.photonvision:photonlib-java:v2024.2.8")
+    implementation("org.photonvision:photontargeting-java:v2024.2.8")
 
 }
 
