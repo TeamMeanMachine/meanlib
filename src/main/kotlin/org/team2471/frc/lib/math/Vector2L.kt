@@ -46,7 +46,7 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
 
     fun mirrorYAxis() = Vector2L(x, -y)
 
-    fun reflectAcrossField(middle: Length = 26.135.feet) = Vector2L(middle * 2.0 - x, y)
+    fun reflectAcrossField(middle: Length = 326.6.inches) = Vector2L(middle * 2.0 - x, y)
 
     fun distance(other: Vector2L) = hypot((x - other.x).asMeters, (y - other.y).asMeters).meters
 
