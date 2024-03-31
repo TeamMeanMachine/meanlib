@@ -14,7 +14,7 @@ import org.team2471.frc.lib.units.*
 import kotlin.math.abs
 import kotlin.math.pow
 
-abstract class Camera(val networkTable: NetworkTable, val name: String) {
+abstract class GenericCamera(val networkTable: NetworkTable, val name: String) {
 
 
     val advantagePoseEntry = networkTable.getEntry("April Advantage Pos $name")
