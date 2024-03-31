@@ -349,7 +349,7 @@ suspend fun SwerveDrive.driveAlongPath(
         position = combinedPosition.asFeet
         prevPosition = position
 
-        resetOdom()
+//        resetOdom()
         println("After Reset Position = $position")
     }
 

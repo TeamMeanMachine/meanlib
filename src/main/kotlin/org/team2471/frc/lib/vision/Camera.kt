@@ -14,7 +14,7 @@ import org.team2471.frc.lib.units.*
 import kotlin.math.abs
 import kotlin.math.pow
 
-abstract class Camera(val networkTable: NetworkTable, val name: String, val robotToCamera: Transform3d) {
+abstract class Camera(val networkTable: NetworkTable, val name: String) {
 
 
     val advantagePoseEntry = networkTable.getEntry("April Advantage Pos $name")
@@ -31,5 +31,5 @@ abstract class Camera(val networkTable: NetworkTable, val name: String, val robo
 
     abstract fun reset()
 
-    abstract fun getEstimatedGlobalPose(referencePose: Pose2d, distStDevCurve: MotionCurve? = null): GlobalPose?
+    abstract fun getEstimatedGlobalPose(): GlobalPose?
 }
