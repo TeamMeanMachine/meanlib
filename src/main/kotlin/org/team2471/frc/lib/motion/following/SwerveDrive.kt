@@ -343,9 +343,11 @@ suspend fun SwerveDrive.driveAlongPath(
     if (resetOdometry) {
         println("Position = $position")
         odometryReset()
+        println("Position after odometryReset = $position")
 
         // set to the numbers required for the start of the path
         combinedPosition = path.getPosition(0.0).feet
+        println("Combined Pos: $combinedPosition")
         position = combinedPosition.asFeet
         prevPosition = position
 
