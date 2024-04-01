@@ -9,10 +9,7 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.asFeet
-import org.team2471.frc.lib.math.feet
+import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
