@@ -361,6 +361,7 @@ suspend fun SwerveDrive.driveAlongPath(
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     var prevPositionError = Vector2(0.0, 0.0)
     prevHeadingError = 0.0.degrees
+    println("entering drive periodic")
     periodic {
         val t = timer.get()
         val dt = t - prevTime
@@ -413,7 +414,7 @@ suspend fun SwerveDrive.driveAlongPath(
             stop()
         }
         if (earlyExit(t / path.durationWithSpeed)) {
-            println("early exiting path. time: $t  duration: ${path.durationWithSpeed}")
+            println("early exiting path. time: $t  duration: ${path.durationWithSpeed} percent complete: ${t / path.durationWithSpeed}")
             stop()
         }
         prevTime = t
@@ -421,6 +422,7 @@ suspend fun SwerveDrive.driveAlongPath(
 //        println("Time=$t Path Position=$pathPosition Position=$position")
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
+    println("at the end of driveAlongPath")
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)

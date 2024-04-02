@@ -79,3 +79,11 @@ fun windRelativeAngles(angle1: Double, angle2: Double): Double {
         angle2
     }
 }
+
+fun interpTo(from: Double, to: Double, speed: Double, dt: Double = 0.02): Double {
+    return from + (to - from) * dt * speed
+}
+
+fun interpTo(from: Vector2, to: Vector2, speed: Double, dt: Double = 0.02): Vector2 {
+    return from + (to - from) * dt * speed
+}
