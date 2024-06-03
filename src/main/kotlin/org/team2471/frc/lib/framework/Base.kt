@@ -169,7 +169,7 @@ abstract class MeanlibRobot : RobotBase() {
     open fun comms() { /* NOOP */ }
 }
 
-private enum class RobotMode {
+enum class RobotMode {
     DISABLED,
     AUTONOMOUS,
     TELEOP,
