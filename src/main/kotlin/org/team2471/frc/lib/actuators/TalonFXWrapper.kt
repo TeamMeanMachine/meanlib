@@ -6,21 +6,30 @@ import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.perSecond
+import org.team2471.frc.lib.units.rotations
 
-class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorController {
+class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
     private var config: TalonFXConfiguration = TalonFXConfiguration()
+    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
-//    override var feedbackCoefficient = 1.0
-    override var timeoutSec = 0.050
-    override var rawOffset = 0
+    private val timeoutSec = 0.050
 
     val rawPosition: Double
         get() = _motorController.position.value
-    override val motorOutputPercent: Double
+    override val outputPercent: Double
         get() = _motorController.dutyCycle.value
+
+    override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
+        inputs.position = _motorController.position.value.rotations
+        inputs.outputPercent = outputPercent
+        inputs.velocity = _motorController.velocity.value.rotations.perSecond
+        inputs.current = current
+
+        this.inputs = inputs
+    }
+
     override val current: Double
         get() = _motorController.statorCurrent.value
 
@@ -33,10 +42,6 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     override fun brakeMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake
         applyConfig()
-    }
-
-    override fun burnFlash() {
-        println("burnFlash not supported by TalonFX")
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
@@ -82,8 +87,8 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         applyConfig()
     }
 
-    override fun follow(followerID: IMotorController) {
-        _motorController.setControl(StrictFollower(followerID.deviceID))
+    override fun follow(followerID: MotorControllerIO) {
+        _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
     }
 
     override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
@@ -124,10 +129,6 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         applyConfig(config)
     }
 
-    override fun setAngle(setPoint: Angle) {
-        _motorController.setControl(PositionDutyCycle((setPoint - getSelectedSensorPosition().degrees).wrap().asDegrees))
-    }
-
     override fun setInverted(invert: Boolean) {
         config.MotorOutput.Inverted =
             if (invert) InvertedValue.CounterClockwise_Positive
@@ -136,13 +137,13 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        println("magicSetpoint = " + (position - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: /*feedbackCoefficient.toInt()*/ rawOffset: $rawOffset")
-        _motorController.setControl(MotionMagicDutyCycle(position - rawOffset))
+        println("magicSetpoint = " + (position) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: /*feedbackCoefficient.toInt()*/")
+        _motorController.setControl(MotionMagicDutyCycle(position))
     }
 
     override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
         _motorController.setControl(
-            MotionMagicDutyCycle((position) - rawOffset).withFeedForward(feedForward)
+            MotionMagicDutyCycle(position).withFeedForward(feedForward)
         )
     }
 

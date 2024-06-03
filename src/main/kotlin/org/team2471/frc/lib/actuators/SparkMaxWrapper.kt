@@ -2,23 +2,29 @@ package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.revrobotics.*
-import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.asRotations
+import org.team2471.frc.lib.units.perMinute
+import org.team2471.frc.lib.units.rotations
 
-const val TICKS_PER_REVOLUTION = 1.0
-
-class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
+class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     private var positionSetpoint: Double = 0.0
     private var velocitySetPoint: Double = 0.0
     val maxRPM = 5700.0
-    val canID = deviceID
 
-//    override var feedbackCoefficient: Double = 1.0
-    override var timeoutSec: Double = 0.050
-    override var rawOffset: Int = 0
-    override val motorOutputPercent: Double
+    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
+
+
+    override val outputPercent: Double
         get() = _motorController.appliedOutput
+
+    override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
+        inputs.position = _motorController.encoder.position.rotations
+        inputs.outputPercent = outputPercent
+        inputs.velocity = _motorController.encoder.velocity.rotations.perMinute
+        inputs.current = current
+
+        this.inputs = inputs
+    }
 
     private val _motorController = CANSparkMax(deviceID, CANSparkLowLevel.MotorType.kBrushless ).apply { restoreFactoryDefaults() }
 
@@ -35,16 +41,16 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         println("Creating Spark motor  ID: $deviceID")
     }
 
-    override fun follow(followerID: IMotorController) {
+    override fun follow(followerID: MotorControllerIO) {
         _motorController.follow((followerID as SparkMaxWrapper)._motorController, getInverted() != followerID.getInverted())
     }
 
     override fun getClosedLoopError(): Double {
-        return (positionSetpoint * TICKS_PER_REVOLUTION) - getSelectedSensorPosition()
+        return positionSetpoint - getSelectedSensorPosition()
     }
 
     override fun getSelectedSensorPosition(): Double {
-        return (_motorController.encoder.position/* * TICKS_PER_REVOLUTION*/)
+        return (inputs.position.asRotations/* * TICKS_PER_REVOLUTION*/)
     }
 
     /**
@@ -81,40 +87,21 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
         _motorController.inverted = invert
     }
 
-    override fun setMotionMagicSetpoint(position: Double) {
-        println("setMotionMagicSetpoint not supported by SparkMax")
-    }
-
-    override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
-        println("setMotionMagicSetpoint not supported by SparkMax")
-    }
-
     override fun getInverted(): Boolean {//untested
         return _motorController.inverted
     }
 
     override fun getSelectedSensorVelocity(): Double {//untested
-        return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
-    }
-
-    override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        println("motionMagic not supported by SparkMax")
+        return inputs.velocity.changePerSecond.asRotations
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
         _motorController.openLoopRampRate = secondsToFull
     }
 
-    override fun peakOutputRange(range: DoubleRange) {
-        println("peakOutputRange not supported by SparkMax")
-    }
 
     override fun setSelectedSensorPosition(sensorPos: Double) {//untested
         _motorController.encoder.position = sensorPos
-    }
-
-    override fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double) {
-        println("setStatusFramePeriod not supported by SparkMax")
     }
 
     override fun setPercentOutput(percent: Double) {//untested
@@ -122,7 +109,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     }
 
     override fun setVelocitySetpoint(velocity: Double) {//untested
-        velocitySetPoint = velocity / TICKS_PER_REVOLUTION * 10.0
+        velocitySetPoint = velocity * 10.0
 
 //      handle out of bounds conditions
         if (velocitySetPoint > maxRPM) {
@@ -136,7 +123,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {//untested
-        velocitySetPoint = velocity / TICKS_PER_REVOLUTION * 10.0
+        velocitySetPoint = velocity * 10.0
 
 //      handle out of bounds conditions
         if (velocitySetPoint > maxRPM) {
@@ -154,19 +141,15 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     }
 
     override fun setPositionSetpoint(position: Double) {//untested
-        positionSetpoint = position / TICKS_PER_REVOLUTION
+        positionSetpoint = position
         _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {//untested
-        positionSetpoint = position / TICKS_PER_REVOLUTION
+        positionSetpoint = position
         _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
-    }
-
-    override fun setAngle(setPoint : Angle){//untested
-        setPositionSetpoint(((setPoint - getSelectedSensorPosition().degrees).wrap()).asDegrees)
     }
 
     override fun config_kP(p: Double) {//untested
@@ -175,7 +158,7 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
 
     override fun config_kD(d: Double) {//untested
         _motorController.pidController.d = d
-        println("kD=$d")
+//        println("kD=$d")
     }
 
     override fun getDValue() : Double = _motorController.pidController.d
@@ -206,9 +189,4 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
         _motorController.setSmartCurrentLimit(peakLimit)
     }
-
-    override fun encoderContinuous(continuous: Boolean) {
-        println("encoderContinuous not supported by SparkMax")
-    }
-
 }

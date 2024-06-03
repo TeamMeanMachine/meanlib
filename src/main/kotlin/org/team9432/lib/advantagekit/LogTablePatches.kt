@@ -9,6 +9,8 @@ import edu.wpi.first.util.struct.Struct
 import edu.wpi.first.util.struct.StructSerializable
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.LogTable.LogValue
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.toRotation2d
 import us.hebi.quickbuf.ProtoMessage
 
 // This is all just to get correct type inference working with kotlin
@@ -59,3 +61,7 @@ fun <T> LogTable.kGet(key: String, struct: Struct<T>, defaultValue: Array<T>): A
 fun <T, MessageType: ProtoMessage<*>> LogTable.kGet(key: String, proto: Protobuf<T, MessageType>, defaultValue: T): T = get(key, proto, defaultValue)
 fun <T: WPISerializable> LogTable.kGet(key: String, defaultValue: T): T = get(key, defaultValue)
 fun <T: StructSerializable> LogTable.kGet(key: String, defaultValue: Array<T>): Array<T> = get(key, *defaultValue)
+
+//MeanLib
+fun LogTable.kPut(key: String, value: Angle) = kPut(key, value.toRotation2d)
+fun LogTable.kGet(key: String, defaultValue: Angle) = kGet(key, defaultValue.toRotation2d)
