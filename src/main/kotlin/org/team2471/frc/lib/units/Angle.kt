@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.units
 
+import edu.wpi.first.math.geometry.Rotation2d
 import kotlin.math.IEEErem
 
 @JvmInline
@@ -22,11 +23,11 @@ value class Angle(val asDegrees: Double) {
 
     override fun toString() = "$asDegrees degrees"
 
-    fun sin() = Angle.sin(this)
+    fun sin() = sin(this)
 
-    fun cos() = Angle.cos(this)
+    fun cos() = cos(this)
 
-    fun tan() = Angle.tan(this)
+    fun tan() = tan(this)
 
     fun wrap() = Angle(asDegrees.IEEErem(360.0))
 
@@ -64,6 +65,12 @@ value class Angle(val asDegrees: Double) {
 // constructors
 inline val Number.radians get() = Angle(Math.toDegrees(this.toDouble()))
 inline val Number.degrees get() = Angle(this.toDouble())
+inline val Number.rotations get() = Angle(this.toDouble() * 360.0)
+
+inline val Rotation2d.meanlibAngle get() = Angle(this.degrees)
 
 // destructors
 inline val Angle.asRadians get() = Math.toRadians(asDegrees)
+inline val Angle.asRotations get() = asDegrees * 360.0
+
+inline val Angle.toRotation2d get() = Rotation2d.fromRadians(asRadians)
