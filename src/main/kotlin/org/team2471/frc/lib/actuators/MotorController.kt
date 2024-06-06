@@ -1,6 +1,10 @@
 package org.team2471.frc.lib.actuators
 
+import edu.wpi.first.math.system.plant.DCMotor
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
@@ -67,6 +71,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun processInputs() {
         io.updateInputs(inputs)
         Logger.processInputs(name, inputs)
+    }
+
+    init {
+        GlobalScope.launch {
+            periodic(0.05) {
+                processInputs()
+            }
+        }
     }
 
     /**
@@ -321,6 +333,18 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             set(value) {
                 this@MotorController.feedbackCoefficient = value
             }
+
+        fun setSimMotor(motor: DCMotor) {
+            io.setSimMotor(motor)
+        }
+        fun setSimMOI(jKgMetersSquared: Double) {
+            io.setSimMOI(jKgMetersSquared)
+        }
+
+        fun setSimMotorAndMOI(motor: DCMotor, jKgMetersSquared: Double) {
+            setSimMotor(motor)
+            setSimMOI(jKgMetersSquared)
+        }
 
         // burns spark max to retain settings between boot
         fun burnSettings() {

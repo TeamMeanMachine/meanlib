@@ -6,7 +6,6 @@ plugins {
     id ("idea")
     id ("maven-publish")
     id ("java-library")
-    id ("edu.wpi.first.GradleRIO") version "2024.3.2"
     id ("com.google.devtools.ksp") version "1.9.21-1.0.15"
 }
 
@@ -22,7 +21,7 @@ buildscript {
 
 group = "org.team2471.lib"
 version = "2024"
-var wpiLibVersion =  "2024.3.1"
+var wpiLibVersion =  "2024.3.2"
 var advantageKitVersion = "3.2.0"
 repositories {
     mavenCentral()
