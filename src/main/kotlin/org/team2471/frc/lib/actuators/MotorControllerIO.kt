@@ -23,17 +23,17 @@ interface MotorControllerIO {
         var velocity: AngularVelocity = 0.0.degrees.perSecond
 
         override fun toLog(table: LogTable) {
-            table.kPut("$name/Angle", position)
-            table.kPut("$name/Current", current)
-            table.kPut("$name/OutputPercent", outputPercent)
-            table.kPut("$name/Velocity", velocity.changePerSecond)
+            table.kPut("Motors/$name/Position", position.asDegrees)
+            table.kPut("Motors/$name/Current", current)
+            table.kPut("Motors/$name/OutputPercent", outputPercent)
+            table.kPut("Motors/$name/Velocity", velocity.changePerSecond.asDegrees)
         }
 
         override fun fromLog(table: LogTable) {
-            table.kGet("$name/Angle", position)
-            table.kGet("$name/Current", current)
-            table.kGet("$name/OutputPercent", outputPercent)
-            table.kGet("$name/Velocity", velocity.changePerSecond)
+            table.kGet("Motors/$name/Position", position.asDegrees)
+            table.kGet("Motors/$name/Current", current)
+            table.kGet("Motors/$name/OutputPercent", outputPercent)
+            table.kGet("Motors/$name/Velocity", velocity.changePerSecond.asDegrees)
         }
     }
 

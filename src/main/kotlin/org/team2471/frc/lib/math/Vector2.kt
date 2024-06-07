@@ -81,6 +81,4 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     }
 }
 
-fun Vector2.toTranslation2d(): Translation2d {
-    return Translation2d(this.x, this.y)
-}
+fun Vector2.toTranslation2d(): Translation2d = Translation2d(this.x, this.y)
