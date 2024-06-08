@@ -42,7 +42,7 @@ class MotorControllerSim: MotorControllerIO {
         GlobalScope.launch {
             periodic(0.02) {
                 if (positionSetpoint != null) {
-                    setPercentOutput(pid.calculate(inputs.position.asDegrees, positionSetpoint!!.asDegrees) + feedForward)
+                    setVoltageOutput(pid.calculate(inputs.position.asDegrees, positionSetpoint!!.asDegrees) + feedForward)
                 }
                 sim.update(0.02)
             }
@@ -100,7 +100,7 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun setPercentOutput(percent: Double) {
         outputPercent = percent.coerceIn(-1.0, 1.0)
-        sim.setInputVoltage(outputPercent * 12.0)
+        setVoltageOutput(outputPercent * 12.0)
     }
 
     override fun setPositionSetpoint(position: Double) {
@@ -130,6 +130,10 @@ class MotorControllerSim: MotorControllerIO {
     private fun constructSim() {
         println("creating new sim. motor: $motorType  feedbackCoefficient: ${feedbackCoefficient.round(6)}  MOI: $jKgMetersSquared")
         sim = DCMotorSim(motorType, feedbackCoefficient, jKgMetersSquared)
+    }
+
+    private fun setVoltageOutput(volts: Double) {
+        sim.setInputVoltage(volts)
     }
 
 

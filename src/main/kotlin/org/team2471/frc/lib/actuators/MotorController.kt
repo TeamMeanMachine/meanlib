@@ -14,6 +14,7 @@ sealed class MotorControllerID {abstract val value: Int; abstract val name: Stri
  * The ID of a Talon SRX motor controller.
  *
  * @param value the Talon's CAN ID
+ * @param name log path of motor "Subsystem/Name"
  */
 data class TalonID(override val value: Int, override val name: String) : MotorControllerID()
 
@@ -21,6 +22,7 @@ data class TalonID(override val value: Int, override val name: String) : MotorCo
  * The ID of a Spark MAX motor controller.
  *
  * @param value the SparkMax's CAN ID
+ * @param name log path of motor "Subsystem/Name"
  */
 data class SparkMaxID(override val value: Int, override val name: String) : MotorControllerID()
 
@@ -28,6 +30,7 @@ data class SparkMaxID(override val value: Int, override val name: String) : Moto
  * The ID of a Talon FX motor controller.
  *
  * @param value the Falcon's CAN ID
+ * @param name log path of motor "Subsystem/Name"
  */
 data class FalconID(override val value: Int, override val name: String, val canBus: String? = null) : MotorControllerID()
 
@@ -70,7 +73,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     fun processInputs() {
         io.updateInputs(inputs)
-        Logger.processInputs(name, inputs)
+        Logger.processInputs("Motors", inputs)
     }
 
     init {

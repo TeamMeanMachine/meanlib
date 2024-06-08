@@ -73,4 +73,4 @@ inline val Rotation2d.meanlibAngle get() = Angle(this.degrees)
 inline val Angle.asRadians get() = Math.toRadians(asDegrees)
 inline val Angle.asRotations get() = asDegrees * 360.0
 
-inline val Angle.toRotation2d get() = Rotation2d.fromRadians(asRadians)
+inline val Angle.asRotation2d get() = Rotation2d.fromRadians(asRadians)
