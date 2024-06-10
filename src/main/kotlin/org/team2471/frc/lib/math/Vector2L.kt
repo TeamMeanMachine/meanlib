@@ -98,7 +98,6 @@ fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) 
     )
 }
 
-// untested
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     val rot = mutableListOf<Angle>()
     for (i in pos.indices) {
@@ -109,7 +108,7 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
 fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
     setAdvantagePoses(pos.toTypedArray())
 }
-// untested
+
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
     require(pos.size == rot.size)
 

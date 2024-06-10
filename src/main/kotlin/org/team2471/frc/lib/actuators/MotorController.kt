@@ -62,7 +62,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     var rawOffset = 0.0
         private set
 
-    val followers = followerIds.map { id -> //untested
+    val followers = followerIds.map { id ->
         val follower = internalMotorController(id)
         follower.follow(io)
         follower
@@ -89,7 +89,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * Note that this will only work if the [MotorController] is a Talon FX or Spark Max. Attempts
      * to use this method on any other motor controller will result in an [IllegalStateException].
      */
-    val current: Double //untested
+    val current: Double
         get() = io.current
 
     /**
@@ -98,7 +98,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see CoreTalonFX.getRotorVelocity
      */
-    val velocity: Double //untested
+    val velocity: Double
         get() = io.getSelectedSensorVelocity() * feedbackCoefficient
 
     /**
@@ -106,18 +106,18 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see CoreTalonFX.getDutyCycle
      */
-    val output: Double //untested
-        get() = io.outputPercent //untested
+    val output: Double
+        get() = io.outputPercent
 
     /**
      * The position of the selected sensor (in units specified by [ConfigScope.feedbackCoefficient]).
      *
      * @see CoreTalonFX.getRotorPosition
      */
-    var position: Double //untested
-        get() = (io.getSelectedSensorPosition() + rawOffset) * feedbackCoefficient //untested
+    var position: Double
+        get() = (io.getSelectedSensorPosition() + rawOffset) * feedbackCoefficient
         set(value) {
-            io.setSelectedSensorPosition((value / feedbackCoefficient)) //untested
+            io.setSelectedSensorPosition((value / feedbackCoefficient))
         }
 
     var analogPosition: Double
@@ -143,7 +143,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     /**
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
      */
-    val closedLoopError: Double //untested
+    val closedLoopError: Double
         get() = io.getClosedLoopError() * feedbackCoefficient
 
     init {
@@ -152,12 +152,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.coastMode()
         }
 
-        io.setSelectedSensorPosition(0.0) //untested
+        io.setSelectedSensorPosition(0.0)
     }
 
-    fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) } //untested
+    fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) }
 
-    fun setFollowerStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allFollowers { it.setStatusFramePeriod(periodHz, timeoutSec) } //untested
+    fun setFollowerStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allFollowers { it.setStatusFramePeriod(periodHz, timeoutSec) }
     /**
      * Sets the percent output.
      *
@@ -165,7 +165,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see DutyCycleOut
      */
-    fun setPercentOutput(percent: Double) = io.setPercentOutput(percent) //untested
+    fun setPercentOutput(percent: Double) = io.setPercentOutput(percent)
 
     /**
      * Sets the closed-loop position setpoint.
@@ -174,7 +174,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle
      */
-    fun setPositionSetpoint(position: Double) { //untested
+    fun setPositionSetpoint(position: Double) {
 //        println("setting position setpoint ${(position / feedbackCoefficient) - rawOffset}")
         io.setPositionSetpoint((position / feedbackCoefficient) - rawOffset)
     }
@@ -187,7 +187,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle.withFeedForward
      */
-    fun setPositionSetpoint(position: Double, feedForward: Double) { //untested
+    fun setPositionSetpoint(position: Double, feedForward: Double) {
         io.setPositionSetpoint((position / feedbackCoefficient) - rawOffset, feedForward)
     }
 
@@ -198,7 +198,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see VelocityDutyCycle
      */
-    fun setVelocitySetpoint(velocity: Double) { //untested
+    fun setVelocitySetpoint(velocity: Double) {
         io.setVelocitySetpoint(velocity / feedbackCoefficient / 10.0)
     }
 
@@ -210,7 +210,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see VelocityDutyCycle.withFeedForward
      */
-    fun setVelocitySetpoint(velocity: Double, feedForward: Double) = //untested
+    fun setVelocitySetpoint(velocity: Double, feedForward: Double) =
         io.setVelocitySetpoint(velocity / feedbackCoefficient /*/ 10.0 from s to 100ms*/, feedForward / feedbackCoefficient)
 
     /**
@@ -220,7 +220,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see MotionMagicDutyCycle
      */
-    fun setMotionMagicSetpoint(position: Double) { //untested
+    fun setMotionMagicSetpoint(position: Double) {
         println("magicSetpoint = " + (position / feedbackCoefficient - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
         io.setMotionMagicSetpoint(position / feedbackCoefficient - rawOffset)
     }
@@ -232,7 +232,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see MotionMagicDutyCycle.withFeedForward
      */
-    fun setMotionMagicSetpoint(position: Double, feedForward: Double) = //untested
+    fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
         io.setMotionMagicSetpoint((position / feedbackCoefficient) - rawOffset, feedForward)
 
     /**
@@ -255,7 +255,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see CoreTalonFX.setControl
      */
-    fun stop() { //untested
+    fun stop() {
         io.stop()
     }
 
@@ -290,7 +290,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private inline fun allFollowers(body: (MotorControllerIO) -> Unit) {
         followers.forEach(body)
     }
-    fun setRawOffset(offset: Double) {  //untested
+    fun setRawOffset(offset: Double) {
         rawOffset = ((offset / feedbackCoefficient) - io.getSelectedSensorPosition())
 //        println("offset: $offset fc: ${feedbackCoefficient.roundToInt()} pos: ${motorController.getSelectedSensorPosition()}")
     }
@@ -379,7 +379,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see MotorOutputConfigs.Inverted
          */
-//        fun followersInverted(invertedValue: InvertedValue) = allFollowers { //untested
+//        fun followersInverted(invertedValue: InvertedValue) = allFollowers {
 //            val motorConfig = MotorOutputConfigs()
 //            motorConfig.Inverted = invertedValue
 //            it.configurator.apply(motorConfig)
@@ -395,7 +395,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see MotorOutputConfigs.withNeutralMode
          */
-        fun brakeMode() = allMotorControllers { it.brakeMode() } //untested
+        fun brakeMode() = allMotorControllers { it.brakeMode() }
 
         /**
          * Enables coast mode.
@@ -403,7 +403,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see MotorOutputConfigs.withNeutralMode
          */
-        fun coastMode() = allMotorControllers { it.coastMode() } //untested
+        fun coastMode() = allMotorControllers { it.coastMode() }
 
         /**
          * Sets the amount of time required for closed loop control of the [internalMotorController] to go
@@ -413,7 +413,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see ClosedLoopRampsConfigs.withDutyCycleClosedLoopRampPeriod
          */
-        fun closedLoopRamp(secondsToFull: Double) { //untested
+        fun closedLoopRamp(secondsToFull: Double) {
             io.closedLoopRamp(secondsToFull)
         }
 
@@ -425,7 +425,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see OpenLoopRampsConfigs.withDutyCycleOpenLoopRampPeriod
          */
-        fun openLoopRamp(secondsToFull: Double) { //untested
+        fun openLoopRamp(secondsToFull: Double) {
             io.openLoopRamp(secondsToFull)
         }
 
@@ -437,7 +437,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see MotorOutputConfigs.withPeakReverseDutyCycle
          * @see MotorOutputConfigs.withPeakForwardDutyCycle
          */
-        fun peakOutputRange(range: DoubleRange) { //untested
+        fun peakOutputRange(range: DoubleRange) {
             io.peakOutputRange(range)
         }
 
@@ -450,7 +450,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see MotionMagicConfigs.withMotionMagicAcceleration
          * @see MotionMagicConfigs.withMotionMagicCruiseVelocity
          */
-        fun motionMagic(acceleration: Double, cruisingVelocity: Double) { //untested
+        fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
             io.motionMagic(acceleration, cruisingVelocity)
         }
 
@@ -486,7 +486,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CurrentLimitsConfigs.withSupplyCurrentLimitEnable
          * @see SparkMaxWrapper.setCurrentLimit
          */
-        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) { //untested
+        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
             // apply to following
             allMotorControllers { controller ->
                 controller.currentLimit(continuousLimit, peakLimit, peakDuration)
@@ -501,20 +501,20 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @see CoreTalonFX.getConfigurator
          * @see ClosedLoopGeneralConfigs.ContinuousWrap
          */
-        fun encoderContinuous(continuous: Boolean) { //untested
+        fun encoderContinuous(continuous: Boolean) {
             io.encoderContinuous(continuous)
         }
 
         inner class PIDConfigScope(private val slot: Int) {
-            fun p(p: Double) { //untested
+            fun p(p: Double) {
                 io.config_kP(p / feedbackCoefficient * 1024.0)
             }
 
-            fun i(i: Double) { //untested
+            fun i(i: Double) {
                 io.config_kI(i / feedbackCoefficient * 1024.0)
             }
 
-            fun d(d: Double) { //untested
+            fun d(d: Double) {
                 io.config_kD(d / feedbackCoefficient * 1024.0)
             }
         }

@@ -87,11 +87,11 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.inverted = invert
     }
 
-    override fun getInverted(): Boolean {//untested
+    override fun getInverted(): Boolean {
         return _motorController.inverted
     }
 
-    override fun getSelectedSensorVelocity(): Double {//untested
+    override fun getSelectedSensorVelocity(): Double {
         return inputs.velocity.changePerSecond.asRotations
     }
 
@@ -100,15 +100,15 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
 
-    override fun setSelectedSensorPosition(sensorPos: Double) {//untested
+    override fun setSelectedSensorPosition(sensorPos: Double) {
         _motorController.encoder.position = sensorPos
     }
 
-    override fun setPercentOutput(percent: Double) {//untested
+    override fun setPercentOutput(percent: Double) {
         _motorController.set(percent)
     }
 
-    override fun setVelocitySetpoint(velocity: Double) {//untested
+    override fun setVelocitySetpoint(velocity: Double) {
         velocitySetPoint = velocity * 10.0
 
 //      handle out of bounds conditions
@@ -122,7 +122,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity, 0)
     }
 
-    override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {//untested
+    override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         velocitySetPoint = velocity * 10.0
 
 //      handle out of bounds conditions
@@ -140,23 +140,23 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.set(0.0)
     }
 
-    override fun setPositionSetpoint(position: Double) {//untested
+    override fun setPositionSetpoint(position: Double) {
         positionSetpoint = position
         _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
-    override fun setPositionSetpoint(position: Double, feedForward: Double) {//untested
+    override fun setPositionSetpoint(position: Double, feedForward: Double) {
         positionSetpoint = position
         _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
-    override fun config_kP(p: Double) {//untested
+    override fun config_kP(p: Double) {
         _motorController.pidController.p = p
     }
 
-    override fun config_kD(d: Double) {//untested
+    override fun config_kD(d: Double) {
         _motorController.pidController.d = d
 //        println("kD=$d")
     }
@@ -167,11 +167,11 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun getPValue(): Double = _motorController.pidController.p
 
-    fun config_kF(value: Double) {//untested
+    fun config_kF(value: Double) {
         _motorController.pidController.ff = value
     }
 
-    override fun config_kI(i: Double) {//untested
+    override fun config_kI(i: Double) {
         _motorController.pidController.i = i
     }
 
