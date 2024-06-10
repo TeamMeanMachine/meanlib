@@ -4,6 +4,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
@@ -11,6 +12,7 @@ import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.*
 import kotlin.math.absoluteValue
 
+@OptIn(DelicateCoroutinesApi::class)
 class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
@@ -61,9 +63,10 @@ class MotorControllerSim: MotorControllerIO {
         this.inputs = inputs
     }
 
-    override fun config_kP(p: Double) { pid.p = p }
-    override fun config_kD(d: Double) { pid.d = d }
-    override fun config_kI(i: Double) { pid.i = i }
+    //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
+    override fun config_kP(p: Double, simP: Double?) { pid.p = if (simP == 0.0) pid.p else simP ?: p }
+    override fun config_kD(d: Double, simD: Double?) { pid.d = if (simD == 0.0) pid.d else simD ?: d }
+    override fun config_kI(i: Double, simI: Double?) { pid.i = if (simI == 0.0) pid.i else simI ?: i }
 
     override fun getPValue(): Double = pid.p
     override fun getDValue(): Double = pid.d
@@ -140,10 +143,10 @@ class MotorControllerSim: MotorControllerIO {
 
     //unsupported functions
     override fun brakeMode() {}
-    override fun closedLoopRamp(secondsToFull: Double) {}
+    override fun closedLoopRamp(secondsToFull: Double) {} //<- could implement this
     override fun coastMode() {}
-    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {}
-    override fun openLoopRamp(secondsToFull: Double) {}
+    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {} //<- could implement this maybe?
+    override fun openLoopRamp(secondsToFull: Double) {} //<- could implement this?
     override fun setNeutralMode(neutralMode: NeutralModeValue?) {}
     override fun follow(followerID: MotorControllerIO) {}
 }

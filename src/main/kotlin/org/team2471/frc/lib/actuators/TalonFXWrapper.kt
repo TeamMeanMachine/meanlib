@@ -56,18 +56,18 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         applyConfig()
     }
 
-    override fun config_kP(p: Double) {
+    override fun config_kP(p: Double, simP: Double?) {
         config.Slot0.kP = p
         applyConfig()
     }
 
-    override fun config_kD(d: Double) {
+    override fun config_kD(d: Double, simD: Double?) {
         config.Slot0.kD = d
         applyConfig()
     }
 
-    override fun config_kI(i: Double) {
-        config.Slot0.kI = i * 1024.0
+    override fun config_kI(i: Double, simI: Double?) {
+        config.Slot0.kI = i
         applyConfig()
     }
 

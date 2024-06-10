@@ -152,11 +152,11 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
-    override fun config_kP(p: Double) {
+    override fun config_kP(p: Double, simP: Double?) {
         _motorController.pidController.p = p
     }
 
-    override fun config_kD(d: Double) {
+    override fun config_kD(d: Double, simD: Double?) {
         _motorController.pidController.d = d
 //        println("kD=$d")
     }
@@ -171,7 +171,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.pidController.ff = value
     }
 
-    override fun config_kI(i: Double) {
+    override fun config_kI(i: Double, simI: Double?) {
         _motorController.pidController.i = i
     }
 

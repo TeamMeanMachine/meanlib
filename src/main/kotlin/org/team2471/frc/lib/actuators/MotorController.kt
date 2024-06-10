@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.actuators
 
 import edu.wpi.first.math.system.plant.DCMotor
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
@@ -46,6 +47,7 @@ private fun internalMotorController(id: MotorControllerID): MotorControllerIO = 
  * @param deviceId the [MotorControllerID] of the primary, "master" motor controller
  * @param followerIds optional [MotorControllerID]s of motor controllers which should follow the primary
  */
+@OptIn(DelicateCoroutinesApi::class)
 class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorControllerID) {
     private val io: MotorControllerIO = when(robotMode) {
         RobotMode.REAL -> internalMotorController(deviceId)
@@ -260,16 +262,17 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }
 
 
-    fun setP(p: Double) {
-        io.config_kP(p / feedbackCoefficient * 1024.0)
+    //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
+    fun setP(p: Double, simP: Double? = 0.0) {
+        io.config_kP(p / feedbackCoefficient, if (simP == null) null else simP / feedbackCoefficient)
     }
-    fun setD(d: Double) {
-        io.config_kD(d / feedbackCoefficient * 1024.0)
+    fun setD(d: Double, simD: Double? = 0.0) {
+        io.config_kD(d / feedbackCoefficient, if (simD == null) null else simD / feedbackCoefficient)
     }
 
-    fun getP() : Double = io.getPValue() * feedbackCoefficient / 1024.0
-    fun getD(): Double = io.getDValue() * feedbackCoefficient / 1024.0
-    fun getI(): Double = io.getIValue() * feedbackCoefficient / 1024.0
+    fun getP() : Double = io.getPValue() * feedbackCoefficient
+    fun getD(): Double = io.getDValue() * feedbackCoefficient
+    fun getI(): Double = io.getIValue() * feedbackCoefficient
 
 
     /**
@@ -506,16 +509,17 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
 
         inner class PIDConfigScope(private val slot: Int) {
-            fun p(p: Double) {
-                io.config_kP(p / feedbackCoefficient * 1024.0)
+            //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
+            fun p(p: Double, simP: Double? = null) {
+                io.config_kP(p / feedbackCoefficient, simP)
             }
 
-            fun i(i: Double) {
-                io.config_kI(i / feedbackCoefficient * 1024.0)
+            fun i(i: Double, simI: Double? = null) {
+                io.config_kI(i / feedbackCoefficient, simI)
             }
 
-            fun d(d: Double) {
-                io.config_kD(d / feedbackCoefficient * 1024.0)
+            fun d(d: Double, simD: Double? = null) {
+                io.config_kD(d / feedbackCoefficient, simD)
             }
         }
     }

@@ -43,9 +43,9 @@ interface MotorControllerIO {
     fun burnFlash() {}
     fun closedLoopRamp(secondsToFull: Double)
     fun coastMode()
-    fun config_kP(p: Double)
-    fun config_kD(d: Double)
-    fun config_kI(i: Double)
+    fun config_kP(p: Double, simP: Double? = 0.0)
+    fun config_kD(d: Double, simD: Double? = 0.0)
+    fun config_kI(i: Double, simI: Double? = 0.0)
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
