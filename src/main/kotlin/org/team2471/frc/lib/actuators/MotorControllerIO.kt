@@ -49,13 +49,13 @@ interface MotorControllerIO {
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
-    fun getClosedLoopError(): Double
+    fun getClosedLoopError(): Angle
     fun getPValue(): Double
     fun getDValue() : Double
     fun getIValue(): Double
     fun getInverted(): Boolean
-    fun getSelectedSensorPosition(): Double
-    fun getSelectedSensorVelocity(): Double
+    fun getSelectedSensorPosition(): Angle
+    fun getSelectedSensorVelocity(): Angle
     fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}
@@ -68,9 +68,9 @@ interface MotorControllerIO {
     fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {}
     fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
-    fun setPositionSetpoint(position: Double)
-    fun setPositionSetpoint(position: Double, feedForward: Double)
-    fun setSelectedSensorPosition(sensorPos: Double)
+    fun setPositionSetpoint(position: Angle)
+    fun setPositionSetpoint(position: Angle, feedForward: Double)
+    fun setSelectedSensorPosition(sensorPos: Angle)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)

@@ -6,8 +6,7 @@ import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.perSecond
-import org.team2471.frc.lib.units.rotations
+import org.team2471.frc.lib.units.*
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
@@ -16,22 +15,20 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     private val timeoutSec = 0.050
 
-    val rawPosition: Double
-        get() = _motorController.position.value
     override val outputPercent: Double
-        get() = _motorController.dutyCycle.value
+        get() = inputs.outputPercent
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
         inputs.position = _motorController.position.value.rotations
-        inputs.outputPercent = outputPercent
+        inputs.outputPercent = _motorController.dutyCycle.value
         inputs.velocity = _motorController.velocity.value.rotations.perSecond
-        inputs.current = current
+        inputs.current = _motorController.statorCurrent.value
 
         this.inputs = inputs
     }
 
     override val current: Double
-        get() = _motorController.statorCurrent.value
+        get() = inputs.current
 
 
     init {
@@ -91,7 +88,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
     }
 
-    override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
+    override fun getClosedLoopError(): Angle = _motorController.closedLoopError.value.rotations
 
     override fun getPValue(): Double = config.Slot0.kP
 
@@ -101,9 +98,9 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(): Double  = _motorController.position.value
+    override fun getSelectedSensorPosition(): Angle  = inputs.position
 
-    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
+    override fun getSelectedSensorVelocity(): Angle = inputs.velocity.changePerSecond
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
@@ -137,7 +134,6 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        println("magicSetpoint = " + (position) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: /*feedbackCoefficient.toInt()*/")
         _motorController.setControl(MotionMagicDutyCycle(position))
     }
 
@@ -159,16 +155,16 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(DutyCycleOut(percent).withEnableFOC(true))
     }
 
-    override fun setPositionSetpoint(position: Double) {
-        _motorController.setControl(PositionDutyCycle(position).withSlot(0))
+    override fun setPositionSetpoint(position: Angle) {
+        _motorController.setControl(PositionDutyCycle(position.asRotations).withSlot(0))
     }
 
-    override fun setPositionSetpoint(position: Double, feedForward: Double) {
-        _motorController.setControl(PositionDutyCycle(position).withFeedForward(feedForward).withSlot(0))
+    override fun setPositionSetpoint(position: Angle, feedForward: Double) {
+        _motorController.setControl(PositionDutyCycle(position.asRotations).withFeedForward(feedForward).withSlot(0))
     }
 
-    override fun setSelectedSensorPosition(sensorPos: Double) {
-        _motorController.setPosition(sensorPos)
+    override fun setSelectedSensorPosition(sensorPos: Angle) {
+        _motorController.setPosition(sensorPos.asRotations)
     }
 
     override fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double) {

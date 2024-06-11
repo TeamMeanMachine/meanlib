@@ -2,12 +2,10 @@ package org.team2471.frc.lib.actuators
 
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.revrobotics.*
-import org.team2471.frc.lib.units.asRotations
-import org.team2471.frc.lib.units.perMinute
-import org.team2471.frc.lib.units.rotations
+import org.team2471.frc.lib.units.*
 
 class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
-    private var positionSetpoint: Double = 0.0
+    private var positionSetpoint: Angle = 0.0.degrees
     private var velocitySetPoint: Double = 0.0
     val maxRPM = 5700.0
 
@@ -15,7 +13,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
 
     override val outputPercent: Double
-        get() = _motorController.appliedOutput
+        get() = inputs.outputPercent
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
         inputs.position = _motorController.encoder.position.rotations
@@ -45,12 +43,12 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.follow((followerID as SparkMaxWrapper)._motorController, getInverted() != followerID.getInverted())
     }
 
-    override fun getClosedLoopError(): Double {
+    override fun getClosedLoopError(): Angle {
         return positionSetpoint - getSelectedSensorPosition()
     }
 
-    override fun getSelectedSensorPosition(): Double {
-        return (inputs.position.asRotations/* * TICKS_PER_REVOLUTION*/)
+    override fun getSelectedSensorPosition(): Angle {
+        return (inputs.position/* * TICKS_PER_REVOLUTION*/)
     }
 
     /**
@@ -91,8 +89,8 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         return _motorController.inverted
     }
 
-    override fun getSelectedSensorVelocity(): Double {
-        return inputs.velocity.changePerSecond.asRotations
+    override fun getSelectedSensorVelocity(): Angle {
+        return inputs.velocity.changePerSecond
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
@@ -100,8 +98,8 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
 
-    override fun setSelectedSensorPosition(sensorPos: Double) {
-        _motorController.encoder.position = sensorPos
+    override fun setSelectedSensorPosition(sensorPos: Angle) {
+        _motorController.encoder.position = sensorPos.asRotations
     }
 
     override fun setPercentOutput(percent: Double) {
@@ -140,15 +138,15 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.set(0.0)
     }
 
-    override fun setPositionSetpoint(position: Double) {
+    override fun setPositionSetpoint(position: Angle) {
         positionSetpoint = position
-        _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0)
+        _motorController.pidController.setReference(positionSetpoint.asRotations, CANSparkBase.ControlType.kPosition, 0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
-    override fun setPositionSetpoint(position: Double, feedForward: Double) {
+    override fun setPositionSetpoint(position: Angle, feedForward: Double) {
         positionSetpoint = position
-        _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, feedForward)
+        _motorController.pidController.setReference(positionSetpoint.asRotations, CANSparkBase.ControlType.kPosition, 0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
@@ -176,7 +174,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override val current: Double
-        get() = _motorController.outputCurrent
+        get() = inputs.current
 
     override fun brakeMode() {
         _motorController.idleMode = CANSparkBase.IdleMode.kBrake

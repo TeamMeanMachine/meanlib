@@ -72,15 +72,15 @@ class MotorControllerSim: MotorControllerIO {
     override fun getDValue(): Double = pid.d
     override fun getIValue(): Double = pid.i
 
-    override fun getClosedLoopError(): Double = (inputs.position - (positionSetpoint ?: inputs.position)).asDegrees
+    override fun getClosedLoopError(): Angle = inputs.position - (positionSetpoint ?: 0.0.degrees)
 
     override fun getInverted(): Boolean = inverted
 
-    override fun getSelectedSensorPosition(): Double = inputs.position.asDegrees
+    override fun getSelectedSensorPosition(): Angle = inputs.position
 
-    override fun getSelectedSensorVelocity(): Double = inputs.velocity.changePerSecond.asDegrees
+    override fun getSelectedSensorVelocity(): Angle = inputs.velocity.changePerSecond
 
-    override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState((sensorPos * feedbackCoefficient).rotations.asRadians, 0.0)
+    override fun setSelectedSensorPosition(sensorPos: Angle) = sim.setState((sensorPos * feedbackCoefficient).asRadians, 0.0)
 
 
     override fun setInverted(invert: Boolean) {
@@ -106,12 +106,12 @@ class MotorControllerSim: MotorControllerIO {
         setVoltageOutput(outputPercent * 12.0)
     }
 
-    override fun setPositionSetpoint(position: Double) {
-        positionSetpoint = position.degrees * feedbackCoefficient
+    override fun setPositionSetpoint(position: Angle) {
+        positionSetpoint = position * feedbackCoefficient
     }
 
-    override fun setPositionSetpoint(position: Double, feedForward: Double) {
-        positionSetpoint = position.degrees * feedbackCoefficient
+    override fun setPositionSetpoint(position: Angle, feedForward: Double) {
+        positionSetpoint = position * feedbackCoefficient
         this.feedForward = feedForward
     }
 
