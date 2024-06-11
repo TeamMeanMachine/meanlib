@@ -80,7 +80,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     init {
         GlobalScope.launch {
-            periodic(0.05) {
+            periodic(0.02) {
                 processInputs()
             }
         }
