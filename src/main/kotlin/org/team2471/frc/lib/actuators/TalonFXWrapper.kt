@@ -19,9 +19,9 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         get() = inputs.outputPercent
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
-        inputs.position = _motorController.position.value.rotations
+        inputs.position = _motorController.position.value
         inputs.outputPercent = _motorController.dutyCycle.value
-        inputs.velocity = _motorController.velocity.value.rotations.perSecond
+        inputs.velocity = _motorController.velocity.value
         inputs.current = _motorController.statorCurrent.value
 
         this.inputs = inputs
@@ -88,7 +88,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
     }
 
-    override fun getClosedLoopError(): Angle = _motorController.closedLoopError.value.rotations
+    override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
 
     override fun getPValue(): Double = config.Slot0.kP
 
@@ -98,9 +98,9 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(): Angle  = inputs.position
+    override fun getSelectedSensorPosition(): Double  = inputs.position
 
-    override fun getSelectedSensorVelocity(): Angle = inputs.velocity.changePerSecond
+    override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
@@ -155,16 +155,16 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(DutyCycleOut(percent).withEnableFOC(true))
     }
 
-    override fun setPositionSetpoint(position: Angle) {
-        _motorController.setControl(PositionDutyCycle(position.asRotations).withSlot(0))
+    override fun setPositionSetpoint(position: Double) {
+        _motorController.setControl(PositionDutyCycle(position).withSlot(0))
     }
 
-    override fun setPositionSetpoint(position: Angle, feedForward: Double) {
-        _motorController.setControl(PositionDutyCycle(position.asRotations).withFeedForward(feedForward).withSlot(0))
+    override fun setPositionSetpoint(position: Double, feedForward: Double) {
+        _motorController.setControl(PositionDutyCycle(position).withFeedForward(feedForward).withSlot(0))
     }
 
-    override fun setSelectedSensorPosition(sensorPos: Angle) {
-        _motorController.setPosition(sensorPos.asRotations)
+    override fun setSelectedSensorPosition(sensorPos: Double) {
+        _motorController.setPosition(sensorPos)
     }
 
     override fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double) {

@@ -19,14 +19,14 @@ class MotorControllerSim: MotorControllerIO {
     private val pid = PIDController(0.0, 0.0, 0.0)
     private var motorType = DCMotor.getKrakenX60Foc(1)
     private var jKgMetersSquared = 1.0
-    private var feedbackCoefficient: Double = 1.0
+    private var gearRatio: Double = 1.0
         set(value) {
             field = value
             constructSim()
         }
 
     //control
-    private var positionSetpoint: Angle? = null
+    private var positionSetpoint: Double? = null
     private var feedForward: Double = 0.0
     private var inverted = false //unused for now
 
@@ -43,8 +43,11 @@ class MotorControllerSim: MotorControllerIO {
         //simulation loop
         GlobalScope.launch {
             periodic(0.02) {
+//                if (inputs.name == "Drive/BLD") {
+//                    println(feedbackCoefficient)
+//                }
                 if (positionSetpoint != null) {
-                    setVoltageOutput(pid.calculate(inputs.position.asDegrees, positionSetpoint!!.asDegrees) + feedForward)
+                    setVoltageOutput(pid.calculate(inputs.position, positionSetpoint!!) + feedForward)
                 }
                 sim.update(0.02)
             }
@@ -55,9 +58,9 @@ class MotorControllerSim: MotorControllerIO {
 
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
-        inputs.position = (sim.angularPositionRad.radians.asDegrees / feedbackCoefficient).degrees
+        inputs.position = sim.angularPositionRad.radians.asRotations * gearRatio
         inputs.outputPercent = outputPercent
-        inputs.velocity = (sim.angularVelocityRadPerSec.radians.asDegrees / feedbackCoefficient).rotations.perMinute
+        inputs.velocity = sim.angularVelocityRadPerSec.radians.asRotations * gearRatio
         inputs.current = sim.currentDrawAmps.absoluteValue
 
         this.inputs = inputs
@@ -72,15 +75,15 @@ class MotorControllerSim: MotorControllerIO {
     override fun getDValue(): Double = pid.d
     override fun getIValue(): Double = pid.i
 
-    override fun getClosedLoopError(): Angle = inputs.position - (positionSetpoint ?: 0.0.degrees)
+    override fun getClosedLoopError(): Double = inputs.position - (positionSetpoint ?: 0.0)
 
     override fun getInverted(): Boolean = inverted
 
-    override fun getSelectedSensorPosition(): Angle = inputs.position
+    override fun getSelectedSensorPosition(): Double = inputs.position
 
-    override fun getSelectedSensorVelocity(): Angle = inputs.velocity.changePerSecond
+    override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
-    override fun setSelectedSensorPosition(sensorPos: Angle) = sim.setState((sensorPos * feedbackCoefficient).asRadians, 0.0)
+    override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState((sensorPos / gearRatio).rotations.asRadians, getSelectedSensorVelocity())
 
 
     override fun setInverted(invert: Boolean) {
@@ -98,7 +101,7 @@ class MotorControllerSim: MotorControllerIO {
     }
 
     override fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {
-        this.feedbackCoefficient = feedbackCoefficient
+        this.gearRatio = feedbackCoefficient
     }
 
     override fun setPercentOutput(percent: Double) {
@@ -106,12 +109,12 @@ class MotorControllerSim: MotorControllerIO {
         setVoltageOutput(outputPercent * 12.0)
     }
 
-    override fun setPositionSetpoint(position: Angle) {
-        positionSetpoint = position * feedbackCoefficient
+    override fun setPositionSetpoint(position: Double) {
+        positionSetpoint = position
     }
 
-    override fun setPositionSetpoint(position: Angle, feedForward: Double) {
-        positionSetpoint = position * feedbackCoefficient
+    override fun setPositionSetpoint(position: Double, feedForward: Double) {
+        positionSetpoint = position
         this.feedForward = feedForward
     }
 
@@ -131,8 +134,8 @@ class MotorControllerSim: MotorControllerIO {
     }
 
     private fun constructSim() {
-        println("creating new sim. motor: $motorType  feedbackCoefficient: ${feedbackCoefficient.round(6)}  MOI: $jKgMetersSquared")
-        sim = DCMotorSim(motorType, feedbackCoefficient, jKgMetersSquared)
+        println("creating new sim. name: ${inputs.name}  feedbackCoefficient: ${gearRatio.round(6)}  MOI: $jKgMetersSquared")
+        sim = DCMotorSim(motorType, gearRatio, jKgMetersSquared)
     }
 
     private fun setVoltageOutput(volts: Double) {

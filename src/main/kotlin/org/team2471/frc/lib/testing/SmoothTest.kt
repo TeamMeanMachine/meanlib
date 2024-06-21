@@ -12,9 +12,9 @@ suspend fun MotorController.smoothDrivePosition(position: Double, time: Time) {
     val timer = Timer()
     timer.start()
     periodic {
-        val setpoint = cubicMap(0.0, time.asSeconds, this@smoothDrivePosition.position.asDegrees, position, timer.get())
+        val setpoint = cubicMap(0.0, time.asSeconds, this@smoothDrivePosition.position, position, timer.get())
 
-        setPositionSetpoint(setpoint.degrees)
+        setPositionSetpoint(setpoint)
 
         if (timer.get().seconds >= time) {
             stop()

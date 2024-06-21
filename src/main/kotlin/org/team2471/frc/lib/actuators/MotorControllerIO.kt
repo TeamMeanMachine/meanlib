@@ -17,23 +17,23 @@ interface MotorControllerIO {
     val outputPercent: Double
 
     open class MotorControllerIOInputs(val name: String): LoggableInputs {
-        var position: Angle = 0.0.degrees
+        var position: Double = 0.0
         var current: Double = 0.0
         var outputPercent: Double = 0.0
-        var velocity: AngularVelocity = 0.0.degrees.perSecond
+        var velocity: Double = 0.0
 
         override fun toLog(table: LogTable) {
-            table.kPut("$name/Position", position.asDegrees)
+            table.kPut("$name/Position", position)
             table.kPut("$name/Current", current)
             table.kPut("$name/OutputPercent", outputPercent)
-            table.kPut("$name/Velocity", velocity.changePerSecond.asDegrees)
+            table.kPut("$name/Velocity", velocity)
         }
 
         override fun fromLog(table: LogTable) {
-            table.kGet("$name/Position", position.asDegrees)
+            table.kGet("$name/Position", position)
             table.kGet("$name/Current", current)
             table.kGet("$name/OutputPercent", outputPercent)
-            table.kGet("$name/Velocity", velocity.changePerSecond.asDegrees)
+            table.kGet("$name/Velocity", velocity)
         }
     }
 
@@ -49,13 +49,13 @@ interface MotorControllerIO {
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
-    fun getClosedLoopError(): Angle
+    fun getClosedLoopError(): Double
     fun getPValue(): Double
     fun getDValue() : Double
     fun getIValue(): Double
     fun getInverted(): Boolean
-    fun getSelectedSensorPosition(): Angle
-    fun getSelectedSensorVelocity(): Angle
+    fun getSelectedSensorPosition(): Double
+    fun getSelectedSensorVelocity(): Double
     fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}
@@ -68,9 +68,9 @@ interface MotorControllerIO {
     fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {}
     fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
-    fun setPositionSetpoint(position: Angle)
-    fun setPositionSetpoint(position: Angle, feedForward: Double)
-    fun setSelectedSensorPosition(sensorPos: Angle)
+    fun setPositionSetpoint(position: Double)
+    fun setPositionSetpoint(position: Double, feedForward: Double)
+    fun setSelectedSensorPosition(sensorPos: Double)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)

@@ -58,11 +58,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     private var feedbackCoefficient = 1.0
         set(value) {
-            io.setSimFeedbackCoefficient(value * 360.0)
-            field = value * 360.0
+//            io.setSimFeedbackCoefficient(value)
+            field = value
         }
 
-    var rawOffset = 0.0.degrees
+    var rawOffset = 0.0
         private set
 
     val followers = followerIds.map { id ->
@@ -101,8 +101,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see CoreTalonFX.getRotorVelocity
      */
-    val velocity: Angle
-        get() = io.getSelectedSensorVelocity() * feedbackCoefficient
+    val velocity: Double
+        get() = (io.getSelectedSensorVelocity() * feedbackCoefficient)
 
     /**
      * The output percent, from 0 to 1.
@@ -117,7 +117,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      *
      * @see CoreTalonFX.getRotorPosition
      */
-    var position: Angle
+    var position: Double
         get() = (io.getSelectedSensorPosition() + rawOffset) * feedbackCoefficient
         set(value) {
             io.setSelectedSensorPosition((value / feedbackCoefficient))
@@ -141,12 +141,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * The raw position of the selected sensor in revolutions for Sparks at least.
      */
     val rawPosition: Angle
-        get() = io.getSelectedSensorPosition()
+        get() = io.getSelectedSensorPosition().rotations
 
     /**
      * The closed loop error (in units specified by [ConfigScope.feedbackCoefficient]).
      */
-    val closedLoopError: Angle
+    val closedLoopError: Double
         get() = io.getClosedLoopError() * feedbackCoefficient
 
     init {
@@ -155,7 +155,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             it.coastMode()
         }
 
-        io.setSelectedSensorPosition(0.0.degrees)
+        io.setSelectedSensorPosition(0.0)
     }
 
     fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) }
@@ -177,7 +177,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle
      */
-    fun setPositionSetpoint(position: Angle) {
+    fun setPositionSetpoint(position: Double) {
 //        println("setting position setpoint ${(position / feedbackCoefficient) - rawOffset}")
         io.setPositionSetpoint((position / feedbackCoefficient) - rawOffset)
     }
@@ -190,7 +190,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see PositionDutyCycle.withFeedForward
      */
-    fun setPositionSetpoint(position: Angle, feedForward: Double) {
+    fun setPositionSetpoint(position: Double, feedForward: Double) {
         io.setPositionSetpoint((position / feedbackCoefficient) - rawOffset, feedForward)
     }
 
@@ -223,9 +223,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see MotionMagicDutyCycle
      */
-    fun setMotionMagicSetpoint(position: Angle) {
-        println("magicSetpoint = " + (position / feedbackCoefficient - rawOffset) + " rawPosition: $rawPosition position: $position feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
-        io.setMotionMagicSetpoint((position / feedbackCoefficient - rawOffset).asRotations)
+    fun setMotionMagicSetpoint(position: Double) {
+        println("magicSetpoint = " + ((position / feedbackCoefficient) - rawOffset) + " rawPosition: $rawPosition position: $position feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
+        io.setMotionMagicSetpoint(((position / feedbackCoefficient) - rawOffset))
     }
     /**
      * Sets the closed-loop Motion Magic position setpoint with a specified [feedForward] value.
@@ -235,8 +235,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @see CoreTalonFX.setControl
      * @see MotionMagicDutyCycle.withFeedForward
      */
-    fun setMotionMagicSetpoint(position: Angle, feedForward: Double) =
-        io.setMotionMagicSetpoint(((position / feedbackCoefficient) - rawOffset).asRotations, feedForward)
+    fun setMotionMagicSetpoint(position: Double, feedForward: Double) =
+        io.setMotionMagicSetpoint(((position / feedbackCoefficient) - rawOffset), feedForward)
 
     /**
      * Attempt to get encoder plugged directly into SparkMAX. Has not worked yet.
@@ -294,7 +294,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     private inline fun allFollowers(body: (MotorControllerIO) -> Unit) {
         followers.forEach(body)
     }
-    fun setRawOffset(offset: Angle) {
+    fun setRawOffset(offset: Double) {
         rawOffset = ((offset / feedbackCoefficient) - io.getSelectedSensorPosition())
 //        println("offset: $offset fc: ${feedbackCoefficient.roundToInt()} pos: ${motorController.getSelectedSensorPosition()}")
     }
@@ -353,6 +353,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             setSimMOI(jKgMetersSquared)
         }
 
+        fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {
+            io.setSimFeedbackCoefficient(feedbackCoefficient)
+        }
+
         // burns spark max to retain settings between boot
         fun burnSettings() {
             io.burnFlash()
@@ -361,7 +365,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         /**
          * Initializes the incremental encoder to match the analog encoder.
          */
-        fun setRawOffsetConfig(offset: Angle) {
+        fun setRawOffsetConfig(offset: Double) {
             setRawOffset(offset)
         }
 
@@ -463,7 +467,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          *
          * @param ticks the number of ticks offset to add to the selected sensor
          */
-        fun rawOffset(ticks: Angle) {
+        fun rawOffset(ticks: Double) {
             rawOffset = ticks
         }
 
