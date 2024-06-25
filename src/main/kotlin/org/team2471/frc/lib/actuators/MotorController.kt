@@ -74,15 +74,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     val name = deviceId.name
 
 
-    fun processInputs() {
-        io.updateInputs(inputs)
-        Logger.processInputs("Motors", inputs)
-    }
-
     init {
         GlobalScope.launch {
             periodic(0.02) {
-                processInputs()
+                io.updateInputs(inputs)
+                Logger.processInputs("Motors", inputs)
             }
         }
     }

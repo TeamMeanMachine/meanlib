@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.Timer
 import kotlin.math.absoluteValue
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -35,6 +36,8 @@ class MotorControllerSim: MotorControllerIO {
     override val current: Double get() = inputs.current
     private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
+    val testSim = DCMotorSim(DCMotor.getNeoVortex(1), 6.12, 0.025)
+
 
 
     init {
@@ -42,14 +45,21 @@ class MotorControllerSim: MotorControllerIO {
 
         //simulation loop
         GlobalScope.launch {
+            val t = Timer()
+            t.start()
+            var lastTime = t.get()
             periodic(0.02) {
 //                if (inputs.name == "Drive/BLD") {
 //                    println(feedbackCoefficient)
 //                }
-                if (positionSetpoint != null) {
-                    setVoltageOutput(pid.calculate(inputs.position, positionSetpoint!!) + feedForward)
-                }
-                sim.update(0.02)
+//                if (positionSetpoint != null) {
+//                    setVoltageOutput(pid.calculate(inputs.position, positionSetpoint!!) + feedForward)
+//                }
+//                sim.update(0.02)
+//
+//                println("${inputs.name} time: ${t.get() - lastTime}")
+
+                lastTime = t.get()
             }
         }
     }
@@ -58,12 +68,18 @@ class MotorControllerSim: MotorControllerIO {
 
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
-        inputs.position = sim.angularPositionRad.radians.asRotations * gearRatio
+        sim.update(0.02)
+        testSim.update(0.02)
+
+        inputs.position = (sim.angularPositionRad)// * gearRatio).radians.asRotations
         inputs.outputPercent = outputPercent
-        inputs.velocity = sim.angularVelocityRadPerSec.radians.asRotations * gearRatio
+        inputs.velocity = (sim.angularVelocityRadPerSec)// * gearRatio).radians.asRotations
         inputs.current = sim.currentDrawAmps.absoluteValue
 
         this.inputs = inputs
+
+
+        if (inputs.name == "Drive/BLD") println("position: ${testSim.angularPositionRad.radians.asRotations}  velocity: ${testSim.angularVelocityRadPerSec.radians.asRotations}  current: ${testSim.currentDrawAmps}")
     }
 
     //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
@@ -134,12 +150,15 @@ class MotorControllerSim: MotorControllerIO {
     }
 
     private fun constructSim() {
-        println("creating new sim. name: ${inputs.name}  feedbackCoefficient: ${gearRatio.round(6)}  MOI: $jKgMetersSquared")
+        println("creating new sim. name: ${inputs.name}  feedbackCoefficient: $gearRatio  MOI: $jKgMetersSquared")
         sim = DCMotorSim(motorType, gearRatio, jKgMetersSquared)
+        sim.setState(0.0, 0.0)
     }
 
     private fun setVoltageOutput(volts: Double) {
-        sim.setInputVoltage(volts)
+        sim.setInputVoltage(volts.coerceIn(-12.0, 12.0))
+
+        testSim.setInputVoltage(volts.coerceIn(-12.0, 12.0))
     }
 
 
