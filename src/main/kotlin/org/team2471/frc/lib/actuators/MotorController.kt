@@ -349,10 +349,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             setSimMOI(jKgMetersSquared)
         }
 
-        fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {
-            io.setSimFeedbackCoefficient(feedbackCoefficient)
-        }
-
         // burns spark max to retain settings between boot
         fun burnSettings() {
             io.burnFlash()

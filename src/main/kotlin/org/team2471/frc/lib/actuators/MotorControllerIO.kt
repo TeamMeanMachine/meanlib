@@ -65,7 +65,6 @@ interface MotorControllerIO {
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) {}
     fun setSimMotor(motor: DCMotor) {}
     fun setSimMOI(jKgMetersSquared: Double) {}
-    fun setSimFeedbackCoefficient(feedbackCoefficient: Double) {}
     fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)
