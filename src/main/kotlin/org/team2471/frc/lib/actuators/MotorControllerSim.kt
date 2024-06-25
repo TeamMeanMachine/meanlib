@@ -37,9 +37,9 @@ class MotorControllerSim: MotorControllerIO {
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
         sim.update(0.02)
 
-        inputs.position = (sim.angularPositionRad)
+        inputs.position = (sim.angularPositionRotations)
         inputs.outputPercent = outputPercent
-        inputs.velocity = (sim.angularVelocityRadPerSec)
+        inputs.velocity = (sim.angularVelocityRPM) / 60.0
         inputs.current = sim.currentDrawAmps.absoluteValue
 
         this.inputs = inputs
