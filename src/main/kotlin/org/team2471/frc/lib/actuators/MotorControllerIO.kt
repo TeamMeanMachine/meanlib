@@ -5,10 +5,6 @@ import edu.wpi.first.math.system.plant.DCMotor
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.AngularVelocity
-import org.team2471.frc.lib.units.degrees
-import org.team2471.frc.lib.units.perSecond
 import org.team9432.lib.advantagekit.kGet
 import org.team9432.lib.advantagekit.kPut
 
@@ -46,6 +42,7 @@ interface MotorControllerIO {
     fun config_kP(p: Double, simP: Double? = 0.0)
     fun config_kD(d: Double, simD: Double? = 0.0)
     fun config_kI(i: Double, simI: Double? = 0.0)
+    fun configSim(motor: DCMotor, jKgMetersSquared: Double) {}
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
@@ -63,8 +60,6 @@ interface MotorControllerIO {
     fun setInverted(invert: Boolean)
     fun setMotionMagicSetpoint(position: Double) {}
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) {}
-    fun setSimMotor(motor: DCMotor) {}
-    fun setSimMOI(jKgMetersSquared: Double) {}
     fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)

@@ -16,19 +16,19 @@ import kotlin.math.absoluteValue
 class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
-    private val pid = PIDController(0.0, 0.0, 0.0)
     private var motorType = DCMotor.getKrakenX60Foc(1)
     private var jKgMetersSquared = 1.0
 
     //control
+    private val pid = PIDController(0.0, 0.0, 0.0)
     private var positionSetpoint: Double? = null
     private var feedForward: Double = 0.0
     private var inverted = false //unused for now
 
     //motor outputs
+    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
     override var outputPercent: Double = 0.0
     override val current: Double get() = inputs.current
-    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
     init {
         constructSim()
@@ -85,12 +85,8 @@ class MotorControllerSim: MotorControllerIO {
         inverted = invert
     }
 
-    override fun setSimMotor(motor: DCMotor) {
+    override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         motorType = motor
-        constructSim()
-    }
-
-    override fun setSimMOI(jKgMetersSquared: Double) {
         this.jKgMetersSquared = jKgMetersSquared
         constructSim()
     }
