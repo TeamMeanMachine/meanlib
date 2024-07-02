@@ -406,7 +406,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             rawOffset = ticks
         }
 
-        inline fun pid(slot: Int = 0, body: PIDConfigScope.() -> Unit) = body(PIDConfigScope(slot))
+        inline fun pid(body: PIDConfigScope.() -> Unit) = body(PIDConfigScope())
 
 //        /**
 //         * Selects a specific PID slot.
