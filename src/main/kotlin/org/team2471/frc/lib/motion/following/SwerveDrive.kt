@@ -218,7 +218,7 @@ fun SwerveDrive.drive(
         modules[i].setDrivePower(speeds[i])
     }
     //println()
-    recordOdometry()
+//    recordOdometry()
 }
 
 data class AngleAndSpeed(val angle: Angle, val power: Double)
@@ -288,6 +288,7 @@ fun SwerveDrive.recordOdometry() {
 
     position += Vector2(translation.x, translation.y)
     deltaPos = Vector2L(translation.x.feet, translation.y.feet)
+//    println("recording odom $deltaPos")
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
@@ -411,6 +412,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // are we done yet?
         if (t >= path.durationWithSpeed + extraTime) {
+            println("exiting path")
             stop()
         }
         if (earlyExit(t / path.durationWithSpeed)) {

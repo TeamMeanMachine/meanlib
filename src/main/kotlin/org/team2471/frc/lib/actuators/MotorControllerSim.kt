@@ -33,6 +33,7 @@ class MotorControllerSim: MotorControllerIO {
         GlobalScope.launch {
             periodic {
                 if (positionSetpoint != null) {
+                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError()}")
                     setPercentOutput(pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward)
                 }
             }
@@ -60,7 +61,7 @@ class MotorControllerSim: MotorControllerIO {
     override fun getDValue(): Double = pid.d
     override fun getIValue(): Double = pid.i
 
-    override fun getClosedLoopError(): Double = inputs.position - (positionSetpoint ?: 0.0)
+    override fun getClosedLoopError(): Double = (positionSetpoint ?: 0.0) - getSelectedSensorPosition()
 
     override fun getInverted(): Boolean = inverted
 
