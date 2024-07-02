@@ -4,12 +4,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.*
 import kotlin.math.absoluteValue
 
+@OptIn(DelicateCoroutinesApi::class)
 class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
@@ -32,9 +35,12 @@ class MotorControllerSim: MotorControllerIO {
 
         GlobalScope.launch {
             periodic {
-                if (positionSetpoint != null) {
-                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError()}")
-                    setPercentOutput(pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward)
+                if (positionSetpoint != null) { //do closed loop control
+                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError().round(1)} \t setpoint ${positionSetpoint!!.round(1)} \t angle ${getSelectedSensorPosition().round(1)}")
+
+                    setPercentOutput(
+                        pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward
+                    )
                 }
             }
         }
@@ -45,9 +51,9 @@ class MotorControllerSim: MotorControllerIO {
         sim.update(0.02)
 
         inputs.position = (sim.angularPositionRotations)
-        inputs.outputPercent = outputPercent
         inputs.velocity = (sim.angularVelocityRPM) / 60.0
         inputs.current = sim.currentDrawAmps.absoluteValue
+        inputs.outputPercent = outputPercent
 
         this.inputs = inputs
     }
@@ -71,6 +77,9 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState(sensorPos.rotations.asRadians, getSelectedSensorVelocity())
 
+    override fun restoreFactoryDefaults() = constructSim()
+
+    override fun stop() = setPercentOutput(0.0)
 
     override fun setInverted(invert: Boolean) {
         inverted = invert
@@ -100,19 +109,12 @@ class MotorControllerSim: MotorControllerIO {
         this.feedForward = feedForward
     }
 
-
     override fun setVelocitySetpoint(velocity: Double) {
         TODO("Not yet implemented")
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         TODO("Not yet implemented")
-    }
-
-    override fun restoreFactoryDefaults() { constructSim() }
-
-    override fun stop() {
-        setPercentOutput(0.0)
     }
 
     private fun constructSim() {
