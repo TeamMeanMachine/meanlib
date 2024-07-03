@@ -16,8 +16,6 @@ import kotlin.math.absoluteValue
 class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
-    private var motorType = DCMotor.getKrakenX60Foc(1)
-    private var jKgMetersSquared = 1.0
 
     //control
     private val pid = PIDController(0.0, 0.0, 0.0)
@@ -31,7 +29,7 @@ class MotorControllerSim: MotorControllerIO {
     override val current: Double get() = inputs.current
 
     init {
-        constructSim()
+        restoreFactoryDefaults()
 
         GlobalScope.launch {
             periodic {
@@ -75,9 +73,9 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
-    override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState(sensorPos.rotations.asRadians, getSelectedSensorVelocity())
+    override fun restoreFactoryDefaults() = configSim(DCMotor.getKrakenX60Foc(1), 1.0)
 
-    override fun restoreFactoryDefaults() = constructSim()
+    override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState(sensorPos.rotations.asRadians, getSelectedSensorVelocity())
 
     override fun stop() = setPercentOutput(0.0)
 
@@ -86,9 +84,9 @@ class MotorControllerSim: MotorControllerIO {
     }
 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
-        motorType = motor
-        this.jKgMetersSquared = jKgMetersSquared
-        constructSim()
+        println("creating new sim. name: ${inputs.name}  MOI: $jKgMetersSquared")
+        sim = DCMotorSim(motor, 1.0, jKgMetersSquared)
+        sim.setState(0.0, 0.0)
     }
 
     override fun setPercentOutput(percent: Double) {
@@ -111,12 +109,6 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         TODO("Not yet implemented")
-    }
-
-    private fun constructSim() {
-        println("creating new sim. name: ${inputs.name}  MOI: $jKgMetersSquared")
-        sim = DCMotorSim(motorType, 1.0, jKgMetersSquared)
-        sim.setState(0.0, 0.0)
     }
 
     private fun setVoltageOutput(volts: Double) {
