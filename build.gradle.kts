@@ -6,7 +6,6 @@ plugins {
     id ("idea")
     id ("maven-publish")
     id ("java-library")
-    id ("com.google.devtools.ksp") version "1.9.21-1.0.15"
 }
 
 buildscript {
@@ -40,10 +39,6 @@ repositories {
 }
 
 dependencies {
-    //@Logged annotation processor
-    implementation("org.team9432:annotation")
-    ksp("org.team9432:annotation")
-
     //AdvantageKit libs
     implementation("org.littletonrobotics.akit.junction:junction-core:$advantageKitVersion")
     implementation("org.littletonrobotics.akit.junction:wpilib-shim:$advantageKitVersion")

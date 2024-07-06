@@ -34,7 +34,7 @@ class MotorControllerSim: MotorControllerIO {
         GlobalScope.launch {
             periodic {
                 if (positionSetpoint != null) { //do closed loop control
-                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError().round(1)} \t setpoint ${positionSetpoint!!.round(1)} \t angle ${getSelectedSensorPosition().round(1)}")
+//                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError().round(1)} \t setpoint ${positionSetpoint!!.round(1)} \t angle ${getSelectedSensorPosition().round(1)}")
 
                     setPercentOutput(
                         pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward

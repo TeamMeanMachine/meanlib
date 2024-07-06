@@ -5,8 +5,6 @@ import edu.wpi.first.math.system.plant.DCMotor
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.math.DoubleRange
-import org.team9432.lib.advantagekit.kGet
-import org.team9432.lib.advantagekit.kPut
 
 interface MotorControllerIO {
     val current: Double
@@ -19,17 +17,17 @@ interface MotorControllerIO {
         var velocity: Double = 0.0
 
         override fun toLog(table: LogTable) {
-            table.kPut("$name/Position", position)
-            table.kPut("$name/Current", current)
-            table.kPut("$name/OutputPercent", outputPercent)
-            table.kPut("$name/Velocity", velocity)
+            table.put("$name/Position", position)
+            table.put("$name/Current", current)
+            table.put("$name/OutputPercent", outputPercent)
+            table.put("$name/Velocity", velocity)
         }
 
         override fun fromLog(table: LogTable) {
-            table.kGet("$name/Position", position)
-            table.kGet("$name/Current", current)
-            table.kGet("$name/OutputPercent", outputPercent)
-            table.kGet("$name/Velocity", velocity)
+            table.get("$name/Position", position)
+            table.get("$name/Current", current)
+            table.get("$name/OutputPercent", outputPercent)
+            table.get("$name/Velocity", velocity)
         }
     }
 
