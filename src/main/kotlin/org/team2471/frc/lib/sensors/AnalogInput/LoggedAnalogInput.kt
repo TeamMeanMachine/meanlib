@@ -18,14 +18,13 @@ import edu.wpi.first.wpilibj.AnalogInput
  */
 class LoggedAnalogInput(id: Int, name: String, simTicksSupplier: () -> Int? = {null}) {
     private val inputs = LoggedAnalogIO.AnalogIOInputs(name)
-
-    val value: Int get() = inputs.ticks
-    val voltage: Double get() = inputs.voltage
-
     private val io: LoggedAnalogIO = when (robotMode) {
         RobotMode.REAL -> LoggedAnalogIOReal(id)
         RobotMode.REPLAY, RobotMode.SIM -> LoggedAnalogIOSim(simTicksSupplier)
     }
+
+    val value: Int get() = inputs.ticks
+    val voltage: Double get() = inputs.voltage
 
     init {
         GlobalScope.launch {
