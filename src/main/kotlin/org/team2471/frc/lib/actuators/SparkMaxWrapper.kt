@@ -17,9 +17,9 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
         inputs.position = _motorController.encoder.position
-        inputs.outputPercent = outputPercent
+        inputs.outputPercent = _motorController.appliedOutput
         inputs.velocity = _motorController.encoder.velocity
-        inputs.current = current
+        inputs.current = _motorController.outputCurrent
 
         this.inputs = inputs
     }
