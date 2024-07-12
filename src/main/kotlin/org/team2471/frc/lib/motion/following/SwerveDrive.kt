@@ -226,7 +226,7 @@ data class AngleAndSpeed(val angle: Angle, val power: Double)
 private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
 
     var power = localGoal.length
-    var setPoint = -localGoal.angle //this negative is a bandaid fix (my theory is our angles are opposite from what wpilib and simulation has)
+    var setPoint = localGoal.angle
     val angleError = (setPoint - angle).wrap()
     if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
         setPoint -= Math.PI.radians

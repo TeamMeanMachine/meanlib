@@ -67,10 +67,10 @@ inline val Number.radians get() = Angle(Math.toDegrees(this.toDouble()))
 inline val Number.degrees get() = Angle(this.toDouble())
 inline val Number.rotations get() = Angle(this.toDouble() * 360.0)
 
-inline val Rotation2d.meanlibAngle get() = Angle(this.degrees)
+inline val Rotation2d.meanlibAngle get() = Angle(-this.degrees) //WPILIB's angle system is flipped from MeanLib
 
 // destructors
 inline val Angle.asRadians get() = Math.toRadians(asDegrees)
 inline val Angle.asRotations get() = asDegrees / 360.0
 
-inline val Angle.asRotation2d get() = Rotation2d.fromRadians(asRadians)
+inline val Angle.asRotation2d get() = Rotation2d.fromRadians(-asRadians) //WPILIB's angle system is flipped from MeanLib
