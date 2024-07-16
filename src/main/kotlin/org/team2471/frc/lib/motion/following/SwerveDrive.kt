@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.motion.following
 
-import com.google.gson.Gson
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
@@ -63,6 +62,7 @@ interface SwerveDrive {
         var prevDistance: Double
         val treadWear: Double
         var odometer: Double
+        var fieldPosition: Vector2
 
         // motor interface
         var angleSetpoint: Angle
@@ -272,26 +272,30 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 }
 
 fun SwerveDrive.recordOdometry() {
-    var translation = Vector2(0.0, 0.0)
+    var robotTranslation = Vector2(0.0, 0.0)
 
-    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
+    val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        translations[i] = modules[i].recordOdometry(heading, carpetFlow,kCarpet, kTread)
-        modules[i].odometer += translations[i].length
+        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow,kCarpet, kTread)
+//        modules[i].fieldPosition += moduleTranslation
+        modules[i].odometer += moduleTranslation.length
 
+        robotTranslation += moduleTranslation / modules.size.toDouble()
+        moduleTranslations[i] = moduleTranslation
+    }
+    for (i in modules.indices) { //calculate the field-centric position for each module
+        modules[i].fieldPosition = position + modules[i].modulePosition.inches.asFeet + moduleTranslations[i].perpendicular()
     }
 
-    for (i in modules.indices) {
-        translation += translations[i]
-    }
-    translation /= modules.size.toDouble()
-
-    position += Vector2(translation.x, translation.y)
-    deltaPos = Vector2L(translation.x.feet, translation.y.feet)
+    position += Vector2(robotTranslation.x, robotTranslation.y)
+    deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
 //    println("recording odom $deltaPos")
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
+
+
+
     val poseDifference = SwerveDrive.Pose(pose.position - prevPose.position, pose.heading - prevPose.heading)
     poseUpdate(poseDifference)
     poseHistory[InterpolatingDouble(time)] = pose
