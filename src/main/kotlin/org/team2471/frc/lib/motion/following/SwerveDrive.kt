@@ -40,6 +40,8 @@ interface SwerveDrive {
     val plannedPath: NetworkTableEntry
     val actualRoute: NetworkTableEntry
 
+    val gyroConnected: Boolean
+
     val modules: Array<Module>
 
     fun startFollowing() = Unit
@@ -64,6 +66,9 @@ interface SwerveDrive {
         var odometer: Double
         var fieldPosition: Vector2
 
+        var prevAngleInFieldSpace: Angle
+        var prevAngle: Angle
+
         // motor interface
         var angleSetpoint: Angle
 
@@ -72,11 +77,6 @@ interface SwerveDrive {
         fun stop()
         fun zeroEncoder()
         fun driveWithDistance(angle: Angle, distance: Length)
-    }
-
-    companion object {
-        var prevTranslationInput = Vector2(0.0,0.0)
-        var prevTurn = 0.0
     }
 
     data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose> {
@@ -250,8 +250,9 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, kTread: Double): Vector2 {
-    val angleInFieldSpace = heading - angle
+fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, gyroConnected: Boolean): Vector2 {
+    val moduleAngle = angle
+    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else prevAngleInFieldSpace + (moduleAngle - prevAngle)
     val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
     var signedWheelDir = wheelDir
 
@@ -260,15 +261,14 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (deltaDistance < 0.0) {
         signedWheelDir *= -1.0
     }
+
     deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
-    //println("wheelDir = ${wheelDir} carpetFlow = ${carpetFlow} dot = ${wheelDir.dot(carpetFlow)}")
-//    if (deltaDistance.absoluteValue < 1.0) {
-        prevDistance = holdDistance
-        return wheelDir * deltaDistance
-//    } else {
-//        println("TOO MUCH MOVEMENT")
-//        return Vector2(0.0,0.0)
-//    }
+
+    prevDistance = holdDistance
+    prevAngleInFieldSpace = angleInFieldSpace
+    prevAngle = moduleAngle
+
+    return wheelDir * deltaDistance
 }
 
 fun SwerveDrive.recordOdometry() {
@@ -276,15 +276,16 @@ fun SwerveDrive.recordOdometry() {
 
     val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow,kCarpet, kTread)
-//        modules[i].fieldPosition += moduleTranslation
+        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
         modules[i].odometer += moduleTranslation.length
 
         robotTranslation += moduleTranslation / modules.size.toDouble()
         moduleTranslations[i] = moduleTranslation
     }
     for (i in modules.indices) { //calculate the field-centric position for each module
-        modules[i].fieldPosition = position + modules[i].modulePosition.inches.asFeet + moduleTranslations[i].perpendicular()
+//        modules[i].fieldPosition += Vector2(moduleTranslations[i].x, moduleTranslations[i].y)
+
+//        modules[i].fieldPosition = position + modules[i].modulePosition.inches.asFeet.rotate(heading) + moduleTranslations[i]
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
