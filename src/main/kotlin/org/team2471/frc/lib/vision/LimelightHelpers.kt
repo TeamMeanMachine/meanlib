@@ -1,3 +1,4 @@
+//LimelightHelpers v1.9 (REQUIRES 2024.9.1)
 package org.team2471.frc.lib.vision
 
 import com.fasterxml.jackson.annotation.JsonFormat
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import edu.wpi.first.math.geometry.*
 import edu.wpi.first.math.util.Units
+import edu.wpi.first.networktables.DoubleArrayEntry
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.NetworkTableInstance
@@ -15,10 +17,12 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.concurrent.CompletableFuture
-
-//LimelightHelpers v1.5.0 (March 27, 2024)  Kotlinized copy-paste from GitHub LimelightVision/limelightlib-wpijava (Hopefully they have maven by next time
+import java.util.concurrent.ConcurrentHashMap
 
 object LimelightHelpers {
+    private val doubleArrayEntries: MutableMap<String, DoubleArrayEntry> = ConcurrentHashMap()
+
+
     private var mapper: ObjectMapper? = null
 
     /**
@@ -33,7 +37,7 @@ object LimelightHelpers {
         return name
     }
 
-    private fun toPose3D(inData: DoubleArray): Pose3d {
+    fun toPose3D(inData: DoubleArray): Pose3d {
         if (inData.size < 6) {
             //System.err.println("Bad LL 3D Pose Data!");
             return Pose3d()
@@ -49,7 +53,7 @@ object LimelightHelpers {
         )
     }
 
-    private fun toPose2D(inData: DoubleArray): Pose2d {
+    fun toPose2D(inData: DoubleArray): Pose2d {
         if (inData.size < 6) {
             //System.err.println("Bad LL 2D Pose Data!");
             return Pose2d()
@@ -59,25 +63,68 @@ object LimelightHelpers {
         return Pose2d(tran2d, r2d)
     }
 
-    private fun extractBotPoseEntry(inData: DoubleArray, position: Int): Double {
+    /**
+     * Converts a Pose3d object to an array of doubles.
+     *
+     * @param pose The Pose3d object to convert.
+     * @return The array of doubles representing the pose.
+     */
+    fun pose3dToArray(pose: Pose3d): DoubleArray {
+        val result = DoubleArray(6)
+        result[0] = pose.translation.x
+        result[1] = pose.translation.y
+        result[2] = pose.translation.z
+        result[3] = Units.radiansToDegrees(pose.rotation.x)
+        result[4] = Units.radiansToDegrees(pose.rotation.y)
+        result[5] = Units.radiansToDegrees(pose.rotation.z)
+        return result
+    }
+
+    /**
+     * Converts a Pose2d object to an array of doubles.
+     *
+     * @param pose The Pose2d object to convert.
+     * @return The array of doubles representing the pose.
+     */
+    fun pose2dToArray(pose: Pose2d): DoubleArray {
+        val result = DoubleArray(6)
+        result[0] = pose.translation.x
+        result[1] = pose.translation.y
+        result[2] = 0.0
+        result[3] = Units.radiansToDegrees(0.0)
+        result[4] = Units.radiansToDegrees(0.0)
+        result[5] = Units.radiansToDegrees(pose.rotation.radians)
+        return result
+    }
+
+    private fun extractArrayEntry(inData: DoubleArray, position: Int): Double {
         if (inData.size < position + 1) {
             return 0.0
         }
         return inData[position]
     }
 
-    private fun getBotPoseEstimate(limelightName: String, entryName: String): PoseEstimate {
-        val poseEntry = getLimelightNTTableEntry(limelightName, entryName)
-        val poseArray = poseEntry.getDoubleArray(DoubleArray(0))
-        val pose = toPose2D(poseArray)
-        val latency = extractBotPoseEntry(poseArray, 6)
-        val tagCount = extractBotPoseEntry(poseArray, 7).toInt()
-        val tagSpan = extractBotPoseEntry(poseArray, 8)
-        val tagDist = extractBotPoseEntry(poseArray, 9)
-        val tagArea = extractBotPoseEntry(poseArray, 10)
-        //getlastchange() in microseconds, ll latency in milliseconds
-        val timestamp = (poseEntry.lastChange / 1000000.0) - (latency / 1000.0)
+    private fun getBotPoseEstimate(limelightName: String, entryName: String): PoseEstimate? {
+        val poseEntry = getLimelightDoubleArrayEntry(limelightName, entryName)
 
+        val tsValue = poseEntry.atomic
+        val poseArray = tsValue.value
+        val timestamp = tsValue.timestamp
+
+        if (poseArray.size == 0) {
+            // Handle the case where no data is available
+            return null // or some default PoseEstimate
+        }
+
+        val pose = toPose2D(poseArray)
+        val latency = extractArrayEntry(poseArray, 6)
+        val tagCount = extractArrayEntry(poseArray, 7).toInt()
+        val tagSpan = extractArrayEntry(poseArray, 8)
+        val tagDist = extractArrayEntry(poseArray, 9)
+        val tagArea = extractArrayEntry(poseArray, 10)
+
+        // Convert server timestamp from microseconds to seconds and adjust for latency
+        val adjustedTimestamp = (timestamp / 1000000.0) - (latency / 1000.0)
 
         val rawFiducials = arrayOfNulls<RawFiducial>(tagCount)
         val valsPerFiducial = 7
@@ -99,10 +146,82 @@ object LimelightHelpers {
             }
         }
 
-        return PoseEstimate(pose, timestamp, latency, tagCount, tagSpan, tagDist, tagArea, rawFiducials)
+        return PoseEstimate(pose, adjustedTimestamp, latency, tagCount, tagSpan, tagDist, tagArea, rawFiducials)
     }
 
-    private fun printPoseEstimate(pose: PoseEstimate?) {
+    private fun getRawFiducials(limelightName: String): Array<RawFiducial?> {
+        val entry = getLimelightNTTableEntry(limelightName, "rawfiducials")
+        val rawFiducialArray = entry.getDoubleArray(DoubleArray(0))
+        val valsPerEntry = 7
+        if (rawFiducialArray.size % valsPerEntry != 0) {
+            return arrayOfNulls(0)
+        }
+
+        val numFiducials = rawFiducialArray.size / valsPerEntry
+        val rawFiducials = arrayOfNulls<RawFiducial>(numFiducials)
+
+        for (i in 0 until numFiducials) {
+            val baseIndex = i * valsPerEntry
+            val id = extractArrayEntry(rawFiducialArray, baseIndex).toInt()
+            val txnc = extractArrayEntry(rawFiducialArray, baseIndex + 1)
+            val tync = extractArrayEntry(rawFiducialArray, baseIndex + 2)
+            val ta = extractArrayEntry(rawFiducialArray, baseIndex + 3)
+            val distToCamera = extractArrayEntry(rawFiducialArray, baseIndex + 4)
+            val distToRobot = extractArrayEntry(rawFiducialArray, baseIndex + 5)
+            val ambiguity = extractArrayEntry(rawFiducialArray, baseIndex + 6)
+
+            rawFiducials[i] = RawFiducial(id, txnc, tync, ta, distToCamera, distToRobot, ambiguity)
+        }
+
+        return rawFiducials
+    }
+
+    fun getRawDetections(limelightName: String?): Array<RawDetection?> {
+        val entry = getLimelightNTTableEntry(limelightName, "rawdetections")
+        val rawDetectionArray = entry.getDoubleArray(DoubleArray(0))
+        val valsPerEntry = 11
+        if (rawDetectionArray.size % valsPerEntry != 0) {
+            return arrayOfNulls(0)
+        }
+
+        val numDetections = rawDetectionArray.size / valsPerEntry
+        val rawDetections = arrayOfNulls<RawDetection>(numDetections)
+
+        for (i in 0 until numDetections) {
+            val baseIndex = i * valsPerEntry // Starting index for this detection's data
+            val classId = extractArrayEntry(rawDetectionArray, baseIndex).toInt()
+            val txnc = extractArrayEntry(rawDetectionArray, baseIndex + 1)
+            val tync = extractArrayEntry(rawDetectionArray, baseIndex + 2)
+            val ta = extractArrayEntry(rawDetectionArray, baseIndex + 3)
+            val corner0_X = extractArrayEntry(rawDetectionArray, baseIndex + 4)
+            val corner0_Y = extractArrayEntry(rawDetectionArray, baseIndex + 5)
+            val corner1_X = extractArrayEntry(rawDetectionArray, baseIndex + 6)
+            val corner1_Y = extractArrayEntry(rawDetectionArray, baseIndex + 7)
+            val corner2_X = extractArrayEntry(rawDetectionArray, baseIndex + 8)
+            val corner2_Y = extractArrayEntry(rawDetectionArray, baseIndex + 9)
+            val corner3_X = extractArrayEntry(rawDetectionArray, baseIndex + 10)
+            val corner3_Y = extractArrayEntry(rawDetectionArray, baseIndex + 11)
+
+            rawDetections[i] = RawDetection(
+                classId,
+                txnc,
+                tync,
+                ta,
+                corner0_X,
+                corner0_Y,
+                corner1_X,
+                corner1_Y,
+                corner2_X,
+                corner2_Y,
+                corner3_X,
+                corner3_Y
+            )
+        }
+
+        return rawDetections
+    }
+
+    fun printPoseEstimate(pose: PoseEstimate?) {
         if (pose == null) {
             println("No PoseEstimate available.")
             return
@@ -141,8 +260,22 @@ object LimelightHelpers {
         return NetworkTableInstance.getDefault().getTable(sanitizeName(tableName))
     }
 
+    fun Flush() {
+        NetworkTableInstance.getDefault().flush()
+    }
+
     fun getLimelightNTTableEntry(tableName: String?, entryName: String?): NetworkTableEntry {
         return getLimelightNTTable(tableName).getEntry(entryName)
+    }
+
+    fun getLimelightDoubleArrayEntry(tableName: String, entryName: String): DoubleArrayEntry {
+        val key = "$tableName/$entryName"
+        return doubleArrayEntries.computeIfAbsent(
+            key
+        ) { k: String? ->
+            val table = getLimelightNTTable(tableName)
+            table.getDoubleArrayTopic(entryName).getEntry(DoubleArray(0))
+        }
     }
 
     fun getLimelightNTDouble(tableName: String?, entryName: String?): Double {
@@ -161,9 +294,15 @@ object LimelightHelpers {
         return getLimelightNTTableEntry(tableName, entryName).getDoubleArray(DoubleArray(0))
     }
 
+
     fun getLimelightNTString(tableName: String?, entryName: String?): String {
         return getLimelightNTTableEntry(tableName, entryName).getString("")
     }
+
+    fun getLimelightNTStringArray(tableName: String?, entryName: String?): Array<String> {
+        return getLimelightNTTableEntry(tableName, entryName).getStringArray(arrayOfNulls(0))
+    }
+
 
     fun getLimelightURLString(tableName: String?, request: String): URL? {
         val urlString = "http://" + sanitizeName(tableName) + ".local:5807/" + request
@@ -191,6 +330,44 @@ object LimelightHelpers {
         return getLimelightNTDouble(limelightName, "ta")
     }
 
+    fun getT2DArray(limelightName: String?): DoubleArray {
+        return getLimelightNTDoubleArray(limelightName, "t2d")
+    }
+
+
+    fun getTargetCount(limelightName: String?): Int {
+        val t2d = getT2DArray(limelightName)
+        if (t2d.size == 17) {
+            return t2d[1].toInt()
+        }
+        return 0
+    }
+
+    fun getClassifierClassIndex(limelightName: String?): Int {
+        val t2d = getT2DArray(limelightName)
+        if (t2d.size == 17) {
+            return t2d[10].toInt()
+        }
+        return 0
+    }
+
+    fun getDetectorClassIndex(limelightName: String?): Int {
+        val t2d = getT2DArray(limelightName)
+        if (t2d.size == 17) {
+            return t2d[11].toInt()
+        }
+        return 0
+    }
+
+    fun getClassifierClass(limelightName: String?): String {
+        return getLimelightNTString(limelightName, "tcclass")
+    }
+
+    fun getDetectorClass(limelightName: String?): String {
+        return getLimelightNTString(limelightName, "tdclass")
+    }
+
+
     fun getLatency_Pipeline(limelightName: String?): Double {
         return getLimelightNTDouble(limelightName, "tl")
     }
@@ -201,6 +378,10 @@ object LimelightHelpers {
 
     fun getCurrentPipelineIndex(limelightName: String?): Double {
         return getLimelightNTDouble(limelightName, "getpipe")
+    }
+
+    fun getCurrentPipelineType(limelightName: String?): String {
+        return getLimelightNTString(limelightName, "getpipetype")
     }
 
     fun getJSONDump(limelightName: String?): String {
@@ -280,6 +461,10 @@ object LimelightHelpers {
         return getLimelightNTString(limelightName, "tclass")
     }
 
+    fun getRawBarcodeData(limelightName: String?): Array<String> {
+        return getLimelightNTStringArray(limelightName, "rawbarcodes")
+    }
+
     /////
     /////
     fun getBotPose3d(limelightName: String?): Pose3d {
@@ -341,7 +526,7 @@ object LimelightHelpers {
      * @param limelightName
      * @return
      */
-    fun getBotPoseEstimate_wpiBlue(limelightName: String): PoseEstimate {
+    fun getBotPoseEstimate_wpiBlue(limelightName: String): PoseEstimate? {
         return getBotPoseEstimate(limelightName, "botpose_wpiblue")
     }
 
@@ -352,7 +537,7 @@ object LimelightHelpers {
      * @param limelightName
      * @return
      */
-    fun getBotPoseEstimate_wpiBlue_MegaTag2(limelightName: String): PoseEstimate {
+    fun getBotPoseEstimate_wpiBlue_MegaTag2(limelightName: String): PoseEstimate? {
         return getBotPoseEstimate(limelightName, "botpose_orb_wpiblue")
     }
 
@@ -374,7 +559,7 @@ object LimelightHelpers {
      * @param limelightName
      * @return
      */
-    fun getBotPoseEstimate_wpiRed(limelightName: String): PoseEstimate {
+    fun getBotPoseEstimate_wpiRed(limelightName: String): PoseEstimate? {
         return getBotPoseEstimate(limelightName, "botpose_wpired")
     }
 
@@ -384,7 +569,7 @@ object LimelightHelpers {
      * @param limelightName
      * @return
      */
-    fun getBotPoseEstimate_wpiRed_MegaTag2(limelightName: String): PoseEstimate {
+    fun getBotPoseEstimate_wpiRed_MegaTag2(limelightName: String): PoseEstimate? {
         return getBotPoseEstimate(limelightName, "botpose_orb_wpired")
     }
 
@@ -447,14 +632,6 @@ object LimelightHelpers {
         setLimelightNTDouble(limelightName, "stream", 2.0)
     }
 
-    fun setCameraMode_Processor(limelightName: String?) {
-        setLimelightNTDouble(limelightName, "camMode", 0.0)
-    }
-
-    fun setCameraMode_Driver(limelightName: String?) {
-        setLimelightNTDouble(limelightName, "camMode", 1.0)
-    }
-
 
     /**
      * Sets the crop window. The crop window in the UI must be completely open for
@@ -469,10 +646,37 @@ object LimelightHelpers {
         setLimelightNTDoubleArray(limelightName, "crop", entries)
     }
 
+    /**
+     * Sets 3D offset point for easy 3D targeting.
+     */
+    fun setFiducial3DOffset(limelightName: String?, offsetX: Double, offsetY: Double, offsetZ: Double) {
+        val entries = DoubleArray(3)
+        entries[0] = offsetX
+        entries[1] = offsetY
+        entries[2] = offsetZ
+        setLimelightNTDoubleArray(limelightName, "fiducial_offset_set", entries)
+    }
+
     fun SetRobotOrientation(
-        limelightName: String?, yaw: Double, yawRate: Double,
+        limelightName: String, yaw: Double, yawRate: Double,
         pitch: Double, pitchRate: Double,
         roll: Double, rollRate: Double
+    ) {
+        SetRobotOrientation_INTERNAL(limelightName, yaw, yawRate, pitch, pitchRate, roll, rollRate, true)
+    }
+
+    fun SetRobotOrientation_NoFlush(
+        limelightName: String, yaw: Double, yawRate: Double,
+        pitch: Double, pitchRate: Double,
+        roll: Double, rollRate: Double
+    ) {
+        SetRobotOrientation_INTERNAL(limelightName, yaw, yawRate, pitch, pitchRate, roll, rollRate, false)
+    }
+
+    private fun SetRobotOrientation_INTERNAL(
+        limelightName: String, yaw: Double, yawRate: Double,
+        pitch: Double, pitchRate: Double,
+        roll: Double, rollRate: Double, flush: Boolean
     ) {
         val entries = DoubleArray(6)
         entries[0] = yaw
@@ -482,6 +686,21 @@ object LimelightHelpers {
         entries[4] = roll
         entries[5] = rollRate
         setLimelightNTDoubleArray(limelightName, "robot_orientation_set", entries)
+        if (flush) {
+            Flush()
+        }
+    }
+
+
+    fun SetFidcuial3DOffset(
+        limelightName: String?, x: Double, y: Double,
+        z: Double
+    ) {
+        val entries = DoubleArray(3)
+        entries[0] = x
+        entries[1] = y
+        entries[2] = z
+        setLimelightNTDoubleArray(limelightName, "fiducial_offset_set", entries)
     }
 
     fun SetFiducialIDFiltersOverride(limelightName: String?, validIDs: IntArray) {
@@ -490,6 +709,26 @@ object LimelightHelpers {
             validIDsDouble[i] = validIDs[i].toDouble()
         }
         setLimelightNTDoubleArray(limelightName, "fiducial_id_filters_set", validIDsDouble)
+    }
+
+    fun SetFiducialDownscalingOverride(limelightName: String?, downscale: Float) {
+        var d = 0 // pipeline
+        if (downscale.toDouble() == 1.0) {
+            d = 1
+        }
+        if (downscale.toDouble() == 1.5) {
+            d = 2
+        }
+        if (downscale == 2f) {
+            d = 3
+        }
+        if (downscale == 3f) {
+            d = 4
+        }
+        if (downscale == 4f) {
+            d = 5
+        }
+        setLimelightNTDouble(limelightName, "fiducial_downscale_set", d.toDouble())
     }
 
     fun setCameraPose_RobotSpace(
@@ -567,17 +806,14 @@ object LimelightHelpers {
         }
 
         try {
-            results = mapper!!.readValue(
-                getJSONDump(limelightName),
-                LimelightResults::class.java
-            )
+            results = mapper!!.readValue(getJSONDump(limelightName), LimelightResults::class.java)
         } catch (e: JsonProcessingException) {
             results.error = "lljson error: " + e.message
         }
 
         val end = System.nanoTime()
         val millis = (end - start) * .000001
-        results.targetingResults.latency_jsonParse = millis
+        results.latency_jsonParse = millis
         if (profileJSON) {
             System.out.printf("lljson: %.2f\r\n", millis)
         }
@@ -777,7 +1013,9 @@ object LimelightHelpers {
         var ty_pixels: Double = 0.0
     }
 
-    class Results {
+    class LimelightResults {
+        var error: String? = null
+
         @JsonProperty("pID")
         var pipelineID: Double = 0.0
 
@@ -845,42 +1083,121 @@ object LimelightHelpers {
         var targets_Retro: Array<LimelightTarget_Retro?> = arrayOfNulls(0)
 
         @JsonProperty("Fiducial")
-        var targets_Fiducials: Array<LimelightTarget_Fiducial?> =
-            arrayOfNulls(0)
+        var targets_Fiducials: Array<LimelightTarget_Fiducial?> = arrayOfNulls(0)
 
         @JsonProperty("Classifier")
-        var targets_Classifier: Array<LimelightTarget_Classifier?> =
-            arrayOfNulls(0)
+        var targets_Classifier: Array<LimelightTarget_Classifier?> = arrayOfNulls(0)
 
         @JsonProperty("Detector")
-        var targets_Detector: Array<LimelightTarget_Detector?> =
-            arrayOfNulls(0)
+        var targets_Detector: Array<LimelightTarget_Detector?> = arrayOfNulls(0)
 
         @JsonProperty("Barcode")
-        var targets_Barcode: Array<LimelightTarget_Barcode?> =
-            arrayOfNulls(0)
-    }
-
-    class LimelightResults {
-        @JsonProperty("Results")
-        var targetingResults: Results = Results()
-
-        var error: String = ""
+        var targets_Barcode: Array<LimelightTarget_Barcode?> = arrayOfNulls(0)
     }
 
     class RawFiducial(
-        var id: Int,
-        var txnc: Double,
-        var tync: Double,
-        var ta: Double,
-        var distToCamera: Double,
-        var distToRobot: Double,
-        var ambiguity: Double
-    )
+        id: Int,
+        txnc: Double,
+        tync: Double,
+        ta: Double,
+        distToCamera: Double,
+        distToRobot: Double,
+        ambiguity: Double
+    ) {
+        var id: Int = 0
+        var txnc: Double = 0.0
+        var tync: Double = 0.0
+        var ta: Double = 0.0
+        var distToCamera: Double = 0.0
+        var distToRobot: Double = 0.0
+        var ambiguity: Double = 0.0
 
-    class PoseEstimate(
-        var pose: Pose2d, var timestampSeconds: Double, var latency: Double,
-        var tagCount: Int, var tagSpan: Double, var avgTagDist: Double,
-        var avgTagArea: Double, var rawFiducials: Array<RawFiducial?>?
-    )
+
+        init {
+            this.id = id
+            this.txnc = txnc
+            this.tync = tync
+            this.ta = ta
+            this.distToCamera = distToCamera
+            this.distToRobot = distToRobot
+            this.ambiguity = ambiguity
+        }
+    }
+
+    class RawDetection(
+        classId: Int, txnc: Double, tync: Double, ta: Double,
+        corner0_X: Double, corner0_Y: Double,
+        corner1_X: Double, corner1_Y: Double,
+        corner2_X: Double, corner2_Y: Double,
+        corner3_X: Double, corner3_Y: Double
+    ) {
+        var classId: Int = 0
+        var txnc: Double = 0.0
+        var tync: Double = 0.0
+        var ta: Double = 0.0
+        var corner0_X: Double = 0.0
+        var corner0_Y: Double = 0.0
+        var corner1_X: Double = 0.0
+        var corner1_Y: Double = 0.0
+        var corner2_X: Double = 0.0
+        var corner2_Y: Double = 0.0
+        var corner3_X: Double = 0.0
+        var corner3_Y: Double = 0.0
+
+
+        init {
+            this.classId = classId
+            this.txnc = txnc
+            this.tync = tync
+            this.ta = ta
+            this.corner0_X = corner0_X
+            this.corner0_Y = corner0_Y
+            this.corner1_X = corner1_X
+            this.corner1_Y = corner1_Y
+            this.corner2_X = corner2_X
+            this.corner2_Y = corner2_Y
+            this.corner3_X = corner3_X
+            this.corner3_Y = corner3_Y
+        }
+    }
+
+    class PoseEstimate {
+        var pose: Pose2d
+        var timestampSeconds: Double
+        var latency: Double
+        var tagCount: Int
+        var tagSpan: Double
+        var avgTagDist: Double
+        var avgTagArea: Double
+        var rawFiducials: Array<RawFiducial?>?
+
+        /**
+         * Makes a PoseEstimate object with default values
+         */
+        constructor() {
+            this.pose = Pose2d()
+            this.timestampSeconds = 0.0
+            this.latency = 0.0
+            this.tagCount = 0
+            this.tagSpan = 0.0
+            this.avgTagDist = 0.0
+            this.avgTagArea = 0.0
+            this.rawFiducials = arrayOf()
+        }
+
+        constructor(
+            pose: Pose2d, timestampSeconds: Double, latency: Double,
+            tagCount: Int, tagSpan: Double, avgTagDist: Double,
+            avgTagArea: Double, rawFiducials: Array<RawFiducial?>?
+        ) {
+            this.pose = pose
+            this.timestampSeconds = timestampSeconds
+            this.latency = latency
+            this.tagCount = tagCount
+            this.tagSpan = tagSpan
+            this.avgTagDist = avgTagDist
+            this.avgTagArea = avgTagArea
+            this.rawFiducials = rawFiducials
+        }
+    }
 }
