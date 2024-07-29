@@ -32,7 +32,7 @@ interface SwerveDrive {
     var combinedPosition: Vector2L
     var velocity: Vector2
     var deltaPos: Vector2L
-    var robotPivot: Vector2 // location of rotational pivot in robot coordinates
+    var robotPivot: Vector2L // location of rotational pivot in robot coordinates
     var headingSetpoint: Angle
     val carpetFlow: Vector2
     val kCarpet: Double
@@ -54,7 +54,7 @@ interface SwerveDrive {
 
     interface Module {
         // module fixed parameters
-        val modulePosition: Vector2 // coordinates of module in robot coordinates
+        val modulePosition: Vector2L // coordinates of module in robot coordinates
         val angleOffset: Angle
 
         // encoder interface
@@ -170,7 +170,7 @@ fun SwerveDrive.drive(
 
     val requestedLocalGoals = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize() * requestedTurn
+        requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize().asInches * requestedTurn
     }
 
     val speeds = Array(modules.size) { 0.0 }
@@ -189,7 +189,7 @@ fun SwerveDrive.drive(
         val interpolatedTurn = normalizedTurnRate + turnDelta.sign * length2
 
         for (i in modules.indices) {
-            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize() * interpolatedTurn
+            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize().asInches * interpolatedTurn
             val bHat = interpolatedLocalGoal.normalize()
             val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
             val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
@@ -273,23 +273,32 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 
 fun SwerveDrive.recordOdometry() {
     var robotTranslation = Vector2(0.0, 0.0)
+    var robotRotation = 0.0.degrees
 
     val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
+    val moduleRotations: Array<Angle> = Array(modules.size) { 0.0.degrees }
+//    println()
     for (i in modules.indices) {
-        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
+        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, true)
         modules[i].odometer += moduleTranslation.length
 
-        robotTranslation += moduleTranslation / modules.size.toDouble()
-        moduleTranslations[i] = moduleTranslation
-    }
-    for (i in modules.indices) { //calculate the field-centric position for each module
-//        modules[i].fieldPosition += Vector2(moduleTranslations[i].x, moduleTranslations[i].y)
+        val deltaAngle = (moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle
 
-//        modules[i].fieldPosition = position + modules[i].modulePosition.inches.asFeet.rotate(heading) + moduleTranslations[i]
+//        if (modules[i].modulePosition.x > 1.0.inches && modules[i].modulePosition.y > 1.0.inches) println("moudlePositionAngle: ${Pair(moduleTranslation.round(2), modules[i].modulePosition.asFeet.round(2))} translation: ${(moduleTranslation + modules[i].modulePosition.asFeet).angle} deltaAngle: $deltaAngle")
+//        print("${((moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle).asDegrees.round(1)} ")
+
+
+        robotRotation += deltaAngle / modules.size.toDouble()
+        robotTranslation += moduleTranslation / modules.size.toDouble()
+
+        moduleTranslations[i] = moduleTranslation
+        moduleRotations[i] = deltaAngle
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
+    if (!gyroConnected) heading += robotRotation
+    println(moduleTranslations.map { it.angle.asDegrees }.forEach { print("${it.round(2)} ") })
 //    println("recording odom $deltaPos")
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
