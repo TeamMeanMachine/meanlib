@@ -1,7 +1,9 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.networktables.NetworkTableEntry
+import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import kotlin.math.*
 
@@ -128,4 +130,8 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>)
     }
 
     this.setDoubleArray(array)
+}
+
+fun EstimatedRobotPose.toVector2L(): Vector2L {
+    return Vector2L(this.estimatedPose.x.meters, this.estimatedPose.y.meters)
 }
