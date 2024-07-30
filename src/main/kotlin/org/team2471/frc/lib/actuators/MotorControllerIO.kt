@@ -24,10 +24,10 @@ interface MotorControllerIO {
         }
 
         override fun fromLog(table: LogTable) {
-            table.get("$name/Position", position)
-            table.get("$name/Current", current)
-            table.get("$name/OutputPercent", outputPercent)
-            table.get("$name/Velocity", velocity)
+            position = table.get("$name/Position", position)
+            current = table.get("$name/Current", current)
+            outputPercent = table.get("$name/OutputPercent", outputPercent)
+            velocity = table.get("$name/Velocity", velocity)
         }
     }
 

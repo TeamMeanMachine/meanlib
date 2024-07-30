@@ -14,8 +14,8 @@ interface LoggedAnalogIO {
         }
 
         override fun fromLog(table: LogTable) {
-            table.get("$name/Ticks", ticks)
-            table.get("$name/Voltage", voltage)
+            ticks = table.get("$name/Ticks", ticks)
+            voltage = table.get("$name/Voltage", voltage)
         }
     }
 
