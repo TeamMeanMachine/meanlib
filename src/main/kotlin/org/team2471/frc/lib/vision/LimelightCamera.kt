@@ -57,7 +57,9 @@ class LimelightCamera(
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose? {
 
-        latestMt2Result = inputs.mt2Result
+    LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+    latestMt2Result = inputs.mt2Result
 
         val mt2Result = latestMt2Result
 
