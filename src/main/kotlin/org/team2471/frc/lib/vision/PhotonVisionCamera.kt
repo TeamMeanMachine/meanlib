@@ -6,17 +6,18 @@ import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
-import org.photonvision.targeting.PhotonPipelineResult
 import org.photonvision.targeting.PhotonTrackedTarget
+import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.motion_profiling.MotionCurve
 import org.team2471.frc.lib.units.*
 import kotlin.math.abs
-import kotlin.math.pow
 
 class PhotonVisionCamera(
     networkTable: NetworkTable,
@@ -28,7 +29,7 @@ class PhotonVisionCamera(
 ): Camera(networkTable, name, true), PhotonVisionCameraIO {
 
     private val io = object: PhotonVisionCameraIO {}
-    private val inputs = PhotonVisionCameraIO.PhotonVisionCameraInputs("cameras/Limelights$name")
+    private val inputs = PhotonVisionCameraIO.PhotonVisionCameraInputs(name)
 
     val pvTable: NetworkTable = NetworkTableInstance.getDefault().getTable("photonvision")
     override val isConnected: Boolean = false
@@ -63,6 +64,13 @@ class PhotonVisionCamera(
         photonDistCurve.storeValue(4.5, 0.025) //photonvision says not to trust after 15 feet  old: 0.0165
         photonDistCurve.storeValue(5.0, 0.03) // 0.02
         photonDistCurve.storeValue(6.0, 0.04) // 0.03
+
+        GlobalScope.launch {
+            periodic {
+                io.updateInputs(inputs)
+                Logger.processInputs("Cameras/Photonvision", inputs)
+            }
+        }
     }
 
     fun setInitialPose(pose: GlobalPose) {
@@ -96,8 +104,6 @@ class PhotonVisionCamera(
 
 // THIS NEEDS TO BE CALLED EVERY FRAME OR EVERYTHING WILL BREAK AAAAAA!!!!!!!!!!!!!!!
     override fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose? {
-        io.updateInputs(inputs)
-        Logger.processInputs(name, inputs)
         if (!photonCam.isConnected) {
             return null
         }

@@ -20,13 +20,19 @@ class LimelightCamera(
     ): Camera(networkTable, name), LimelightCameraIO {
 
     private val io = object: LimelightCameraIO {}
-    private val inputs = LimelightCameraIO.LimelightCameraInputs("cameras/Limelights$name")
+    private val inputs = LimelightCameraIO.LimelightCameraInputs(name)
 
     // Contains X,Y,Z, Roll,Pitch,Yaw, total latency (cl + tl), tag count, tag span, avg distance of tag from camera, average tag area (% of image)
     var latestMt2Result: DoubleArray = DoubleArray(11)
 
     init {
         LimelightHelpers.setCameraPose_RobotSpace(name, robotToCamera.x, robotToCamera.y, robotToCamera.z, robotToCamera.rotation.x, robotToCamera.rotation.y, robotToCamera.rotation.z)
+        GlobalScope.launch {
+            periodic {
+                io.updateInputs(inputs)
+                Logger.processInputs("Cameras/Limelights", inputs)
+            }
+        }
     }
 
     // TODO(Unsure how limelight handles disconnects)
@@ -51,12 +57,6 @@ class LimelightCamera(
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose? {
 
-        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
-
-        io.updateInputs(inputs)
-
-        Logger.processInputs(name, inputs)
-
         latestMt2Result = inputs.mt2Result
 
         val mt2Result = latestMt2Result
@@ -79,6 +79,6 @@ class LimelightCamera(
     }
 
     override fun updateInputs(inputs: LimelightCameraIO.LimelightCameraInputs) {
-        inputs.mt2Result = networkTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11));
+        inputs.mt2Result = networkTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11))
     }
 }
