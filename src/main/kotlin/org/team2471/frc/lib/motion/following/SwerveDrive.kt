@@ -12,6 +12,7 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.vision.LimelightHelpers
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -29,7 +30,6 @@ interface SwerveDrive {
     var heading: Angle
     val headingRate: AngularVelocity
     var position: Vector2
-    var combinedPosition: Vector2L
     var velocity: Vector2
     var deltaPos: Vector2L
     var robotPivot: Vector2L // location of rotational pivot in robot coordinates
@@ -79,11 +79,15 @@ interface SwerveDrive {
         fun driveWithDistance(angle: Angle, distance: Length)
     }
 
-    data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose> {
+    data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose>, (Double) -> Pose? {
         override fun interpolate(other: Pose, x: Double): Pose = when {
             x <= 0.0 -> this
             x >= 1.0 -> other
             else -> Pose(position.interpolate(other.position, x), (other.heading - heading) * x + heading)
+        }
+
+        override fun invoke(p1: Double): Pose? {
+            TODO("What is this and why did intellij just start complaining???")
         }
     }
 }
@@ -334,7 +338,6 @@ suspend fun SwerveDrive.driveAlongPath(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    useCombinedPosition: Boolean = true,
     turnOverride: () -> Double? = {null},
     earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
@@ -357,8 +360,7 @@ suspend fun SwerveDrive.driveAlongPath(
         odometryReset()
 
         // set to the numbers required for the start of the path
-        combinedPosition = path.getPosition(0.0).feet
-        position = combinedPosition.asFeet
+        position = path.getPosition(0.0)
         prevPosition = position
 
 //        resetOdom()
@@ -383,7 +385,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // position error
         val pathPosition = path.getPosition(t)
-        val currentPosition = if (useCombinedPosition) combinedPosition else position.feet
+        val currentPosition = position.feet
         val positionError = pathPosition - currentPosition.asFeet
 //        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
 

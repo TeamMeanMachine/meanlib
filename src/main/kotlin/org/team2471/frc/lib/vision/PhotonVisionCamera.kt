@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
+import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.photonvision.targeting.PhotonPipelineResult
@@ -24,11 +25,13 @@ class PhotonVisionCamera(
     val aprilTagFieldLayout: AprilTagFieldLayout,
     val singleTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
     val multiTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
-): Camera(networkTable, name, true) {
+): Camera(networkTable, name, true), PhotonVisionCameraIO {
+
+    private val io = object: PhotonVisionCameraIO {}
+    private val inputs = PhotonVisionCameraIO.PhotonVisionCameraInputs("cameras/Limelights$name")
 
     val pvTable: NetworkTable = NetworkTableInstance.getDefault().getTable("photonvision")
-    override val isConnected: Boolean
-        get() = photonCam.isConnected
+    override val isConnected: Boolean = false
 
     override var photonCam: PhotonCamera = PhotonCamera(name)
 
@@ -91,12 +94,15 @@ class PhotonVisionCamera(
         }
     }
 
+// THIS NEEDS TO BE CALLED EVERY FRAME OR EVERYTHING WILL BREAK AAAAAA!!!!!!!!!!!!!!!
     override fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose? {
+        io.updateInputs(inputs)
+        Logger.processInputs(name, inputs)
         if (!photonCam.isConnected) {
             return null
         }
 
-        val targets = photonCam.latestResult.targets
+        val targets = inputs.cameraResult.targets
         val validTargets: ArrayList<PhotonTrackedTarget> = arrayListOf()
 
         targets ?: return null
@@ -160,11 +166,9 @@ class PhotonVisionCamera(
 
             lastPose = GlobalPose(estimatedPose, newPose.get().estimatedPose.rotation.angle.radians, stDev, Timer.getFPGATimestamp())
 
-            lastPose.latencyAdjustedPose(currentPos, lookupPose)
-
             lastPose.pose.coerceIn(Vector2L(0.0.inches, 0.0.inches), Vector2L(1654.0.cm, 821.0.cm))
 
-            advantagePoseEntry.setAdvantagePoses(arrayOf(estimatedPose), arrayOf(newPose.get().estimatedPose.rotation.angle.radians))
+            advantagePoseEntry.setAdvantagePose(lastPose.latencyAdjustedPose(currentPos, lookupPose), newPose.get().estimatedPose.rotation.angle.radians)
 
 
             stDevEntry.setDouble(stDev)
@@ -173,5 +177,10 @@ class PhotonVisionCamera(
         } else {
             return null
         }
+    }
+
+    override fun updateInputs(inputs: PhotonVisionCameraIO.PhotonVisionCameraInputs) {
+        inputs.cameraResult = photonCam.latestResult
+        inputs.isConnected = photonCam.isConnected
     }
 }

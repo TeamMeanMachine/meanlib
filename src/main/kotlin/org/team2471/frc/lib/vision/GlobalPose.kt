@@ -19,7 +19,7 @@ data class GlobalPose (
     val pose2d: Pose2d
         get() = Pose2d(pose.asMeters.toTranslation2d(), Rotation2d(this.rotation.asRadians))
 
-    fun latencyAdjustedPose(currentPos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
-        return pose + currentPos - (lookupPose(timestampSeconds)?.position ?: currentPos.asFeet).feet
+    fun latencyAdjustedPose(currentDrivePos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
+        return pose + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
     }
 }

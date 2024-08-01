@@ -2,6 +2,7 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
+import edu.wpi.first.wpilibj.Timer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
@@ -19,24 +20,17 @@ class LimelightCamera(
     ): Camera(networkTable, name), LimelightCameraIO {
 
     private val io = object: LimelightCameraIO {}
-    private val inputs = LimelightCameraIO.LimelightCameraInputs()
+    private val inputs = LimelightCameraIO.LimelightCameraInputs("cameras/Limelights$name")
 
-    var latestMt2Result: LimelightHelpers.PoseEstimate? = null
+    // Contains X,Y,Z, Roll,Pitch,Yaw, total latency (cl + tl), tag count, tag span, avg distance of tag from camera, average tag area (% of image)
+    var latestMt2Result: DoubleArray = DoubleArray(11)
 
     init {
         LimelightHelpers.setCameraPose_RobotSpace(name, robotToCamera.x, robotToCamera.y, robotToCamera.z, robotToCamera.rotation.x, robotToCamera.rotation.y, robotToCamera.rotation.z)
-        GlobalScope.launch {
-            periodic(0.02) {
-                io.updateInputs(inputs)
-                Logger.processInputs(name, inputs)
-
-                latestMt2Result = inputs.mt2Result
-            }
-        }
     }
 
     // TODO(Unsure how limelight handles disconnects)
-    override val isConnected: Boolean = true
+    override val     isConnected: Boolean = true
 //        get() = limelightTable exists
 
     // TODO("Do we even need to reset?")
@@ -50,38 +44,41 @@ class LimelightCamera(
 
 
 
-
+// THIS NEEDS TO BE CALLED EVERY FRAME OR EVERYTHING WILL BREAK AAAAAA!!!!!!!!!!!!!!!
     override fun getEstimatedGlobalPose(
         currentPos: Vector2L,
         currentHeading: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose? {
 
+        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+        io.updateInputs(inputs)
+
+        Logger.processInputs(name, inputs)
+
+        latestMt2Result = inputs.mt2Result
+
         val mt2Result = latestMt2Result
-//                                               i think this is radians               atm, everything else is in beta
-        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-        if (mt2Result != null) {
-            var estimatedPose = Vector2L(mt2Result.pose.x.meters, mt2Result.pose.x.meters)
+        var estimatedPose = Vector2L(mt2Result[0].meters, mt2Result[1].meters)
 
-            if (estimatedPose == Vector2L(
-                    0.0.meters,
-                    0.0.meters
-                )
-            ) return null // estimatedPose returns origin if no tags seen
+        if (estimatedPose == Vector2L(
+                0.0.meters,
+                0.0.meters
+            )
+        ) return null // estimatedPose returns origin if no tags seen
 
-//                                                   // degrees ?
-            val globalPose = GlobalPose(estimatedPose, mt2Result.pose.rotation.asAngle, 0.1, mt2Result.timestampSeconds)
+    //                                                   // degrees ?
+        val globalPose = GlobalPose(estimatedPose, mt2Result[5].radians, 0.1, Timer.getFPGATimestamp() - mt2Result[6])
 
-            advantagePoseEntry.setAdvantagePose(estimatedPose, mt2Result.pose.rotation.asAngle)
+        advantagePoseEntry.setAdvantagePose(globalPose.latencyAdjustedPose(currentPos, lookupPose), mt2Result[5].radians)
 
-            return globalPose
-        }
+        return globalPose
 
-        return null
     }
 
     override fun updateInputs(inputs: LimelightCameraIO.LimelightCameraInputs) {
-        inputs.mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)
+        inputs.mt2Result = networkTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11));
     }
 }
