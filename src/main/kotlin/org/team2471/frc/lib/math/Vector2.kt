@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
-import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Translation2d
 import org.team2471.frc.lib.units.*
 import java.math.BigDecimal
@@ -45,6 +44,8 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     fun dot(b: Vector2) = (x * b.x) + (y * b.y)
 
     fun normalize() = this / length
+
+    fun flipXAndY() = Vector2(y, x)
 
     fun perpendicular() = Vector2(y, -x)
 

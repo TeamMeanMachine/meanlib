@@ -12,7 +12,6 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.vision.LimelightHelpers
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -174,7 +173,7 @@ fun SwerveDrive.drive(
 
     val requestedLocalGoals = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize().asInches * requestedTurn
+        requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).asInches.perpendicular().normalize() * requestedTurn
     }
 
     val speeds = Array(modules.size) { 0.0 }
@@ -193,7 +192,7 @@ fun SwerveDrive.drive(
         val interpolatedTurn = normalizedTurnRate + turnDelta.sign * length2
 
         for (i in modules.indices) {
-            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).perpendicular().normalize().asInches * interpolatedTurn
+            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).asInches.perpendicular().normalize() * interpolatedTurn
             val bHat = interpolatedLocalGoal.normalize()
             val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
             val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
@@ -256,7 +255,7 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, gyroConnected: Boolean): Vector2 {
     val moduleAngle = angle
-    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else prevAngleInFieldSpace + (moduleAngle - prevAngle)
+    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else (heading - prevAngle) + (moduleAngle - prevAngle)
     val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
     var signedWheelDir = wheelDir
 
@@ -283,12 +282,13 @@ fun SwerveDrive.recordOdometry() {
     val moduleRotations: Array<Angle> = Array(modules.size) { 0.0.degrees }
 //    println()
     for (i in modules.indices) {
-        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, true)
+        val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
+        val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
         modules[i].odometer += moduleTranslation.length
 
-        val deltaAngle = (moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle
+        val deltaAngle = (moduleTranslation + modulePosition).angle - modulePosition.angle
 
-//        if (modules[i].modulePosition.x > 1.0.inches && modules[i].modulePosition.y > 1.0.inches) println("moudlePositionAngle: ${Pair(moduleTranslation.round(2), modules[i].modulePosition.asFeet.round(2))} translation: ${(moduleTranslation + modules[i].modulePosition.asFeet).angle} deltaAngle: $deltaAngle")
+//        if (modulePosition.x < 0.0 && modulePosition.y > 0.0) println("modulePositionAngle: ${Pair(moduleTranslation.round(2), modulePosition.round(2))} translation: ${(modulePosition + moduleTranslation).round(3)} deltaAngle: ${deltaAngle.asDegrees.round(2)} heading: ${heading.asDegrees.round(2)}")
 //        print("${((moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle).asDegrees.round(1)} ")
 
 
@@ -301,8 +301,13 @@ fun SwerveDrive.recordOdometry() {
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
+//    println()
+//    print("heading ${heading.asDegrees.round(1)} \t robotRotation: ${robotRotation.asDegrees.round(1)} \t ")
     if (!gyroConnected) heading += robotRotation
-    println(moduleTranslations.map { it.angle.asDegrees }.forEach { print("${it.round(2)} ") })
+//    print("newHeading ${heading.asDegrees.round(1)}")
+//    println("robotRotation $robotRotation")
+//    println(moduleTranslations.map { it }.forEach { print("${it.round(2)} ") })
+//    println(moduleRotations.map { it.asDegrees }.forEach { print("${it.round(3)} ") })
 //    println("recording odom $deltaPos")
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
