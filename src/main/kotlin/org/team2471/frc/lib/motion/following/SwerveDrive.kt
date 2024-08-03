@@ -63,9 +63,7 @@ interface SwerveDrive {
         var prevDistance: Double
         val treadWear: Double
         var odometer: Double
-        var fieldPosition: Vector2
 
-        var prevAngleInFieldSpace: Angle
         var prevAngle: Angle
 
         // motor interface
@@ -255,7 +253,7 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, gyroConnected: Boolean): Vector2 {
     val moduleAngle = angle
-    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else (heading - prevAngle) + (moduleAngle - prevAngle)
+    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else (heading - prevAngle) + (moduleAngle - prevAngle)  //prevAngleInFieldSpace + deltaAngle
     val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
     var signedWheelDir = wheelDir
 
@@ -268,7 +266,6 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
 
     prevDistance = holdDistance
-    prevAngleInFieldSpace = angleInFieldSpace
     prevAngle = moduleAngle
 
     return wheelDir * deltaDistance
@@ -278,42 +275,28 @@ fun SwerveDrive.recordOdometry() {
     var robotTranslation = Vector2(0.0, 0.0)
     var robotRotation = 0.0.degrees
 
-    val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
-    val moduleRotations: Array<Angle> = Array(modules.size) { 0.0.degrees }
-//    println()
+//    val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
+//    val moduleRotations: Array<Angle> = Array(modules.size) { 0.0.degrees }
     for (i in modules.indices) {
         val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
         val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
         modules[i].odometer += moduleTranslation.length
 
-        val deltaAngle = ((moduleTranslation + modulePosition).angle - modulePosition.angle).wrap()
-
-//        if (modulePosition.x < 0.0 && modulePosition.y > 0.0) println("modulePositionAngle: ${Pair(moduleTranslation.round(2), modulePosition.round(2))} translation: ${(modulePosition + moduleTranslation).round(3)} deltaAngle: ${deltaAngle.asDegrees.round(2)} heading: ${heading.asDegrees.round(2)}")
-//        print("${((moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle).asDegrees.round(1)} ")
-
+        val deltaAngle = ((moduleTranslation + modulePosition).angle - modulePosition.angle).wrap() //calculate robot rotation using swerve translation
 
         robotRotation += deltaAngle / modules.size.toDouble()
         robotTranslation += moduleTranslation / modules.size.toDouble()
-
-        moduleTranslations[i] = moduleTranslation
-        moduleRotations[i] = deltaAngle
+//        moduleTranslations[i] = moduleTranslation
+//        moduleRotations[i] = deltaAngle
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
-//    println()
-//    print("heading ${heading.asDegrees.round(1)} \t robotRotation: ${robotRotation.asDegrees.round(1)} \t ")
-    if (!gyroConnected) heading += robotRotation
-//    print("newHeading ${heading.asDegrees.round(1)}")
-//    println("robotRotation $robotRotation")
-//    println(moduleTranslations.map { it }.forEach { print("${it.round(2)} ") })
-//    println(moduleRotations.map { it.asDegrees }.forEach { print("${it.round(3)} ") })
-//    println("recording odom $deltaPos")
+    if (!gyroConnected) heading += robotRotation //if gyro is not connected, update heading
+
     val time = Timer.getFPGATimestamp()
     val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
-
-
 
     val poseDifference = SwerveDrive.Pose(pose.position - prevPose.position, pose.heading - prevPose.heading)
     poseUpdate(poseDifference)
