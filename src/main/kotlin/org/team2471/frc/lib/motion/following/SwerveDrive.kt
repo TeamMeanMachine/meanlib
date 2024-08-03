@@ -286,7 +286,7 @@ fun SwerveDrive.recordOdometry() {
         val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
         modules[i].odometer += moduleTranslation.length
 
-        val deltaAngle = (moduleTranslation + modulePosition).angle - modulePosition.angle
+        val deltaAngle = ((moduleTranslation + modulePosition).angle - modulePosition.angle).wrap()
 
 //        if (modulePosition.x < 0.0 && modulePosition.y > 0.0) println("modulePositionAngle: ${Pair(moduleTranslation.round(2), modulePosition.round(2))} translation: ${(modulePosition + moduleTranslation).round(3)} deltaAngle: ${deltaAngle.asDegrees.round(2)} heading: ${heading.asDegrees.round(2)}")
 //        print("${((moduleTranslation + modules[i].modulePosition.asFeet).angle - modules[i].modulePosition.angle).asDegrees.round(1)} ")
