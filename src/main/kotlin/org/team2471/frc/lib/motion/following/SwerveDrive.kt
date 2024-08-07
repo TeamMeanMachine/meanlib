@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.motion.following
 
-import com.google.gson.Gson
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
@@ -139,7 +138,10 @@ fun SwerveDrive.drive(
     }
     requestedTranslation += softTranslation
 
-    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+    if (!SmartDashboard.containsKey("DemoSpeed")) {
+        SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+        SmartDashboard.setPersistent("DemoSpeed")
+    }
     requestedTranslation *= demoSpeed
 
     var requestedTurn = turn + softTurn
