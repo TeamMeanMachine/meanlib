@@ -8,7 +8,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.*
 import kotlin.math.absoluteValue
 
@@ -17,16 +16,17 @@ class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
 
+    //motor outputs
+    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
+    override var outputPercent: Double = 0.0
+    override val current: Double get() = inputs.current
+
     //control
     private val pid = PIDController(0.0, 0.0, 0.0)
     private var positionSetpoint: Double? = null
     private var feedForward: Double = 0.0
     private var inverted = false //unused for now
 
-    //motor outputs
-    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
-    override var outputPercent: Double = 0.0
-    override val current: Double get() = inputs.current
 
     init {
         restoreFactoryDefaults()
@@ -103,21 +103,13 @@ class MotorControllerSim: MotorControllerIO {
         this.feedForward = feedForward
     }
 
-    override fun setVelocitySetpoint(velocity: Double) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
-        TODO("Not yet implemented")
-    }
-
     private fun setVoltageOutput(volts: Double) {
         sim.setInputVoltage(volts.coerceIn(-12.0, 12.0))
     }
 
-
-
     //unsupported functions
+    override fun setVelocitySetpoint(velocity: Double) {}
+    override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {}
     override fun brakeMode() {}
     override fun closedLoopRamp(secondsToFull: Double) {} //<- could implement this
     override fun coastMode() {}
