@@ -58,6 +58,7 @@ interface SwerveDrive {
         // encoder interface
         val angle: Angle
         val speed: Double
+        val acceleration: Double
         val currDistance: Double
         var prevDistance: Double
         val treadWear: Double
@@ -65,18 +66,12 @@ interface SwerveDrive {
 
         // motor interface
         var angleSetpoint: Angle
-        var drivePercent: Double
 
         fun setDrivePower(power: Double)
 
         fun stop()
         fun zeroEncoder()
         fun driveWithDistance(angle: Angle, distance: Length)
-    }
-
-    companion object {
-        var prevTranslationInput = Vector2(0.0,0.0)
-        var prevTurn = 0.0
     }
 
     data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose> {
@@ -229,7 +224,7 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
     }
 }
 
-fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, deltaTime: Double, maxVelocity: LinearVelocity): Vector2 {
+fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double): Vector2 {
     val angleInFieldSpace = heading - angle
     val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
     var signedWheelDir = wheelDir
@@ -240,15 +235,12 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         signedWheelDir *= -1.0
     }
 
-    val currentSpeed =  deltaDistance / deltaTime
-    val requestedSpeed = drivePercent * maxVelocity.lengthPerSecond.asFeet
-    val accelerationVector = signedWheelDir * (requestedSpeed - currentSpeed)
+    val accelDir = signedWheelDir * acceleration
 
-    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
-        SmartDashboard.putNumber("requestedSpeed", requestedSpeed)
-        SmartDashboard.putNumber("currentSpeed", currentSpeed)
-    }
-    deltaDistance *= (1.0 + accelerationVector.dot(carpetFlow) * kCarpet) * treadWear
+//    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
+//        SmartDashboard.putNumber("acceleration", acceleration)
+//    }
+    deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear
     
     prevDistance = holdDistance
     return wheelDir * deltaDistance
@@ -261,7 +253,7 @@ fun SwerveDrive.recordOdometry() {
     val deltaTime = time - prevTime
     val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
-        translations[i] = modules[i].recordOdometry(heading, carpetFlow,kCarpet, deltaTime, parameters.maxVelocity)
+        translations[i] = modules[i].recordOdometry(heading, carpetFlow,kCarpet)
         modules[i].odometer += translations[i].length
 
     }
