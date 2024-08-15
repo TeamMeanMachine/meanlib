@@ -100,6 +100,8 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
 
     override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
 
+    override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
+
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
         config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0

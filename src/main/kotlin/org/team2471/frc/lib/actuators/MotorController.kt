@@ -70,11 +70,16 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     /**
      * The velocity calculated from the selected sensor (in units specified by
      * [ConfigScope.feedbackCoefficient] per second).
-     *
-     * @see CoreTalonFX.getRotorVelocity
      */
     val velocity: Double //untested
         get() = motorController.getSelectedSensorVelocity() * feedbackCoefficient
+
+    /**
+     * The acceleration calculated from the selected sensor (in units specified by
+     * [ConfigScope.feedbackCoefficient] per second per second).
+     */
+    val acceleration: Double
+        get() = motorController.getSelectedSensorAcceleration() * feedbackCoefficient
 
     /**
      * The output percent, from 0 to 1.

@@ -96,6 +96,10 @@ class SparkMaxWrapper (override val deviceID: Int) : IMotorController {
     override fun getSelectedSensorVelocity(): Double {//untested
         return (_motorController.encoder.velocity * TICKS_PER_REVOLUTION / 10.0)
     }
+    override fun getSelectedSensorAcceleration(): Double {
+        println("getSelectedSensorAcceleration() not supported by SparkMax")
+        return 0.0
+    }
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         println("motionMagic not supported by SparkMax")
