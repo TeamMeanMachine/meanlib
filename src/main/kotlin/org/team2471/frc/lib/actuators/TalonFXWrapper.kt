@@ -190,6 +190,14 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         _motorController.setControl(NeutralOut())
     }
 
+    /*
+    apply() is a blocking API call that waits on the device to respond.
+    Calling apply() periodically may slow down the execution time of the periodic function,
+    as it will always wait up to defaultTimeoutSeconds for the response
+    when no timeout parameter is specified.
+
+    (tldr: this function will take a long time to finish)
+     */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
         _motorController.configurator.apply(newConfig, timeoutSec)
     }
