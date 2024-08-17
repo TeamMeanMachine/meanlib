@@ -37,7 +37,6 @@ class MotorControllerSim: MotorControllerIO {
 
     init {
         restoreFactoryDefaults()
-        motor.rOhms
 
         GlobalScope.launch {
             periodic {

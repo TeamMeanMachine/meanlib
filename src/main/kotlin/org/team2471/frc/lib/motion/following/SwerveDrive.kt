@@ -12,6 +12,7 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.isReal
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -263,7 +264,10 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         signedWheelDir *= -1.0
     }
 
-    deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
+    //carpet bias and treadWear constipation (unneeded when simulated)
+    if (isReal) {
+        deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
+    }
 
     prevDistance = holdDistance
     prevAngle = moduleAngle
