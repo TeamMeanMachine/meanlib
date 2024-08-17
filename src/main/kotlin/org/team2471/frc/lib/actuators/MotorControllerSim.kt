@@ -8,6 +8,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.math.linearMap
 import org.team2471.frc.lib.units.*
 import kotlin.math.absoluteValue
 
@@ -15,6 +16,7 @@ import kotlin.math.absoluteValue
 class MotorControllerSim: MotorControllerIO {
     //sim
     private lateinit var sim: DCMotorSim
+    private lateinit var motor: DCMotor
 
     //motor outputs
     private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
@@ -27,9 +29,15 @@ class MotorControllerSim: MotorControllerIO {
     private var feedForward: Double = 0.0
     private var inverted = false //unused for now
 
+    //break mode
+    private var breakMode = false
+    private val breakModeVolts: Double
+        get() = motor.rOhms * (motor.stallCurrentAmps / motor.stallTorqueNewtonMeters) * linearMap(-motor.freeSpeedRadPerSec.radians.asRotations, motor.freeSpeedRadPerSec.radians.asRotations, -motor.stallTorqueNewtonMeters, motor.stallTorqueNewtonMeters, -getSelectedSensorVelocity())
+
 
     init {
         restoreFactoryDefaults()
+        motor.rOhms
 
         GlobalScope.launch {
             periodic {
@@ -65,6 +73,9 @@ class MotorControllerSim: MotorControllerIO {
     override fun getDValue(): Double = pid.d
     override fun getIValue(): Double = pid.i
 
+    override fun brakeMode() { breakMode = true }
+    override fun coastMode() { breakMode = false}
+
     override fun getClosedLoopError(): Double = (positionSetpoint ?: 0.0) - getSelectedSensorPosition()
 
     override fun getInverted(): Boolean = inverted
@@ -85,7 +96,8 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         println("creating new sim. name: ${inputs.name}  MOI: $jKgMetersSquared")
-        sim = DCMotorSim(motor, 1.0, jKgMetersSquared)
+        this.motor = motor
+        sim = DCMotorSim(this.motor, 1.0, jKgMetersSquared)
         sim.setState(0.0, 0.0)
     }
 
@@ -103,16 +115,26 @@ class MotorControllerSim: MotorControllerIO {
         this.feedForward = feedForward
     }
 
-    private fun setVoltageOutput(volts: Double) {
+    private fun setVoltageOutput(requestedVolts: Double) {
+        var volts = requestedVolts
+        if (breakMode && volts == 0.0) {
+            volts = breakModeVolts
+        }
+
+//        if (inputs.name == "Drive/FLD") {
+//            Logger.recordOutput("breakMode", breakModeVolts)
+//            Logger.recordOutput("freeSpeed", motor.freeSpeedRadPerSec.radians.asRotations)
+//            Logger.recordOutput("velocity", getSelectedSensorVelocity())
+//            Logger.recordOutput("volts", volts)
+//        }
+
         sim.setInputVoltage(volts.coerceIn(-12.0, 12.0))
     }
 
     //unsupported functions
     override fun setVelocitySetpoint(velocity: Double) {}
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {}
-    override fun brakeMode() {}
     override fun closedLoopRamp(secondsToFull: Double) {} //<- could implement this
-    override fun coastMode() {}
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {} //<- could implement this maybe?
     override fun openLoopRamp(secondsToFull: Double) {} //<- could implement this?
     override fun setNeutralMode(neutralMode: NeutralModeValue?) {}
