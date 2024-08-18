@@ -6,7 +6,6 @@ import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.*
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
@@ -141,14 +140,6 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(
             MotionMagicDutyCycle(position).withFeedForward(feedForward)
         )
-    }
-
-    override fun setNeutralMode(neutralMode: NeutralModeValue?) {
-        when (neutralMode) {
-            NeutralModeValue.Brake -> brakeMode()
-            NeutralModeValue.Coast -> coastMode()
-            else -> {}
-        }
     }
 
     override fun setPercentOutput(percent: Double) {
