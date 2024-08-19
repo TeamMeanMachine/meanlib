@@ -82,6 +82,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     override fun getSelectedSensorVelocity(): Double {
         return inputs.velocity
     }
+    override fun getSelectedSensorAcceleration(): Double {
+        println("getSelectedSensorAcceleration() not supported by SparkMax")
+        return 0.0
+    }
 
     override fun openLoopRamp(secondsToFull: Double) {
         _motorController.openLoopRampRate = secondsToFull

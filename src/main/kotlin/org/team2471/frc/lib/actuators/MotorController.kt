@@ -99,6 +99,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         get() = (io.getSelectedSensorVelocity() * feedbackCoefficient)
 
     /**
+     * The acceleration calculated from the selected sensor (in units specified by
+     * [ConfigScope.feedbackCoefficient] per second per second).
+     */
+    val acceleration: Double
+        get() = motorController.getSelectedSensorAcceleration() * feedbackCoefficient
+
+    /**
      * The output percent, from 0 to 1.
      */
     val output: Double

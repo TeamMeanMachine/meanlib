@@ -101,6 +101,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
+    override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
+
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
         config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
@@ -176,6 +178,14 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(NeutralOut())
     }
 
+    /*
+    apply() is a blocking API call that waits on the device to respond.
+    Calling apply() periodically may slow down the execution time of the periodic function,
+    as it will always wait up to defaultTimeoutSeconds for the response
+    when no timeout parameter is specified.
+
+    (tldr: this function will take a long time to finish)
+     */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
         _motorController.configurator.apply(newConfig, timeoutSec)
     }

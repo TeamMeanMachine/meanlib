@@ -60,6 +60,7 @@ interface SwerveDrive {
         // encoder interface
         val angle: Angle
         val speed: Double
+        val acceleration: Double
         val currDistance: Double
         var prevDistance: Double
         val treadWear: Double
@@ -141,7 +142,10 @@ fun SwerveDrive.drive(
     }
     requestedTranslation += softTranslation
 
-    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+    if (!SmartDashboard.containsKey("DemoSpeed")) {
+        SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+        SmartDashboard.setPersistent("DemoSpeed")
+    }
     requestedTranslation *= demoSpeed
 
     var requestedTurn = turn + softTurn
@@ -177,34 +181,10 @@ fun SwerveDrive.drive(
 
     val speeds = Array(modules.size) { 0.0 }
 
-    // the beginning of Bryce's idea of how to drive more smoothly, but maintain responsiveness
-    // directional and rotational interpolation from robot state towards joystick request
-    if (maxChangeInOneFrame > 0.0) {
-        val normalizedRobotDirection = velocity.rotateDegrees(heading.asDegrees) / MAXTRANSLATIONSPEED_FEET_PER_SECOND
-        val translateDelta = requestedTranslation - normalizedRobotDirection
-        val length1 = min(translateDelta.length, maxChangeInOneFrame)
-        val interpolatedTranslation = normalizedRobotDirection + translateDelta.normalize() * length1
-
-        val normalizedTurnRate = headingRate.changePerSecond.asDegrees / MAXHEADINGSPEED_DEGREES_PER_SECOND
-        val turnDelta = requestedTurn - normalizedTurnRate
-        val length2 = min(turnDelta, maxChangeInOneFrame)
-        val interpolatedTurn = normalizedTurnRate + turnDelta.sign * length2
-
-        for (i in modules.indices) {
-            val interpolatedLocalGoal = interpolatedTranslation + (modules[i].modulePosition - robotPivot).asInches.perpendicular().normalize() * interpolatedTurn
-            val bHat = interpolatedLocalGoal.normalize()
-            val projectedLocalGoal = bHat * requestedLocalGoals[i].dot(bHat)
-            val angleAndSpeed = modules[i].calculateAngleAndSpeed(projectedLocalGoal)
-            modules[i].angleSetpoint = angleAndSpeed.angle
-            speeds[i] = angleAndSpeed.power
-        }
-    }
-    else {
-        for (i in modules.indices) {
-            val angleAndSpeed = modules[i].calculateAngleAndSpeed(requestedLocalGoals[i])
-            modules[i].angleSetpoint = angleAndSpeed.angle
-            speeds[i] = angleAndSpeed.power
-        }
+    for (i in modules.indices) {
+        val angleAndSpeed = modules[i].calculateAngleAndSpeed(requestedLocalGoals[i])
+        modules[i].angleSetpoint = angleAndSpeed.angle
+        speeds[i] = angleAndSpeed.power
     }
 
     // adjust wheels to account for velocity of highest speed wheel
@@ -264,14 +244,17 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         signedWheelDir *= -1.0
     }
 
-    //carpet bias and treadWear constipation (unneeded when simulated)
+    val accelDir = signedWheelDir * acceleration
+
+//    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
+//        SmartDashboard.putNumber("acceleration", acceleration)
+//    }
     if (isReal) {
-        deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear
+        deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear
     }
 
     prevDistance = holdDistance
     prevAngle = moduleAngle
-
     return wheelDir * deltaDistance
 }
 
@@ -281,6 +264,9 @@ fun SwerveDrive.recordOdometry() {
 
 //    val moduleTranslations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
 //    val moduleRotations: Array<Angle> = Array(modules.size) { 0.0.degrees }
+    val time = Timer.getFPGATimestamp()
+    val deltaTime = time - prevTime
+    val translations: Array<Vector2> = Array(modules.size) { Vector2(0.0, 0.0) }
     for (i in modules.indices) {
         val moduleTranslation = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
         val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
@@ -298,8 +284,6 @@ fun SwerveDrive.recordOdometry() {
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     if (!gyroConnected) heading += robotRotation //if gyro is not connected, update heading
 
-    val time = Timer.getFPGATimestamp()
-    val deltaTime = time - prevTime
     velocity = (position - prevPosition) / deltaTime
 
     val poseDifference = SwerveDrive.Pose(pose.position - prevPose.position, pose.heading - prevPose.heading)
@@ -350,6 +334,7 @@ suspend fun SwerveDrive.driveAlongPath(
     if (resetOdometry) {
         println("Position = $position")
         odometryReset()
+        println("Position after odometryReset = $position")
 
         // set to the numbers required for the start of the path
         position = path.getPosition(0.0)
