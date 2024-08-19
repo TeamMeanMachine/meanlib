@@ -114,7 +114,6 @@ class MotorControllerSim: MotorControllerIO {
     override fun stop() = setPercentOutput(0.0)
 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
-        println("creating new sim. name: ${inputs.name}  MOI: $jKgMetersSquared")
         this.motor = motor
         sim = DCMotorSim(this.motor, 1.0, jKgMetersSquared)
         sim.setState(0.0, 0.0)
