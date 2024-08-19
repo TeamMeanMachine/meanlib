@@ -50,6 +50,7 @@ interface MotorControllerIO {
     fun getInverted(): Boolean
     fun getSelectedSensorPosition(): Double
     fun getSelectedSensorVelocity(): Double
+    fun getSelectedSensorAcceleration(): Double
     fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}

@@ -96,14 +96,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * [ConfigScope.feedbackCoefficient] per second).
      */
     val velocity: Double
-        get() = (io.getSelectedSensorVelocity() * feedbackCoefficient)
+        get() = io.getSelectedSensorVelocity() * feedbackCoefficient
 
-    /**
-     * The acceleration calculated from the selected sensor (in units specified by
-     * [ConfigScope.feedbackCoefficient] per second per second).
-     */
     val acceleration: Double
-        get() = motorController.getSelectedSensorAcceleration() * feedbackCoefficient
+        get() = io.getSelectedSensorAcceleration() * feedbackCoefficient
 
     /**
      * The output percent, from 0 to 1.
@@ -229,14 +225,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param countPerRev the counts per revolution of the alternate encoder. Can be found in the Alternate Encoder SparkMAX guide
      */
     fun getAlternateEncoder(countPerRev: Int): Double {
-            return when (io) {
-                is SparkMaxWrapper -> {
+        return when (io) {
+            is SparkMaxWrapper -> {
 //                    println("In alternate encoder spark max")
-                    io.getAlternateEncoder(countPerRev)
-                }
-                else -> throw IllegalStateException("No alternate encoder from this motor controller")
+                io.getAlternateEncoder(countPerRev)
             }
+            else -> throw IllegalStateException("No alternate encoder from this motor controller")
         }
+    }
 
     /**
      * Neutralizes the motor output.

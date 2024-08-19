@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.Timer
@@ -22,6 +21,7 @@ class MotorControllerSim: MotorControllerIO {
     private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
     override var outputPercent: Double = 0.0
     override val current: Double get() = inputs.current
+    private var acceleration = 0.0
 
     //control
     private val pid = PIDController(0.0, 0.0, 0.0)
@@ -38,12 +38,18 @@ class MotorControllerSim: MotorControllerIO {
         get() = if (positionSetpoint == null) openLoopRamp else closedLoopRamp
     private var openLoopRamp = 0.0
     private var closedLoopRamp = 0.0
-    private val timer = Timer()
+
+    private val rampLimitTimer = Timer()
+    private val accelerationTimer = Timer()
+
     private var prevVolts = 0.0
+    private var prevVelocity = 0.0
+    private var prevAcceleration = 0.0
 
 
     init {
         restoreFactoryDefaults()
+        accelerationTimer.start()
 
         GlobalScope.launch {
             periodic {
@@ -53,6 +59,17 @@ class MotorControllerSim: MotorControllerIO {
                         pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward
                     )
                 }
+
+                val velocity = getSelectedSensorVelocity()
+                val calculatedAcceleration = (velocity - prevVelocity) / accelerationTimer.get()
+
+
+                if (!calculatedAcceleration.isNaN() && calculatedAcceleration.absoluteValue < 1.0E27) {
+                    prevAcceleration = calculatedAcceleration
+                }
+                prevVelocity = velocity
+                accelerationTimer.start()
+                acceleration = prevAcceleration
             }
         }
     }
@@ -86,6 +103,7 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun getSelectedSensorPosition(): Double = inputs.position
     override fun getSelectedSensorVelocity(): Double = inputs.velocity
+    override fun getSelectedSensorAcceleration(): Double = acceleration
 
     override fun getClosedLoopError(): Double = (positionSetpoint ?: 0.0) - getSelectedSensorPosition()
 
@@ -121,12 +139,12 @@ class MotorControllerSim: MotorControllerIO {
 
         //ramp rate
         if (rampLimit != 0.0 && volts != 0.0) {
-            val maxVoltDelta = (timer.get() / rampLimit * 12.0) * (volts / volts.absoluteValue)
+            val maxVoltDelta = (rampLimitTimer.get() / rampLimit * 12.0) * (volts / volts.absoluteValue)
             val voltsDelta = (volts - prevVolts)
 
             //if (delta and maxDelta are going the same direction && delta bigger than maxDelta)
             if (voltsDelta * maxVoltDelta >= 0.0 && maxVoltDelta.absoluteValue < voltsDelta.absoluteValue) {
-                if (inputs.name == "Drive/FLD") println("over accelerating max: $maxVoltDelta \t delta $voltsDelta")
+//                if (inputs.name == "Drive/FLD") println("over accelerating max: $maxVoltDelta \t delta $voltsDelta")
                 volts = prevVolts + maxVoltDelta
             }
 //            if (inputs.name == "Drive/FLD") {
@@ -152,7 +170,7 @@ class MotorControllerSim: MotorControllerIO {
 
         sim.setInputVoltage(volts) //apply volts to sim
         prevVolts = volts
-        timer.start()
+        rampLimitTimer.start()
     }
 
     //unsupported functions
