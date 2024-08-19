@@ -5,6 +5,8 @@ import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.team2471.frc.lib.math.DoubleRange
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
@@ -183,11 +185,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     Calling apply() periodically may slow down the execution time of the periodic function,
     as it will always wait up to defaultTimeoutSeconds for the response
     when no timeout parameter is specified.
-
-    (tldr: this function will take a long time to finish)
      */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
-        _motorController.configurator.apply(newConfig, timeoutSec)
+        GlobalScope.launch {
+            _motorController.configurator.apply(newConfig, timeoutSec)
+        }
     }
 
 
