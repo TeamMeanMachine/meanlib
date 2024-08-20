@@ -1,55 +1,45 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout
-import edu.wpi.first.math.filter.LinearFilter
 import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTable
-import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.wpilibj.Timer
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import edu.wpi.first.networktables.NetworkTableEntry
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
-import org.photonvision.targeting.PhotonTrackedTarget
-import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.motion_profiling.MotionCurve
 import org.team2471.frc.lib.units.*
-import kotlin.math.abs
+import org.team2471.frc.lib.util.RobotMode
+import org.team2471.frc.lib.util.robotMode
 
 class PhotonVisionCamera(
-    networkTable: NetworkTable,
-    name: String,
-    val robotToCamera: Transform3d,
-    val aprilTagFieldLayout: AprilTagFieldLayout,
-    val singleTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-    val multiTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
-): Camera(networkTable, name, true), PhotonVisionCameraIO {
+    private val inputTable: NetworkTable,
+    private val outputTable: NetworkTable,
+    val name: String,
+    private val robotToCamera: Transform3d,
+    private val aprilTagFieldLayout: AprilTagFieldLayout,
+    private val singleTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
+    private val multiTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+): CameraIO {
 
-    private val io = object: PhotonVisionCameraIO {}
-    private val inputs = PhotonVisionCameraIO.PhotonVisionCameraInputs(name)
+    private var photonCam: PhotonCamera = PhotonCamera(name)
 
-    val pvTable: NetworkTable = NetworkTableInstance.getDefault().getTable("photonvision")
-    override val isConnected: Boolean = false
+    private val advantagePoseEntry: NetworkTableEntry = outputTable.getEntry("April Advantage Pos $name")
+    private val stDevEntry: NetworkTableEntry = outputTable.getEntry("stDev $name")
+    private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
 
-    override var photonCam: PhotonCamera = PhotonCamera(name)
+    private var lastPose: GlobalPose = GlobalPose.EmptyGlobalPose
 
-    var camLatency = LinearFilter.movingAverage(5)
-
-    private var lastPose: GlobalPose = GlobalPose(Vector2L(0.0.inches, 0.0.inches), 0.0.degrees, 0.0, 0.0)
-
-    var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
+    private var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
         aprilTagFieldLayout,
         singleTagStrategy,
         photonCam,
         robotToCamera
     )
 
-    val validTagIDs: List<Int> = aprilTagFieldLayout.tags.map { it.ID }
-
-    val photonDistCurve = MotionCurve()
+    private val photonDistCurve = MotionCurve()
 
     init {
         photonDistCurve.setMarkBeginOrEndKeysToZeroSlope(false)
@@ -64,26 +54,14 @@ class PhotonVisionCamera(
         photonDistCurve.storeValue(4.5, 0.025) //photonvision says not to trust after 15 feet  old: 0.0165
         photonDistCurve.storeValue(5.0, 0.03) // 0.02
         photonDistCurve.storeValue(6.0, 0.04) // 0.03
-
-        GlobalScope.launch {
-            periodic {
-                io.updateInputs(inputs)
-                Logger.processInputs("Cameras/Photonvision", inputs)
-            }
-        }
     }
 
-    fun setInitialPose(pose: GlobalPose) {
-        if (lastPose.timestampSeconds == 0.0) {
-            lastPose = pose
-        }
-    }
 
-    override fun reset() {
-        if (!photonCam.isConnected) {
+
+    override fun reset(inputs: CameraIO.CameraIOInputs) {
+        if (!inputs.isConnected) {
             try {
-                if (pvTable.containsSubTable(name)) {
-                    photonCam = PhotonCamera(name)
+                if (inputTable.containsSubTable(name)) {
                     poseEstimator = PhotonPoseEstimator(
                         aprilTagFieldLayout,
                         multiTagStrategy,
@@ -102,91 +80,69 @@ class PhotonVisionCamera(
         }
     }
 
-// THIS NEEDS TO BE CALLED EVERY FRAME OR EVERYTHING WILL BREAK AAAAAA!!!!!!!!!!!!!!!
-    override fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose? {
-        if (!photonCam.isConnected) {
-            return null
+    // This should be called every frame. Things may go wrong otherwise.
+    override fun getEstimatedGlobalPose(
+        inputs: CameraIO.CameraIOInputs,
+        currentPos: Vector2L,
+        currentHeading: Angle,
+        lookupPose: (Double) -> SwerveDrive.Pose?
+    ): GlobalPose {
+        isConnectedEntry.setBoolean(inputs.isConnected)
+
+//        advantagePoseEntry.unpublish()
+        stDevEntry.setDouble(0.0)
+        if (!inputs.isConnected) {
+            return GlobalPose.EmptyGlobalPose
         }
 
-        val targets = inputs.cameraResult.targets
-        val validTargets: ArrayList<PhotonTrackedTarget> = arrayListOf()
+        val cameraResult = inputs.cameraResult
 
-        targets ?: return null
 
-        for (target in targets) {
-            if (target.fiducialId in validTagIDs && target.poseAmbiguity < 0.5 && /*target.area > 0.1 &&*/ abs(target.bestCameraToTarget.z - 90.0) > 5.0)  {
-                validTargets.add(target)
-            }
-        }
+        if (!cameraResult.isEmpty && cameraResult.numTags > 0) {
 
-        val numTargets = validTargets.size
+            if (cameraResult.avgDist > 6.0.meters) {return GlobalPose.EmptyGlobalPose}
 
-        poseEstimator.setReferencePose(lastPose.pose2d)
-
-        val newPose = poseEstimator.update()
-
-        if (newPose.isPresent && numTargets > 0) {
-            var estimatedPose = Vector2L(newPose.get().estimatedPose.x.meters, newPose.get().estimatedPose.y.meters)
-
-            var avgDist = 0.0.inches
-            var avgAmbiguity = 0.0
-            var avgArea = 0.0
-            var targetPoses : ArrayList<Vector2L> = arrayListOf()
-            val currLatency = Timer.getFPGATimestamp() - newPose.get().timestampSeconds
-            val avgLatency = camLatency.calculate(currLatency)
-            //println("$name latency ${round(currLatency, 4)} avg: ${round(avgLatency, 4)}")
-            for (target in validTargets) {
-                val tagPose = aprilTagFieldLayout.getTagPose(target.fiducialId).get()
-                avgDist += Vector2L(tagPose.x.meters, tagPose.y.meters).distance(estimatedPose)
-                avgAmbiguity += target.poseAmbiguity
-                avgArea += target.area
-
-                val robotPose = Pose3d(
-                    Translation3d(currentPos.x.asMeters, currentPos.y.asMeters, 0.0),
-                    Rotation3d(0.0, 0.0, currentHeading.asRadians)
-                )
-
-                val visionTargetPosition = robotPose.transformBy(robotToCamera).transformBy(target.bestCameraToTarget)
-
-                targetPoses.add(Vector2L(visionTargetPosition.x.meters, visionTargetPosition.y.meters))
-            }
-
-            targetPoseEntry.setAdvantagePoses(targetPoses.toTypedArray())
-            if (validTargets.size.toDouble() > 0.0) {
-                avgDist /= validTargets.size.toDouble()
-                avgAmbiguity /= validTargets.size.toDouble()
-            }
-
-            if (avgDist > 6.0.meters) return null
-
-            var stDev = photonDistCurve.getValue(avgDist.asMeters)
+            var stDev = photonDistCurve.getValue(cameraResult.avgDist.asMeters)
 
 
 
-            stDev *= 5.0 * avgArea
+            stDev *= 5.0 * cameraResult.avgTagArea
 
 
-            if (numTargets < 2) stDev *= 3.0
+            if (cameraResult.numTags < 2) stDev *= 3.0
 
-            stDev.coerceIn(0.000001, 1000.0)
+//            why is this in here????
+//            stDev.coerceIn(0.000001, 1000.0)
 
-            lastPose = GlobalPose(estimatedPose, newPose.get().estimatedPose.rotation.angle.radians, stDev, Timer.getFPGATimestamp())
+            val estimatedPose = cameraResult.getGlobalPose(stDev)
 
-            lastPose.pose.coerceIn(Vector2L(0.0.inches, 0.0.inches), Vector2L(1654.0.cm, 821.0.cm))
+            // make sure its on the field
+            estimatedPose.pose.coerceIn(Vector2L.Zeros, Vector2L(1654.0.cm, 821.0.cm))
 
-            advantagePoseEntry.setAdvantagePose(lastPose.latencyAdjustedPose(currentPos, lookupPose), newPose.get().estimatedPose.rotation.angle.radians)
+            val latencyAdjustedPose = estimatedPose.latencyAdjustedPose(currentPos, lookupPose)
 
+            advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, estimatedPose.rotation)
+            Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
 
             stDevEntry.setDouble(stDev)
+            Logger.recordOutput("$name/stDev", lastPose.stDev)
 
-            return lastPose
+
+
+            return estimatedPose
         } else {
-            return null
+            return GlobalPose.EmptyGlobalPose
         }
     }
 
-    override fun updateInputs(inputs: PhotonVisionCameraIO.PhotonVisionCameraInputs) {
-        inputs.cameraResult = photonCam.latestResult
-        inputs.isConnected = photonCam.isConnected
+    override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
+        try {
+            inputs.isConnected = photonCam.isConnected
+            if (inputs.isConnected) {
+                poseEstimator.setReferencePose(lastPose.pose2d)
+                inputs.cameraResult = poseEstimator.update().get().toCameraResult()
+            }
+        } catch (_: Exception) {
+        }
     }
 }

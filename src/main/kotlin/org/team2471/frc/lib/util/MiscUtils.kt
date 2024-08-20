@@ -1,8 +1,13 @@
 package org.team2471.frc.lib.util
 
+import edu.wpi.first.math.geometry.Translation2d
+import edu.wpi.first.math.geometry.Translation3d
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
+import org.team2471.frc.lib.math.square
 import java.lang.System.currentTimeMillis
+import kotlin.math.hypot
+import kotlin.math.sqrt
 
 /**
  * Executes the given block and returns elapsed time in seconds.
@@ -31,3 +36,9 @@ class Timer {
 
     fun get() : Double = (currentTimeMillis() - startTime) / 1000.0
 }
+
+val Translation2d.length: Double
+    get() = hypot(this.x, this.y)
+
+val Translation3d.length: Double
+    get() = sqrt(square(this.x) + square(this.y) + square(this.z))
