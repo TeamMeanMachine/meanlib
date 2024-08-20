@@ -3,7 +3,7 @@ package org.team2471.frc.lib.util
 import edu.wpi.first.hal.HALUtil
 import edu.wpi.first.wpilibj.RuntimeType
 
-val doReplay = false
+const val doReplay = false
 
 val robotMode: RobotMode =
     when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
@@ -11,6 +11,8 @@ val robotMode: RobotMode =
         RuntimeType.kSimulation -> if (doReplay) RobotMode.REPLAY else RobotMode.SIM
         else -> RobotMode.REAL
     }
+
+val isReal = robotMode == RobotMode.REAL
 
 enum class RobotMode {
     REAL,

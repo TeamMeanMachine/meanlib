@@ -5,8 +5,9 @@ import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.*
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
@@ -102,6 +103,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
+    override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
+
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
         config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
@@ -143,14 +146,6 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         )
     }
 
-    override fun setNeutralMode(neutralMode: NeutralModeValue?) {
-        when (neutralMode) {
-            NeutralModeValue.Brake -> brakeMode()
-            NeutralModeValue.Coast -> coastMode()
-            else -> {}
-        }
-    }
-
     override fun setPercentOutput(percent: Double) {
         _motorController.setControl(DutyCycleOut(percent).withEnableFOC(true))
     }
@@ -185,8 +180,16 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(NeutralOut())
     }
 
+    /*
+    apply() is a blocking API call that waits on the device to respond.
+    Calling apply() periodically may slow down the execution time of the periodic function,
+    as it will always wait up to defaultTimeoutSeconds for the response
+    when no timeout parameter is specified.
+     */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
-        _motorController.configurator.apply(newConfig, timeoutSec)
+        GlobalScope.launch {
+            _motorController.configurator.apply(newConfig, timeoutSec)
+        }
     }
 
 

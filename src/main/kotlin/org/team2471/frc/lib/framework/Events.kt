@@ -32,6 +32,27 @@ object Events {
 
     @OptIn(DelicateCoroutinesApi::class)
     @Synchronized
+    fun whenInactive(condition: () -> Boolean, action: suspend () -> Unit) {
+        var prevState = false
+        var job: Job? = null
+
+        functions.add {
+            val state = condition()
+
+            if (!state && prevState) {
+                val prevJob = job
+                job = GlobalScope.launch(MeanlibDispatcher) {
+                    prevJob?.cancelAndJoin()
+                    action()
+                }
+            }
+
+            prevState = state
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    @Synchronized
     fun whileActive(condition: () -> Boolean, action: suspend () -> Unit) {
         var prevState = false
         var job: Job? = null

@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.motion_profiling.following
 
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
+import org.team2471.frc.lib.units.*
 
 data class RobotParameters(
         var robotWidth: Double,
@@ -44,7 +45,7 @@ data class SwerveParameters(
     val kHeadingFeedForward: Double,
     var alignRobotToPath: Boolean = false,
     var kMoveWhileSpin: Double = 1.0,
-    val invertDriveFactor: Double = 1.0,
-    val invertSteerFactor: Double = 1.0
+    val maxVelocity: LinearVelocity = 25.0.feet.perSecond,
+    val maxRotateVelocity: AngularVelocity = 1000.0.degrees.perSecond
 ) : DrivetrainParameters() {
 }

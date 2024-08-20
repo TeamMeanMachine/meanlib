@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.actuators
 
-import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.system.plant.DCMotor
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
@@ -51,6 +50,7 @@ interface MotorControllerIO {
     fun getInverted(): Boolean
     fun getSelectedSensorPosition(): Double
     fun getSelectedSensorVelocity(): Double
+    fun getSelectedSensorAcceleration(): Double
     fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}
@@ -58,7 +58,6 @@ interface MotorControllerIO {
     fun setInverted(invert: Boolean)
     fun setMotionMagicSetpoint(position: Double) {}
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) {}
-    fun setNeutralMode(neutralMode: NeutralModeValue?)
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)

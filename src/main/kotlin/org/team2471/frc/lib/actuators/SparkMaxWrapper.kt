@@ -1,8 +1,6 @@
 package org.team2471.frc.lib.actuators
 
-import com.ctre.phoenix6.signals.NeutralModeValue
 import com.revrobotics.*
-import org.team2471.frc.lib.units.*
 
 class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     private var positionSetpoint: Double = 0.0
@@ -60,14 +58,6 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         return _motorController.getAlternateEncoder(SparkMaxAlternateEncoder.Type.kQuadrature, countPerRev).position
     }
 
-    override fun setNeutralMode(neutralMode: NeutralModeValue?) {
-        when (neutralMode) {
-            NeutralModeValue.Brake -> brakeMode()
-            NeutralModeValue.Coast -> coastMode()
-            else -> {}
-        }
-    }
-
     override fun burnFlash() {
         println("Burned Flash for ${_motorController.deviceId}")
         _motorController.burnFlash()
@@ -91,6 +81,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun getSelectedSensorVelocity(): Double {
         return inputs.velocity
+    }
+    override fun getSelectedSensorAcceleration(): Double {
+        println("getSelectedSensorAcceleration() not supported by SparkMax")
+        return 0.0
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
