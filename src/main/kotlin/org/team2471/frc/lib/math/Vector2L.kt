@@ -1,7 +1,6 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
-import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.networktables.NetworkTableEntry
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
@@ -75,6 +74,10 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
             x >= 1.0 -> other
             else -> Vector2L((x * (other.x.asFeet - this.x.asFeet) + this.x.asFeet).feet, (x * (other.y.asFeet - this.y.asFeet) + this.y.asFeet).feet)
         }
+    }
+
+    companion object {
+        val Zeros get() = Vector2L(0.0.inches, 0.0.inches)
     }
 }
 

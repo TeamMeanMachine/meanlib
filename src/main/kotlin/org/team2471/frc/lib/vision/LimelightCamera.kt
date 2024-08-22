@@ -1,86 +1,86 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
-import edu.wpi.first.wpilibj.Timer
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
-import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asMeters
 import org.team2471.frc.lib.math.setAdvantagePose
+import org.team2471.frc.lib.math.toTranslation2d
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
 
 //
+// Note: the MT result array contains X,Y,Z, Roll,Pitch,Yaw, total latency (cl + tl), tag count, tag span, avg distance of tag from camera, average tag area (% of image)
+
 class LimelightCamera(
-    networkTable: NetworkTable,
-    name: String,
+    private val inputTable: NetworkTable,
+    private val outputTable: NetworkTable,
+    val name: String,
     robotToCamera: Transform3d,
-    ): Camera(networkTable, name), LimelightCameraIO {
+    ): CameraIO {
 
-    private val io = object: LimelightCameraIO {}
-    private val inputs = LimelightCameraIO.LimelightCameraInputs(name)
+    val advantagePoseEntry = outputTable.getEntry("April Advantage Pos $name")
+    val stDevEntry = outputTable.getEntry("stDev $name")
 
-    // Contains X,Y,Z, Roll,Pitch,Yaw, total latency (cl + tl), tag count, tag span, avg distance of tag from camera, average tag area (% of image)
-    var latestMt2Result: DoubleArray = DoubleArray(11)
+    val lastPos: GlobalPose = GlobalPose.EmptyGlobalPose
+
 
     init {
-        LimelightHelpers.setCameraPose_RobotSpace(name, robotToCamera.x, robotToCamera.y, robotToCamera.z, robotToCamera.rotation.x, robotToCamera.rotation.y, robotToCamera.rotation.z)
-        GlobalScope.launch {
-            periodic {
-                io.updateInputs(inputs)
-                Logger.processInputs("Cameras/Limelights", inputs)
-            }
-        }
+        LimelightHelpers.setCameraPose_RobotSpace(
+            name,
+            robotToCamera.x,
+            robotToCamera.y,
+            robotToCamera.z,
+            robotToCamera.rotation.x,
+            robotToCamera.rotation.y,
+            robotToCamera.rotation.z
+        )
     }
 
     // TODO(Unsure how limelight handles disconnects)
-    override val     isConnected: Boolean = true
-//        get() = limelightTable exists
+    val isConnected: Boolean = true
+//        get() = limelightTable exists6
 
     // TODO("Do we even need to reset?")
-    override fun reset() {
-        try {
-            println("Implement reset")
-        } catch (ex: Exception) {
-            println("Error resetting cam $name: $ex")
-        }
-    }
+    override fun reset(inputs: CameraIO.CameraIOInputs) {}
 
 
-
-// THIS NEEDS TO BE CALLED EVERY FRAME OR EVERYTHING WILL BREAK AAAAAA!!!!!!!!!!!!!!!
+//  Should be called every frame
     override fun getEstimatedGlobalPose(
-        currentPos: Vector2L,
-        currentHeading: Angle,
-        lookupPose: (Double) -> SwerveDrive.Pose?
-    ): GlobalPose? {
+    inputs: CameraIO.CameraIOInputs,
+    currentPos: Vector2L,
+    currentHeading: Angle,
+    lookupPose: (Double) -> SwerveDrive.Pose?
+    ): GlobalPose {
 
-    LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
+//        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
 
-    latestMt2Result = inputs.mt2Result
+        val latestResult = inputs.cameraResult
 
-        val mt2Result = latestMt2Result
+        if (latestResult == CameraResult.EmptyCameraResult) {
+            return GlobalPose.EmptyGlobalPose
+        }
+                                                  // needs to be dynamic
+        val globalPose = latestResult.getGlobalPose(0.1)
 
-        var estimatedPose = Vector2L(mt2Result[0].meters, mt2Result[1].meters)
+        val latencyAdjustedPose = globalPose.latencyAdjustedPose(currentPos, lookupPose)
 
-        if (estimatedPose == Vector2L(
-                0.0.meters,
-                0.0.meters
-            )
-        ) return null // estimatedPose returns origin if no tags seen
+        advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, currentHeading)
+        Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
 
-    //                                                   // degrees ?
-        val globalPose = GlobalPose(estimatedPose, mt2Result[5].radians, 0.1, Timer.getFPGATimestamp() - mt2Result[6])
+        stDevEntry.setDouble(globalPose.stDev)
+        Logger.recordOutput("$name/stDev", globalPose.stDev)
 
-        advantagePoseEntry.setAdvantagePose(globalPose.latencyAdjustedPose(currentPos, lookupPose), mt2Result[5].radians)
 
         return globalPose
 
     }
 
-    override fun updateInputs(inputs: LimelightCameraIO.LimelightCameraInputs) {
-        inputs.mt2Result = networkTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11))
+    override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
+        inputs.isConnected = true
+        inputs.cameraResult = CameraResult.fromLLTable(inputTable)
     }
 }

@@ -1,6 +1,8 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import org.team2471.frc.lib.units.*
 import java.math.BigDecimal
@@ -84,3 +86,5 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
 }
 
 fun Vector2.toTranslation2d(): Translation2d = Translation2d(this.x, this.y)
+
+fun Vector2.toPose2d(heading: Double): Pose2d = Pose2d(this.toTranslation2d(), Rotation2d(heading))

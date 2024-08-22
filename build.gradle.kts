@@ -18,6 +18,8 @@ buildscript {
     }
 }
 
+var doReplay = false
+
 group = "org.team2471.lib"
 version = "2024"
 var wpiLibVersion =  "2024.3.2"

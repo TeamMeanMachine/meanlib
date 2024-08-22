@@ -9,6 +9,7 @@ import org.team2471.frc.lib.motion.following.lookupPose
 import org.team2471.frc.lib.motion.following.poseDiff
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
+import org.team2471.frc.lib.units.radians
 
 data class GlobalPose (
     var pose: Vector2L,
@@ -21,5 +22,9 @@ data class GlobalPose (
 
     fun latencyAdjustedPose(currentDrivePos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
         return pose + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
+    }
+
+    companion object {
+        val EmptyGlobalPose = GlobalPose(Vector2L.Zeros, 0.0.radians, Double.POSITIVE_INFINITY, 0.0)
     }
 }
