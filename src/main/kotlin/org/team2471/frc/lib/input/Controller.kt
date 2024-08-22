@@ -1,11 +1,11 @@
 package org.team2471.frc.lib.input
 
 import edu.wpi.first.hal.DriverStationJNI
-import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.util.isReal
 import java.lang.IllegalStateException
 
 
@@ -36,7 +36,7 @@ open class Controller(val port: Int) {
         body()
     } else {
         val currentTime = Timer.getFPGATimestamp()
-        if (DriverStation.isEnabled() && currentTime - lastWarningReported >= JOYSTICK_WARNING_INTERVAL) {
+        if (DriverStation.isEnabled() && currentTime - lastWarningReported >= JOYSTICK_WARNING_INTERVAL && isReal) {
             lastWarningReported = currentTime
             DriverStation.reportWarning("Controller on port $port is disconnected", false)
         }
