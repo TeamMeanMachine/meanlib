@@ -26,6 +26,7 @@ class PhotonVisionCamera(
 
     private var photonCam: PhotonCamera = PhotonCamera(name)
 
+    private val cameraResultEntry: NetworkTableEntry = outputTable.getEntry("CameraResult $name")
     private val advantagePoseEntry: NetworkTableEntry = outputTable.getEntry("April Advantage Pos $name")
     private val stDevEntry: NetworkTableEntry = outputTable.getEntry("stDev $name")
     private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
@@ -92,6 +93,7 @@ class PhotonVisionCamera(
 //        advantagePoseEntry.unpublish()
         stDevEntry.setDouble(0.0)
         if (!inputs.isConnected) {
+//            println("Isn't connected")
             return GlobalPose.EmptyGlobalPose
         }
 
@@ -100,19 +102,25 @@ class PhotonVisionCamera(
 
         if (!cameraResult.isEmpty && cameraResult.numTags > 0) {
 
-            if (cameraResult.avgDist > 6.0.meters) {return GlobalPose.EmptyGlobalPose}
+            if (cameraResult.avgDist > 6.0.meters) {/*println("too far");*/ return GlobalPose.EmptyGlobalPose}
 
-            var stDev = photonDistCurve.getValue(cameraResult.avgDist.asMeters)
+            var stDev = photonDistCurve.getValue(cameraResult.avgDist.asMeters) / 5
+//            println("original stdev: $stDev")
 
 
 
-            stDev *= 5.0 * cameraResult.avgTagArea
+            stDev *= 0.25 / cameraResult.avgTagArea
+//            println("area: ${cameraResult.avgTagArea}")
 
 
             if (cameraResult.numTags < 2) stDev *= 3.0
 
-//            why is this in here????
-//            stDev.coerceIn(0.000001, 1000.0)
+//         with the way our weighted average sensor fusion algorithm works it doesn't like large/small numbers
+            stDev.coerceIn(0.000001, 1000.0)
+
+
+            cameraResultEntry.setCameraResult(cameraResult)
+            CameraResult.recordOutput("$name/CameraResult", cameraResult)
 
             val estimatedPose = cameraResult.getGlobalPose(stDev)
 
@@ -124,13 +132,15 @@ class PhotonVisionCamera(
             advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, estimatedPose.rotation)
             Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
 
-            stDevEntry.setDouble(stDev)
-            Logger.recordOutput("$name/stDev", lastPose.stDev)
+            stDevEntry.setDouble(estimatedPose.stDev)
+            Logger.recordOutput("$name/stDev", estimatedPose.stDev)
 
 
+            lastPose = estimatedPose
 
             return estimatedPose
         } else {
+//            println("Empty :(")
             return GlobalPose.EmptyGlobalPose
         }
     }

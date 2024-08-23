@@ -1,8 +1,11 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.networktables.NetworkTable
+import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.LogTable
+import org.littletonrobotics.junction.Logger
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.math.toVector2L
@@ -26,6 +29,7 @@ data class CameraResult(
 
     fun getGlobalPose(stDev: Double): GlobalPose {
         return if (isEmpty) {
+//            println("hello error...")
             GlobalPose.EmptyGlobalPose
         } else {
             GlobalPose(
@@ -66,6 +70,15 @@ data class CameraResult(
                 CameraType.LIMELIGHT
             )
         }
+
+        fun recordOutput(key: String, value: CameraResult) {
+            Logger.recordOutput("$key/Position/X", value.pos.x.asMeters)
+            Logger.recordOutput("$key/Position/Y", value.pos.y.asMeters)
+            Logger.recordOutput("$key/Heading", value.heading.asDegrees)
+            Logger.recordOutput("$key/Latency (ms)", value.latencyMs)
+            Logger.recordOutput("$key/Tag Number", value.numTags.toDouble())
+            Logger.recordOutput("$key/Average Tag Distance", value.avgTagArea)
+        }
     }
 }
 
@@ -96,4 +109,6 @@ fun EstimatedRobotPose.toCameraResult(): CameraResult {
     )
 }
 
-
+fun NetworkTableEntry.setCameraResult(cameraResult: CameraResult) {
+    this.setDoubleArray(cameraResult.toArray())
+}

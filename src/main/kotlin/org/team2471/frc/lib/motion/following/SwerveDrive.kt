@@ -40,6 +40,7 @@ interface SwerveDrive {
     val kTread: Double
     val plannedPath: NetworkTableEntry
     val actualRoute: NetworkTableEntry
+    var lastResetTime: Double
 
     val gyroConnected: Boolean
 
@@ -96,7 +97,7 @@ val SwerveDrive.demoMode: Boolean
     get() = demoSpeed < 1.0
 val SwerveDrive.demoSpeed: Double
     get() = SmartDashboard.getNumber("DemoSpeed" , 1.0).coerceIn(0.0, 1.0)
-fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = poseHistory.getInterpolated(InterpolatingDouble(time))
+fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = if (time < lastResetTime) SwerveDrive.Pose(position, heading) else poseHistory.getInterpolated(InterpolatingDouble(time))
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     val currPose = pose
