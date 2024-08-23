@@ -78,15 +78,11 @@ interface SwerveDrive {
         fun driveWithDistance(angle: Angle, distance: Length)
     }
 
-    data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose>, (Double) -> Pose? {
+    data class Pose(val position: Vector2, val heading: Angle) : Interpolable<Pose>/*, (Double) -> Pose?*/ {
         override fun interpolate(other: Pose, x: Double): Pose = when {
             x <= 0.0 -> this
             x >= 1.0 -> other
             else -> Pose(position.interpolate(other.position, x), (other.heading - heading) * x + heading)
-        }
-
-        override fun invoke(p1: Double): Pose? {
-            TODO("What is this and why did intellij just start complaining???")
         }
     }
 }
