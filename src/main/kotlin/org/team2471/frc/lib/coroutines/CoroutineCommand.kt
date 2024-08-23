@@ -1,5 +1,4 @@
 package org.team2471.frc.lib.coroutines
-
 import edu.wpi.first.wpilibj2.command.Command
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

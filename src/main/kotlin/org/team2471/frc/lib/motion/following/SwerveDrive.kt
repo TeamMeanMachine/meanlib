@@ -130,7 +130,7 @@ fun SwerveDrive.drive(
         requestedTranslation = requestedTranslation.rotateDegrees(-heading.asDegrees)
         // Correct for moving while spinning
         requestedTranslation = requestedTranslation.rotateDegrees(turn * parameters.kMoveWhileSpin)
-        //println("Correction: ${turn * 60.0}")
+        //println("Correction: ${turn * 60.0}")F
     }
     requestedTranslation += softTranslation
 
@@ -235,12 +235,14 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         signedWheelDir *= -1.0
     }
 
-    val accelDir = signedWheelDir * acceleration
+    val accelDir = signedWheelDir * sign(acceleration)
 
-//    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
-//        SmartDashboard.putNumber("acceleration", acceleration)
+//    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) {
+//        val multiplier = (1.0 - accelDir.dot(carpetFlow) * kCarpet)
+//        SmartDashboard.putNumber("acceleration", multiplier)
+//        println("multiplier = $multiplier")
 //    }
-    deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear
+    deltaDistance *= (1.0 - accelDir.dot(carpetFlow) * kCarpet) // * treadWear
     
     prevDistance = holdDistance
     return wheelDir * deltaDistance
