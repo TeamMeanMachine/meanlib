@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.geometry.Translation3d
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.square
 import java.lang.System.currentTimeMillis
 import kotlin.math.hypot
@@ -26,6 +27,11 @@ inline fun measureTimeFPGAMicros(body: () -> Unit): Long {
     body()
     return RobotController.getFPGATime() - start
 }
+
+/**
+ * Returns the true FPGA timestamp in seconds, regardless of the timestamp used for logging.
+ */
+fun getRealFPGATimestamp() = Logger.getRealTimestamp() / 1000000.0
 
 class Timer {
     var startTime: Long = 0

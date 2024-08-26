@@ -445,15 +445,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         inner class PIDConfigScope {
             //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
             fun p(p: Double, simP: Double? = null) {
-                io.config_kP(p / feedbackCoefficient, simP)
+                io.config_kP(p / feedbackCoefficient, simP?.div(feedbackCoefficient))
             }
 
             fun i(i: Double, simI: Double? = null) {
-                io.config_kI(i / feedbackCoefficient, simI)
+                io.config_kI(i / feedbackCoefficient, simI?.div(feedbackCoefficient))
             }
 
             fun d(d: Double, simD: Double? = null) {
-                io.config_kD(d / feedbackCoefficient, simD)
+                io.config_kD(d / feedbackCoefficient, simD?.div(feedbackCoefficient))
             }
         }
     }

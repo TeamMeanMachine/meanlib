@@ -4,14 +4,16 @@ import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.Timer
+import org.team2471.frc.lib.util.getRealFPGATimestamp
 import org.team2471.frc.lib.util.isReal
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
@@ -45,10 +47,6 @@ interface SwerveDrive {
     val gyroConnected: Boolean
 
     val modules: Array<Module>
-
-    fun startFollowing() = Unit
-
-    fun stopFollowing() = Unit
 
     fun resetOdom() = Unit
 
@@ -97,7 +95,7 @@ fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = if (time < lastRes
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     val currPose = pose
-    val previousPose = lookupPose( Timer.getFPGATimestamp().minus(latency))
+    val previousPose = lookupPose( getRealFPGATimestamp().minus(latency))
     return if (previousPose == null) {
         null
     } else {
@@ -125,8 +123,7 @@ fun SwerveDrive.drive(
     fieldCentric: Boolean = true,
     closedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
-    softTurn: Double = 0.0,
-    maxChangeInOneFrame: Double = 0.0)
+    softTurn: Double = 0.0)
 {
     var requestedTranslation = Vector2(translation.x, translation.y)
 
@@ -263,7 +260,7 @@ fun SwerveDrive.recordOdometry() {
     var robotVelocity = Vector2(0.0, 0.0)
     var robotAcceleration = Vector2(0.0, 0.0)
 
-    val time = Timer.getFPGATimestamp()
+    val time = getRealFPGATimestamp()
     for (i in modules.indices) {
         val moduleState = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
 
@@ -353,6 +350,7 @@ suspend fun SwerveDrive.driveAlongPath(
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     var prevPositionError = Vector2(0.0, 0.0)
     prevHeadingError = 0.0.degrees
+    suspendUntil(10) { timer.get() != 0.0}
     println("entering drive periodic")
     periodic {
         val t = timer.get()
@@ -362,7 +360,7 @@ suspend fun SwerveDrive.driveAlongPath(
         val pathPosition = path.getPosition(t)
         val currentPosition = position.feet
         val positionError = pathPosition - currentPosition.asFeet
-//        println("time=$t   pathPosition=$pathPosition position=$position positionError=$positionError")
+//        println("time=$t   dt=$dt    pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
         val pathVelocity = (pathPosition - prevPathPosition) / dt
@@ -397,6 +395,7 @@ suspend fun SwerveDrive.driveAlongPath(
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 //        println("Turn Control: $turnControl")
+        if (turnControl.isNaN() || translationControlField.y.isNaN() || translationControlField.x.isNaN()) throw IllegalArgumentException("requestedVolts == NaN")
 
         // send it
         drive(translationControlField, turnOverride() ?: turnControl, true)
