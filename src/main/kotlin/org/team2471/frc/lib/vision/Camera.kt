@@ -39,7 +39,7 @@ class Camera(
         io.reset(inputs)
     }
 
-    fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose? {
+    fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose {
         return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, lookupPose)
     }
 }
