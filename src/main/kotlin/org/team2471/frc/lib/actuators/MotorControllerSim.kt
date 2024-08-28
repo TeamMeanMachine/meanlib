@@ -44,7 +44,6 @@ class MotorControllerSim: MotorControllerIO {
 
     private var prevVolts = 0.0
     private var prevVelocity = 0.0
-    private var prevAcceleration = 0.0
 
 
     init {
@@ -65,11 +64,10 @@ class MotorControllerSim: MotorControllerIO {
 
 
                 if (!calculatedAcceleration.isNaN() && calculatedAcceleration.absoluteValue < 1.0E27) {
-                    prevAcceleration = calculatedAcceleration
+                    acceleration = calculatedAcceleration
                 }
                 prevVelocity = velocity
                 accelerationTimer.start()
-                acceleration = prevAcceleration
             }
         }
     }
