@@ -1,9 +1,10 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.radians
+import org.team2471.frc.lib.units.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -17,17 +18,18 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
         return "(${round(x, 7)}, ${round(y, 7)})"
     }
 
-    fun rotateRadians(radians: Double): Vector2 {
-        val c = Math.cos(radians)
-        val s = Math.sin(radians)
+    fun rotate(angle: Angle): Vector2 {
+        val c = angle.cos()
+        val s = angle.sin()
         return Vector2(x * c - y * s, x * s + y * c)
     }
+
+    fun rotateRadians(radians: Double): Vector2 = rotate(radians.radians)
+    fun rotateDegrees(degrees: Double): Vector2 = rotate(degrees.degrees)
 
     fun round(decimalPlaces: Int = 0): Vector2 {
         return Vector2(BigDecimal(this.x).setScale(decimalPlaces, RoundingMode.HALF_EVEN).toDouble(), BigDecimal(this.y).setScale(decimalPlaces, RoundingMode.HALF_EVEN).toDouble())
     }
-
-    fun rotateDegrees(degrees: Double): Vector2 = rotateRadians(Math.toRadians(degrees))
 
     operator fun unaryPlus() = this * 1.0
 
@@ -44,6 +46,8 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     fun dot(b: Vector2) = (x * b.x) + (y * b.y)
 
     fun normalize() = this / length
+
+    fun flipXAndY() = Vector2(y, x)
 
     fun perpendicular() = Vector2(y, -x)
 
@@ -81,6 +85,6 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     }
 }
 
-fun Vector2.toTranslation2d(): Translation2d {
-    return Translation2d(this.x, this.y)
-}
+fun Vector2.toTranslation2d(): Translation2d = Translation2d(this.x, this.y)
+
+fun Vector2.toPose2d(heading: Double): Pose2d = Pose2d(this.toTranslation2d(), Rotation2d(heading))
