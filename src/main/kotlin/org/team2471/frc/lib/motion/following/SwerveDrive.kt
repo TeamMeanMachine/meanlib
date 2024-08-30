@@ -239,11 +239,11 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         signedWheelDir *= -1.0
     }
 
-    val accelDir = signedWheelDir * acceleration
+    val accelDir = wheelDir * acceleration.sign
 
-//    if (modulePosition.x > 0.0 && modulePosition.y > 0.0) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
-//        SmartDashboard.putNumber("acceleration", acceleration)
-//    }
+    if (modulePosition.x > 0.0.inches && modulePosition.y > 0.0.inches) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
+//        println("accelDir: $accelDir   finalCalc: ${(1.0 + accelDir.dot(carpetFlow) * kCarpet)}")
+    }
     if (isReal) {
         deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear
     }
@@ -395,7 +395,14 @@ suspend fun SwerveDrive.driveAlongPath(
 
         val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 //        println("Turn Control: $turnControl")
-        if (turnControl.isNaN() || translationControlField.y.isNaN() || translationControlField.x.isNaN()) throw IllegalArgumentException("requestedVolts == NaN")
+        if (turnControl.isNaN() || translationControlField.y.isNaN() || translationControlField.x.isNaN()) {
+            println("turnControl: $turnControl")
+            println("translationControlField $translationControlField")
+            println("dt: $dt")
+
+
+//            throw IllegalArgumentException("requestedVolts == NaN")
+        }
 
         // send it
         drive(translationControlField, turnOverride() ?: turnControl, true)
