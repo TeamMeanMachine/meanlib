@@ -5,24 +5,31 @@ import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.team2471.frc.lib.math.DoubleRange
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.degrees
 
-class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorController {
+class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
     private var config: TalonFXConfiguration = TalonFXConfiguration()
+    private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
-//    override var feedbackCoefficient = 1.0
-    override var timeoutSec = 0.050
-    override var rawOffset = 0
+    private val timeoutSec = 0.050
 
-    val rawPosition: Double
-        get() = _motorController.position.value
-    override val motorOutputPercent: Double
-        get() = _motorController.dutyCycle.value
+    override val outputPercent: Double
+        get() = inputs.outputPercent
+
+    override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
+        inputs.position = _motorController.position.value
+        inputs.outputPercent = _motorController.dutyCycle.value
+        inputs.velocity = _motorController.velocity.value
+        inputs.current = _motorController.statorCurrent.value
+
+        this.inputs = inputs
+    }
+
     override val current: Double
-        get() = _motorController.statorCurrent.value
+        get() = inputs.current
 
 
     init {
@@ -33,10 +40,6 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     override fun brakeMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake
         applyConfig()
-    }
-
-    override fun burnFlash() {
-        println("burnFlash not supported by TalonFX")
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
@@ -51,18 +54,18 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         applyConfig()
     }
 
-    override fun config_kP(p: Double) {
+    override fun config_kP(p: Double, simP: Double?) {
         config.Slot0.kP = p
         applyConfig()
     }
 
-    override fun config_kD(d: Double) {
+    override fun config_kD(d: Double, simD: Double?) {
         config.Slot0.kD = d
         applyConfig()
     }
 
-    override fun config_kI(i: Double) {
-        config.Slot0.kI = i * 1024.0
+    override fun config_kI(i: Double, simI: Double?) {
+        config.Slot0.kI = i
         applyConfig()
     }
 
@@ -82,8 +85,8 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         applyConfig()
     }
 
-    override fun follow(followerID: IMotorController) {
-        _motorController.setControl(StrictFollower(followerID.deviceID))
+    override fun follow(followerID: MotorControllerIO) {
+        _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
     }
 
     override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
@@ -96,9 +99,9 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(): Double  = _motorController.position.value
+    override fun getSelectedSensorPosition(): Double  = inputs.position
 
-    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
+    override fun getSelectedSensorVelocity(): Double = inputs.velocity
 
     override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
 
@@ -126,10 +129,6 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
         applyConfig(config)
     }
 
-    override fun setAngle(setPoint: Angle) {
-        _motorController.setControl(PositionDutyCycle((setPoint - getSelectedSensorPosition().degrees).wrap().asDegrees))
-    }
-
     override fun setInverted(invert: Boolean) {
         config.MotorOutput.Inverted =
             if (invert) InvertedValue.CounterClockwise_Positive
@@ -138,22 +137,13 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        println("magicSetpoint = " + (position - rawOffset) + " rawPosition: $rawPosition position: ${position.toInt()} feedbackCoefficient: /*feedbackCoefficient.toInt()*/ rawOffset: $rawOffset")
-        _motorController.setControl(MotionMagicDutyCycle(position - rawOffset))
+        _motorController.setControl(MotionMagicDutyCycle(position))
     }
 
     override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
         _motorController.setControl(
-            MotionMagicDutyCycle((position) - rawOffset).withFeedForward(feedForward)
+            MotionMagicDutyCycle(position).withFeedForward(feedForward)
         )
-    }
-
-    override fun setNeutralMode(neutralMode: NeutralModeValue?) {
-        when (neutralMode) {
-            NeutralModeValue.Brake -> brakeMode()
-            NeutralModeValue.Coast -> coastMode()
-            else -> {}
-        }
     }
 
     override fun setPercentOutput(percent: Double) {
@@ -195,11 +185,11 @@ class TalonFXWrapper(override val deviceID: Int, canBus: String = "") : IMotorCo
     Calling apply() periodically may slow down the execution time of the periodic function,
     as it will always wait up to defaultTimeoutSeconds for the response
     when no timeout parameter is specified.
-
-    (tldr: this function will take a long time to finish)
      */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
-        _motorController.configurator.apply(newConfig, timeoutSec)
+        GlobalScope.launch {
+            _motorController.configurator.apply(newConfig, timeoutSec)
+        }
     }
 
 

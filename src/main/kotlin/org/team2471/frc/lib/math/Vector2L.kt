@@ -2,6 +2,7 @@ package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
 import edu.wpi.first.networktables.NetworkTableEntry
+import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import kotlin.math.*
 
@@ -74,6 +75,10 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
             else -> Vector2L((x * (other.x.asFeet - this.x.asFeet) + this.x.asFeet).feet, (x * (other.y.asFeet - this.y.asFeet) + this.y.asFeet).feet)
         }
     }
+
+    companion object {
+        val Zeros get() = Vector2L(0.0.inches, 0.0.inches)
+    }
 }
 
 // constructors
@@ -98,7 +103,6 @@ fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) 
     )
 }
 
-// untested
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     val rot = mutableListOf<Angle>()
     for (i in pos.indices) {
@@ -109,7 +113,7 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
 fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
     setAdvantagePoses(pos.toTypedArray())
 }
-// untested
+
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
     require(pos.size == rot.size)
 
@@ -129,4 +133,8 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>)
     }
 
     this.setDoubleArray(array)
+}
+
+fun EstimatedRobotPose.toVector2L(): Vector2L {
+    return Vector2L(this.estimatedPose.x.meters, this.estimatedPose.y.meters)
 }
