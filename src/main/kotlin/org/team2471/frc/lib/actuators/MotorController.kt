@@ -199,7 +199,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param feedForward the closed-loop feed forward
      */
     fun setVelocitySetpoint(velocity: Double, feedForward: Double) =
-        io.setVelocitySetpoint(velocity / feedbackCoefficient /*/ 10.0 from s to 100ms*/, feedForward / feedbackCoefficient)
+        io.setVelocitySetpoint(velocity / feedbackCoefficient, feedForward / feedbackCoefficient)
 
     /**
      * Sets the closed-loop Motion Magic position setpoint.

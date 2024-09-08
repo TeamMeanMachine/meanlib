@@ -115,7 +115,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
-        velocitySetPoint = velocity * 10.0
+        velocitySetPoint = velocity * 60.0 // RPS to RPM
 
 //      handle out of bounds conditions
         if (velocitySetPoint > maxRPM) {
