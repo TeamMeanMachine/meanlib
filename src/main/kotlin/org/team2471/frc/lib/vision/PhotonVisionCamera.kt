@@ -89,7 +89,7 @@ class PhotonVisionCamera(
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
         isConnectedEntry.setBoolean(inputs.isConnected)
-
+        advantagePoseEntry.setEmptyPose()
 //        advantagePoseEntry.unpublish()
         stDevEntry.setDouble(0.0)
         if (!inputs.isConnected) {

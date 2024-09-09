@@ -12,9 +12,12 @@ import org.team2471.frc.lib.math.DoubleRange
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
     private var config: TalonFXConfiguration = TalonFXConfiguration()
+    private var appliedConfig: TalonFXConfiguration = TalonFXConfiguration()
     private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
     private val timeoutSec = 0.050
+
+    val configUnsaved: Boolean get() = config != appliedConfig
 
     override val outputPercent: Double
         get() = inputs.outputPercent
@@ -180,6 +183,10 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(NeutralOut())
     }
 
+    fun applyConfigIfChanged() {
+        if (configUnsaved) applyConfig(config)
+    }
+
     /*
     apply() is a blocking API call that waits on the device to respond.
     Calling apply() periodically may slow down the execution time of the periodic function,
@@ -187,9 +194,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     when no timeout parameter is specified.
      */
     private fun applyConfig(newConfig: TalonFXConfiguration = config) {
-        GlobalScope.launch {
-            _motorController.configurator.apply(newConfig, timeoutSec)
-        }
+        _motorController.configurator.apply(newConfig, timeoutSec)
+        appliedConfig = config
     }
 
 

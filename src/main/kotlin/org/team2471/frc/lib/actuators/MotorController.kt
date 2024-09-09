@@ -79,6 +79,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             periodic(0.02) {
                 io.updateInputs(inputs)
                 Logger.processInputs("Motors", inputs)
+                if (io is TalonFXWrapper) io.applyConfigIfChanged()
             }
         }
     }

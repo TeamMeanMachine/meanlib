@@ -93,6 +93,10 @@ inline val Vector2L.asFeet get() = Vector2(this.x.asFeet, this.y.asFeet)
 inline val Vector2L.asMeters get() = Vector2(this.x.asMeters, this.y.asMeters)
 inline val Vector2L.asCm get() = Vector2(this.x.asCm, this.y.asCm)
 
+fun NetworkTableEntry.setEmptyPose() {
+    this.setDoubleArray(doubleArrayOf())
+}
+
 fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) {
     this.setDoubleArray(
         doubleArrayOf(
