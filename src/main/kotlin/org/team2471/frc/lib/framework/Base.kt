@@ -18,6 +18,8 @@ private val m_word = DSControlWord()
  * The core robot program to run. The methods in this interface can be overridden in order to
  * execute code in the specified mode.
  */
+@Deprecated("This class does not implement AdvantageKit logging and simulation.",
+    ReplaceWith("LoggedMeanlibRobot", "org.team2471.frc.lib.framework.LoggedMeanlibRobot"))
 abstract class MeanlibRobot : RobotBase() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun startCompetition() {
