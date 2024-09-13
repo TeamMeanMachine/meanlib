@@ -22,9 +22,7 @@ abstract class LoggedMeanlibRobot : LoggedRobot() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun robotInit() {
         init()
-        DriverStationJNI.observeUserProgramStarting()
 
-        var previousRobotMode: RobotMode? = null
         var wasConnected = false
 
 
@@ -36,79 +34,15 @@ abstract class LoggedMeanlibRobot : LoggedRobot() {
                 m_word.refresh()
                 val isConnected = m_word.isDSAttached
 
-                // Get current mode
-                var mode: RobotMode? = null
-                if (m_word.isDisabled) {
-                    mode = RobotMode.DISABLED
-                } else if (m_word.isAutonomous) {
-                    mode = RobotMode.AUTONOMOUS
-                } else if (m_word.isTeleop) {
-                    mode = RobotMode.TELEOP
-                } else if (m_word.isTest) {
-                    mode = RobotMode.TEST
-                } else if (isSimulation()) {
-                    mode = RobotMode.SIMULATE
-                }
-                val modeChanged = (mode != previousRobotMode)
-                val lostConnection = (!isConnected && wasConnected)
-                val gainedConnection = (isConnected && !wasConnected)
-
-//            val hasNewData = DriverStation.waitForData(0.02)
-
                 Events.process()
 
-                if (gainedConnection) {
+                if (isConnected && !wasConnected) { //gained connection
                     comms()
                 }
-//            if (modeChanged || lostConnection) {
-//                if (mode == RobotMode.DISABLED || lostConnection) {
-//                    if (previousRobotMode != RobotMode.DISABLED) {
-//                        mode = RobotMode.DISABLED
-//                        DriverStationJNI.observeUserProgramDisabled()
-//                        GlobalScope.launch(MeanlibDispatcher) {
-//                            use(mainSubsystem, name = "Disabled") { disable() }
-//                        }
-//                    }
-//                } else {
-//                    val wasDisabled = previousRobotMode == RobotMode.DISABLED || previousRobotMode == null
-//
-//                    if (mode == RobotMode.AUTONOMOUS) {
-//                        DriverStationJNI.observeUserProgramAutonomous()
-//                        GlobalScope.launch(MeanlibDispatcher) {
-//                            use(mainSubsystem, name = "Autonomous") {
-//                                if (wasDisabled) enable()
-//                                autonomous()
-//                            }
-//                        }
-//                    } else if (mode == RobotMode.TELEOP) {
-//                        DriverStationJNI.observeUserProgramTeleop()
-//                        GlobalScope.launch(MeanlibDispatcher) {
-//                            use(mainSubsystem, name = "Teleop") {
-//                                if (wasDisabled) enable()
-//                                teleop()
-//                            }
-//                        }
-//                    } else if (mode == RobotMode.TEST) {
-//                        DriverStationJNI.observeUserProgramTest()
-//                        GlobalScope.launch(MeanlibDispatcher) {
-//                            use(mainSubsystem, name = "Test") {
-//                                if (wasDisabled) enable()
-//                                test()
-//                            }
-//                        }
-//                    } else if (mode == RobotMode.SIMULATE) {
+
                 DriverStationJNI.observeUserProgramTest()
-//                        GlobalScope.launch(MeanlibDispatcher) {
-//                            use(mainSubsystem, name = "Simulate") {
-//                                if (wasDisabled) enable()
-//                                simulate()
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            wasConnected = isConnected
-//            previousRobotMode = mode
+
+                wasConnected = isConnected
             }
         }
     }
@@ -125,7 +59,7 @@ abstract class LoggedMeanlibRobot : LoggedRobot() {
     }
 
     override fun teleopInit() {
-        DriverStationJNI.observeUserProgramTeleop()
+//        DriverStationJNI.observeUserProgramTeleop()
         GlobalScope.launch(MeanlibDispatcher) {
             use(mainSubsystem, name = "Teleop") {
                 enable()
@@ -135,14 +69,14 @@ abstract class LoggedMeanlibRobot : LoggedRobot() {
     }
 
     override fun disabledInit() {
-        DriverStationJNI.observeUserProgramDisabled()
+//        DriverStationJNI.observeUserProgramDisabled()
         GlobalScope.launch(MeanlibDispatcher) {
             use(mainSubsystem, name = "Disabled") { disable() }
         }
     }
 
     override fun testInit() {
-        DriverStationJNI.observeUserProgramTest()
+//        DriverStationJNI.observeUserProgramTest()
         GlobalScope.launch(MeanlibDispatcher) {
             use(mainSubsystem, name = "Test") {
                 enable()
