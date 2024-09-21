@@ -20,7 +20,7 @@ private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPose = SwerveDrive.Pose(Vector2(0.0, 0.0), 0.0.degrees)
 private var prevPathPosition = Vector2(0.0, 0.0)
-private var prevTime = 0.0
+private var prevTime = -0.02
 private var prevPathHeading = 0.0.radians
 private val MAXHEADINGSPEED_DEGREES_PER_SECOND = 600.0
 private val MAXTRANSLATIONSPEED_FEET_PER_SECOND = 15.0
@@ -30,7 +30,7 @@ private var prevHeadingError = 0.0.degrees
 interface SwerveDrive {
     val parameters: SwerveParameters
     var heading: Angle
-    val headingRate: AngularVelocity
+    var headingRate: AngularVelocity
     var position: Vector2
     var velocity: Vector2
     var acceleration: Vector2
@@ -261,6 +261,7 @@ fun SwerveDrive.recordOdometry() {
     var robotAcceleration = Vector2(0.0, 0.0)
 
     val time = getRealFPGATimestamp()
+    val dt = time - prevTime
     for (i in modules.indices) {
         val moduleState = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
 
@@ -281,7 +282,10 @@ fun SwerveDrive.recordOdometry() {
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     velocity = robotVelocity
     acceleration = robotAcceleration
-    if (!gyroConnected) heading += robotRotation //if gyro is not connected, update heading
+    if (!gyroConnected) { //if gyro is not connected, update heading
+        heading += robotRotation
+        headingRate = (robotRotation / dt).perSecond
+    }
 
     poseHistory[InterpolatingDouble(time)] = pose
     prevTime = time
