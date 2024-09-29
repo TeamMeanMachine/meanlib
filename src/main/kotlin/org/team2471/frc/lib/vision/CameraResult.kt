@@ -42,18 +42,18 @@ data class CameraResult(
     }
 
     companion object {
-        val EmptyCameraResult = CameraResult(Vector2L.Zeros, 0.0.radians, 0.0, 0, 0.0.inches, 0.0, CameraType.LIMELIGHT, false)
+        val EmptyCameraResult = CameraResult(Vector2L.Zeros, 0.0.radians, 0.0, 0, 0.0.inches, 0.0, CameraType.LIMELIGHT, true)
 
         fun fromArray(array: DoubleArray): CameraResult {
             if (array.size != 8) return EmptyCameraResult
             return CameraResult(
-                Vector2L(array[0].meters, array[1].meters),
-                array[2].radians,
-                array[3],
-                array[4].toInt(),
-                array[5].meters,
-                array[6],
-                CameraType.fromDouble(array[7])
+                pos = Vector2L(array[0].meters, array[1].meters),
+                heading = array[2].radians,
+                latencyMs = array[3],
+                numTags = array[4].toInt(),
+                avgDist = array[5].meters,
+                avgTagArea = array[6],
+                cameraType = CameraType.fromDouble(array[7])
             )
         }
 
@@ -61,13 +61,13 @@ data class CameraResult(
             val llArray = llTable.getEntry("botpose_wpiblue").getDoubleArray(DoubleArray(11))
             val pos = Vector2L(llArray[0].meters, llArray[1].meters)
             return if (pos == Vector2L.Zeros) EmptyCameraResult else CameraResult(
-                pos,
-                llArray[5].radians,
-                llArray[6],
-                llArray[7].toInt(),
-                llArray[9].meters,
-                llArray[10],
-                CameraType.LIMELIGHT
+                pos = pos,
+                heading = llArray[5].radians,
+                latencyMs = llArray[6],
+                numTags = llArray[7].toInt(),
+                avgDist = llArray[9].meters,
+                avgTagArea = llArray[10],
+                cameraType = CameraType.LIMELIGHT
             )
         }
 

@@ -32,6 +32,7 @@ class PhotonVisionCamera(
     private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
 
     private var lastPose: GlobalPose = GlobalPose.EmptyGlobalPose
+    private var lastLatency = 0.0
 
     private var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
         aprilTagFieldLayout,
@@ -99,8 +100,12 @@ class PhotonVisionCamera(
 
         val cameraResult = inputs.cameraResult
 
+//        if (name == "CamSR") {
+//            println("hazStuff: ${!cameraResult.isEmpty} numTags: ${cameraResult.numTags} time: ${cameraResult.latencyMs != lastLatency}")
+//        }
 
-        if (!cameraResult.isEmpty && cameraResult.numTags > 0) {
+
+        if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.latencyMs != lastLatency) {
 
             if (cameraResult.avgDist > 6.0.meters) {/*println("too far");*/ return GlobalPose.EmptyGlobalPose}
 
@@ -137,6 +142,7 @@ class PhotonVisionCamera(
 
 
             lastPose = estimatedPose
+            lastLatency = cameraResult.latencyMs
 
             return estimatedPose
         } else {
