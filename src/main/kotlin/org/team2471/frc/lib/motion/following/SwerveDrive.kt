@@ -243,9 +243,12 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 
     if (modulePosition.x > 0.0.inches && modulePosition.y > 0.0.inches) { // println("acceleration: ${(requestedSpeed - currentSpeed).round(3)} carpetFactor ${(accelerationVector.dot(carpetFlow))}")
 //        println("accelDir: $accelDir   finalCalc: ${(1.0 + accelDir.dot(carpetFlow) * kCarpet)}")
+//        println("value: ${(1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear}")
+
     }
     if (isReal) {
-        deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear
+//        deltaDistance *= (1.0 + accelDir.dot(carpetFlow) * kCarpet) * treadWear //acceleration based kCarpet
+        deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     }
 
     prevDistance = holdDistance
