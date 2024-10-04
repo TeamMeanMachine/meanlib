@@ -63,8 +63,22 @@ class LimelightCamera(
         if (latestResult == CameraResult.EmptyCameraResult) {
             return GlobalPose.EmptyGlobalPose
         }
+
+        // copied from photon with small changes
+        var stDev = 0.01
+
+
+        stDev *= 0.25 / latestResult.avgTagArea
+    //            println("area: ${cameraResult.avgTagArea}")
+
+
+        if (latestResult.numTags < 2) stDev *= 3.0
+
+//         with the way our weighted average sensor fusion algorithm works it doesn't like large/small numbers
+        stDev.coerceIn(0.000001, 1000.0)
+
                                                   // needs to be dynamic
-        val globalPose = latestResult.getGlobalPose(0.1)
+        val globalPose = latestResult.getGlobalPose(stDev)
 
         val latencyAdjustedPose = globalPose.latencyAdjustedPose(currentPos, lookupPose)
 
