@@ -1,12 +1,15 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.struct.Pose2dStruct
 import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.util.struct.StructSerializable
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import kotlin.math.*
 
-data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
+data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L>, StructSerializable {
+
     val length: Length get() = sqrt(dot(this).asMeters).meters
 
     val angle: Angle get() = atan2(x.asMeters, y.asMeters).radians
@@ -78,6 +81,8 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
 
     companion object {
         val Zeros get() = Vector2L(0.0.inches, 0.0.inches)
+
+        val struct: Vector2LStruct = Vector2LStruct()
     }
 }
 
@@ -97,6 +102,8 @@ fun NetworkTableEntry.setEmptyPose() {
     this.setDoubleArray(doubleArrayOf())
 }
 
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher.set()", "edu.wpi.first.networktables.StructPublisher"))
 fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) {
     this.setDoubleArray(
         doubleArrayOf(
@@ -107,6 +114,8 @@ fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) 
     )
 }
 
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher.set()", "edu.wpi.first.networktables.StructPublisher"))
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     val rot = mutableListOf<Angle>()
     for (i in pos.indices) {
@@ -114,10 +123,14 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     }
     this.setAdvantagePoses(pos, rot.toTypedArray())
 }
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher.set()", "edu.wpi.first.networktables.StructPublisher"))
 fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
     setAdvantagePoses(pos.toTypedArray())
 }
 
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher.set()", "edu.wpi.first.networktables.StructPublisher"))
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
     require(pos.size == rot.size)
 
