@@ -96,11 +96,13 @@ suspend inline fun suspendUntil(pollingRate: Int = 20, condition: () -> Boolean)
  *
  * If one child is cancelled, the remaining children are stopped, and the exception is propagated upwards.
  */
-suspend inline fun CoroutineScope.parallel(vararg blocks: suspend () -> Unit) {
-    blocks.map { block ->
-        launch { block() }
-    }.forEach {
-        it.join()
+suspend inline fun parallel(vararg blocks: suspend () -> Unit) {
+    coroutineScope {
+        blocks.map { block ->
+            launch { block() }
+        }.forEach {
+            it.join()
+        }
     }
 }
 
