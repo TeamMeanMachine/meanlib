@@ -1,12 +1,19 @@
 package org.team2471.frc.lib.math
 
 import com.team254.lib.util.Interpolable
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.struct.Pose2dStruct
 import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.StructArrayPublisher
+import edu.wpi.first.networktables.StructPublisher
+import edu.wpi.first.util.struct.StructSerializable
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import kotlin.math.*
 
 data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
+
     val length: Length get() = sqrt(dot(this).asMeters).meters
 
     val angle: Angle get() = atan2(x.asMeters, y.asMeters).radians
@@ -97,6 +104,8 @@ fun NetworkTableEntry.setEmptyPose() {
     this.setDoubleArray(doubleArrayOf())
 }
 
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher<Pose2d>.setAdvantagePose(pos, rot)", "edu.wpi.first.networktables.StructPublisher, org.team2471.frc.lib.math.Vector2L, org"))
 fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) {
     this.setDoubleArray(
         doubleArrayOf(
@@ -107,6 +116,12 @@ fun NetworkTableEntry.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) 
     )
 }
 
+fun StructPublisher<Pose2d>.setAdvantagePose(pos: Vector2L, rot: Angle = 0.0.degrees) {
+    this.set(Pose2d(pos.asMeters.toTranslation2d(), rot.asRotation2d))
+}
+
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher<Pose2d>.setAdvantagePoses(pos)", "edu.wpi.first.networktables.StructArrayPublisher, org.team2471.frc.lib.math.Vector2L, org.team2471.frc.lib.units.*"))
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     val rot = mutableListOf<Angle>()
     for (i in pos.indices) {
@@ -114,10 +129,20 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     }
     this.setAdvantagePoses(pos, rot.toTypedArray())
 }
+
+fun StructArrayPublisher<Pose2d>.setAdvantagePoses(vararg pos: Vector2L) {
+    this.set(
+        pos.map { Pose2d(it.asMeters.toTranslation2d(), Rotation2d(0.0)) }.toTypedArray()
+    )
+}
+
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructPublisher<Pose2d>.setAdvantagePoses(pos)", "edu.wpi.first.networktables.StructArrayPublisher, org.team2471.frc.lib.math.Vector2L, org.team2471.frc.lib.units.*"))
 fun NetworkTableEntry.setAdvantagePoses(pos: ArrayList<Vector2L>) {
     setAdvantagePoses(pos.toTypedArray())
 }
-
+@Deprecated("AdvantageScope no longer accepts this format of publishing poses.",
+    ReplaceWith("StructArrayPublisher<Pose2d>.setAdvantagePoses(poses)", "edu.wpi.first.networktables.StructArrayPublisher, org.team2471.frc.lib.math.Vector2L, org.team2471.frc.lib.units.*"))
 fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>) {
     require(pos.size == rot.size)
 
@@ -137,6 +162,12 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>, rot: Array<Angle>)
     }
 
     this.setDoubleArray(array)
+}
+
+fun StructArrayPublisher<Pose2d>.setAdvantagePoses(vararg poses: Pair<Vector2L, Angle>) {
+    this.set(
+        poses.map { Pose2d(it.first.asMeters.toTranslation2d(), it.second.asRotation2d) }.toTypedArray()
+    )
 }
 
 fun EstimatedRobotPose.toVector2L(): Vector2L {

@@ -27,3 +27,19 @@ interface CameraIO {
     fun reset(inputs: CameraIOInputs) {}
     fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
 }
+
+/**
+    An empty camera. Used during simulation because limelights cannot currently be simulated.
+    @author Thatcher Moore
+ */
+class EmptyCamera(): CameraIO {
+    override fun getEstimatedGlobalPose(
+        inputs: CameraIO.CameraIOInputs,
+        currentPos: Vector2L,
+        currentHeading: Angle,
+        lookupPose: (Double) -> SwerveDrive.Pose?
+    ): GlobalPose {
+        return GlobalPose.EmptyGlobalPose
+    }
+
+}
