@@ -4,6 +4,7 @@ import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
@@ -49,6 +50,19 @@ interface SwerveDrive {
     val modules: Array<Module>
 
     fun resetOdom() = Unit
+
+    val isRedAlliance: Boolean
+        get() =
+            if (DriverStation.getAlliance().isEmpty) {
+                prevIsRedAlliance ?: true
+            } else {
+                (DriverStation.getAlliance().get() == DriverStation.Alliance.Red).also { prevIsRedAlliance = it }
+            }
+    val isBlueAlliance: Boolean get() = !isRedAlliance
+
+    companion object {
+        private var prevIsRedAlliance: Boolean? = null
+    }
 
     interface Module {
         // module fixed parameters
