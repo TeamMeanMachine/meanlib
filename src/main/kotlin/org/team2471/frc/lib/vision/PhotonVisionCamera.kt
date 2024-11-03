@@ -73,6 +73,7 @@ class PhotonVisionCamera(
         inputs: CameraIO.CameraIOInputs,
         currentPos: Vector2L,
         currentHeading: Angle,
+        headingRate: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
         val latestResult = photonCam.latestResult
@@ -114,7 +115,7 @@ class PhotonVisionCamera(
 
             if (cameraResult.avgDist > 6.0.meters) {/*println("too far");*/ return GlobalPose.EmptyGlobalPose}
 
-            var stDev = photonStDevDistCurve.getY(cameraResult.avgDist.asMeters) * 100
+            var stDev = photonStDevDistCurve.getY(cameraResult.avgDist.asMeters) * 5.0
 //            println("original stdev: $stDev")
 
 

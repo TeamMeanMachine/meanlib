@@ -25,7 +25,7 @@ interface CameraIO {
 
     fun updateInputs(inputs: CameraIOInputs) {}
     fun reset(inputs: CameraIOInputs) {}
-    fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
+    fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
 }
 
 /**
@@ -37,6 +37,7 @@ class EmptyCamera(): CameraIO {
         inputs: CameraIO.CameraIOInputs,
         currentPos: Vector2L,
         currentHeading: Angle,
+        headingRate: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
         return GlobalPose.EmptyGlobalPose

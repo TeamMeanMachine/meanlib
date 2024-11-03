@@ -53,10 +53,14 @@ class LimelightCamera(
     inputs: CameraIO.CameraIOInputs,
     currentPos: Vector2L,
     currentHeading: Angle,
+    headingRate: Angle,
     lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
 
-//        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
+        if (headingRate.asDegrees >= 90.0) {
+            return GlobalPose.EmptyGlobalPose
+        }
+        LimelightHelpers.SetRobotOrientation(name, currentHeading.asDegrees - 180.0, headingRate.asDegrees, 0.0, 0.0, 0.0, 0.0)
 
         val latestResult = inputs.cameraResult
 

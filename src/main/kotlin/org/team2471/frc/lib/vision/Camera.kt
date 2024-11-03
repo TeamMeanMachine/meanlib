@@ -60,7 +60,7 @@ class Camera(
 
     // Gets the estimated global pose based on the current position, current heading, and a lookup function that gives a history of drive positions.
     // Just a pass through for the IO layer
-    fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose {
-        return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, lookupPose)
+    fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose {
+        return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
     }
 }

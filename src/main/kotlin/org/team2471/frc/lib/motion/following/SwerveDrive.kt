@@ -301,9 +301,9 @@ fun SwerveDrive.recordOdometry() {
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
-    poseEstimator.updateWithTime(getRealFPGATimestamp(),  heading.asRotation2d, modules.map { it.wpiPosition }.toMutableList().toTypedArray())
+    poseEstimator.updateWithTime(getRealFPGATimestamp(), -heading.asRotation2d, modules.map { it.wpiPosition }.toTypedArray())
     testModuleStatePublisher.set(modules.map { it.wpiState }.toMutableList().swapFinalTwo().toTypedArray())
-//    println("hi there: ${modules.map { it.wpiState.angle.degrees }}")
+//    println("hi there: ${modules.map { it.wpiPosition.distanceMeters }}")
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     velocity = robotVelocity
     acceleration = robotAcceleration

@@ -64,10 +64,11 @@ class PhotonVisionSim(
         inputs: CameraIO.CameraIOInputs,
         currentPos: Vector2L,
         currentHeading: Angle,
+        headingRate: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
         visionSystemSim.update(currentPos.asMeters.toPose2d(currentHeading.asRadians))
-        return camera.getEstimatedGlobalPose(inputs, currentPos, currentHeading, lookupPose)
+        return camera.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
