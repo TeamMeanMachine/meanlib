@@ -5,8 +5,6 @@ import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.team2471.frc.lib.math.DoubleRange
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
@@ -72,11 +70,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         applyConfig()
     }
 
-    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
+    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         config.CurrentLimits.apply {
             SupplyCurrentLimit = continuousLimit.toDouble()
             StatorCurrentLimit = peakLimit.toDouble()
-            SupplyTimeThreshold = peakDuration.toDouble()
+            SupplyTimeThreshold = peakDuration
             StatorCurrentLimitEnable = true
             SupplyCurrentLimitEnable = true
         }

@@ -173,7 +173,7 @@ class MotorControllerSim: MotorControllerIO {
     //unsupported functions
     override fun setVelocitySetpoint(velocity: Double) {}
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {}
-    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {} //<- could implement this maybe?
+    override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {} //<- could implement this maybe?
     override fun follow(followerID: MotorControllerIO) {}
     override fun getInverted(): Boolean = false
     override fun setInverted(invert: Boolean) {}

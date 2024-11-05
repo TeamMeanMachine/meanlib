@@ -40,7 +40,7 @@ interface MotorControllerIO {
     fun config_kD(d: Double, simD: Double? = 0.0)
     fun config_kI(i: Double, simI: Double? = 0.0)
     fun configSim(motor: DCMotor, jKgMetersSquared: Double) {}
-    fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
+    fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
     fun getClosedLoopError(): Double

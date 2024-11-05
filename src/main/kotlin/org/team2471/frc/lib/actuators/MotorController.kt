@@ -424,9 +424,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          *
          * @param continuousLimit the continuous allowable current-draw
          * @param peakLimit the peak allowable current
-         * @param peakDuration the peak allowable duration
+         * @param peakDuration the peak allowable duration (seconds)
          */
-        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
+        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
             // apply to following
             allMotorControllers { controller ->
                 controller.currentLimit(continuousLimit, peakLimit, peakDuration)
