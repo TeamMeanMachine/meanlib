@@ -1,17 +1,13 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.estimator.PoseEstimator
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions
 import org.photonvision.simulation.SimCameraProperties
-import org.photonvision.targeting.TargetCorner
 import org.team2471.frc.lib.interpolation.SplineInterpolator
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.radians
-import kotlin.math.atan
 import kotlin.math.pow
 
 /**
@@ -39,10 +35,10 @@ val photonStDevDistCurve: SplineInterpolator = SplineInterpolator(
  */
 val cameraProperties = SimCameraProperties().apply {
     setCalibration(1280, 720, Rotation2d.fromDegrees(90.0))
-    setCalibError(0.25, 0.08) // Values from docs. Should change
+    setCalibError(2.5, 0.8) // Values from docs. Should change
     fps = 20.0 // Complete guess
     avgLatencyMs = 30.0 // complete guess
-    latencyStdDevMs = 5.0 // another total guess
+    latencyStdDevMs = 10.0 // another total guess
 }
 
 /**
@@ -72,7 +68,7 @@ fun getPos(prevAprilTagPos: Vector2L, drivePos: Vector2L, deltaPos: Vector2L, lo
     //add camera poses
     for (pose in aprilPoses) {
         try {
-            measurementsAndStDevs.add(Pair(pose.latencyAdjustedPose(drivePos, lookupPose), pose.stDev))
+            measurementsAndStDevs.add(Pair(pose.latencyAdjustedPose(drivePos, lookupPose), pose.stdDev))
         } catch (e: Exception) {
 //            println("Stupid thing with latency adjust again")
         }
@@ -106,15 +102,6 @@ fun PoseEstimator<SwerveDriveWheelPositions>.getPos(): Vector2L {
     return this.estimatedPosition.translation.asVector2().meters
 }
 
-fun List<TargetCorner>.getXAngle(hFOV: Angle, hWidth: Double): Angle {
-    var centerX = 0.0
-    for (i in this) {
-        centerX += i.x
-    }
-    centerX /= this.size
-
-    // Converts the center to be (0,0)
-    centerX -= hWidth / 2.0
-
-    return atan((centerX / (hWidth / 2.0)) * (hFOV / 2.0).tan()).radians
+suspend fun driveToTag(camera: Camera, tagID: Int, tagOffset: Vector2L, rotOffset: Angle, drive: SwerveDrive) {
+//    var tagRelativePos = camera.
 }

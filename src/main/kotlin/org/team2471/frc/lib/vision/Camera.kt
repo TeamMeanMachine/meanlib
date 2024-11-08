@@ -63,4 +63,8 @@ class Camera(
     fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose {
         return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
     }
+
+    fun getTagRelativePose(tagID: Int): Pose2d? {
+        return io.getTagRelativePose(tagID)
+    }
 }

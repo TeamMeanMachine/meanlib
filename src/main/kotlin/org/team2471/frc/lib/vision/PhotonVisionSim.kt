@@ -75,4 +75,7 @@ class PhotonVisionSim(
         camera.updateInputs(inputs)
     }
 
+    override fun getTagRelativePose(tagID: Int): Pose2d? {
+        return camera.getTagRelativePose(tagID)
+    }
 }

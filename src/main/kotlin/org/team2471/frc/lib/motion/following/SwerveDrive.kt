@@ -19,6 +19,7 @@ import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.*
+import org.team2471.frc.lib.vision.VisionPoseEstimator
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -52,7 +53,7 @@ interface SwerveDrive {
 
     val modules: Array<Module>
 
-    val poseEstimator: SwerveDrivePoseEstimator
+    val poseEstimator: VisionPoseEstimator
 
     var testModuleStatePublisher: StructArrayPublisher<SwerveModuleState>
 
@@ -301,7 +302,7 @@ fun SwerveDrive.recordOdometry() {
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
-    poseEstimator.updateWithTime(getRealFPGATimestamp(), -heading.asRotation2d, modules.map { it.wpiPosition }.toTypedArray())
+    poseEstimator.updateOdometry(getRealFPGATimestamp(), position.feet, robotTranslation.feet, robotRotation)
     testModuleStatePublisher.set(modules.map { it.wpiState }.toMutableList().swapFinalTwo().toTypedArray())
 //    println("hi there: ${modules.map { it.wpiPosition.distanceMeters }}")
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
@@ -325,7 +326,7 @@ fun SwerveDrive.odometryReset() {
     zeroEncoders()
     position = Vector2(0.0, 0.0)
     poseHistory.clear()
-    poseEstimator.resetPosition(heading.asRotation2d, modules.map { it.wpiPosition}.toTypedArray(), position.toPose2d(heading.asRadians))
+    poseEstimator.reset(getRealFPGATimestamp(), Vector2L.Zeros)
     resetOdom()
 }
 
