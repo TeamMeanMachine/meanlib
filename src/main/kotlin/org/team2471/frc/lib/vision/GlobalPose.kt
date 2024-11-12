@@ -2,26 +2,23 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
-import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
-import org.team2471.frc.lib.motion.following.lookupPose
-import org.team2471.frc.lib.motion.following.poseDiff
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.units.radians
 
 data class GlobalPose (
-    var pose: Vector2L,
+    var pos: Vector2L,
     val rotation: Angle,
-    val stDev: Double,
+    val stdDev: Double,
     val timestampSeconds: Double
 ) {
     val pose2d: Pose2d
-        get() = Pose2d(pose.asMeters.toTranslation2d(), Rotation2d(this.rotation.asRadians))
+        get() = Pose2d(pos.asMeters.toTranslation2d(), Rotation2d(this.rotation.asRadians))
 
     fun latencyAdjustedPose(currentDrivePos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
-        return pose + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
+        return pos + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
     }
 
     companion object {

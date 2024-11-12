@@ -3,7 +3,13 @@ package org.team2471.frc.lib.motion.following
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
+import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.Translation2d
+import edu.wpi.first.math.kinematics.SwerveModulePosition
+import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.StructArrayPublisher
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
@@ -13,9 +19,8 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.Timer
-import org.team2471.frc.lib.util.getRealFPGATimestamp
-import org.team2471.frc.lib.util.isReal
+import org.team2471.frc.lib.util.*
+import org.team2471.frc.lib.vision.VisionPoseEstimator
 import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
@@ -49,6 +54,11 @@ interface SwerveDrive {
 
     val modules: Array<Module>
 
+    val poseEstimator: VisionPoseEstimator
+
+    var testModuleStatePublisher: StructArrayPublisher<SwerveModuleState>
+
+
     fun resetOdom() = Unit
 
     val isRedAlliance: Boolean
@@ -67,7 +77,17 @@ interface SwerveDrive {
     interface Module {
         // module fixed parameters
         val modulePosition: Vector2L // coordinates of module in robot coordinates
+
+        val modulePositionWpi: Translation2d
+            get() = Translation2d(modulePosition.y.asMeters, -modulePosition.x.asMeters)
+
         val angleOffset: Angle
+
+        val wpiPosition: SwerveModulePosition
+            get() = SwerveModulePosition(currDistance.feet.asMeters, angle.asRotation2d)
+
+        val wpiState: SwerveModuleState
+            get() = SwerveModuleState(speed, angle.asRotation2d)
 
         // encoder interface
         val angle: Angle
@@ -296,6 +316,9 @@ fun SwerveDrive.recordOdometry() {
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
+    poseEstimator.updateOdometry(getRealFPGATimestamp(), position.feet, robotTranslation.feet, robotRotation)
+    testModuleStatePublisher.set(modules.map { it.wpiState }.toMutableList().swapFinalTwo().toTypedArray())
+//    println("hi there: ${modules.map { it.wpiPosition.distanceMeters }}")
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     velocity = robotVelocity
     acceleration = robotAcceleration
@@ -317,6 +340,7 @@ fun SwerveDrive.odometryReset() {
     zeroEncoders()
     position = Vector2(0.0, 0.0)
     poseHistory.clear()
+    poseEstimator.reset(getRealFPGATimestamp(), Vector2L.Zeros)
     resetOdom()
 }
 

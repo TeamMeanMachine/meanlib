@@ -31,7 +31,7 @@ class LimelightCamera(
     init {
         LimelightHelpers.setCameraPose_RobotSpace(
             name,
-            robotToCamera.x,
+            -robotToCamera.x,
             robotToCamera.y,
             robotToCamera.z,
             robotToCamera.rotation.x,
@@ -53,10 +53,14 @@ class LimelightCamera(
     inputs: CameraIO.CameraIOInputs,
     currentPos: Vector2L,
     currentHeading: Angle,
+    headingRate: Angle,
     lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
 
-//        LimelightHelpers.SetRobotOrientation(name, currentHeading.asRadians, 0.0, 0.0, 0.0, 0.0, 0.0)
+        if (headingRate.asDegrees >= 45.0) {
+            return GlobalPose.EmptyGlobalPose
+        }
+        LimelightHelpers.SetRobotOrientation(name, currentHeading.asDegrees - 180.0, headingRate.asDegrees, 0.0, 0.0, 0.0, 0.0)
 
         val latestResult = inputs.cameraResult
 
@@ -65,7 +69,7 @@ class LimelightCamera(
         }
 
         // copied from photon with small changes
-        var stDev = 0.01
+        var stDev = 0.1
 
 
         stDev *= 0.25 / latestResult.avgTagArea
@@ -85,12 +89,16 @@ class LimelightCamera(
         advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, currentHeading)
         Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
 
-        stDevEntry.setDouble(globalPose.stDev)
-        Logger.recordOutput("$name/stDev", globalPose.stDev)
+        stDevEntry.setDouble(globalPose.stdDev)
+        Logger.recordOutput("$name/stDev", globalPose.stdDev)
 
 
         return globalPose
 
+    }
+
+    override fun getTagRelativePose(tagID: Int): Pose2d? {
+        TODO("Not yet implemented")
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {

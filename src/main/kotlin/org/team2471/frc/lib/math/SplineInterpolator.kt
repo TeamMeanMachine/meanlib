@@ -2,10 +2,19 @@ package org.team2471.frc.lib.interpolation
 
 import org.team2471.frc.lib.math.CubicSpline
 
+/**
+ * An interpolator made as an alternative to MotionCurves. This takes points in the form (x, y) and generates a piecewise function made up of cubic splines that hits all of those points. Made for things that are directly functions of each other, like a standard deviation as a function of distance or shooter angle as a function of distance from goal.
+ *
+ * @author Thatcher Moore
+ *
+ * @param points a map containing the points to interpolate from, arranged as <x, y>
+ * @param startSlope The desired slope at the first point. If null, will calculate the optimal slope
+ * @param endSlope The desired slope at the last point. If null, will calculate the optimal slope
+ */
 class SplineInterpolator(
     points: MutableMap<Double, Double> = emptyMap<Double, Double>().toMutableMap(),
-    startSlope: Double = 0.0,
-    endSlope: Double = 0.0
+    startSlope: Double? = null,
+    endSlope: Double? = null
 ) {
     var points: MutableMap<Double, Double> = points.toSortedMap()
         set(value)
@@ -17,7 +26,7 @@ class SplineInterpolator(
             this.updateSpline()
         }
 
-    var startSlope: Double = startSlope
+    var startSlope: Double? = startSlope
         set(value)
         {
             field = value
@@ -25,7 +34,7 @@ class SplineInterpolator(
             this.updateSpline()
         }
 
-    var endSlope: Double = endSlope
+    var endSlope: Double? = endSlope
         set(value)
         {
             field = value
@@ -68,8 +77,8 @@ class SplineInterpolator(
 
         splines.clear()
 
-        var point1Slope: Double
-        var point2Slope: Double
+        var point1Slope: Double?
+        var point2Slope: Double?
 
         for (pointIndex in keys.indices)
         {
