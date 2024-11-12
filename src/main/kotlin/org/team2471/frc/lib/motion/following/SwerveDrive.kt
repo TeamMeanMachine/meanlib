@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructArrayPublisher
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
@@ -59,6 +60,19 @@ interface SwerveDrive {
 
 
     fun resetOdom() = Unit
+
+    val isRedAlliance: Boolean
+        get() =
+            if (DriverStation.getAlliance().isEmpty) {
+                prevIsRedAlliance ?: true
+            } else {
+                (DriverStation.getAlliance().get() == DriverStation.Alliance.Red).also { prevIsRedAlliance = it }
+            }
+    val isBlueAlliance: Boolean get() = !isRedAlliance
+
+    companion object {
+        private var prevIsRedAlliance: Boolean? = null
+    }
 
     interface Module {
         // module fixed parameters
