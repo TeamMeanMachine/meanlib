@@ -79,7 +79,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             periodic(0.02) {
                 io.updateInputs(inputs)
                 Logger.processInputs("Motors", inputs)
-                if (io is TalonFXWrapper) io.applyConfigIfChanged()
             }
         }
     }
@@ -441,6 +440,20 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          */
         fun encoderContinuous(continuous: Boolean) {
             io.encoderContinuous(continuous)
+        }
+
+        /**
+         * Only for PRO licenced CTRE devices:
+         * Fuses a CANcoder's information with the motor's internal rotor.
+         *
+         * Removes the need to add a gear ratio in the [feedbackCoefficient]
+         *
+         * @param encoderID CAN id of the CANcoder.
+         * @param motorToSensorRatio amount of motor rotations for 1 CANcoder rotation.
+         * @param sensorToMechanismRatio amount of sensor rotations for 1 mechanism rotations.
+         */
+        fun fuseCANcoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {
+            io.fuseCANCoder(encoderID, motorToSensorRatio, sensorToMechanismRatio)
         }
 
         inner class PIDConfigScope {

@@ -3,10 +3,7 @@ package org.team2471.frc.lib.actuators
 import com.ctre.phoenix6.configs.*
 import com.ctre.phoenix6.controls.*
 import com.ctre.phoenix6.hardware.TalonFX
-import com.ctre.phoenix6.signals.InvertedValue
-import com.ctre.phoenix6.signals.NeutralModeValue
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.ctre.phoenix6.signals.*
 import org.team2471.frc.lib.math.DoubleRange
 
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
@@ -29,6 +26,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         inputs.current = _motorController.statorCurrent.value
 
         this.inputs = inputs
+        applyConfigIfChanged()
     }
 
     override val current: Double
@@ -36,40 +34,40 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
 
     init {
-        println("Creating TalonFX motor  ID: $deviceID  canBus: $canBus")
+        println("TalonFX motor ID: $deviceID  canBus: $canBus isPro: ${_motorController.isProLicensed}")
         _motorController.configurator.refresh(config)
     }
 
     override fun brakeMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake
-        applyConfig()
+//        applyConfig()
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
         config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = secondsToFull
         config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = secondsToFull
         config.ClosedLoopRamps.TorqueClosedLoopRampPeriod = secondsToFull
-        applyConfig()
+//        applyConfig()
     }
 
     override fun coastMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast
-        applyConfig()
+//        applyConfig()
     }
 
     override fun config_kP(p: Double, simP: Double?) {
         config.Slot0.kP = p
-        applyConfig()
+//        applyConfig()
     }
 
     override fun config_kD(d: Double, simD: Double?) {
         config.Slot0.kD = d
-        applyConfig()
+//        applyConfig()
     }
 
     override fun config_kI(i: Double, simI: Double?) {
         config.Slot0.kI = i
-        applyConfig()
+//        applyConfig()
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
@@ -80,16 +78,23 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
             StatorCurrentLimitEnable = true
             SupplyCurrentLimitEnable = true
         }
-        applyConfig()
+//        applyConfig()
     }
 
     override fun encoderContinuous(continuous: Boolean) {
         config.ClosedLoopGeneral.ContinuousWrap = continuous
-        applyConfig()
+//        applyConfig()
     }
 
     override fun follow(followerID: MotorControllerIO) {
         _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
+    }
+
+    override fun fuseCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double) {
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder
+        config.Feedback.FeedbackRemoteSensorID = encoderID
+        config.Feedback.RotorToSensorRatio = motorToSensorRatio
+        config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
     }
 
     override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
@@ -111,32 +116,32 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
         config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
-        applyConfig()
+//        applyConfig()
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
         config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = secondsToFull
         config.OpenLoopRamps.VoltageOpenLoopRampPeriod = secondsToFull
         config.OpenLoopRamps.TorqueOpenLoopRampPeriod = secondsToFull
-        applyConfig()
+//        applyConfig()
     }
 
     override fun peakOutputRange(range: DoubleRange) {
         config.MotorOutput.PeakForwardDutyCycle = range.start
         config.MotorOutput.PeakReverseDutyCycle = range.endInclusive
-        applyConfig()
+//        applyConfig()
     }
 
     override fun restoreFactoryDefaults() {
         config = TalonFXConfiguration()
-        applyConfig(config)
+//        applyConfig(config)
     }
 
     override fun setInverted(invert: Boolean) {
         config.MotorOutput.Inverted =
             if (invert) InvertedValue.CounterClockwise_Positive
             else InvertedValue.Clockwise_Positive
-        applyConfig()
+//        applyConfig()
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
@@ -184,7 +189,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     }
 
     fun applyConfigIfChanged() {
-        if (configUnsaved) applyConfig(config)
+        if (configUnsaved) applyConfig()
     }
 
     /*

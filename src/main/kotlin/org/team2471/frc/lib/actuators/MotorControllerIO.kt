@@ -43,6 +43,7 @@ interface MotorControllerIO {
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
+    fun fuseCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {}
     fun getClosedLoopError(): Double
     fun getPValue(): Double
     fun getDValue() : Double

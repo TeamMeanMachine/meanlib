@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.sensors.AnalogInput
+package org.team2471.frc.lib.sensors.analogInput
 
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
