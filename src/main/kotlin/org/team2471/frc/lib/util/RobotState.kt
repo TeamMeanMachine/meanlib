@@ -10,7 +10,7 @@ val robotMode: RobotMode =
         RuntimeType.kRoboRIO2, RuntimeType.kRoboRIO -> RobotMode.REAL
         RuntimeType.kSimulation -> if (doReplay) RobotMode.REPLAY else RobotMode.SIM
         else -> RobotMode.REAL
-    }
+    }.also { println("robotMode = $it") }
 
 val isReal = robotMode == RobotMode.REAL
 

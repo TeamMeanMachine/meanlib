@@ -9,6 +9,7 @@ import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.RobotMode
+import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.robotMode
 
 sealed class MotorControllerID {abstract val value: Int; abstract val name: String}
@@ -66,7 +67,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         private set
 
     val followers = followerIds.map { id ->
-        val follower = internalMotorController(id)
+        val follower = if (isReal) internalMotorController(id) else MotorControllerSim()
         follower.follow(io)
         follower
     }.toTypedArray()
@@ -249,10 +250,17 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setD(d: Double, simD: Double? = 0.0) {
         io.config_kD(d / feedbackCoefficient, simD?.div(feedbackCoefficient))
     }
+    fun setI(i: Double, simI: Double? = 0.0) {
+        io.config_kI(i / feedbackCoefficient, simI?.div(feedbackCoefficient))
+    }
+    fun setF(f: Double, simF: Double? = 0.0) {
+        io.config_kF(f, simF)
+    }
 
     fun getP() : Double = io.getPValue() * feedbackCoefficient
     fun getD(): Double = io.getDValue() * feedbackCoefficient
     fun getI(): Double = io.getIValue() * feedbackCoefficient
+    fun getF(): Double = io.getFValue()
 
 
     /**
@@ -296,12 +304,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         /**
          * The primary, "master" [internalMotorController].
          */
-        val ctreController get() = io
+        val leader get() = io
 
         /**
-         * An array of [internalMotorController]s which follow [ctreController].
+         * An array of [internalMotorController]s which follow [leader].
          */
-        val ctreFollowers get() = followers
+        val followerArray get() = followers
 
         /**
          * A coefficient applied to the attached encoder's raw value in order to convert it into a
@@ -423,9 +431,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          *
          * @param continuousLimit the continuous allowable current-draw
          * @param peakLimit the peak allowable current
-         * @param peakDuration the peak allowable duration
+         * @param peakDuration the peak allowable duration (seconds)
          */
-        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Int) {
+        fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
             // apply to following
             allMotorControllers { controller ->
                 controller.currentLimit(continuousLimit, peakLimit, peakDuration)
@@ -468,6 +476,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
             fun d(d: Double, simD: Double? = null) {
                 io.config_kD(d / feedbackCoefficient, simD?.div(feedbackCoefficient))
+            }
+
+            fun f(f: Double, simF: Double? = null) {
+                io.config_kF(f, simF)
             }
         }
     }
