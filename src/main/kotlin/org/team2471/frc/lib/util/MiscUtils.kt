@@ -2,10 +2,13 @@ package org.team2471.frc.lib.util
 
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.geometry.Translation3d
+import edu.wpi.first.math.kinematics.SwerveModulePosition
+import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.square
+import org.team2471.frc.lib.motion.following.SwerveDrive
 import java.lang.System.currentTimeMillis
 import kotlin.math.hypot
 import kotlin.math.sqrt
@@ -48,3 +51,20 @@ val Translation2d.length: Double
 
 val Translation3d.length: Double
     get() = sqrt(square(this.x) + square(this.y) + square(this.z))
+
+// Swaps the last two items in a list. Used for swapping BR and BL swerve modules for wpi pose estimator
+fun MutableList<SwerveModulePosition>.swapLastTwo(): MutableList<SwerveModulePosition> {
+    val i = this.size
+    val temp = this.last()
+    this[i - 1] = this[i - 2]
+    this[i - 2] = temp
+    return this
+}
+
+fun MutableList<SwerveModuleState>.swapFinalTwo(): MutableList<SwerveModuleState> {
+    val i = this.size
+    val temp = this.last()
+    this[i - 1] = this[i - 2]
+    this[i - 2] = temp
+    return this
+}

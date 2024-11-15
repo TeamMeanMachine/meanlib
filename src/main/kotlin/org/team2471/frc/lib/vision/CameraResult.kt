@@ -58,7 +58,7 @@ data class CameraResult(
         }
 
         fun fromLLTable(llTable: NetworkTable): CameraResult {
-            val llArray = llTable.getEntry("botpose_wpiblue").getDoubleArray(DoubleArray(11))
+            val llArray = llTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11))
             val pos = Vector2L(llArray[0].meters, llArray[1].meters)
             return if (pos == Vector2L.Zeros) EmptyCameraResult else CameraResult(
                 pos = pos,
