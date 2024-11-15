@@ -36,6 +36,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     init {
         println("TalonFX motor ID: $deviceID  canBus: $canBus isPro: ${_motorController.isProLicensed}")
         _motorController.configurator.refresh(config)
+        applyConfig()
     }
 
     override fun brakeMode() {
