@@ -30,9 +30,6 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65
 
-    val hasErrors: Boolean
-        get() = _motorController.faults > 0
-
     init {
         println("Creating Spark motor  ID: $deviceID")
     }
@@ -153,11 +150,11 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 //        println("kD=$d")
     }
 
-    override fun getDValue() : Double = _motorController.pidController.d
-
-    override fun getIValue(): Double = _motorController.pidController.i
-
     override fun getPValue(): Double = _motorController.pidController.p
+    override fun getDValue() : Double = _motorController.pidController.d
+    override fun getIValue(): Double = _motorController.pidController.i
+    override fun getFValue(): Double = _motorController.pidController.ff
+
 
     override fun config_kF(f: Double, simF: Double?) {
         _motorController.pidController.ff = f

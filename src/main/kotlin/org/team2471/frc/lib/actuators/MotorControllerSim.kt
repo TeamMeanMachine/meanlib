@@ -88,9 +88,12 @@ class MotorControllerSim: MotorControllerIO {
     override fun config_kP(p: Double, simP: Double?) { pid.p = if (simP == 0.0) pid.p else simP ?: p }
     override fun config_kI(i: Double, simI: Double?) { pid.i = if (simI == 0.0) pid.i else simI ?: i }
     override fun config_kD(d: Double, simD: Double?) { pid.d = if (simD == 0.0) pid.d else simD ?: d }
+    override fun config_kF(f: Double, simF: Double?) { feedForward = if (simF == 0.0) feedForward else simF ?: f}
 
     override fun getPValue(): Double = pid.p
     override fun getIValue(): Double = pid.i
+    override fun getFValue(): Double = feedForward
+
     override fun getDValue(): Double = pid.d
 
     override fun brakeMode() { breakMode = true }
