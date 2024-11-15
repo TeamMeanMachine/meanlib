@@ -159,8 +159,8 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun getPValue(): Double = _motorController.pidController.p
 
-    fun config_kF(value: Double) {
-        _motorController.pidController.ff = value
+    override fun config_kF(f: Double, simF: Double?) {
+        _motorController.pidController.ff = f
     }
 
     override fun config_kI(i: Double, simI: Double?) {
