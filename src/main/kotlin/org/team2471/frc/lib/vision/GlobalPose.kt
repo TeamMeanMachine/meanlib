@@ -11,7 +11,7 @@ import org.team2471.frc.lib.units.radians
 data class GlobalPose (
     var pos: Vector2L,
     val rotation: Angle,
-    val stDev: Double,
+    val stdDev: Double,
     val timestampSeconds: Double
 ) {
     val pose2d: Pose2d

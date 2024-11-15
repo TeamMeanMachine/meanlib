@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.math.geometry.Pose2d
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.math.Vector2L
@@ -25,7 +26,8 @@ interface CameraIO {
 
     fun updateInputs(inputs: CameraIOInputs) {}
     fun reset(inputs: CameraIOInputs) {}
-    fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
+    fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
+    fun getTagRelativePose(tagID: Int): Pose2d?
 }
 
 /**
@@ -37,9 +39,13 @@ class EmptyCamera(): CameraIO {
         inputs: CameraIO.CameraIOInputs,
         currentPos: Vector2L,
         currentHeading: Angle,
+        headingRate: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
         return GlobalPose.EmptyGlobalPose
     }
 
+    override fun getTagRelativePose(tagID: Int): Pose2d {
+        return Pose2d()
+    }
 }

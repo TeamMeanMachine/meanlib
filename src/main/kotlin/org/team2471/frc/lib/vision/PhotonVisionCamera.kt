@@ -2,10 +2,8 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout
 import edu.wpi.first.math.geometry.*
-import edu.wpi.first.math.trajectory.Trajectory
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.networktables.StructArrayPublisher
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
@@ -73,27 +71,9 @@ class PhotonVisionCamera(
         inputs: CameraIO.CameraIOInputs,
         currentPos: Vector2L,
         currentHeading: Angle,
+        headingRate: Angle,
         lookupPose: (Double) -> SwerveDrive.Pose?
     ): GlobalPose {
-        val latestResult = photonCam.latestResult
-
-        if (latestResult.hasTargets()) {
-            val testAngle =
-                (getFieldRot(currentHeading) + latestResult.bestTarget.detectedCorners.getXAngle(
-                    90.0.degrees,
-                    1280.0
-                )) - 180.0.degrees
-//        println("$name: $testAngle")
-            val tagPose = aprilTagFieldLayout.getTagPose(latestResult.bestTarget.fiducialId).get().toPose2d().transformBy(Transform2d(Pose2d(), Pose2d((getFieldPose(currentPos, currentHeading) - currentPos).asMeters.toTranslation2d(), Rotation2d())))
-
-
-            testTrajPublisher.set(
-                arrayOf(
-                    tagPose,
-                    Pose2d((Vector2(10.0 * testAngle.sin(), 10.0 * testAngle.cos()).toPose2d(currentHeading.asRadians).translation + tagPose.translation), Rotation2d(0.0))
-                )
-            )
-        }
         isConnectedEntry.setBoolean(inputs.isConnected)
         advantagePoseEntry.setEmptyPose()
 //        advantagePoseEntry.unpublish()
@@ -114,7 +94,7 @@ class PhotonVisionCamera(
 
             if (cameraResult.avgDist > 6.0.meters) {/*println("too far");*/ return GlobalPose.EmptyGlobalPose}
 
-            var stDev = photonStDevDistCurve.getY(cameraResult.avgDist.asMeters) * 100
+            var stDev = photonStDevDistCurve.getY(cameraResult.avgDist.asMeters) * 5.0
 //            println("original stdev: $stDev")
 
 
@@ -142,8 +122,8 @@ class PhotonVisionCamera(
             advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, estimatedPose.rotation)
             Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
 
-            stDevEntry.setDouble(estimatedPose.stDev)
-            Logger.recordOutput("$name/stDev", estimatedPose.stDev)
+            stDevEntry.setDouble(estimatedPose.stdDev)
+            Logger.recordOutput("$name/stDev", estimatedPose.stdDev)
 
 
             lastPose = estimatedPose
@@ -153,6 +133,16 @@ class PhotonVisionCamera(
         } else {
 //            println("Empty :(")
             return GlobalPose.EmptyGlobalPose
+        }
+    }
+
+    override fun getTagRelativePose(tagID: Int): Pose2d? {
+        val fiducialIDs = photonCam.latestResult.targets.map {it.fiducialId}
+        if (fiducialIDs.contains(tagID)) {
+            val bestCameraToTarget = photonCam.latestResult.targets[fiducialIDs.indexOf(tagID)].bestCameraToTarget
+            return Pose2d(bestCameraToTarget.translation.toTranslation2d() + robotToCamera.translation.toTranslation2d(), bestCameraToTarget.rotation.toRotation2d() + bestCameraToTarget.rotation.toRotation2d())
+        } else {
+            return null
         }
     }
 
