@@ -179,9 +179,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(NeutralOut())
     }
 
-    fun applyConfigIfChanged() {
-        if (configUnsaved) applyConfig()
-    }
+    fun applyConfigIfChanged() = if (configUnsaved) applyConfig() else {}
 
     /*
     apply() is a blocking API call that waits on the device to respond.

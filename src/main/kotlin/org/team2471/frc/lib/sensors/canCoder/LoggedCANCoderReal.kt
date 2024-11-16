@@ -7,7 +7,8 @@ import com.ctre.phoenix6.signals.SensorDirectionValue
 class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
     private val canCoder = CANcoder(id, canbus)
     private val config  = CANcoderConfiguration()
-    private var appliedConfig: CANcoderConfiguration? = null
+    private var appliedConfig = CANcoderConfiguration()
+    private val configUnsaved: Boolean get() = config.serialize() != appliedConfig.serialize()
 
     override fun updateInputs(inputs: LoggedCANCoderIO.CANCoderIOInputs) {
         inputs.position = canCoder.position.value
@@ -25,10 +26,7 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
             else SensorDirectionValue.Clockwise_Positive
     }
 
-
-    private fun applyConfigIfChanged() {
-        if (config != appliedConfig) applyConfig()
-    }
+    private fun applyConfigIfChanged() = if (configUnsaved) applyConfig() else {}
 
     private fun applyConfig() {
         canCoder.configurator.apply(config)
