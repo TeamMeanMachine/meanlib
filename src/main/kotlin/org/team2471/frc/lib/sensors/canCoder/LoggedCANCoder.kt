@@ -4,6 +4,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.AngularVelocity
+import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.perSecond
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
 
@@ -14,8 +18,8 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Doubl
         RobotMode.REPLAY, RobotMode.SIM -> LoggedCANCoderSim(simRotationSupplier)
     }
 
-    val position: Double get() = inputs.position
-    val velocity: Double get() = inputs.velocity
+    val position: Angle get() = inputs.position.degrees
+    val velocity: AngularVelocity get() = inputs.velocity.degrees.perSecond
 
     init {
         GlobalScope.launch {
@@ -26,8 +30,8 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Doubl
         }
     }
 
-    fun setAngleOffset(offset: Double) {
-        io.setMagnetSensorOffset(offset)
+    fun setAngleOffset(offset: Angle) {
+        io.setMagnetSensorOffset(offset.asDegrees)
     }
 
     fun setInverted(invert: Boolean) {
