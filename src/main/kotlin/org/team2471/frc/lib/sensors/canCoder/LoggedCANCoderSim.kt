@@ -1,8 +1,10 @@
 package org.team2471.frc.lib.sensors.canCoder
 
+import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.asRotations
 import org.team2471.frc.lib.util.Timer
 
-class LoggedCANCoderSim(val simRotationSupplier: () -> Double): LoggedCANCoderIO {
+class LoggedCANCoderSim(override var simAngleSupplier: () -> Angle): LoggedCANCoderIO {
     private val timer = Timer()
     private var prevTime = 0.0
     private var prevPosition = 0.0
@@ -12,7 +14,7 @@ class LoggedCANCoderSim(val simRotationSupplier: () -> Double): LoggedCANCoderIO
     }
 
     override fun updateInputs(inputs: LoggedCANCoderIO.CANCoderIOInputs) {
-        val position = simRotationSupplier()
+        val position = simAngleSupplier().asRotations
         val dt = timer.get() - prevTime
 
         inputs.position = position
