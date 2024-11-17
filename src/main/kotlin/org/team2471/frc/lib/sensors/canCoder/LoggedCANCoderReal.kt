@@ -26,6 +26,10 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
             else SensorDirectionValue.Clockwise_Positive
     }
 
+    override fun setPosition(position: Double) {
+        canCoder.setPosition(position)
+    }
+
     private fun applyConfigIfChanged() = if (configUnsaved) applyConfig() else {}
 
     private fun applyConfig() {

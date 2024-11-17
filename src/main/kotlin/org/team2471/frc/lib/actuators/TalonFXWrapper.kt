@@ -187,9 +187,10 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     as it will always wait up to defaultTimeoutSeconds for the response
     when no timeout parameter is specified.
      */
-    private fun applyConfig(newConfig: TalonFXConfiguration = config) {
+    private fun applyConfig() {
+        val newConfig = config
         _motorController.configurator.apply(newConfig, timeoutSec)
-        appliedConfig = config
+        appliedConfig = newConfig
     }
 
 
