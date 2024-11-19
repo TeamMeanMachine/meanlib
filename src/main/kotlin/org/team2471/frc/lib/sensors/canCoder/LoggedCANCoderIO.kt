@@ -2,8 +2,10 @@ package org.team2471.frc.lib.sensors.canCoder
 
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team2471.frc.lib.units.Angle
 
 interface LoggedCANCoderIO {
+    var simAngleSupplier: () -> Angle
     open class CANCoderIOInputs(val name: String): LoggableInputs {
         var position = 0.0
         var velocity = 0.0
@@ -23,5 +25,6 @@ interface LoggedCANCoderIO {
     fun updateInputs(inputs: CANCoderIOInputs)
 
     fun setMagnetSensorOffset(offset: Double) {}
+    fun setPosition(position: Double) {}
     fun setInverted(invert: Boolean) {}
 }

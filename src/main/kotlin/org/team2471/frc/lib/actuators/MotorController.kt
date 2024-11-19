@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.DoubleRange
+import org.team2471.frc.lib.sensors.canCoder.LoggedCANCoder
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.isReal
@@ -463,6 +464,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         fun fuseCANcoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {
             io.fuseCANCoder(encoderID, motorToSensorRatio, sensorToMechanismRatio)
         }
+        fun fuseCANcoder(encoder: LoggedCANCoder, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) =
+            fuseCANcoder(encoder.id, motorToSensorRatio, sensorToMechanismRatio)
 
         inner class PIDConfigScope {
             //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")

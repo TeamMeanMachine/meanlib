@@ -56,9 +56,6 @@ interface SwerveDrive {
 
     val poseEstimator: VisionPoseEstimator
 
-    var testModuleStatePublisher: StructArrayPublisher<SwerveModuleState>
-
-
     fun resetOdom() = Unit
 
     val isRedAlliance: Boolean
@@ -317,7 +314,6 @@ fun SwerveDrive.recordOdometry() {
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
     poseEstimator.updateOdometry(getRealFPGATimestamp(), position.feet, robotTranslation.feet, robotRotation)
-    testModuleStatePublisher.set(modules.map { it.wpiState }.toMutableList().swapFinalTwo().toTypedArray())
 //    println("hi there: ${modules.map { it.wpiPosition.distanceMeters }}")
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     velocity = robotVelocity
