@@ -32,14 +32,25 @@ class Camera(
     val aprilTagFieldLayout: AprilTagFieldLayout,
     val robotToCamera: Transform3d,
     val robotMode: RobotMode = RobotMode.REAL,
-    val isPhotonCamera: Boolean = false
+    val cameraType: CameraType = CameraType.PHOTONVISION
 ) {
 
     // Instantiates the IO layer, which depends on whether the camera is Photonvision or Limelight or if the robot is simulated or not.
     val io: CameraIO = when (robotMode) {
-        RobotMode.REAL,  RobotMode.REPLAY-> if (isPhotonCamera) PhotonVisionCamera(inputTable, outputTable, name, robotToCamera, aprilTagFieldLayout) else LimelightCamera(inputTable, outputTable, name, robotToCamera)
-        RobotMode.SIM -> if (isPhotonCamera) PhotonVisionSim(inputTable, outputTable, name, robotToCamera, aprilTagFieldLayout) else EmptyCamera()
+        RobotMode.REAL,  RobotMode.REPLAY-> {
+            when (cameraType) {
+                CameraType.PHOTONVISION -> PhotonVisionCamera(inputTable, outputTable, name, robotToCamera, aprilTagFieldLayout)
+                CameraType.LIMELIGHT -> LimelightCamera(inputTable, outputTable, name, robotToCamera)
+            }
+        }
+        RobotMode.SIM -> {
+            when (cameraType) {
+                CameraType.PHOTONVISION -> PhotonVisionSim(inputTable, outputTable, name, robotToCamera, aprilTagFieldLayout)
+                CameraType.LIMELIGHT -> EmptyCamera()
+            }
+        }
     }
+
     // Instantiates the inputs
     val inputs = CameraIO.CameraIOInputs(name)
 
