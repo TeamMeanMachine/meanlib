@@ -2,13 +2,10 @@ package org.team2471.frc.lib.util
 
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.geometry.Translation3d
-import edu.wpi.first.math.kinematics.SwerveModulePosition
-import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.square
-import org.team2471.frc.lib.motion.following.SwerveDrive
 import java.lang.System.currentTimeMillis
 import kotlin.math.hypot
 import kotlin.math.sqrt
@@ -52,19 +49,28 @@ val Translation2d.length: Double
 val Translation3d.length: Double
     get() = sqrt(square(this.x) + square(this.y) + square(this.z))
 
-// Swaps the last two items in a list. Used for swapping BR and BL swerve modules for wpi pose estimator
-fun MutableList<SwerveModulePosition>.swapLastTwo(): MutableList<SwerveModulePosition> {
-    val i = this.size
-    val temp = this.last()
-    this[i - 1] = this[i - 2]
-    this[i - 2] = temp
-    return this
-}
 
-fun MutableList<SwerveModuleState>.swapFinalTwo(): MutableList<SwerveModuleState> {
-    val i = this.size
-    val temp = this.last()
-    this[i - 1] = this[i - 2]
-    this[i - 2] = temp
-    return this
+/**
+ * Calculates a running average by incorporating a new number into the existing average.
+ *
+ * This function uses an incremental formula to update the average, which is more
+ * efficient for large datasets as it doesn't require storing all previous values.
+ *
+ * The math can be found here: https://math.stackexchange.com/questions/2845793/recursive-mean-computation
+ *
+ * @param previousAverage The current average before adding the new number.
+ * @param newNumber The new number to be incorporated into the average.
+ * @param size The total number of items in the dataset, including the new number.
+ * @return The updated average after incorporating the new number.
+ * @throws IllegalArgumentException if size is less than or equal to 0.
+ *
+ * @author Thatcher Moore
+ */
+fun calculateAverage(previousAverage: Double, newNumber: Double, size: Int): Double {
+    require(size > 0)
+    return if (size == 1) {
+        newNumber
+    } else {
+        previousAverage + (1.0 / size) * (newNumber - previousAverage)
+    }
 }
