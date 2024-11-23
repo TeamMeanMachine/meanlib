@@ -75,6 +75,17 @@ fun calculateAverage(previousAverage: Double, newNumber: Double, size: Int): Dou
     }
 }
 
+/**
+ * Calculates the average of a collection of numbers using an incremental formula.
+ * This approach is more efficient for large datasets as it doesn't require storing all previous values.
+ *
+ * The math can be found here: https://math.stackexchange.com/questions/2845793/recursive-mean-computation
+ *
+ * @return The average of the numbers in the collection.
+ * @throws IllegalArgumentException if the collection is empty.
+ *
+ * @author Thatcher Moore
+ */
 fun Collection<Number>.calculateAverage(): Double {
     require(isNotEmpty()) { "Cannot calculate average of an empty collection" }
     val iterator = iterator()
