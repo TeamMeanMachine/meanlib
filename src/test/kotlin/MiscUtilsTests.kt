@@ -23,6 +23,9 @@ class MiscUtilsTests {
             size += 1
             average = calculateAverage(average, i, size)
         }
+
+        val average2 = values.calculateAverage()
         assertEquals(4.337272727272727, average)
+        assertEquals(4.337272727272727, average2)
     }
 }

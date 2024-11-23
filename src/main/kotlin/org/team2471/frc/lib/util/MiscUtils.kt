@@ -74,3 +74,13 @@ fun calculateAverage(previousAverage: Double, newNumber: Double, size: Int): Dou
         previousAverage + (1.0 / size) * (newNumber - previousAverage)
     }
 }
+
+fun Collection<Number>.calculateAverage(): Double {
+    require(isNotEmpty()) { "Cannot calculate average of an empty collection" }
+    val iterator = iterator()
+    var average = iterator.next().toDouble()
+    for (i in 2..size) {
+        average += (1.0 / i) * (iterator.next().toDouble() - average)
+    }
+    return average
+}
