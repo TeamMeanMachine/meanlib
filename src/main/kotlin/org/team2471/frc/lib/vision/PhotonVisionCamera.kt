@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.StructArrayPublisher
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
+import org.photonvision.targeting.PhotonPipelineResult
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
@@ -136,22 +137,20 @@ class PhotonVisionCamera(
         }
     }
 
-    override fun getTagRelativePose(tagID: Int): Pose2d? {
-        val fiducialIDs = photonCam.latestResult.targets.map {it.fiducialId}
-        if (fiducialIDs.contains(tagID)) {
-            val bestCameraToTarget = photonCam.latestResult.targets[fiducialIDs.indexOf(tagID)].bestCameraToTarget
-            return Pose2d(bestCameraToTarget.translation.toTranslation2d() + robotToCamera.translation.toTranslation2d(), bestCameraToTarget.rotation.toRotation2d() + bestCameraToTarget.rotation.toRotation2d())
-        } else {
-            return null
+    override fun get2DTarget(tagID: Int): Target2D {
+        lateinit var latestResult: PhotonPipelineResult
+        try {
+            latestResult = photonCam.latestResult
+        } catch (e: Exception) {
+            println("Error with latest result")
+            return Target2D.EmptyTarget2D
         }
-    }
-
-    fun getFieldPose(robotPose: Vector2L, robotRot: Angle): Vector2L {
-        return robotPose + robotToCamera.translation.toTranslation2d().asVector2().meters.rotateDegrees(robotRot.asDegrees)
-    }
-
-    fun getFieldRot(robotRot: Angle): Angle {
-        return robotToCamera.rotation.toRotation2d().rotateBy(Rotation2d.fromDegrees(-90.0) - robotRot.asRotation2d).asAngle
+        val validTargets = latestResult.targets.filter { it.fiducialId == tagID }
+        if (validTargets.isNotEmpty()) {
+            return validTargets[0].toTarget2D()
+        } else {
+            return Target2D.EmptyTarget2D
+        }
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {

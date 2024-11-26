@@ -68,6 +68,7 @@ interface MotorControllerIO {
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
+    fun setTorqueCurrent(current: Double) {}
     fun stop()
 
     fun applyConfig() {}
