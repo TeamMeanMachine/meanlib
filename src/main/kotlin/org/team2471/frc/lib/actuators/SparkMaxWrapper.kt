@@ -176,6 +176,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
-        _motorController.setSmartCurrentLimit(peakLimit)
+        if (peakDuration == 0.0) {
+            _motorController.setSmartCurrentLimit(continuousLimit, peakLimit)
+        } else {
+            _motorController.setSmartCurrentLimit(peakLimit)
+        }
     }
 }

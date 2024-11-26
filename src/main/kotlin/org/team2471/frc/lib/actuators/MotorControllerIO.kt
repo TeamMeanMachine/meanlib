@@ -69,4 +69,6 @@ interface MotorControllerIO {
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
     fun stop()
+
+    fun applyConfig() {}
 }

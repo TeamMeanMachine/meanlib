@@ -291,6 +291,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         io.restoreFactoryDefaults()
     }
 
+    fun applyConfig() {
+        io.applyConfig()
+    }
+
     /**
      * Enables brake mode.
      */

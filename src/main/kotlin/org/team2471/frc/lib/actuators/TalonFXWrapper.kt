@@ -14,7 +14,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     private val timeoutSec = 0.050
 
-    private val configUnsaved: Boolean get() = config.serialize() != appliedConfig.serialize()
+//    private val configUnsaved: Boolean get() = config.serialize() != appliedConfig.serialize()
+    private var configUnsaved: Boolean = true
 
     override val outputPercent: Double
         get() = inputs.outputPercent
@@ -41,32 +42,39 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun brakeMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake
+        configUnsaved = true
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
         config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = secondsToFull
         config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = secondsToFull
         config.ClosedLoopRamps.TorqueClosedLoopRampPeriod = secondsToFull
+        configUnsaved = true
     }
 
     override fun coastMode() {
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast
+        configUnsaved = true
     }
 
     override fun config_kP(p: Double, simP: Double?) {
         config.Slot0.kP = p
+        configUnsaved = true
     }
 
     override fun config_kD(d: Double, simD: Double?) {
         config.Slot0.kD = d
+        configUnsaved = true
     }
 
     override fun config_kI(i: Double, simI: Double?) {
         config.Slot0.kI = i
+        configUnsaved = true
     }
 
     override fun config_kF(f: Double, simF: Double?) {
         config.Slot0.kS = f
+        configUnsaved = true
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
@@ -77,10 +85,12 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
             StatorCurrentLimitEnable = true
             SupplyCurrentLimitEnable = true
         }
+        configUnsaved = true
     }
 
     override fun encoderContinuous(continuous: Boolean) {
         config.ClosedLoopGeneral.ContinuousWrap = continuous
+        configUnsaved = true
     }
 
     override fun follow(followerID: MotorControllerIO) {
@@ -92,6 +102,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         config.Feedback.FeedbackRemoteSensorID = encoderID
         config.Feedback.RotorToSensorRatio = motorToSensorRatio
         config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
+        configUnsaved = true
     }
 
     override fun getClosedLoopError(): Double = _motorController.closedLoopError.value
@@ -112,27 +123,32 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
         config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
+        configUnsaved = true
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
         config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = secondsToFull
         config.OpenLoopRamps.VoltageOpenLoopRampPeriod = secondsToFull
         config.OpenLoopRamps.TorqueOpenLoopRampPeriod = secondsToFull
+        configUnsaved = true
     }
 
     override fun peakOutputRange(range: DoubleRange) {
         config.MotorOutput.PeakForwardDutyCycle = range.start
         config.MotorOutput.PeakReverseDutyCycle = range.endInclusive
+        configUnsaved = true
     }
 
     override fun restoreFactoryDefaults() {
         config = TalonFXConfiguration()
+        configUnsaved = true
     }
 
     override fun setInverted(invert: Boolean) {
         config.MotorOutput.Inverted =
             if (invert) InvertedValue.CounterClockwise_Positive
             else InvertedValue.Clockwise_Positive
+        configUnsaved = true
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
@@ -187,7 +203,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     as it will always wait up to defaultTimeoutSeconds for the response
     when no timeout parameter is specified.
      */
-    private fun applyConfig() {
+    override fun applyConfig() {
+        configUnsaved = false
         val newConfig = config
         _motorController.configurator.apply(newConfig, timeoutSec)
         appliedConfig = newConfig
