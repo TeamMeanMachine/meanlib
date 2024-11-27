@@ -77,6 +77,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
 
     init {
+        io.updateInputs(inputs)
+        Logger.processInputs("Motors", inputs)
         GlobalScope.launch {
             periodic(0.02) {
                 io.updateInputs(inputs)

@@ -36,7 +36,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     init {
         println("TalonFX motor ID: $deviceID  canBus: $canBus isPro: ${_motorController.isProLicensed}")
-        _motorController.configurator.refresh(config)
+//        _motorController.configurator.refresh(config)
         applyConfig()
     }
 
@@ -114,9 +114,9 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(): Double  = inputs.position
+    override fun getSelectedSensorPosition(): Double  = _motorController.position.value
 
-    override fun getSelectedSensorVelocity(): Double = inputs.velocity
+    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
 
     override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
 
