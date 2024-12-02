@@ -222,6 +222,29 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         io.setMotionMagicSetpoint(((position / feedbackCoefficient) - rawOffset), feedForward)
 
     /**
+     * Sets the torque current for the motor controller.
+     *
+     * This function applies a specified torque current to the motor controller,
+     * which directly controls the motor's output torque.
+     *
+     * @param current The desired torque current in amperes.
+     */
+    fun setTorqueCurrent(current: Double) =
+        io.setTorqueCurrent(current)
+
+    /**
+     * Sets the torque setpoint for the motor controller.
+     *
+     * This function calculates and applies the appropriate torque current based on the desired torque
+     * and the motor's torque constant.
+     *
+     * @param current The desired torque in Newton-meters (Nm).
+     * @param ktNmA The motor's torque constant in Newton-meters per ampere (Nm/A).
+     */
+    fun setTorqueSetpoint(current: Double, ktNmA: Double) =
+        io.setTorqueCurrent(current / ktNmA)
+
+    /**
      * Attempt to get encoder plugged directly into SparkMAX. Has not worked yet.
      *
      * @param countPerRev the counts per revolution of the alternate encoder. Can be found in the Alternate Encoder SparkMAX guide

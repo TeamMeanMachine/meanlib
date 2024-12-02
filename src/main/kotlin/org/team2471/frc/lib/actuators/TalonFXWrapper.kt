@@ -191,6 +191,12 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         )
     }
 
+    override fun setTorqueCurrent(current: Double) {
+        _motorController.setControl(
+            TorqueCurrentFOC(current)
+        )
+    }
+
     override fun stop() {
         _motorController.setControl(NeutralOut())
     }
