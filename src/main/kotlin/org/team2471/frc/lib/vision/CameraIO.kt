@@ -27,7 +27,7 @@ interface CameraIO {
     fun updateInputs(inputs: CameraIOInputs) {}
     fun reset(inputs: CameraIOInputs) {}
     fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
-    fun getTagRelativePose(tagID: Int): Pose2d?
+    fun get2DTarget(tagID: Int): Target2D
 }
 
 /**
@@ -45,7 +45,7 @@ class EmptyCamera(): CameraIO {
         return GlobalPose.EmptyGlobalPose
     }
 
-    override fun getTagRelativePose(tagID: Int): Pose2d {
-        return Pose2d()
+    override fun get2DTarget(tagID: Int): Target2D {
+        return Target2D.EmptyTarget2D
     }
 }

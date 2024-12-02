@@ -97,8 +97,9 @@ class LimelightCamera(
 
     }
 
-    override fun getTagRelativePose(tagID: Int): Pose2d? {
-        TODO("Not yet implemented")
+    // Todo
+    override fun get2DTarget(tagID: Int): Target2D {
+        return Target2D.EmptyTarget2D
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {

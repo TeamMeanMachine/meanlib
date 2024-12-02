@@ -75,7 +75,7 @@ class Camera(
         return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
     }
 
-    fun getTagRelativePose(tagID: Int): Pose2d? {
-        return io.getTagRelativePose(tagID)
+    fun get2DTarget(tagID: Int): Target2D {
+        return io.get2DTarget(tagID)
     }
 }
