@@ -141,6 +141,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
+    override fun setMotionMagicSetpoint(position: Double) {
+        _motorController.pidController.setReference(position, CANSparkBase.ControlType.kSmartMotion)
+    }
+
     override fun config_kP(p: Double, simP: Double?) {
         _motorController.pidController.p = p * 1024.0
     }
@@ -181,5 +185,12 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         } else {
             _motorController.setSmartCurrentLimit(peakLimit)
         }
+    }
+
+    override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
+        _motorController.pidController.setSmartMotionMaxVelocity(cruisingVelocity, 0)
+        _motorController.pidController.setSmartMotionMinOutputVelocity(0.0, 0)
+        _motorController.pidController.setSmartMotionMaxAccel(acceleration, 0)
+        _motorController.pidController.setSmartMotionAllowedClosedLoopError(0.0, 0)
     }
 }
