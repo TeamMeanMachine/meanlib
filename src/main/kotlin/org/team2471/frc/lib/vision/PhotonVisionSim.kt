@@ -71,11 +71,11 @@ class PhotonVisionSim(
         return camera.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
     }
 
-    override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
-        camera.updateInputs(inputs)
+    override fun get2DTarget(tagID: Int): Target2D {
+        return camera.get2DTarget(tagID)
     }
 
-    override fun getTagRelativePose(tagID: Int): Pose2d? {
-        return camera.getTagRelativePose(tagID)
+    override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
+        camera.updateInputs(inputs)
     }
 }
