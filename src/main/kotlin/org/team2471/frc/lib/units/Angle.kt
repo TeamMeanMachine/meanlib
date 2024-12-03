@@ -1,10 +1,12 @@
 package org.team2471.frc.lib.units
 
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.struct.Rotation2dStruct
+import edu.wpi.first.util.struct.StructSerializable
 import kotlin.math.IEEErem
 
 @JvmInline
-value class Angle(val asDegrees: Double) {
+value class Angle(val asDegrees: Double): StructSerializable {
     operator fun plus(other: Angle) = Angle(asDegrees + other.asDegrees)
 
     operator fun minus(other: Angle) = Angle(asDegrees - other.asDegrees)
@@ -36,6 +38,9 @@ value class Angle(val asDegrees: Double) {
     } 
 
     companion object {
+
+        val struct: AngleStruct = AngleStruct()
+
         @JvmStatic
         fun sin(angle: Angle) = Math.sin(angle.asRadians)
 

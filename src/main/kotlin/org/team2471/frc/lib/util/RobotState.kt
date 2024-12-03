@@ -13,6 +13,7 @@ val robotMode: RobotMode =
     }.also { println("robotMode = $it") }
 
 val isReal = robotMode == RobotMode.REAL
+val isSim = robotMode == RobotMode.SIM
 
 enum class RobotMode {
     REAL,
