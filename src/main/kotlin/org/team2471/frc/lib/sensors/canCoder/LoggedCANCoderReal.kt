@@ -1,8 +1,13 @@
 package org.team2471.frc.lib.sensors.canCoder
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration
+import com.ctre.phoenix6.configs.MagnetSensorConfigs
 import com.ctre.phoenix6.hardware.CANcoder
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue
+import com.ctre.phoenix6.signals.SensorDirectionValue
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
+import kotlin.math.IEEErem
 
 class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
     private val canCoder = CANcoder(id, canbus)
@@ -19,6 +24,33 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
     }
 
     override fun setPosition(position: Double) {
-        canCoder.setPosition(position)
+
+        val absolutePosition = canCoder.absolutePosition.value.IEEErem(1.0)
+        println("curr pose $absolutePosition  ${canCoder.position.value}")
+
+        val config = MagnetSensorConfigs()
+
+        canCoder.configurator.refresh(config)
+
+        println("old magnetOffset ${config.MagnetOffset}")
+
+        var magnetOffset = (-absolutePosition + config.MagnetOffset)
+        if (magnetOffset > 1.0) {
+            magnetOffset -= 1.0
+        }
+        config.MagnetOffset = magnetOffset
+
+        println("new magnetOffset ${config.MagnetOffset}")
+
+
+
+        canCoder.configurator.apply(config)
+
+        println("finished position ${canCoder.absolutePosition.value}  ${canCoder.position.value}")
+
+        canCoder.setPosition(canCoder.absolutePosition.value)
+
+        println("again finished position ${canCoder.absolutePosition.value}  ${canCoder.position.value}")
+
     }
 }
