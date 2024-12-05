@@ -25,6 +25,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         inputs.outputPercent = _motorController.dutyCycle.value
         inputs.velocity = _motorController.velocity.value
         inputs.current = _motorController.statorCurrent.value
+        inputs.temp = _motorController.deviceTemp.value
 
         this.inputs = inputs
         applyConfigIfChanged()

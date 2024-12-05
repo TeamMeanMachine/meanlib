@@ -80,6 +80,7 @@ class MotorControllerSim: MotorControllerIO {
         inputs.velocity = (sim.angularVelocityRPM) / 60.0
         inputs.current = sim.currentDrawAmps.absoluteValue
         inputs.outputPercent = outputPercent
+        inputs.temp = 0.0
 
         this.inputs = inputs
     }

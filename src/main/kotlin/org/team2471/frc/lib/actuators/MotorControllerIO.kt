@@ -14,12 +14,14 @@ interface MotorControllerIO {
         var current: Double = 0.0
         var outputPercent: Double = 0.0
         var velocity: Double = 0.0
+        var temp: Double = 0.0
 
         override fun toLog(table: LogTable) {
             table.put("$name/Position", position)
             table.put("$name/Current", current)
             table.put("$name/OutputPercent", outputPercent)
             table.put("$name/Velocity", velocity)
+            table.put("$name/Temp", temp)
         }
 
         override fun fromLog(table: LogTable) {
@@ -27,6 +29,7 @@ interface MotorControllerIO {
             current = table.get("$name/Current", current)
             outputPercent = table.get("$name/OutputPercent", outputPercent)
             velocity = table.get("$name/Velocity", velocity)
+            temp = table.get("$name/Temp", temp)
         }
     }
 

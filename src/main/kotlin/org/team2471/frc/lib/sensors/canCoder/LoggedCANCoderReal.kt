@@ -1,14 +1,9 @@
 package org.team2471.frc.lib.sensors.canCoder
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration
-import com.ctre.phoenix6.configs.CustomParamsConfigs
-import com.ctre.phoenix6.configs.MagnetSensorConfigs
 import com.ctre.phoenix6.hardware.CANcoder
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue
-import com.ctre.phoenix6.signals.SensorDirectionValue
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
-import kotlin.math.IEEErem
 
 class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
     private val canCoder = CANcoder(id, canbus)
@@ -22,6 +17,10 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
 
     override fun setInverted(invert: Boolean) {
         inverted = invert
+    }
+
+    init {
+        canCoder.configurator.apply(CANcoderConfiguration())
     }
 
     override fun setPosition(position: Double) {

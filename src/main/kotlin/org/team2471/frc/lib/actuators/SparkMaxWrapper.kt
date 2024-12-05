@@ -18,6 +18,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         inputs.outputPercent = _motorController.appliedOutput
         inputs.velocity = _motorController.encoder.velocity
         inputs.current = _motorController.outputCurrent
+        inputs.temp = _motorController.motorTemperature
 
         this.inputs = inputs
     }
