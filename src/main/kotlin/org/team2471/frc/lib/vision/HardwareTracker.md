@@ -25,6 +25,11 @@ All cameras need to be named with [this](https://docs.arducam.com/UVC-Camera/Ser
 | CA11 | OV9281 |       Vision Drawer       | Standby, in old mount, needs calibration & focus |        ?        |    ✓     |
 | CB12 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
 | CB13 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
+| CC14 | OV9782 |       Vision Drawer       |            Backup, maybe needs focus             |       N/A       |    ✓     |
+| CC15 | OV9782 |       Vision Drawer       |            Backup,  maybe needs focus            |       N/A       |    ✓     |
+| CA16 | OV9281 |       Vision Drawer       |        Backup,  needs calibration & focus        |        ?        |    ✓     |
+| CA17 | OV9281 |       Vision Drawer       | Backup, in old mount, needs calibration & focus  |        ?        |    ✓     |
+| CA18 | OV9281 |       Vision Drawer       |       Backup,  needs focus and calibration       |        ?        |    ✓     |
 
 
 
