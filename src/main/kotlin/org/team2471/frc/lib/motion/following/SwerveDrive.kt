@@ -72,6 +72,9 @@ interface SwerveDrive {
     }
 
     interface Module {
+
+        val gearRatio: Double
+
         // module fixed parameters
         val modulePosition: Vector2L // coordinates of module in robot coordinates
 
@@ -86,6 +89,8 @@ interface SwerveDrive {
         val wpiState: SwerveModuleState
             get() = SwerveModuleState(speed, angle.asRotation2d)
 
+        var wheelDiameter: Length
+
         // encoder interface
         val angle: Angle
         val speed: Double
@@ -99,6 +104,7 @@ interface SwerveDrive {
 
         // motor interface
         var angleSetpoint: Angle
+        val rawWheelRotation: Angle
 
         fun setDrivePower(power: Double)
 
