@@ -21,7 +21,7 @@ All cameras need to be named with [this](https://docs.arducam.com/UVC-Camera/Ser
 | CC07 | OV9782 |      Shop camera kit      |                    For CADers                    |       N/A       |    ✓     |
 | CC08 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
 | CC09 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
-| CB10 | OV2311 |         BunnyBot          |        In use, needs calibration & focus         |      never      |    ✓     |
+| CB10 | OV2311 |       Vision Drawer       |        Standby, needs calibration & focus        |      never      |    ✓     |
 | CA11 | OV9281 |       Vision Drawer       | Standby, in old mount, needs calibration & focus |        ?        |    ✓     |
 | CB12 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
 | CB13 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
@@ -35,16 +35,27 @@ All cameras need to be named with [this](https://docs.arducam.com/UVC-Camera/Ser
 
 
 ## Orange Pis
-| Name |   Location    |                     Status                     |
-|------|:-------------:|:----------------------------------------------:|
-| OP01 |    Typhoon    |                     In use                     |
-| OP02 |    Typhoon    |                     In use                     |
-| OP03 |   BunnyBot    |                     In use                     |
-| OP04 | Vision Drawer |      Standby, needs new case, no SD card       |
-| OP05 | Vision Drawer |            Standby, needs new case             |
-| OP06 | Vision Drawer | Standby, brand new, needs new case, no SD card |
-| OP07 | Vision Drawer | Standby, brand new, needs new case, no SD card |
+| Name |   Location    |                        Status                         |
+|------|:-------------:|:-----------------------------------------------------:|
+| OP01 |    Typhoon    |                        In use                         |
+| OP02 |    Typhoon    |                        In use                         |
+| OP03 | Vision Drawer |                        Standby                        |
+| OP04 | Vision Drawer |          Standby, needs new case, no SD card          |
+| OP05 | Vision Drawer |                Standby, needs new case                |
+| OP06 | Vision Drawer |    Standby, brand new, needs new case, no SD card     |
+| OP07 | Vision Drawer |    Standby, brand new, needs new case, no SD card     |
+| OP08 | Vision Drawer | Standby, brand new, needs new case, running PV Beta 2 |
 
+
+
+## Power Supplies/adapters
+| Name  |   Location    |  Status   |
+|-------|:-------------:|:---------:|
+| PRZ01 | Vision Drawer | Brand new |
+| PRZ02 | Vision Drawer | Brand new |
+| PRZ03 | Vision Drawer | Brand new |
+| PRZ04 | Vision Drawer | Brand new |
+| PRZ05 | Vision Drawer | Brand new |
 
 
 ## Limelights
