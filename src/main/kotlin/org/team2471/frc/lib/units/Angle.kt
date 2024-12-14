@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.struct.Rotation2dStruct
 import edu.wpi.first.util.struct.StructSerializable
 import kotlin.math.IEEErem
+import kotlin.math.absoluteValue
 
 @JvmInline
 value class Angle(val asDegrees: Double): StructSerializable {
@@ -35,7 +36,11 @@ value class Angle(val asDegrees: Double): StructSerializable {
 
     fun unWrap(nearByAngle: Angle) : Angle {
         return nearByAngle + (this - nearByAngle).wrap()
-    } 
+    }
+
+    fun absoluteValue(): Angle {
+        return Angle(asDegrees.absoluteValue)
+    }
 
     companion object {
 

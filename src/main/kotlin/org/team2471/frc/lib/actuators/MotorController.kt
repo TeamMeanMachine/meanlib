@@ -102,6 +102,12 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     val velocity: Double
         get() = io.getSelectedSensorVelocity() * feedbackCoefficient
 
+    /**
+     * The raw angular velocity of the selected sensor per second.
+     */
+    val rawVelocity: Angle
+        get() = io.getSelectedSensorVelocity().rotations
+
     val acceleration: Double
         get() = io.getSelectedSensorAcceleration() * feedbackCoefficient
 
@@ -119,6 +125,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         set(value) {
             io.setSelectedSensorPosition((value / feedbackCoefficient))
         }
+
 
     var analogPosition: Double
         get() = when (io) {
