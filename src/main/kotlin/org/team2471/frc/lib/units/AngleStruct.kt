@@ -18,6 +18,10 @@ class AngleStruct : Struct<Angle> {
         return Angle::class.java
     }
 
+    override fun getTypeName(): String {
+        return typeClass.name
+    }
+
     /**
      * Gets the string representation of the struct type.
      *

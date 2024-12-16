@@ -2,6 +2,7 @@ package org.team2471.frc.lib.actuators
 
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.system.plant.DCMotor
+import edu.wpi.first.math.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -117,7 +118,7 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         this.motor = motor
-        sim = DCMotorSim(this.motor, 1.0, jKgMetersSquared)
+        sim = DCMotorSim(LinearSystemId.createDCMotorSystem(this.motor, jKgMetersSquared, 1.0), this.motor)
         sim.setState(0.0, 0.0)
     }
 

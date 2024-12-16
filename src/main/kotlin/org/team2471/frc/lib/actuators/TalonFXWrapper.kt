@@ -21,11 +21,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         get() = inputs.outputPercent
 
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
-        inputs.position = _motorController.position.value
-        inputs.outputPercent = _motorController.dutyCycle.value
-        inputs.velocity = _motorController.velocity.value
-        inputs.current = _motorController.statorCurrent.value
-        inputs.temp = _motorController.deviceTemp.value
+        inputs.position = _motorController.position.valueAsDouble
+        inputs.outputPercent = _motorController.dutyCycle.valueAsDouble
+        inputs.velocity = _motorController.velocity.valueAsDouble
+        inputs.current = _motorController.statorCurrent.valueAsDouble
+        inputs.temp = _motorController.deviceTemp.valueAsDouble
 
         this.inputs = inputs
         applyConfigIfChanged()
@@ -115,11 +115,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
 
-    override fun getSelectedSensorPosition(): Double  = _motorController.position.value
+    override fun getSelectedSensorPosition(): Double  = _motorController.position.valueAsDouble
 
-    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.value
+    override fun getSelectedSensorVelocity(): Double = _motorController.velocity.valueAsDouble
 
-    override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.value
+    override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.valueAsDouble
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0

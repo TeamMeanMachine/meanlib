@@ -11,8 +11,8 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
     private var inverted = false
 
     override fun updateInputs(inputs: LoggedCANCoderIO.CANCoderIOInputs) {
-        inputs.position = canCoder.position.value * if (inverted) -1.0 else 1.0
-        inputs.velocity = canCoder.velocity.value * if (inverted) -1.0 else 1.0
+        inputs.position = canCoder.position.valueAsDouble * if (inverted) -1.0 else 1.0
+        inputs.velocity = canCoder.velocity.valueAsDouble * if (inverted) -1.0 else 1.0
     }
 
     override fun setInverted(invert: Boolean) {
