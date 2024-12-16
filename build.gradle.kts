@@ -21,9 +21,9 @@ buildscript {
 var doReplay = false
 
 group = "org.team2471.lib"
-version = "2024"
-var wpiLibVersion =  "2024.3.2"
-var advantageKitVersion = "3.2.0"
+version = "2025"
+var wpiLibVersion =  "2025.1.1-beta-2"
+var advantageKitVersion = "4.0.0-beta-1"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -42,13 +42,15 @@ repositories {
 
 dependencies {
     //AdvantageKit libs
-    implementation("org.littletonrobotics.akit.junction:junction-core:$advantageKitVersion")
-    implementation("org.littletonrobotics.akit.junction:wpilib-shim:$advantageKitVersion")
-    implementation("org.littletonrobotics.akit.conduit:conduit-api:$advantageKitVersion")
-    implementation("org.littletonrobotics.akit.conduit:conduit-wpilibio:$advantageKitVersion")
+//    implementation("org.littletonrobotics.akit.junction:junction-core:$advantageKitVersion")
+//    implementation("org.littletonrobotics.akit.junction:wpilib-shim:$advantageKitVersion")
+//    implementation("org.littletonrobotics.akit.conduit:conduit-api:$advantageKitVersion")
+//    implementation("org.littletonrobotics.akit.conduit:conduit-wpilibio:$advantageKitVersion")
+    implementation("org.littletonrobotics.akit:akit-java:$advantageKitVersion")
+    implementation("org.littletonrobotics.akit:akit-wpilibio:$advantageKitVersion")
 
     // kotlin libs
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
     // frc libs
     implementation("edu.wpi.first.apriltag:apriltag-java:$wpiLibVersion")
@@ -60,8 +62,8 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix6:api-java:24.2.0")
-    implementation("com.revrobotics.frc:REVLib-java:2024.2.1")
+    implementation("com.ctre.phoenix6:wpiapi-java:25.0.0-beta-4")
+    implementation("com.revrobotics.frc:REVLib-java:2025.0.0-beta-3")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
 
     // other
@@ -71,8 +73,8 @@ dependencies {
     implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     implementation("org.ejml:ejml-simple:0.41")
 
-    implementation("org.photonvision:photonlib-java:v2024.3.1")
-    implementation("org.photonvision:photontargeting-java:v2024.3.1")
+    implementation("org.photonvision:photonlib-java:v2025.0.0-beta-6")
+    implementation("org.photonvision:photontargeting-java:v2025.0.0-beta-6")
     implementation("com.fasterxml.jackson.core:jackson-core:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
