@@ -36,7 +36,6 @@ interface MotorControllerIO {
     fun updateInputs(inputs: MotorControllerIOInputs)
 
     fun brakeMode()
-    fun burnFlash() {}
     fun closedLoopRamp(secondsToFull: Double)
     fun coastMode()
     fun config_kP(p: Double, simP: Double? = 0.0)

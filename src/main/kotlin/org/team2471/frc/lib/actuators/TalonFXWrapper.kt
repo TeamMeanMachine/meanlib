@@ -80,9 +80,9 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         config.CurrentLimits.apply {
-            SupplyCurrentLimit = continuousLimit.toDouble()
-            StatorCurrentLimit = peakLimit.toDouble()
-            SupplyTimeThreshold = peakDuration
+            SupplyCurrentLowerLimit = continuousLimit.toDouble()
+            SupplyCurrentLimit = peakLimit.toDouble()
+            SupplyCurrentLowerTime = peakDuration
             StatorCurrentLimitEnable = true
             SupplyCurrentLimitEnable = true
         }

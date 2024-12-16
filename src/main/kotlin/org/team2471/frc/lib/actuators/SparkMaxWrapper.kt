@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.actuators
 
-import com.revrobotics.*
+import com.revrobotics.spark.*
+import com.revrobotics.spark.config.*
 
 class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     private var positionSetpoint: Double = 0.0
@@ -23,10 +24,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         this.inputs = inputs
     }
 
-    private val _motorController = CANSparkMax(deviceID, CANSparkLowLevel.MotorType.kBrushless ).apply { restoreFactoryDefaults() }
+    private val _motorController = SparkMax(deviceID, SparkLowLevel.MotorType.kBrushless ).apply { restoreFactoryDefaults() }
 
     val analogPosition: Double
-        get() = _motorController.getAnalog(SparkAnalogSensor.Mode.kAbsolute).position
+        get() = _motorController.analog.position
 
     val analogAngle: Double
         get() = analogPosition * 360.0/3.036 - 15.65
@@ -36,7 +37,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun follow(followerID: MotorControllerIO) {
-        _motorController.follow((followerID as SparkMaxWrapper)._motorController, getInverted() != followerID.getInverted())
+        applyConfig(SparkMaxConfig().follow((followerID as SparkMaxWrapper)._motorController))
     }
 
     override fun getClosedLoopError(): Double {
@@ -49,32 +50,25 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     /**
      * Attempt to get encoder plugged directly into SparkMAX. Has not worked yet.
-     *
-     * @param countPerRev the counts per revolution of the alternate encoder. Can be found in the Alternate Encoder SparkMAX guide
      */
-    fun getAlternateEncoder(countPerRev: Int): Double {
-        return _motorController.getAlternateEncoder(SparkMaxAlternateEncoder.Type.kQuadrature, countPerRev).position
-    }
-
-    override fun burnFlash() {
-        println("Burned Flash for ${_motorController.deviceId}")
-        _motorController.burnFlash()
+    fun getAlternateEncoder(): Double {
+        return _motorController.alternateEncoder.position
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
-        _motorController.closedLoopRampRate = secondsToFull
+        applyConfig(SparkMaxConfig().closedLoopRampRate(secondsToFull))
     }
 
     override fun coastMode() {
-        _motorController.idleMode = CANSparkBase.IdleMode.kCoast
+        applyConfig(SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kCoast))
     }
 
     override fun setInverted(invert: Boolean) {
-        _motorController.inverted = invert
+        applyConfig(SparkMaxConfig().inverted(invert))
     }
 
     override fun getInverted(): Boolean {
-        return _motorController.inverted
+        return _motorController.configAccessor.inverted
     }
 
     override fun getSelectedSensorVelocity(): Double {
@@ -86,7 +80,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
-        _motorController.openLoopRampRate = secondsToFull
+        applyConfig(SparkMaxConfig().openLoopRampRate(secondsToFull))
     }
 
 
@@ -109,7 +103,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity, 0)
+        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, 0)
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
@@ -123,7 +117,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.pidController.setReference(velocitySetPoint, CANSparkBase.ControlType.kVelocity, 0, feedForward)
+        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, 0, feedForward)
     }
 
     override fun stop() {
@@ -132,66 +126,73 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun setPositionSetpoint(position: Double) {
         positionSetpoint = position
-        _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0)
+        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, 0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
         positionSetpoint = position
-        _motorController.pidController.setReference(positionSetpoint, CANSparkBase.ControlType.kPosition, 0, feedForward)
+        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, 0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        _motorController.pidController.setReference(position, CANSparkBase.ControlType.kSmartMotion)
+        _motorController.closedLoopController.setReference(position, SparkBase.ControlType.kMAXMotionPositionControl)
     }
 
     override fun config_kP(p: Double, simP: Double?) {
-        _motorController.pidController.p = p * 1024.0
+        applyConfig(SparkMaxConfig().apply { closedLoop.p(p * 1024.0) })
     }
 
     override fun config_kD(d: Double, simD: Double?) {
-        _motorController.pidController.d = d * 1024.0
-//        println("kD=$d")
+        applyConfig(SparkMaxConfig().apply { closedLoop.d(d * 1024.0) })
     }
 
-    override fun getPValue(): Double = _motorController.pidController.p
-    override fun getDValue() : Double = _motorController.pidController.d
-    override fun getIValue(): Double = _motorController.pidController.i
-    override fun getFValue(): Double = _motorController.pidController.ff
+    override fun getPValue(): Double = _motorController.configAccessor.closedLoop.p
+    override fun getDValue() : Double = _motorController.configAccessor.closedLoop.d
+    override fun getIValue(): Double = _motorController.configAccessor.closedLoop.i
+    override fun getFValue(): Double = _motorController.configAccessor.closedLoop.ff
 
 
     override fun config_kF(f: Double, simF: Double?) {
-        _motorController.pidController.ff = f
+        val c = _motorController.configAccessor.closedLoop
+        applyConfig(SparkMaxConfig().apply { closedLoop.pidf(c.p, c.i, c.d, f) })
     }
 
     override fun config_kI(i: Double, simI: Double?) {
-        _motorController.pidController.i = i * 1024.0
+        applyConfig(SparkMaxConfig().apply { closedLoop.i(i * 1024.0) })
     }
 
     override val current: Double
         get() = inputs.current
 
     override fun brakeMode() {
-        _motorController.idleMode = CANSparkBase.IdleMode.kBrake
+        applyConfig(SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kBrake))
     }
 
     override fun restoreFactoryDefaults() {
-        _motorController.restoreFactoryDefaults()
+        _motorController.configure(SparkMaxConfig(), SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         if (peakDuration == 0.0) {
-            _motorController.setSmartCurrentLimit(continuousLimit, peakLimit)
+            applyConfig(SparkMaxConfig().apply { smartCurrentLimit(continuousLimit, peakLimit) })
         } else {
-            _motorController.setSmartCurrentLimit(peakLimit)
+            applyConfig(SparkMaxConfig().apply { smartCurrentLimit(peakLimit) })
+
         }
+
     }
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        _motorController.pidController.setSmartMotionMaxVelocity(cruisingVelocity, 0)
-        _motorController.pidController.setSmartMotionMinOutputVelocity(0.0, 0)
-        _motorController.pidController.setSmartMotionMaxAccel(acceleration, 0)
-        _motorController.pidController.setSmartMotionAllowedClosedLoopError(0.0, 0)
+        applyConfig(SparkMaxConfig().apply { closedLoop.maxMotion
+            .maxVelocity(cruisingVelocity)
+            .maxAcceleration(acceleration)
+            .allowedClosedLoopError(0.0)
+        })
+    }
+
+    private fun applyConfig(newConfig: SparkBaseConfig) {
+        _motorController.configure(newConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
     }
 }

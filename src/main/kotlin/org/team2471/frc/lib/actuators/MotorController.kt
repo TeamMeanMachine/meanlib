@@ -262,7 +262,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         return when (io) {
             is SparkMaxWrapper -> {
 //                    println("In alternate encoder spark max")
-                io.getAlternateEncoder(countPerRev)
+                io.getAlternateEncoder()
             }
             else -> throw IllegalStateException("No alternate encoder from this motor controller")
         }
@@ -365,11 +365,6 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @param jKgMetersSquared Moment of inertia for the simulated motor
          */
         fun configSim(motor: DCMotor, jKgMetersSquared: Double) = io.configSim(motor, jKgMetersSquared)
-
-        // burns spark max to retain settings between boot
-        fun burnSettings() {
-            io.burnFlash()
-        }
 
         /**
          * Initializes the incremental encoder to match the analog encoder.
