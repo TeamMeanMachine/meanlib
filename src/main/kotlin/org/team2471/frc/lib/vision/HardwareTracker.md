@@ -21,30 +21,30 @@ All cameras need to be named with [this](https://docs.arducam.com/UVC-Camera/Ser
 | CC07 | OV9782 |      Shop camera kit      |                    For CADers                    |       N/A       |    ✓     |
 | CC08 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
 | CC09 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
-| CB10 | OV2311 |       Vision Drawer       |        Standby, needs calibration & focus        |      never      |    ✓     |
+| CB10 | OV2311 |      STEM camera kit      |            needs calibration & focus             |      never      |    ✓     |
 | CA11 | OV9281 |       Vision Drawer       | Standby, in old mount, needs calibration & focus |        ?        |    ✓     |
-| CB12 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
-| CB13 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
-| CC14 | OV9782 |       Vision Drawer       |            Backup, maybe needs focus             |       N/A       |    ✓     |
-| CC15 | OV9782 |       Vision Drawer       |            Backup,  maybe needs focus            |       N/A       |    ✓     |
-| CA16 | OV9281 |       Vision Drawer       |        Backup,  needs calibration & focus        |        ?        |    ✓     |
-| CA17 | OV9281 |       Vision Drawer       | Backup, in old mount, needs calibration & focus  |        ?        |    ✓     |
-| CA18 | OV9281 |       Vision Drawer       |       Backup,  needs focus and calibration       |        ?        |    ✓     |
+| CB12 | OV2311 |       Vision Drawer       |            needs calibration & focus             |      never      |    ✓     |
+| CB13 | OV2311 |       Vision Drawer       |            needs calibration & focus             |      never      |    ✓     |
+| CC14 | OV9782 |      STEM camera kit      |            Backup, maybe needs focus             |       N/A       |    ✓     |
+| CC15 | OV9782 |      STEM Camera kit      |            Backup,  maybe needs focus            |       N/A       |    ✓     |
+| CA16 | OV9281 |      STEM Camera kit      |        Backup,  needs calibration & focus        |        ?        |    ✓     |
+| CA17 | OV9281 |      STEM Camera kit      | Backup, in old mount, needs calibration & focus  |        ?        |    ✓     |
+| CA18 | OV9281 |      STEM Camera kit      |       Backup,  needs focus and calibration       |        ?        |    ✓     |
 
 
 
 
 ## Orange Pis
-| Name |   Location    |                        Status                         |
-|------|:-------------:|:-----------------------------------------------------:|
-| OP01 |    Typhoon    |                        In use                         |
-| OP02 |    Typhoon    |                        In use                         |
-| OP03 | Vision Drawer |                        Standby                        |
-| OP04 | Vision Drawer |          Standby, needs new case, no SD card          |
-| OP05 | Vision Drawer |                Standby, needs new case                |
-| OP06 | Vision Drawer |    Standby, brand new, needs new case, no SD card     |
-| OP07 | Vision Drawer |    Standby, brand new, needs new case, no SD card     |
-| OP08 | Vision Drawer | Standby, brand new, needs new case, running PV Beta 2 |
+| Name |    Location     |                     Status                     |
+|------|:---------------:|:----------------------------------------------:|
+| OP01 |     Typhoon     |                     In use                     |
+| OP02 |     Typhoon     |                     In use                     |
+| OP03 |  Vision Drawer  |                    Standby                     |
+| OP04 |  Vision Drawer  |      Standby, needs new case, no SD card       |
+| OP05 |  Vision Drawer  |            Standby, needs new case             |
+| OP06 |  Vision Drawer  | Standby, brand new, needs new case, no SD card |
+| OP07 |  Vision Drawer  | Standby, brand new, needs new case, no SD card |
+| OP08 | STEM Camera Kit |    running PV Beta 2, ready for calibration    |
 
 
 
