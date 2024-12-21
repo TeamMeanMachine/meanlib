@@ -32,6 +32,8 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
 
     fun rotateDegrees(degrees: Double): Vector2L = rotateRadians(Math.toRadians(degrees))
 
+    fun rotate(angle: Angle): Vector2L = rotateRadians(angle.asRadians)
+
     operator fun unaryPlus() = this * 1.0
 
     operator fun unaryMinus() = this * -1.0
