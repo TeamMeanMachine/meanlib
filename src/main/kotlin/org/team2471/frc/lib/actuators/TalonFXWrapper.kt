@@ -113,7 +113,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     override fun getIValue(): Double = config.Slot0.kI
     override fun getFValue(): Double = config.Slot0.kS
 
-    override fun getInverted(): Boolean = config.MotorOutput.Inverted == InvertedValue.CounterClockwise_Positive
+    override fun getInverted(): Boolean = config.MotorOutput.Inverted != InvertedValue.CounterClockwise_Positive
 
     override fun getSelectedSensorPosition(): Double  = _motorController.position.valueAsDouble
 
@@ -147,8 +147,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun setInverted(invert: Boolean) {
         config.MotorOutput.Inverted =
-            if (invert) InvertedValue.CounterClockwise_Positive
-            else InvertedValue.Clockwise_Positive
+            if (invert) InvertedValue.Clockwise_Positive
+            else InvertedValue.CounterClockwise_Positive
         configUnsaved = true
     }
 
