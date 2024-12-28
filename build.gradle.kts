@@ -6,6 +6,7 @@ plugins {
     id ("idea")
     id ("maven-publish")
     id ("java-library")
+    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 buildscript {
@@ -14,7 +15,7 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.10")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.20")
     }
 }
 

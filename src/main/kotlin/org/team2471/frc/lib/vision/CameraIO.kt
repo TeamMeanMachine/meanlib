@@ -1,33 +1,33 @@
 package org.team2471.frc.lib.vision
 
-import edu.wpi.first.math.geometry.Pose2d
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.Angle
 
 interface CameraIO {
     class CameraIOInputs(val name: String): LoggableInputs {
 
         var isConnected: Boolean = false
-        var cameraResult: CameraResult = CameraResult.EmptyCameraResult
+        var cameraResults: ArrayList<CameraResult> = ArrayList(5)
 
         override fun toLog(table: LogTable) {
             table.put("$name/isConnected", isConnected)
-            table.put("$name/cameraResult", cameraResult.toArray())
+            table.put("$name/cameraResult", cameraResults.toDoubleArray())
         }
 
         override fun fromLog(table: LogTable) {
             isConnected = table.get("$name/isConnected", isConnected)
-            cameraResult = CameraResult.fromArray(table.get("$name/cameraResult", cameraResult.toArray()))
+            cameraResults = table.get("$name/cameraResult", cameraResults.toDoubleArray()).toCameraResults() as ArrayList<CameraResult>
         }
     }
 
+    var latestResults: MutableList<CameraResult>
+    var latestGlobalPoses: MutableList<GlobalPose>
+
     fun updateInputs(inputs: CameraIOInputs) {}
+    fun update(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {}
     fun reset(inputs: CameraIOInputs) {}
-    fun getEstimatedGlobalPose(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose
-    fun get2DTarget(tagID: Int): Target2D
 }
 
 /**
@@ -35,17 +35,6 @@ interface CameraIO {
     @author Thatcher Moore
  */
 class EmptyCamera(): CameraIO {
-    override fun getEstimatedGlobalPose(
-        inputs: CameraIO.CameraIOInputs,
-        currentPos: Vector2L,
-        currentHeading: Angle,
-        headingRate: Angle,
-        lookupPose: (Double) -> SwerveDrive.Pose?
-    ): GlobalPose {
-        return GlobalPose.EmptyGlobalPose
-    }
-
-    override fun get2DTarget(tagID: Int): Target2D {
-        return Target2D.EmptyTarget2D
-    }
+    override var latestResults: MutableList<CameraResult> = mutableListOf()
+    override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 }

@@ -2,6 +2,7 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.networktables.StructPublisher
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.Angle
@@ -15,7 +16,7 @@ data class GlobalPose (
     val timestampSeconds: Double
 ) {
     val pose2d: Pose2d
-        get() = Pose2d(pos.asMeters.toTranslation2d(), Rotation2d(this.rotation.asRadians))
+        get() = Pose2d(pos.asMeters.toTranslation2d(), Rotation2d.fromDegrees(rotation.asDegrees))
 
     fun latencyAdjustedPose(currentDrivePos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
         return pos + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
@@ -24,4 +25,8 @@ data class GlobalPose (
     companion object {
         val EmptyGlobalPose = GlobalPose(Vector2L.Zeros, 0.0.radians, Double.POSITIVE_INFINITY, 0.0)
     }
+}
+
+fun StructPublisher<Pose2d>.setGlobalPose(globalPose: GlobalPose) {
+    this.set(globalPose.pose2d)
 }

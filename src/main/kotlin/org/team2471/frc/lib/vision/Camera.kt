@@ -35,6 +35,9 @@ class Camera(
     val cameraType: CameraType = CameraType.PHOTONVISION
 ) {
 
+    val latestPoses: List<GlobalPose>
+        get() = io.latestGlobalPoses
+
     // Instantiates the IO layer, which depends on whether the camera is Photonvision or Limelight or if the robot is simulated or not.
     val io: CameraIO = when (robotMode) {
         RobotMode.REAL,  RobotMode.REPLAY-> {
@@ -64,18 +67,12 @@ class Camera(
         }
     }
 
-    // Resets the cameras. Only primarily used for the PhotonVision ones
+    // Resets the cameras. Only used for the PhotonVision ones
     fun reset() {
         io.reset(inputs)
     }
 
-    // Gets the estimated global pose based on the current position, current heading, and a lookup function that gives a history of drive positions.
-    // Just a pass through for the IO layer
-    fun getEstimatedGlobalPose(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle, lookupPose: (Double) -> SwerveDrive.Pose?): GlobalPose {
-        return io.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
-    }
-
-    fun get2DTarget(tagID: Int): Target2D {
-        return io.get2DTarget(tagID)
+    fun update(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
+        io.update(inputs, currentPos, currentHeading, headingRate)
     }
 }

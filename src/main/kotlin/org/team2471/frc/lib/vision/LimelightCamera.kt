@@ -4,11 +4,10 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
+import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.StructPublisher
 import org.littletonrobotics.junction.Logger
-import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.asMeters
-import org.team2471.frc.lib.math.setAdvantagePose
-import org.team2471.frc.lib.math.toTranslation2d
+import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
 
@@ -20,13 +19,15 @@ class LimelightCamera(
     private val outputTable: NetworkTable,
     val name: String,
     robotToCamera: Transform3d,
-    ): CameraIO {
+) : CameraIO {
 
-    val advantagePoseEntry = outputTable.getEntry("April Advantage Pos $name")
-    val stDevEntry = outputTable.getEntry("stDev $name")
+    private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
+    private val posePublisher: StructPublisher<Pose2d> =
+        outputTable.getStructTopic("Pose $name", Pose2d.struct).publish()
+    private val stdDevEntry: NetworkTableEntry = outputTable.getEntry("stdDev $name")
 
-    val lastPos: GlobalPose = GlobalPose.EmptyGlobalPose
-
+    override var latestResults: MutableList<CameraResult> = mutableListOf()
+    override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 
     init {
         LimelightHelpers.setCameraPose_RobotSpace(
@@ -41,69 +42,69 @@ class LimelightCamera(
     }
 
     // TODO(Unsure how limelight handles disconnects)
-    val isConnected: Boolean = true
-//        get() = limelightTable exists6
+    val isConnected: Boolean
+        get() = inputTable.containsSubTable("TODO")
 
     // TODO("Do we even need to reset?")
     override fun reset(inputs: CameraIO.CameraIOInputs) {}
 
 
-//  Should be called every frame
-    override fun getEstimatedGlobalPose(
-    inputs: CameraIO.CameraIOInputs,
-    currentPos: Vector2L,
-    currentHeading: Angle,
-    headingRate: Angle,
-    lookupPose: (Double) -> SwerveDrive.Pose?
-    ): GlobalPose {
+    override fun update(
+        inputs: CameraIO.CameraIOInputs,
+        currentPos: Vector2L,
+        currentHeading: Angle,
+        headingRate: Angle
+    ) {
+        LimelightHelpers.SetRobotOrientation(
+            name,
+            currentHeading.asDegrees - 180.0,
+            headingRate.asDegrees,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        )
 
-        if (headingRate.asDegrees >= 45.0) {
-            return GlobalPose.EmptyGlobalPose
-        }
-        LimelightHelpers.SetRobotOrientation(name, currentHeading.asDegrees - 180.0, headingRate.asDegrees, 0.0, 0.0, 0.0, 0.0)
+        updateInputs(inputs)
 
-        val latestResult = inputs.cameraResult
+        if (headingRate.asDegrees <= 45.0 && inputs.isConnected) {
 
-        if (latestResult == CameraResult.EmptyCameraResult) {
-            return GlobalPose.EmptyGlobalPose
-        }
+            val latestResult = inputs.cameraResults.last()
 
-        // copied from photon with small changes
-        var stDev = 0.1
-
-
-        stDev *= 0.25 / latestResult.avgTagArea
-    //            println("area: ${cameraResult.avgTagArea}")
+            // copied from photon with small changes
+            var stdDev = 0.1
 
 
-        if (latestResult.numTags < 2) stDev *= 3.0
+            stdDev *= 0.25 / latestResult.avgTagArea
+            //            println("area: ${cameraResult.avgTagArea}")
+
+
+            if (latestResult.numTags < 2) stdDev *= 3.0
 
 //         with the way our weighted average sensor fusion algorithm works it doesn't like large/small numbers
-        stDev.coerceIn(0.000001, 1000.0)
+            stdDev.coerceIn(0.000001, 1000.0)
 
-                                                  // needs to be dynamic
-        val globalPose = latestResult.getGlobalPose(stDev)
+            val globalPose = latestResult.toGlobalPose(stdDev)
 
-        val latencyAdjustedPose = globalPose.latencyAdjustedPose(currentPos, lookupPose)
-
-        advantagePoseEntry.setAdvantagePose(latencyAdjustedPose, currentHeading)
-        Logger.recordOutput("$name/pose", Pose2d(latencyAdjustedPose.asMeters.toTranslation2d(), Rotation2d(currentHeading.asDegrees)))
-
-        stDevEntry.setDouble(globalPose.stdDev)
-        Logger.recordOutput("$name/stDev", globalPose.stdDev)
+            latestResults = inputs.cameraResults
+            latestGlobalPoses = arrayListOf(globalPose)
 
 
-        return globalPose
+            if (inputs.isConnected) {
+                posePublisher.setGlobalPose(latestGlobalPoses.last())
+                stdDevEntry.setDouble(latestGlobalPoses.last().stdDev)
+            } else {
+                posePublisher.setEmptyPose()
+                stdDevEntry.setDouble(0.0)
+            }
 
-    }
+            isConnectedEntry.setBoolean(inputs.isConnected)
 
-    // Todo
-    override fun get2DTarget(tagID: Int): Target2D {
-        return Target2D.EmptyTarget2D
+        }
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
         inputs.isConnected = true
-        inputs.cameraResult = CameraResult.fromLLTable(inputTable)
+        inputs.cameraResults = arrayListOf(CameraResult.fromLLTable(inputTable))
     }
 }

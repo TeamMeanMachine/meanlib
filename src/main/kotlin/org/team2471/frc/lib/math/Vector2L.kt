@@ -130,6 +130,12 @@ fun NetworkTableEntry.setAdvantagePoses(pos: Array<Vector2L>) {
     this.setAdvantagePoses(pos, rot.toTypedArray())
 }
 
+fun StructPublisher<Pose2d>.setEmptyPose() {
+    this.set(
+        Pose2d()
+    )
+}
+
 fun StructArrayPublisher<Pose2d>.setAdvantagePoses(vararg pos: Vector2L) {
     this.set(
         pos.map { Pose2d(it.asMeters.toTranslation2d(), Rotation2d(0.0)) }.toTypedArray()

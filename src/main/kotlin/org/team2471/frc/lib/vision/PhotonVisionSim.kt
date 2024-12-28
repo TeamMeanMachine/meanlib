@@ -30,7 +30,7 @@ import org.team2471.frc.lib.util.robotMode
  * @param singleTagStrategy The pose estimation strategy to use when only a single target is seen. See a list of strategies [here](https://docs.photonvision.org/en/latest/docs/programming/photonlib/robot-pose-estimator.html)
  * @param multiTagStrategy The pose estimation strategy to use when more than one target is seen. See a list of strategies [here](https://docs.photonvision.org/en/latest/docs/programming/photonlib/robot-pose-estimator.html)
  */
-class PhotonVisionSim(
+    class PhotonVisionSim(
     private val inputTable: NetworkTable,
     private val outputTable: NetworkTable,
     val name: String,
@@ -60,19 +60,17 @@ class PhotonVisionSim(
         addCamera(cameraSim, Transform3d(robotToCamera.translation, Rotation3d(robotToCamera.rotation.x, robotToCamera.rotation.y, robotToCamera.rotation.z)))
     }
 
-    override fun getEstimatedGlobalPose(
-        inputs: CameraIO.CameraIOInputs,
-        currentPos: Vector2L,
-        currentHeading: Angle,
-        headingRate: Angle,
-        lookupPose: (Double) -> SwerveDrive.Pose?
-    ): GlobalPose {
-        visionSystemSim.update(currentPos.asMeters.toPose2d(currentHeading.asRadians))
-        return camera.getEstimatedGlobalPose(inputs, currentPos, currentHeading, headingRate, lookupPose)
+    override var latestResults: MutableList<CameraResult> = mutableListOf()
+        get() = camera.latestResults
+    override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
+        get() = camera.latestGlobalPoses
+
+    override fun reset(inputs: CameraIO.CameraIOInputs) {
+        camera.reset(inputs)
     }
 
-    override fun get2DTarget(tagID: Int): Target2D {
-        return camera.get2DTarget(tagID)
+    override fun update(inputs: CameraIO.CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
+        camera.update(inputs, currentPos, currentHeading, headingRate)
     }
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
