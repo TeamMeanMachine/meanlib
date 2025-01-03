@@ -44,7 +44,6 @@ class PhotonVisionCamera(
 
     private var referencePose: Pose2d = Pose2d()
 
-
     override fun reset(inputs: CameraIO.CameraIOInputs) {
         if (!inputs.isConnected) {
             try {

@@ -89,4 +89,6 @@ fun Translation2d.asVector2() = Vector2(this.x, this.y)
 
 fun Vector2.toTranslation2d(): Translation2d = Translation2d(this.x, this.y)
 
-fun Vector2.toPose2d(heading: Double): Pose2d = Pose2d(this.toTranslation2d(), Rotation2d(heading))
+fun Vector2.toPose2d(heading: Double): Pose2d = Pose2d(this.toTranslation2d(), Rotation2d.fromRadians(heading))
+
+fun Vector2.toPose2d(heading: Angle): Pose2d = Pose2d(this.toTranslation2d(), Rotation2d.fromDegrees(heading.asDegrees))

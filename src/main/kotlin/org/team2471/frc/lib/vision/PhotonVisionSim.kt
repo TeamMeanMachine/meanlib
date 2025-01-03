@@ -70,6 +70,7 @@ import org.team2471.frc.lib.util.robotMode
     }
 
     override fun update(inputs: CameraIO.CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
+        visionSystemSim.update(currentPos.asMeters.toPose2d(currentHeading))
         camera.update(inputs, currentPos, currentHeading, headingRate)
     }
 

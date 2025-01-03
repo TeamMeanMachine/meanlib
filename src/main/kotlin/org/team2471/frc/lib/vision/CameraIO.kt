@@ -6,7 +6,7 @@ import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.units.Angle
 
 interface CameraIO {
-    class CameraIOInputs(val name: String): LoggableInputs {
+    class CameraIOInputs(val name: String) : LoggableInputs {
 
         var isConnected: Boolean = false
         var cameraResults: ArrayList<CameraResult> = ArrayList(5)
@@ -18,7 +18,8 @@ interface CameraIO {
 
         override fun fromLog(table: LogTable) {
             isConnected = table.get("$name/isConnected", isConnected)
-            cameraResults = table.get("$name/cameraResult", cameraResults.toDoubleArray()).toCameraResults() as ArrayList<CameraResult>
+            cameraResults = table.get("$name/cameraResult", cameraResults.toDoubleArray())
+                .toCameraResults() as ArrayList<CameraResult>
         }
     }
 
@@ -31,10 +32,11 @@ interface CameraIO {
 }
 
 /**
-    An empty camera. Used during simulation because limelights cannot currently be simulated.
-    @author Thatcher Moore
+ * An empty camera. Used during simulation because limelights cannot currently be simulated.
+ *
+ * @author Thatcher Moore
  */
-class EmptyCamera(): CameraIO {
+class EmptyCamera : CameraIO {
     override var latestResults: MutableList<CameraResult> = mutableListOf()
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 }

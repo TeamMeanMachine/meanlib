@@ -25,7 +25,15 @@ data class CameraResult(
     val isEmpty: Boolean = false
 ) {
     fun toArray(): DoubleArray {
-        return if (isEmpty) doubleArrayOf() else doubleArrayOf(this.pos.x.asMeters, this.pos.y.asMeters, this.heading.asRadians, this.timeStampSeconds, this.numTags.toDouble(), this.avgTagArea, this.cameraType.toDouble())
+        return if (isEmpty) doubleArrayOf() else doubleArrayOf(
+            this.pos.x.asMeters,
+            this.pos.y.asMeters,
+            this.heading.asRadians,
+            this.timeStampSeconds,
+            this.numTags.toDouble(),
+            this.avgTagArea,
+            this.cameraType.toDouble()
+        )
     }
 
     fun toGlobalPose(stdDev: Double): GlobalPose {

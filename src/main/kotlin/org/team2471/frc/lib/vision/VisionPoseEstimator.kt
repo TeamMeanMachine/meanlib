@@ -91,6 +91,12 @@ class VisionPoseEstimator(
         }
     }
 
+    fun addVisionUpdates(globalPoses: Collection<GlobalPose>) {
+        for (globalPose in globalPoses) {
+            addVisionUpdate(globalPose)
+        }
+    }
+
     fun addVisionUpdate(globalPose: GlobalPose) {
         if (globalPose == GlobalPose.EmptyGlobalPose) {
             return

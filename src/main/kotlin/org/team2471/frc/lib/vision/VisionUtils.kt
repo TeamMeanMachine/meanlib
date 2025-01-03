@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout
 import edu.wpi.first.math.geometry.Rotation2d
 import org.photonvision.simulation.SimCameraProperties
 import org.team2471.frc.lib.interpolation.SplineInterpolator
@@ -29,8 +30,16 @@ val photonStDevDistCurve: SplineInterpolator = SplineInterpolator(
  */
 val cameraProperties = SimCameraProperties().apply {
     setCalibration(1280, 720, Rotation2d.fromDegrees(90.0))
-    setCalibError(2.5, 0.8) // Values from docs. Should change
+    setCalibError(0.5, 0.8) // Values from docs. Should change
     fps = 20.0 // Complete guess
     avgLatencyMs = 30.0 // complete guess
-    latencyStdDevMs = 10.0 // another total guess
+    latencyStdDevMs = 5.0 // another total guess
+}
+
+fun AprilTagFieldLayout.removeTags(tagIDs: IntArray): AprilTagFieldLayout {
+    return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
+}
+
+fun AprilTagFieldLayout.removeTags(tagIDs: Collection<Int>): AprilTagFieldLayout {
+    return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
 }
