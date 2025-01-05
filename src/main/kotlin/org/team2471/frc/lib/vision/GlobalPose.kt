@@ -9,24 +9,17 @@ import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.units.radians
 
+@JvmRecord
 data class GlobalPose (
-    var pos: Vector2L,
-    val rotation: Angle,
+    val pose: Pose2d,
     val stdDev: Double,
     val timestampSeconds: Double
 ) {
-    val pose2d: Pose2d
-        get() = Pose2d(pos.asMeters.toTranslation2d(), Rotation2d.fromDegrees(rotation.asDegrees))
-
-    fun latencyAdjustedPose(currentDrivePos: Vector2L, lookupPose: (Double) -> SwerveDrive.Pose?): Vector2L {
-        return pos + currentDrivePos - (lookupPose(timestampSeconds)?.position ?: currentDrivePos.asFeet).feet
-    }
-
     companion object {
-        val EmptyGlobalPose = GlobalPose(Vector2L.Zeros, 0.0.radians, Double.POSITIVE_INFINITY, 0.0)
+        val EmptyGlobalPose = GlobalPose(Pose2d(), Double.POSITIVE_INFINITY, 0.0)
     }
 }
 
 fun StructPublisher<Pose2d>.setGlobalPose(globalPose: GlobalPose) {
-    this.set(globalPose.pose2d)
+    this.set(globalPose.pose)
 }

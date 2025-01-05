@@ -1,9 +1,14 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import org.photonvision.simulation.SimCameraProperties
 import org.team2471.frc.lib.interpolation.SplineInterpolator
+import org.team2471.frc.lib.math.DoubleRange
+
+val fieldXRangeM = DoubleRange(0.0, 16.54)
+val fieldYRangeM = DoubleRange(0.0, 8.21)
 
 /**
  * A curve representing the standard deviation of PhotonVision pose results as a function of distance (in meters).
@@ -42,4 +47,8 @@ fun AprilTagFieldLayout.removeTags(tagIDs: IntArray): AprilTagFieldLayout {
 
 fun AprilTagFieldLayout.removeTags(tagIDs: Collection<Int>): AprilTagFieldLayout {
     return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
+}
+
+fun Pose2d.isOnField(): Boolean {
+    return fieldXRangeM.contains(this.x) && fieldYRangeM.contains(this.y)
 }

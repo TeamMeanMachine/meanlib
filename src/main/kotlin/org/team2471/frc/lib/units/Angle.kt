@@ -80,5 +80,5 @@ inline val Number.rotations get() = Angle(this.toDouble() * 360.0)
 inline val Angle.asRadians get() = Math.toRadians(asDegrees)
 inline val Angle.asRotations get() = asDegrees / 360.0
 
-inline val Angle.asRotation2d get() = Rotation2d.fromDegrees(asDegrees)
+inline val Angle.asRotation2d: Rotation2d get() = Rotation2d.fromDegrees(asDegrees)
 inline val Rotation2d.asAngle get() = Angle(degrees)

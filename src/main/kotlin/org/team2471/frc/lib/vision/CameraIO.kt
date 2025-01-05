@@ -9,17 +9,16 @@ interface CameraIO {
     class CameraIOInputs(val name: String) : LoggableInputs {
 
         var isConnected: Boolean = false
-        var cameraResults: ArrayList<CameraResult> = ArrayList(5)
+        var cameraResults: ArrayList<CameraResult> = ArrayList(3)
 
         override fun toLog(table: LogTable) {
             table.put("$name/isConnected", isConnected)
-            table.put("$name/cameraResult", cameraResults.toDoubleArray())
+            table.put("$name/cameraResult", *cameraResults.toTypedArray())
         }
 
         override fun fromLog(table: LogTable) {
             isConnected = table.get("$name/isConnected", isConnected)
-            cameraResults = table.get("$name/cameraResult", cameraResults.toDoubleArray())
-                .toCameraResults() as ArrayList<CameraResult>
+            cameraResults = arrayListOf(*table.get("$name/cameraResult", *cameraResults.toTypedArray()))
         }
     }
 

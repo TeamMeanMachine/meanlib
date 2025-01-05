@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Twist2d
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N2
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asVector2
+import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
@@ -21,7 +23,7 @@ import org.team2471.frc.lib.util.getRealFPGATimestamp
 // I would say you saved me a huge headache, but I've already been through that
 
 class VisionPoseEstimator(
-    val defaultStateStdDevs: Matrix<N2, N1> = VecBuilder.fill(0.05, 0.05),
+    val defaultStateStdDevs: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2),
     val defaultMeasurementStdDevs: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2)
 ) {
     val latestPos: Vector2L
@@ -104,7 +106,7 @@ class VisionPoseEstimator(
         val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
 
 //        println("huh ${odometryPose}")
-        val odometryOffset = globalPose.pos - odometryPose
+        val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
 
         val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
 

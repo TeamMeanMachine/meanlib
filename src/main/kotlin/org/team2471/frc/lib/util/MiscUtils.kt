@@ -95,3 +95,9 @@ fun Collection<Number>.calculateAverage(): Double {
     }
     return average
 }
+
+fun Boolean.toByte(): Byte = if (this) 1 else 0
+fun Byte.toBoolean(): Boolean = when (this) {
+    0.toByte() -> false
+    else -> true
+}

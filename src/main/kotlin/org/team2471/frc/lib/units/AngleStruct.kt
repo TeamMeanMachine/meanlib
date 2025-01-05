@@ -56,8 +56,7 @@ class AngleStruct : Struct<Angle> {
      * @return An Angle object created from the unpacked double value.
      */
     override fun unpack(bb: ByteBuffer): Angle {
-        val value = bb.getDouble()
-        return value.radians
+        return bb.getDouble().radians
     }
 
     /**

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
+import org.jetbrains.annotations.Range
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
@@ -76,12 +77,12 @@ class PhotonVisionCamera(
 
         if (inputs.isConnected) {
 
-            val temResults: MutableList<CameraResult> = mutableListOf()
+            val tempResults: MutableList<CameraResult> = mutableListOf()
             val tempGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 
             if (inputs.cameraResults.isNotEmpty()) {
                 for (cameraResult in inputs.cameraResults) {
-                    if (!cameraResult.isEmpty && cameraResult.numTags > 0) {
+                    if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
                         // TODO: Change this to reflect average tag area. needs testing on field
                         var stdDev = 0.01
 
@@ -90,28 +91,25 @@ class PhotonVisionCamera(
 
                         stdDev.coerceIn(0.000001, 1000.0)
 
-                        cameraResultEntry.setCameraResult(cameraResult)
+//                        cameraResultEntry.setCameraResult(cameraResult)
                         CameraResult.recordOutput("$name/CameraResult", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
-                        // make sure its on the field
-                        estimatedPose.pos.coerceIn(Vector2L.Zeros, Vector2L(1654.0.cm, 821.0.cm))
-
-                        posePublisher.setAdvantagePose(estimatedPose.pos, estimatedPose.rotation)
-                        Logger.recordOutput("$name/pose", estimatedPose.pose2d)
+                        posePublisher.set(estimatedPose.pose)
+                        Logger.recordOutput("$name/pose", estimatedPose.pose)
 
                         stdDevEntry.setDouble(estimatedPose.stdDev)
                         Logger.recordOutput("$name/stdDev", estimatedPose.stdDev)
 
-                        temResults.add(cameraResult)
+                        tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)
                     }
                 }
 
             }
 
-            latestResults = temResults
+            latestResults = tempResults
             latestGlobalPoses = tempGlobalPoses
 
             if (latestGlobalPoses.isNotEmpty()) {
