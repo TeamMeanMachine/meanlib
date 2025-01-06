@@ -3,11 +3,9 @@ package org.team2471.frc.lib.math
 import com.team254.lib.util.Interpolable
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.struct.Pose2dStruct
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructArrayPublisher
 import edu.wpi.first.networktables.StructPublisher
-import edu.wpi.first.util.struct.StructSerializable
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import kotlin.math.*
@@ -54,7 +52,7 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
 
     fun mirrorYAxis() = Vector2L(x, -y)
 
-    fun reflectAcrossField(middle: Length = 326.6.inches) = Vector2L(middle * 2.0 - x, y)
+    fun reflectAcrossField(middle: Length = 345.4375.inches) = Vector2L(middle * 2.0 - x, y)
 
     fun distance(other: Vector2L) = hypot((x - other.x).asMeters, (y - other.y).asMeters).meters
 
