@@ -76,6 +76,21 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
         )
     }
 
+    fun getClosestPoint(vararg points: Vector2): Vector2 {
+        var closestPoint = points.first()
+        var minDistance = this.x * closestPoint.x + this.y * closestPoint.y
+        for (point in points) {
+            val delta = this - point
+            val distance = delta.x * delta.x + delta.y * delta.y
+            if (distance < minDistance) {
+                closestPoint = point
+                minDistance = distance
+            }
+        }
+
+        return closestPoint
+    }
+
     override fun interpolate(other: Vector2, x: Double): Vector2 {
         return when {
             x <= 0.0 -> this
