@@ -1,12 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm").version("1.9.21")
+    kotlin("jvm").version("2.1.0")
     id ("java")
     id ("idea")
     id ("maven-publish")
     id ("java-library")
-    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 buildscript {
@@ -23,7 +22,7 @@ var doReplay = false
 
 group = "org.team2471.lib"
 version = "2025"
-var wpiLibVersion =  "2025.1.1-beta-2"
+var wpiLibVersion =  "2025.1.1"
 var advantageKitVersion = "4.0.0-beta-1"
 repositories {
     mavenCentral()
@@ -69,7 +68,7 @@ dependencies {
 
     // other
     implementation("com.google.code.gson:gson:2.8.9")
-    implementation("com.squareup.moshi:moshi:1.12.0")
+    implementation("com.squareup.moshi:moshi:1.15.2")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
     implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     implementation("org.ejml:ejml-simple:0.41")
