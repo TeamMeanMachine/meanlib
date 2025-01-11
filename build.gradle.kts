@@ -31,6 +31,7 @@ repositories {
     maven { setUrl("https://maven.ctr-electronics.com/release/") }
     maven { setUrl("https://maven.revrobotics.com/") }
     maven { setUrl("https://maven.photonvision.org/repository/internal")}
+    maven { setUrl("https://shenzhen-robotics-alliance.github.io/maple-sim/vendordep/repos/releases")}
     maven {
         url = uri("https://maven.pkg.github.com/Mechanical-Advantage/AdvantageKit")
         credentials {
@@ -78,6 +79,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
+
+    implementation("org.ironmaple:maplesim-java:0.3.1")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
