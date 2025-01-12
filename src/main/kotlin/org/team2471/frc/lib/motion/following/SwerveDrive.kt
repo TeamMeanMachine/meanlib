@@ -12,8 +12,6 @@ import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructArrayPublisher
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
-import org.ironmaple.simulation.drivesims.SwerveModuleSimulation
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
@@ -59,7 +57,6 @@ interface SwerveDrive {
 
     val poseEstimator: VisionPoseEstimator
 
-    val swerveDriveSimulation: SwerveDriveSimulation
 
     fun resetOdom() = Unit
 
@@ -78,7 +75,6 @@ interface SwerveDrive {
 
     interface Module {
 
-        val moduleSim: SwerveModuleSimulation
 
         val gearRatio: Double
 
