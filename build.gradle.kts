@@ -22,8 +22,8 @@ var doReplay = false
 
 group = "org.team2471.lib"
 version = "2025"
-var wpiLibVersion =  "2025.1.1"
-var advantageKitVersion = "4.0.0-beta-1"
+var wpiLibVersion =  "2025.2.1"
+var advantageKitVersion = "4.0.0"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -42,10 +42,6 @@ repositories {
 
 dependencies {
     //AdvantageKit libs
-//    implementation("org.littletonrobotics.akit.junction:junction-core:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.junction:wpilib-shim:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.conduit:conduit-api:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.conduit:conduit-wpilibio:$advantageKitVersion")
     implementation("org.littletonrobotics.akit:akit-java:$advantageKitVersion")
     implementation("org.littletonrobotics.akit:akit-wpilibio:$advantageKitVersion")
 
@@ -62,8 +58,8 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix6:wpiapi-java:25.0.0-beta-4")
-    implementation("com.revrobotics.frc:REVLib-java:2025.0.0-beta-3")
+    implementation("com.ctre.phoenix6:wpiapi-java:25.1.0")
+    implementation("com.revrobotics.frc:REVLib-java:2025.0.0")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
 
     // other
