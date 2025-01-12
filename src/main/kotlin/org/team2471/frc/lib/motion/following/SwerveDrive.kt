@@ -3,21 +3,19 @@ package org.team2471.frc.lib.motion.following
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
-import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
+import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.networktables.StructArrayPublisher
+import edu.wpi.first.units.Units.Inches
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
+import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
-import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
@@ -59,7 +57,7 @@ interface SwerveDrive {
 
     val poseEstimator: VisionPoseEstimator
 
-    val swerveDriveSimulation: SwerveDriveSimulation
+    val simulatedDrive: SelfControlledSwerveDriveSimulation
 
     fun resetOdom() = Unit
 
@@ -178,6 +176,14 @@ fun SwerveDrive.drive(
         //println("Correction: ${turn * 60.0}")
     }
     requestedTranslation += softTranslation
+
+    if (isSim) {
+        simulatedDrive.runChassisSpeeds(ChassisSpeeds(requestedTranslation.x * 5.0, requestedTranslation.y * 5.0, turn * 50.0),
+            Translation2d(Inches.of(0.0), Inches.of(0.0)),
+            false,
+            true
+        )
+    }
 
     if (!SmartDashboard.containsKey("DemoSpeed")) {
         SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
