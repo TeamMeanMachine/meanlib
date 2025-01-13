@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d
 import org.team2471.frc.lib.units.*
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.pow
 
 data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
@@ -78,7 +79,7 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
 
     fun getClosestPoint(vararg points: Vector2): Vector2 {
         var closestPoint = points.first()
-        var minDistance = this.x * closestPoint.x + this.y * closestPoint.y
+        var minDistance = (closestPoint.x - this.x).pow(2) + (closestPoint.y - this.y).pow(2)
         for (point in points) {
             val delta = this - point
             val distance = delta.x * delta.x + delta.y * delta.y
