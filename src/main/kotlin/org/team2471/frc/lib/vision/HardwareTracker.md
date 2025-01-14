@@ -10,26 +10,26 @@ For example, a OV9281 camera could be labeled "CA03" (Camera of type A numbered 
 
 All cameras need to be named with [this](https://docs.arducam.com/UVC-Camera/Serial-Number-Tool-Guide/) tool to work better with photonvision. Check the corresponding column for status on this
 
-| Name |  Type  |         Location          |                      Status                      | Last Calibrated | Renamed? |
-|:----:|:------:|:-------------------------:|:------------------------------------------------:|:---------------:|:--------:|
-| CA01 | OV9281 |       Typhoon (SL)        |     In use, needs calibration, focus, & name     |        ?        |    X     |
-| CA02 | OV9281 |       Typhoon (SR)        |     In use, needs calibration, focus, & name     |        ?        |    X     |
-| CA03 | OV9281 |       Typhoon (IB)        |     In use, needs calibration, focus, & name     |        ?        |    X     |
-| CC04 | OV9782 |     Typhoon (NoteCam)     |                In use, needs name                |       N/A       |    X     |
-| CC05 | OV9782 | Electrical Pit (In mount) |    Standby, needs calibration, focus, & name     |        ?        |    X     |
-| CA06 | OV9281 | Electrical Pit (In mount) |    Standby, needs calibration, focus, & name     |        ?        |    X     |
-| CC07 | OV9782 |      Shop camera kit      |                    For CADers                    |       N/A       |    ✓     |
-| CC08 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
-| CC09 | OV9782 |       Vision Drawer       |                     Standby                      |       N/A       |    ✓     |
-| CB10 | OV2311 |       Vision Drawer       |        Standby, needs calibration & focus        |      never      |    ✓     |
-| CA11 | OV9281 |       Vision Drawer       | Standby, in old mount, needs calibration & focus |        ?        |    ✓     |
-| CB12 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
-| CB13 | OV2311 |      STEM camera kit      |        Backup, needs calibration & focus         |      never      |    ✓     |
-| CC14 | OV9782 |       Vision Drawer       |            Backup, maybe needs focus             |       N/A       |    ✓     |
-| CC15 | OV9782 |       Vision Drawer       |            Backup,  maybe needs focus            |       N/A       |    ✓     |
-| CA16 | OV9281 |       Vision Drawer       |        Backup,  needs calibration & focus        |        ?        |    ✓     |
-| CA17 | OV9281 |       Vision Drawer       | Backup, in old mount, needs calibration & focus  |        ?        |    ✓     |
-| CA18 | OV9281 |       Vision Drawer       |                      Backup                      |     1/11/25     |    ✓     |
+| Name |  Type  |         Location          |                     Status                      | Last Calibrated | Renamed? |
+|:----:|:------:|:-------------------------:|:-----------------------------------------------:|:---------------:|:--------:|
+| CA01 | OV9281 |       Typhoon (SL)        |    In use, needs calibration, focus, & name     |        ?        |    X     |
+| CA02 | OV9281 |       Typhoon (SR)        |    In use, needs calibration, focus, & name     |        ?        |    X     |
+| CA03 | OV9281 |       Typhoon (IB)        |    In use, needs calibration, focus, & name     |        ?        |    X     |
+| CC04 | OV9782 |     Typhoon (NoteCam)     |               In use, needs name                |       N/A       |    X     |
+| CC05 | OV9782 | Electrical Pit (In mount) |    Standby, needs calibration, focus, & name    |        ?        |    X     |
+| CA06 | OV9281 | Electrical Pit (In mount) |    Standby, needs calibration, focus, & name    |        ?        |    X     |
+| CC07 | OV9782 |      Shop camera kit      |                   For CADers                    |       N/A       |    ✓     |
+| CC08 | OV9782 |       Vision Drawer       |          Standby, focused (not locked)          |       N/A       |    ✓     |
+| CC09 | OV9782 |       Vision Drawer       |          Standby, focused (not locked)          |       N/A       |    ✓     |
+| CB10 | OV2311 |      STEM camera kit      |       Standby, needs calibration & focus        |      never      |    ✓     |
+| CA11 | OV9281 |       Vision Drawer       |    Standby, Note: calibration has high error    |     1/13/25     |    ✓     |
+| CB12 | OV2311 |       Vision Drawer       |                     Backup                      |      never      |    ✓     |
+| CB13 | OV2311 |       Vision Drawer       |            Backup, needs calibration            |      never      |    ✓     |
+| CC14 | OV9782 |      STEM camera kit      |          Backup, focused (not locked)           |       N/A       |    ✓     |
+| CC15 | OV9782 |       Vision Drawer       |          Backup, focused (not locked)           |       N/A       |    ✓     |
+| CA16 | OV9281 |      STEM camera kit      |       Backup,  needs calibration & focus        |        ?        |    ✓     |
+| CA17 | OV9281 |      STEM camera kit      | Backup, in old mount, needs calibration & focus |        ?        |    ✓     |
+| CA18 | OV9281 |       Vision Drawer       |                     Backup                      |     1/11/25     |    ✓     |
 
 
 
