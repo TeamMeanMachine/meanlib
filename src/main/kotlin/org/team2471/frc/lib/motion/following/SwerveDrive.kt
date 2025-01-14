@@ -3,20 +3,22 @@ package org.team2471.frc.lib.motion.following
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
-import edu.wpi.first.math.kinematics.SwerveModulePosition
-import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.units.Units.Inches
+import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation
-import org.ironmaple.simulation.drivesims.SwerveModuleSimulation
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.*
+import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.simulatedDrive
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -57,8 +59,6 @@ interface SwerveDrive {
 
     val poseEstimator: VisionPoseEstimator
 
-    val simulatedDrive: SelfControlledSwerveDriveSimulation
-
     fun resetOdom() = Unit
 
     val isRedAlliance: Boolean
@@ -72,27 +72,18 @@ interface SwerveDrive {
 
     companion object {
         private var prevIsRedAlliance: Boolean? = null
+        var simulatedDrive = SelfControlledSwerveDriveSimulation(
+            SwerveDriveSimulation(DriveTrainSimulationConfig.Default(), Pose2d(2.0, 2.0, Rotation2d(0.0))))
     }
 
     interface Module {
-
-        val moduleSim: SwerveModuleSimulation
 
         val gearRatio: Double
 
         // module fixed parameters
         val modulePosition: Vector2L // coordinates of module in robot coordinates
 
-        val modulePositionWpi: Translation2d
-            get() = Translation2d(modulePosition.y.asMeters, -modulePosition.x.asMeters)
-
         val angleOffset: Angle
-
-        val wpiPosition: SwerveModulePosition
-            get() = SwerveModulePosition(currDistance.feet.asMeters, angle.asRotation2d)
-
-        val wpiState: SwerveModuleState
-            get() = SwerveModuleState(speed, angle.asRotation2d)
 
         var wheelDiameter: Length
 
@@ -134,6 +125,10 @@ val SwerveDrive.demoMode: Boolean
 val SwerveDrive.demoSpeed: Double
     get() = SmartDashboard.getNumber("DemoSpeed" , 1.0).coerceIn(0.0, 1.0)
 fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = if (time < lastResetTime) SwerveDrive.Pose(position, heading) else poseHistory.getInterpolated(InterpolatingDouble(time))
+
+fun SwerveDrive.configureSim(newSim: SwerveDriveSimulation) {
+    if (isSim) simulatedDrive = SelfControlledSwerveDriveSimulation(newSim)
+}
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     val currPose = pose
@@ -178,8 +173,12 @@ fun SwerveDrive.drive(
     requestedTranslation += softTranslation
 
     if (isSim) {
-        simulatedDrive.runChassisSpeeds(ChassisSpeeds(requestedTranslation.x * 5.0, requestedTranslation.y * 5.0, turn * 50.0),
-            Translation2d(Inches.of(0.0), Inches.of(0.0)),
+        val requestedVel = requestedTranslation * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond)
+        val robotCentricVel = requestedVel.rotate(heading).rotate(-simulatedDrive.actualPoseInSimulationWorld.rotation.asAngle)
+        val requestedRotVel = turn * simulatedDrive.maxAngularVelocity().`in`(RadiansPerSecond)
+        simulatedDrive.runChassisSpeeds(
+            ChassisSpeeds(robotCentricVel.y, -robotCentricVel.x, requestedRotVel),
+            Translation2d(0.0, 0.0),
             false,
             true
         )
