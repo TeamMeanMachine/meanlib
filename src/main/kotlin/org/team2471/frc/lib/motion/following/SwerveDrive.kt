@@ -174,7 +174,7 @@ fun SwerveDrive.drive(
 
     if (isSim) {
         val requestedVel = requestedTranslation * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond)
-        val robotCentricVel = requestedVel.rotate(heading).rotate(-simulatedDrive.actualPoseInSimulationWorld.rotation.asAngle)
+        val robotCentricVel = requestedVel.rotate(if (fieldCentric) heading else 0.0.degrees).rotate(-simulatedDrive.actualPoseInSimulationWorld.rotation.asAngle)
         val requestedRotVel = turn * simulatedDrive.maxAngularVelocity().`in`(RadiansPerSecond)
         simulatedDrive.runChassisSpeeds(
             ChassisSpeeds(robotCentricVel.y, -robotCentricVel.x, requestedRotVel),
