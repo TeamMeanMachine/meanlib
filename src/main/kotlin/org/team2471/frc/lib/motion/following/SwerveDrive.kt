@@ -93,6 +93,7 @@ interface SwerveDrive {
         val acceleration: Double
         val currDistance: Double
         var prevDistance: Double
+        var prevSpeed: Double
         val treadWear: Double
         var odometer: Double
 
@@ -292,13 +293,26 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (isReal) {
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else {
-//        if (modulePosition.x > 0.0)
+        val moduleIndex = if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
+            0
+        } else if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
+            1
+        } else if (modulePosition.x < 0.0.feet && modulePosition.y < 0.0.feet) {
+            3
+        } else {
+            2
+        }
 
+        val simAngle = simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+        val simSpeed = simulatedDrive.measuredStates[moduleIndex].speedMetersPerSecond.meters.asFeet
+        val simAccel = simSpeed - prevSpeed
+        val simDistance = simulatedDrive.latestModulePositions[moduleIndex].distanceMeters.meters.asFeet
 
+        val simWheelDir = Vector2(simAngle.cos(), simAngle.sin())
 
-//        val foo = simulatedDrive.measuredStates[0].angle
-//        simulatedDrive.cachedModulePositions
-//        return ModuleState(simulatedDrive.)
+        prevDistance = simDistance
+
+        return ModuleState(simWheelDir * (simDistance - prevDistance), simWheelDir * simSpeed, simWheelDir * simAccel)
     }
 
     prevDistance = holdDistance
