@@ -28,6 +28,7 @@ import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPose = SwerveDrive.Pose(Vector2(0.0, 0.0), 0.0.degrees)
+private var prevHeading = 0.0
 private var prevPathPosition = Vector2(0.0, 0.0)
 private var prevTime = -0.02
 private var prevPathHeading = 0.0.radians
@@ -303,16 +304,22 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
             2
         }
 
-        val simAngle = simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+        val simAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+        val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
         val simSpeed = simulatedDrive.measuredStates[moduleIndex].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
         val simDistance = simulatedDrive.latestModulePositions[moduleIndex].distanceMeters.meters.asFeet
+        val deltaDistance = simDistance - prevDistance
 
-        val simWheelDir = Vector2(simAngle.cos(), simAngle.sin())
+        val simWheelDir = Vector2(simAngleFieldSpace.cos(), simAngleFieldSpace.sin())
+
+        if (moduleIndex == 1) println("delta ${simAngleFieldSpace.wrap() - angleInFieldSpace}")
 
         prevDistance = simDistance
+        prevAngle = simAngle
+        prevSpeed = simSpeed
 
-        return ModuleState(simWheelDir * (simDistance - prevDistance), simWheelDir * simSpeed, simWheelDir * simAccel)
+        return ModuleState(simWheelDir * deltaDistance, simWheelDir * simSpeed, simWheelDir * simAccel)
     }
 
     prevDistance = holdDistance
@@ -352,8 +359,16 @@ fun SwerveDrive.recordOdometry() {
     velocity = robotVelocity
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
-        heading += robotRotation
-        headingRate = (robotRotation / dt).perSecond
+        if (isSim) {
+            var sHeading = simulatedDrive.odometryEstimatedPose.rotation.degrees
+
+            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
+            heading += (headingRate.changePerSecond * dt)
+            prevHeading = sHeading
+        } else {
+            heading += robotRotation
+            headingRate = (robotRotation / dt).perSecond
+        }
     }
 
     poseHistory[InterpolatingDouble(time)] = pose
