@@ -145,6 +145,7 @@ fun SwerveDrive.stop() {
     for (module in modules) {
         module.stop()
     }
+    if (isSim) simulatedDrive.runSwerveStates(Array(4) {SwerveModuleState(0.0, Rotation2d(0.0)) })
 }
 
 fun SwerveDrive.zeroEncoders() {
@@ -236,7 +237,7 @@ fun SwerveDrive.drive(
         val moduleStates = Array(modules.size) { SwerveModuleState() }
         for (i in modules.indices) {
             val moduleIndex = if (i == 2) 3 else if (i == 3) 2 else i
-            moduleStates[moduleIndex] = SwerveModuleState(speeds[moduleIndex] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), -modules[i].angleSetpoint.asRotation2d)
+            moduleStates[moduleIndex] = SwerveModuleState(speeds[i] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), -modules[i].angleSetpoint.wrap().asRotation2d)
         }
         simulatedDrive.runSwerveStates(moduleStates)
     }
@@ -248,6 +249,9 @@ data class AngleAndSpeed(val angle: Angle, val power: Double)
 
 private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
     var currAngle = angle
+    var power = localGoal.length
+    var setPoint = localGoal.angle
+
 
     if (isSim) {
         val moduleIndex = if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
@@ -262,10 +266,7 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : Ang
         currAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle
     }
 
-
-    var power = localGoal.length
-    var setPoint = localGoal.angle
-    val angleError = (setPoint - angle).wrap()
+    val angleError = (setPoint - currAngle).wrap()
     if (Math.abs(angleError.asRadians) > Math.PI / 2.0) {
         setPoint -= Math.PI.radians
         power = -power
@@ -321,17 +322,18 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         val simSpeed = simulatedDrive.measuredStates[moduleIndex].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
         val simDistance = simulatedDrive.latestModulePositions[moduleIndex].distanceMeters.meters.asFeet
-        val deltaDistance = simDistance - prevDistance
+        val simDeltaDistance = simDistance - prevDistance
+
 
         val simWheelDir = Vector2(simAngleFieldSpace.cos(), simAngleFieldSpace.sin())
 
-//        if (moduleIndex == 1) println("delta ${simAngleFieldSpace.wrap() - angleInFieldSpace}")
+        println("distance ${simDeltaDistance.round(2)} $moduleIndex")
 
         prevDistance = simDistance
         prevAngle = simAngle
         prevSpeed = simSpeed
 
-        return ModuleState(simWheelDir * deltaDistance, simWheelDir * simSpeed, simWheelDir * simAccel)
+        return ModuleState(simWheelDir * simDeltaDistance, simWheelDir * simSpeed, simWheelDir * simAccel)
     }
 
     prevDistance = holdDistance
@@ -378,7 +380,7 @@ fun SwerveDrive.recordOdometry() {
 //            heading += (headingRate.changePerSecond * dt)
 //            prevHeading = sHeading
 //        } else {
-        println("robotRotation $robotRotation")
+//        println("robotRotation $robotRotation")
             heading += robotRotation
             headingRate = (robotRotation / dt).perSecond
 //        }
