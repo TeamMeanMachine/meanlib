@@ -5,8 +5,7 @@ import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.math.kinematics.ChassisSpeeds
+import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.DriverStation
@@ -174,17 +173,6 @@ fun SwerveDrive.drive(
     }
     requestedTranslation += softTranslation
 
-    if (isSim) {
-        val requestedVel = requestedTranslation * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond)
-        val robotCentricVel = requestedVel.rotate(if (fieldCentric) heading else 0.0.degrees).rotate(-simulatedDrive.actualPoseInSimulationWorld.rotation.asAngle)
-        val requestedRotVel = turn * simulatedDrive.maxAngularVelocity().`in`(RadiansPerSecond)
-        simulatedDrive.runChassisSpeeds(
-            ChassisSpeeds(robotCentricVel.y, -robotCentricVel.x, requestedRotVel),
-            Translation2d(0.0, 0.0),
-            false,
-            true
-        )
-    }
 
     if (!SmartDashboard.containsKey("DemoSpeed")) {
         SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
@@ -243,6 +231,15 @@ fun SwerveDrive.drive(
         //print("${modules[i].currDistance} ")
         modules[i].setDrivePower(speeds[i])
     }
+
+    if (isSim) {
+        val moduleStates = Array(modules.size) { SwerveModuleState() }
+        for (i in modules.indices) {
+            val moduleIndex = if (i == 2) 3 else if (i == 3) 2 else i
+            moduleStates[moduleIndex] = SwerveModuleState(speeds[moduleIndex] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), -modules[i].angleSetpoint.asRotation2d)
+        }
+        simulatedDrive.runSwerveStates(moduleStates)
+    }
     //println()
 //    recordOdometry()
 }
@@ -250,6 +247,21 @@ fun SwerveDrive.drive(
 data class AngleAndSpeed(val angle: Angle, val power: Double)
 
 private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
+    var currAngle = angle
+
+    if (isSim) {
+        val moduleIndex = if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
+            0
+        } else if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
+            1
+        } else if (modulePosition.x < 0.0.feet && modulePosition.y < 0.0.feet) {
+            3
+        } else {
+            2
+        }
+        currAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+    }
+
 
     var power = localGoal.length
     var setPoint = localGoal.angle
@@ -313,7 +325,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 
         val simWheelDir = Vector2(simAngleFieldSpace.cos(), simAngleFieldSpace.sin())
 
-        if (moduleIndex == 1) println("delta ${simAngleFieldSpace.wrap() - angleInFieldSpace}")
+//        if (moduleIndex == 1) println("delta ${simAngleFieldSpace.wrap() - angleInFieldSpace}")
 
         prevDistance = simDistance
         prevAngle = simAngle
@@ -359,16 +371,17 @@ fun SwerveDrive.recordOdometry() {
     velocity = robotVelocity
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
-        if (isSim) {
-            var sHeading = simulatedDrive.odometryEstimatedPose.rotation.degrees
-
-            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
-            heading += (headingRate.changePerSecond * dt)
-            prevHeading = sHeading
-        } else {
+//        if (isSim) {
+//            var sHeading = simulatedDrive.odometryEstimatedPose.rotation.degrees
+//
+//            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
+//            heading += (headingRate.changePerSecond * dt)
+//            prevHeading = sHeading
+//        } else {
+        println("robotRotation $robotRotation")
             heading += robotRotation
             headingRate = (robotRotation / dt).perSecond
-        }
+//        }
     }
 
     poseHistory[InterpolatingDouble(time)] = pose
