@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.units
 
+import edu.wpi.first.units.Units
+
 @JvmInline
 value class Length(val asInches: Double) {
     operator fun plus(other: Length) = Length(asInches + other.asInches)
@@ -31,3 +33,4 @@ inline val Number.cm get() = Length(this.toDouble() * 0.3937008)
 inline val Length.asFeet get() = asInches / 12.0
 inline val Length.asMeters get() = asInches / 39.37008
 inline val Length.asCm get() = asInches / 0.3937008
+inline val Length.asWPIUnit get() = Units.Inches.of(asInches)

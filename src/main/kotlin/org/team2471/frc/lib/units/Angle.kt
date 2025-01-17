@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.units
 
 import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.struct.Rotation2dStruct
+import edu.wpi.first.units.Units
 import edu.wpi.first.util.struct.StructSerializable
 import kotlin.math.IEEErem
 import kotlin.math.absoluteValue
@@ -82,3 +82,4 @@ inline val Angle.asRotations get() = asDegrees / 360.0
 
 inline val Angle.asRotation2d: Rotation2d get() = Rotation2d.fromDegrees(asDegrees)
 inline val Rotation2d.asAngle get() = Angle(degrees)
+inline val Angle.asWPIUnit get() = Units.Degrees.of(asDegrees)

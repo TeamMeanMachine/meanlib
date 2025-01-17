@@ -174,7 +174,6 @@ fun SwerveDrive.drive(
     }
     requestedTranslation += softTranslation
 
-
     if (!SmartDashboard.containsKey("DemoSpeed")) {
         SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
         SmartDashboard.setPersistent("DemoSpeed")

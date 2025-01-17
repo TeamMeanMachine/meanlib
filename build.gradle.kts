@@ -13,8 +13,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.20")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:2.0.0")
     }
 }
 
@@ -22,8 +22,8 @@ var doReplay = false
 
 group = "org.team2471.lib"
 version = "2025"
-var wpiLibVersion =  "2025.1.1"
-var advantageKitVersion = "4.0.0-beta-1"
+var wpiLibVersion =  "2025.2.1"
+var advantageKitVersion = "4.0.0"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -31,22 +31,11 @@ repositories {
     maven { setUrl("https://maven.ctr-electronics.com/release/") }
     maven { setUrl("https://maven.revrobotics.com/") }
     maven { setUrl("https://maven.photonvision.org/repository/internal")}
-    maven { setUrl("https://shenzhen-robotics-alliance.github.io/maple-sim/vendordep/repos/releases")}
-    maven {
-        url = uri("https://maven.pkg.github.com/Mechanical-Advantage/AdvantageKit")
-        credentials {
-            username = "Mechanical-Advantage-Bot"
-            password = "\u0067\u0068\u0070\u005f\u006e\u0056\u0051\u006a\u0055\u004f\u004c\u0061\u0079\u0066\u006e\u0078\u006e\u0037\u0051\u0049\u0054\u0042\u0032\u004c\u004a\u006d\u0055\u0070\u0073\u0031\u006d\u0037\u004c\u005a\u0030\u0076\u0062\u0070\u0063\u0051"
-        }
-    }
+    maven { setUrl("https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release/")}
 }
 
 dependencies {
     //AdvantageKit libs
-//    implementation("org.littletonrobotics.akit.junction:junction-core:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.junction:wpilib-shim:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.conduit:conduit-api:$advantageKitVersion")
-//    implementation("org.littletonrobotics.akit.conduit:conduit-wpilibio:$advantageKitVersion")
     implementation("org.littletonrobotics.akit:akit-java:$advantageKitVersion")
     implementation("org.littletonrobotics.akit:akit-wpilibio:$advantageKitVersion")
 
@@ -63,8 +52,8 @@ dependencies {
     implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix6:wpiapi-java:25.0.0-beta-4")
-    implementation("com.revrobotics.frc:REVLib-java:2025.0.0-beta-3")
+    implementation("com.ctre.phoenix6:wpiapi-java:25.1.0")
+    implementation("com.revrobotics.frc:REVLib-java:2025.0.0")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
 
     // other
@@ -80,7 +69,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
 
-    implementation("org.ironmaple:maplesim-java:0.3.1")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")

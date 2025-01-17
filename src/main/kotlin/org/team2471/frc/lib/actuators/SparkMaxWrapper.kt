@@ -103,7 +103,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, 0)
+        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0)
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
@@ -117,7 +117,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, 0, feedForward)
+        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward)
     }
 
     override fun stop() {
@@ -126,13 +126,13 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun setPositionSetpoint(position: Double) {
         positionSetpoint = position
-        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, 0)
+        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
         positionSetpoint = position
-        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, 0, feedForward)
+        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
