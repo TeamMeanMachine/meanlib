@@ -254,11 +254,11 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : Ang
 
 
     if (isSim) {
-        val moduleIndex = if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
+        val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
             0
-        } else if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
+        } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
             1
-        } else if (modulePosition.x < 0.0.feet && modulePosition.y < 0.0.feet) {
+        } else if (modulePosition.x > 0.0.feet && modulePosition.y < 0.0.feet) {
             3
         } else {
             2
@@ -307,11 +307,11 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (isReal) {
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else {
-        val moduleIndex = if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
+        val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
             0
-        } else if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
+        } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
             1
-        } else if (modulePosition.x < 0.0.feet && modulePosition.y < 0.0.feet) {
+        } else if (modulePosition.x > 0.0.feet && modulePosition.y < 0.0.feet) {
             3
         } else {
             2
@@ -326,8 +326,6 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 
 
         val simWheelDir = Vector2(simAngleFieldSpace.cos(), simAngleFieldSpace.sin())
-
-        println("distance ${simDeltaDistance.round(2)} $moduleIndex")
 
         prevDistance = simDistance
         prevAngle = simAngle
@@ -373,17 +371,17 @@ fun SwerveDrive.recordOdometry() {
     velocity = robotVelocity
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
-//        if (isSim) {
-//            var sHeading = simulatedDrive.odometryEstimatedPose.rotation.degrees
-//
-//            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
-//            heading += (headingRate.changePerSecond * dt)
-//            prevHeading = sHeading
-//        } else {
+        if (isSim) {
+            var sHeading = simulatedDrive.actualPoseInSimulationWorld.rotation.degrees
+
+            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
+            heading += (headingRate.changePerSecond * dt)
+            prevHeading = sHeading
+        } else {
 //        println("robotRotation $robotRotation")
             heading += robotRotation
             headingRate = (robotRotation / dt).perSecond
-//        }
+        }
     }
 
     poseHistory[InterpolatingDouble(time)] = pose
