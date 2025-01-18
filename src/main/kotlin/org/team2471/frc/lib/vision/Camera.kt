@@ -36,8 +36,8 @@ class Camera(
     val name: String,
     val aprilTagFieldLayout: AprilTagFieldLayout,
     val robotToCamera: Transform3d,
-    val robotMode: RobotMode = RobotMode.REAL,
-    val cameraType: CameraType = CameraType.PHOTONVISION,
+    val cameraIntrinsics: CameraIntrinsics = CameraIntrinsics.GenericCamera,
+    val robotMode: RobotMode = RobotMode.REAL
 ) {
 
     /**
@@ -48,10 +48,14 @@ class Camera(
     val latestPoses: List<GlobalPose>
         get() = io.latestGlobalPoses
 
+    val isConnected: Boolean
+        get() = inputs.isConnected
+
     // Instantiates the IO layer, which depends on whether the camera is PhotonVision or Limelight or if the robot is simulated or not.
     private val io: CameraIO = when (robotMode) {
         RobotMode.REAL, RobotMode.REPLAY -> {
-            when (cameraType) {
+            println("not sim adslkjfjhalksdjfhalksjdghlkjadfshg;lksajdf;lasdjkf;")
+            when (cameraIntrinsics.type) {
                 CameraType.PHOTONVISION -> PhotonVisionCamera(
                     inputTable,
                     outputTable,
@@ -70,13 +74,15 @@ class Camera(
         }
 
         RobotMode.SIM -> {
-            when (cameraType) {
+            println("Is sim adslkjfjhalksdjfhalksjdghlkjadfshg;lksajdf;lasdjkf;")
+            when (cameraIntrinsics.type) {
                 CameraType.PHOTONVISION -> PhotonVisionSim(
                     inputTable,
                     outputTable,
                     name,
                     robotToCamera,
-                    aprilTagFieldLayout
+                    aprilTagFieldLayout,
+                    cameraIntrinsics.simCameraProperties,
                 )
 
                 CameraType.LIMELIGHT -> EmptyCamera()

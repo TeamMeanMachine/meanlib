@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.photonvision.simulation.PhotonCameraSim
+import org.photonvision.simulation.SimCameraProperties
 import org.photonvision.simulation.VisionSystemSim
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive
@@ -36,6 +37,7 @@ import org.team2471.frc.lib.util.robotMode
     val name: String,
     private val robotToCamera: Transform3d,
     private val aprilTagFieldLayout: AprilTagFieldLayout,
+    private val cameraProperties: SimCameraProperties,
     private val singleTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
     private val multiTagStrategy: PhotonPoseEstimator.PoseStrategy = PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
 ): CameraIO {
