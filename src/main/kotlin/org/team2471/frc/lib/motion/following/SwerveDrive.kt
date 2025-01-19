@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.motion.following
 
+import choreo.trajectory.Trajectory
 import com.team254.lib.util.Interpolable
 import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
@@ -16,6 +17,7 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
+import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.simulatedDrive
 import org.team2471.frc.lib.motion_profiling.Path2D
@@ -28,7 +30,7 @@ private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPose = SwerveDrive.Pose(Vector2(0.0, 0.0), 0.0.degrees)
 private var prevHeading = 0.0
-private var prevPathPosition = Vector2(0.0, 0.0)
+private var prevPathPosition = Vector2(0.0, 0.0).feet
 private var prevTime = -0.02
 private var prevPathHeading = 0.0.radians
 private val MAXHEADINGSPEED_DEGREES_PER_SECOND = 600.0
@@ -117,6 +119,8 @@ interface SwerveDrive {
             else -> Pose(position.interpolate(other.position, x), (other.heading - heading) * x + heading)
         }
     }
+
+    data class PathPose(val totalTime: Double, val position: Vector2L, val heading: Angle, val velocityPerSec: Vector2L? = null, val rotationalVelocityPerSec: Angle? = null)
 }
 
 val SwerveDrive.pose: SwerveDrive.Pose
@@ -262,7 +266,7 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : Ang
         } else {
             2
         }
-        currAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+        currAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle.wrap()
     }
 
     val angleError = (setPoint - currAngle).wrap()
@@ -316,7 +320,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
             2
         }
 
-        val simAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle
+        val simAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle.wrap()
         val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
         val simSpeed = simulatedDrive.measuredStates[moduleIndex].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
@@ -413,66 +417,99 @@ suspend fun SwerveDrive.driveAlongPath(
     turnOverride: () -> Double? = {null},
     earlyExit: (percentComplete: Double) -> Boolean = {false}
     ) {
-
-//    val gson = Gson()
-
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, reflected ${path.isReflected}, turnOverride ${turnOverride() != null}")
+
+    val pathPoseSupplier: (Double) -> SwerveDrive.PathPose = {
+        SwerveDrive.PathPose(path.durationWithSpeed, path.getPosition(it).feet, path.getAbsoluteHeadingDegreesAt(it).degrees)
+    }
+
+    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit)
+}
+
+suspend fun SwerveDrive.driveAlongChoreoPath(
+    path: Trajectory<*>?,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0,
+    inResetGyro: Boolean? = null,
+    turnOverride: () -> Double? = {null},
+    earlyExit: (percentComplete: Double) -> Boolean = {false}
+) {
+    println("inside driveAlongChoreoPath ${path?.name()}")
+
+    if (path == null || path.getInitialPose(false).isEmpty) { println("path is null or empty"); return } //exit if path is null
+
+    val pathPoseSupplier: (Double) -> SwerveDrive.PathPose = {
+        val currSample = path.sampleAt(it, false).get()
+        val velocity = Vector2(currSample.chassisSpeeds.vxMetersPerSecond, currSample.chassisSpeeds.vyMetersPerSecond).meters
+        SwerveDrive.PathPose(
+            path.totalTime,
+            currSample.pose.translation.asVector2().meters,
+            currSample.pose.rotation.asAngle,
+            velocity,
+            currSample.chassisSpeeds.omegaRadiansPerSecond.radians)
+    }
+
+    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit)
+}
+
+suspend fun SwerveDrive.driveAlongPathGeneric(
+    path: (seconds: Double) -> SwerveDrive.PathPose,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0,
+    inResetGyro: Boolean? = null,
+    turnOverride: () -> Double? = {null},
+    earlyExit: (percentComplete: Double) -> Boolean = {false}
+) {
+    println("inside driveAlongPathGeneric ${path(0.0)}")
+
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
-        resetHeading()
-        heading = path.getAbsoluteHeadingDegreesAt(0.0).degrees //path.headingCurve.getValue(0.0).degrees
-        if(parameters.alignRobotToPath) {
-            heading += path.getTangent(0.0).angle
-        }
+        heading = path(0.0).heading
+        if (isSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
         println("After Reset Heading = $heading")
     }
-    
+
     if (resetOdometry) {
         println("Position = $position")
-        odometryReset()
-        println("Position after odometryReset = $position")
 
         // set to the numbers required for the start of the path
-        position = path.getPosition(0.0)
-        prevPosition = position
+        position = path(0.0).position.asFeet
+        if (isSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        //        AprilTag.position = path.initialPose.translation.asVector2().meters
+//        prevPosition = position
 
-//        resetOdom()
         println("After Reset Position = $position")
     }
 
-//    plannedPath.setString(gson.toJson(path))
 
-
-    var prevTime = 0.0
+    var prevTime = -0.2
 
     val timer = Timer()
     timer.start()
-    prevPathPosition = path.getPosition(0.0)
-    prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
-    var prevPositionError = Vector2(0.0, 0.0)
-    prevHeadingError = 0.0.degrees
+    var prevPositionError = Vector2(0.0, 0.0).meters
+    var prevHeadingError = 0.0.degrees
     suspendUntil(10) { timer.get() != 0.0}
     println("entering drive periodic")
     periodic {
         val t = timer.get()
-        val dt = t - prevTime
+        val dt = if (t - prevTime != 0.0) t - prevTime else 0.02
+        val pathSample = path(t)
 
         // position error
-        val pathPosition = path.getPosition(t)
+        val pathPosition = pathSample.position
         val currentPosition = position.feet
-        val positionError = pathPosition - currentPosition.asFeet
-//        println("time=$t   dt=$dt    pathPosition=$pathPosition position=$position positionError=$positionError")
+        val positionError = pathPosition - currentPosition
+//        println("time=$t   dt=$dt    pathPosition=$pathPosition position=$currentPosition positionError=$positionError")
 
         // position feed forward
-        val pathVelocity = (pathPosition - prevPathPosition) / dt
-        prevPathPosition = pathPosition
+        val pathVelocity = pathSample.velocityPerSec ?: ((pathPosition - prevPathPosition) / dt)
 
         // position d
         val deltaPositionError = positionError - prevPositionError
         prevPositionError = positionError
 
         var translationControlField =
-            pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
+            pathVelocity.asFeet * parameters.kPositionFeedForward + positionError.asFeet * parameters.kpPosition + deltaPositionError.asFeet * parameters.kdPosition
 
         translationControlField = Vector2(-translationControlField.y, translationControlField.x)
 //        println("translationControlField = $translationControlField")
@@ -480,27 +517,23 @@ suspend fun SwerveDrive.driveAlongPath(
 
         // heading error
         val robotHeading = heading
-        val pathHeading = path.getAbsoluteHeadingDegreesAt(t).degrees
+        val pathHeading = pathSample.heading
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
         // heading feed forward
-        val headingVelocity = (pathHeading.asDegrees - prevPathHeading.asDegrees) / dt
-        prevPathHeading = pathHeading
+        val headingVelocity = pathSample.rotationalVelocityPerSec ?: ((pathHeading - prevHeadingError) / dt)
 
         // heading d
         val deltaHeadingError = headingError - prevHeadingError
         prevHeadingError = headingError
 
-//        actualRoute.setDoubleArray(doubleArrayOf(t, currentPosition.x.asFeet, currentPosition.y.asFeet, robotHeading.asDegrees))
-
-        val turnControl = headingVelocity * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+        val turnControl = headingVelocity.asDegrees * parameters.kHeadingFeedForward + headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 //        println("Turn Control: $turnControl")
         if (turnControl.isNaN() || translationControlField.y.isNaN() || translationControlField.x.isNaN()) {
             println("turnControl: $turnControl")
             println("translationControlField $translationControlField")
             println("dt: $dt")
-
 
 //            throw IllegalArgumentException("requestedVolts == NaN")
         }
@@ -509,12 +542,12 @@ suspend fun SwerveDrive.driveAlongPath(
         drive(translationControlField, turnOverride() ?: turnControl, true)
 
         // are we done yet?
-        if (t >= path.durationWithSpeed + extraTime) {
+        if (t >= path(t).totalTime + extraTime) {
             println("exiting path")
             stop()
         }
-        if (earlyExit(t / path.durationWithSpeed)) {
-            println("early exiting path. time: $t  duration: ${path.durationWithSpeed} percent complete: ${t / path.durationWithSpeed}")
+        if (earlyExit(t / path(t).totalTime)) {
+            println("early exiting path. time: $t  duration: ${path(t).totalTime} percent complete: ${t / path(t).totalTime}")
             stop()
         }
         prevTime = t
@@ -522,7 +555,7 @@ suspend fun SwerveDrive.driveAlongPath(
 //        println("Time=$t Path Position=$pathPosition Position=$position")
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
-    println("at the end of driveAlongPath")
+    println("at the end of driveAlongChoreoPath")
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
@@ -554,7 +587,7 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
 
     val timer = Timer()
     timer.start()
-    prevPathPosition = path.getPosition(0.0)
+    prevPathPosition = path.getPosition(0.0).feet
     prevPathHeading = path.getAbsoluteHeadingDegreesAt(0.0).degrees
     periodic {
         val t = timer.get()
@@ -567,8 +600,8 @@ suspend fun SwerveDrive.driveAlongPathWithStrafe(
         //println("pathPosition=$pathPosition position=$position positionError=$positionError")
 
         // position feed forward
-        val pathVelocity = (pathPosition - prevPathPosition) / dt
-        prevPathPosition = pathPosition
+        val pathVelocity = (pathPosition - prevPathPosition.asFeet) / dt
+        prevPathPosition = pathPosition.feet
 
         val translationControlField =
             pathVelocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition
