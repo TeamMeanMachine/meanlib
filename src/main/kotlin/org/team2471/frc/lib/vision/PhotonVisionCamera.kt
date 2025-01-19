@@ -6,14 +6,11 @@ import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
-import org.jetbrains.annotations.Range
-import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
-import org.team2471.frc.lib.units.cm
 
 
 class PhotonVisionCamera(
@@ -97,10 +94,10 @@ class PhotonVisionCamera(
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
                         posePublisher.set(estimatedPose.pose)
-//                        Logger.recordOutput("$name/pose", estimatedPose.pose)
+//                        MeanLogger.recordOutput("$name/pose", estimatedPose.pose)
 
                         stdDevEntry.setDouble(estimatedPose.stdDev)
-//                        Logger.recordOutput("$name/stdDev", estimatedPose.stdDev)
+//                        MeanLogger.recordOutput("$name/stdDev", estimatedPose.stdDev)
 
                         tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)

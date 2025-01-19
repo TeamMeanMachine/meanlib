@@ -4,17 +4,12 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTable
-import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.util.struct.StructSerializable
-import edu.wpi.first.wpilibj.Timer
-import org.littletonrobotics.junction.Logger
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.toVector2L
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.getRealFPGATimestamp
 import org.team2471.frc.lib.util.length
-import org.team2471.frc.lib.vision.CameraResult.Companion.EmptyCameraResult
 
 @JvmRecord
 data class CameraResult(
@@ -57,10 +52,10 @@ data class CameraResult(
         }
 
         fun recordOutput(key: String, value: CameraResult) {
-            Logger.recordOutput("$key/Pose", value.pose)
-            Logger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
-            Logger.recordOutput("$key/Tag Number", value.numTags.toDouble())
-            Logger.recordOutput("$key/Average Tag Area", value.avgTagArea)
+            MeanLogger.recordOutput("$key/Pose", value.pose)
+            MeanLogger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
+            MeanLogger.recordOutput("$key/Tag Number", value.numTags.toDouble())
+            MeanLogger.recordOutput("$key/Average Tag Area", value.avgTagArea)
         }
     }
 }

@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
@@ -703,7 +702,7 @@ suspend fun SwerveDrive.driveToPoint(
 }
 
 suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, turnOverride: () -> Double? = {null}, exitSupplier: () -> Boolean) {
-    Logger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
+    MeanLogger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
     this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, turnOverride, exitSupplier)
 }
 

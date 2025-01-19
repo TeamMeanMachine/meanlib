@@ -150,9 +150,9 @@ class MotorControllerSim: MotorControllerIO {
                 volts = prevVolts + maxVoltDelta
             }
 //            if (inputs.name == "Drive/FLD") {
-//                Logger.recordOutput("maxVoltsDelta", maxVoltDelta)
-//                Logger.recordOutput("voltsDelta", voltsDelta)
-//                Logger.recordOutput("applyRampRate", voltsDelta * maxVoltDelta > 0.0 && maxVoltDelta.absoluteValue < voltsDelta.absoluteValue)
+//                MeanLogger.recordOutput("maxVoltsDelta", maxVoltDelta)
+//                MeanLogger.recordOutput("voltsDelta", voltsDelta)
+//                MeanLogger.recordOutput("applyRampRate", voltsDelta * maxVoltDelta > 0.0 && maxVoltDelta.absoluteValue < voltsDelta.absoluteValue)
 //            }
             /* only applies when voltage is increasing acceleration */
         }
@@ -163,11 +163,11 @@ class MotorControllerSim: MotorControllerIO {
         }
 
 //        if (inputs.name == "Drive/FLD") {
-//            Logger.recordOutput("breakMode", breakModeVolts)
-//            Logger.recordOutput("freeSpeed", motor.freeSpeedRadPerSec.radians.asRotations)
-//            Logger.recordOutput("velocity", getSelectedSensorVelocity())
-//            Logger.recordOutput("volts", volts)
-//            Logger.recordOutput("requestedVolts", requestedVolts)
+//            MeanLogger.recordOutput("breakMode", breakModeVolts)
+//            MeanLogger.recordOutput("freeSpeed", motor.freeSpeedRadPerSec.radians.asRotations)
+//            MeanLogger.recordOutput("velocity", getSelectedSensorVelocity())
+//            MeanLogger.recordOutput("volts", volts)
+//            MeanLogger.recordOutput("requestedVolts", requestedVolts)
 //        }
 
         sim.setInputVoltage(volts) //apply volts to sim
