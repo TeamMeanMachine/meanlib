@@ -92,15 +92,15 @@ class PhotonVisionCamera(
                         stdDev.coerceIn(0.000001, 1000.0)
 
 //                        cameraResultEntry.setCameraResult(cameraResult)
-                        CameraResult.recordOutput("$name/CameraResult", cameraResult)
+//                        CameraResult.recordOutput("$name/CameraResult", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
                         posePublisher.set(estimatedPose.pose)
-                        Logger.recordOutput("$name/pose", estimatedPose.pose)
+//                        Logger.recordOutput("$name/pose", estimatedPose.pose)
 
                         stdDevEntry.setDouble(estimatedPose.stdDev)
-                        Logger.recordOutput("$name/stdDev", estimatedPose.stdDev)
+//                        Logger.recordOutput("$name/stdDev", estimatedPose.stdDev)
 
                         tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)

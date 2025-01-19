@@ -65,7 +65,7 @@ dependencies {
     implementation("org.ejml:ejml-simple:0.41")
 
     implementation("org.photonvision:photonlib-java:v2025.1.1")
-    implementation("org.photonvision:photontargeting-java:v2025.0.0-beta-6")
+    implementation("org.photonvision:photontargeting-java:v2025.1.1")
     implementation("com.fasterxml.jackson.core:jackson-core:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")

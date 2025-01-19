@@ -53,7 +53,7 @@ import org.team2471.frc.lib.util.robotMode
 
     val cameraSim = PhotonCameraSim(camera.photonCam, cameraProperties).apply {
         enableRawStream(true)
-        enableProcessedStream(true)
+//        enableProcessedStream(true)
         enableDrawWireframe(true)
     }
 

@@ -5,10 +5,13 @@ import org.photonvision.simulation.SimCameraProperties
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.units.radians
 import kotlin.math.atan2
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 data class CameraIntrinsics(val type: CameraType, val processor: Processor, val resWidth: Double, val resHeight: Double, val horizontalFOV: Angle) {
-    val diagonalFOV = atan2(horizontalFOV.asDegrees * (resHeight / resWidth), horizontalFOV.asDegrees).degrees
+    val diagonalFOV = horizontalFOV * sqrt(resWidth.pow(2) + resHeight.pow(2)) / resWidth
 
     val simCameraProperties: SimCameraProperties = SimCameraProperties().apply {
         setCalibration(resWidth, resHeight, diagonalFOV.asRotation2d)
@@ -16,6 +19,10 @@ data class CameraIntrinsics(val type: CameraType, val processor: Processor, val 
         fps = processor.avgFPS
         avgLatencyMs = processor.avgLatencyMs
         latencyStdDevMs = processor.latencyStdDevMs
+    }
+
+    init {
+        println("eoasdfsjalrkdsgjahdsla dlafjkhdalkdgjh ${diagonalFOV}")
     }
 
     companion object {
