@@ -670,14 +670,17 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
 suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
+    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean,
     turnOverride: () -> Double? = {null},
-    exitSupplier: () -> Boolean,
 ) {
     var prevPosition = position.feet
     var prevPositionError = Vector2L.Zeros
 
+    val t = Timer()
+    t.start()
+
     periodic {
-        if (exitSupplier()) {
+        if (exitSupplier(t.get(), prevPositionError)) {
             stop()
         }
 
@@ -701,9 +704,9 @@ suspend fun SwerveDrive.driveToPoint(
     }
 }
 
-suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, turnOverride: () -> Double? = {null}, exitSupplier: () -> Boolean) {
+suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, exitSupplier: (Double, Vector2L) -> Boolean, turnOverride: () -> Double? = {null},) {
     MeanLogger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
-    this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, turnOverride, exitSupplier)
+    this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, exitSupplier, turnOverride)
 }
 
 fun SwerveDrive.xPose() {
