@@ -17,7 +17,6 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
-import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.simulatedDrive
 import org.team2471.frc.lib.motion_profiling.Path2D
@@ -703,9 +702,11 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
 suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
-    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean,
+    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean = {seconds, error -> error.length > 0.5.feet},
     turnOverride: () -> Double? = {null},
 ) {
+    println("driving to point $point")
+
     var prevPosition = position.feet
     var prevPositionError = Vector2L.Zeros
 
@@ -714,6 +715,7 @@ suspend fun SwerveDrive.driveToPoint(
 
     periodic {
         if (exitSupplier(t.get(), prevPositionError)) {
+            println("exit supplier return true. time: ${t.get()} error: $prevPositionError ")
             stop()
         }
 
@@ -740,6 +742,7 @@ suspend fun SwerveDrive.driveToPoint(
 suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, exitSupplier: (Double, Vector2L) -> Boolean, turnOverride: () -> Double? = {null},) {
     MeanLogger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
     this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, exitSupplier, turnOverride)
+    MeanLogger.recordOutput("Goal Pos", Pose2d())
 }
 
 fun SwerveDrive.xPose() {
