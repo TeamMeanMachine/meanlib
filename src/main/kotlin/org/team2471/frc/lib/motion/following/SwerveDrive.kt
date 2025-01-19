@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
@@ -670,62 +671,40 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
 suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
-    heading: Angle = this.heading,
-    earlyExit: () -> Boolean = {false}
+    turnOverride: () -> Double? = {null},
+    exitSupplier: () -> Boolean,
 ) {
-
-    val timer = edu.wpi.first.wpilibj.Timer()
-    timer.start()
-    val prevTime = 0.0
-
-    suspendUntil(10) { timer.get() != 0.0}
-
     var prevPosition = position.feet
     var prevPositionError = Vector2L.Zeros
 
-    var prevHeading = heading
-    var prevHeadingError = 0.0.degrees
-
     periodic {
-        if (earlyExit()) {
+        if (exitSupplier()) {
             stop()
         }
 
-        val t = timer.get()
-        val dt = t - prevTime
-
         val currentPosition = position.feet
-        val currentHeading = heading
-
 
         val positionError = currentPosition - point
-        val headingError = (currentHeading - prevHeading).wrap()
 
-        val velocity = (currentPosition - prevPosition) / dt
+        val velocity = velocity.feet
         prevPosition = currentPosition
-        prevHeading = currentHeading
 
         val deltaPositionError = positionError - prevPositionError
         prevPositionError = positionError
 
-        val deltaHeadingError = headingError - prevHeadingError
-        prevHeadingError = headingError
-
-        val translation = positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
-
-        val rotation = headingError * parameters.kpHeading + deltaHeadingError * parameters.kdHeading
+        val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
 
         drive(
             Vector2(translation.y.asFeet, -translation.x.asFeet),
-            rotation.asDegrees,
-            closedLoopHeading = true
+            turnOverride() ?: 0.0,
         )
 
     }
 }
 
-suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, earlyExit: () -> Boolean = {false}) {
-    this.driveToPoint(position.getClosestPoint(*(points.map {it.asFeet}).toTypedArray()).feet, earlyExit = earlyExit)
+suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, turnOverride: () -> Double? = {null}, exitSupplier: () -> Boolean) {
+    Logger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
+    this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, turnOverride, exitSupplier)
 }
 
 fun SwerveDrive.xPose() {
