@@ -54,10 +54,10 @@ class VisionPoseEstimator(
     )
 
     init {
-        reset(getRealFPGATimestamp(), Vector2L.Zeros)
+        reset(Vector2L.Zeros, getRealFPGATimestamp())
     }
 
-    fun reset(currentTimestampSeconds: Double, newPos: Vector2L) {
+    fun reset(newPos: Vector2L, currentTimestampSeconds: Double = getRealFPGATimestamp()) {
         odomPosHistory.clear()
         odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
         offsetHistory.clear()

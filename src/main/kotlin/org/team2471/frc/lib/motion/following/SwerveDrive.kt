@@ -119,7 +119,13 @@ interface SwerveDrive {
         }
     }
 
-    data class PathPose(val totalTime: Double, val position: Vector2L, val heading: Angle, val velocityPerSec: Vector2L? = null, val rotationalVelocityPerSec: Angle? = null)
+    data class PathPose(
+        val totalTime: Double,
+        val position: Vector2L,
+        val heading: Angle,
+        val velocityPerSec: Vector2L? = null,
+        val rotationalVelocityPerSec: Angle? = null
+    )
 }
 
 val SwerveDrive.pose: SwerveDrive.Pose
@@ -127,8 +133,12 @@ val SwerveDrive.pose: SwerveDrive.Pose
 val SwerveDrive.demoMode: Boolean
     get() = demoSpeed < 1.0
 val SwerveDrive.demoSpeed: Double
-    get() = SmartDashboard.getNumber("DemoSpeed" , 1.0).coerceIn(0.0, 1.0)
-fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? = if (time < lastResetTime) SwerveDrive.Pose(position, heading) else poseHistory.getInterpolated(InterpolatingDouble(time))
+    get() = SmartDashboard.getNumber("DemoSpeed", 1.0).coerceIn(0.0, 1.0)
+
+fun SwerveDrive.lookupPose(time: Double): SwerveDrive.Pose? =
+    if (time < lastResetTime) SwerveDrive.Pose(position, heading) else poseHistory.getInterpolated(
+        InterpolatingDouble(time)
+    )
 
 fun SwerveDrive.configureSim(newSim: SwerveDriveSimulation) {
     if (isSim) simulatedDrive = SelfControlledSwerveDriveSimulation(newSim)
@@ -136,7 +146,7 @@ fun SwerveDrive.configureSim(newSim: SwerveDriveSimulation) {
 
 fun SwerveDrive.poseDiff(latency: Double): SwerveDrive.Pose? {
     val currPose = pose
-    val previousPose = lookupPose( getRealFPGATimestamp().minus(latency))
+    val previousPose = lookupPose(getRealFPGATimestamp().minus(latency))
     return if (previousPose == null) {
         null
     } else {
@@ -148,7 +158,7 @@ fun SwerveDrive.stop() {
     for (module in modules) {
         module.stop()
     }
-    if (isSim) simulatedDrive.runSwerveStates(Array(4) {SwerveModuleState(0.0, Rotation2d(0.0)) })
+    if (isSim) simulatedDrive.runSwerveStates(Array(4) { SwerveModuleState(0.0, Rotation2d(0.0)) })
 }
 
 fun SwerveDrive.zeroEncoders() {
@@ -165,8 +175,8 @@ fun SwerveDrive.drive(
     fieldCentric: Boolean = true,
     closedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
-    softTurn: Double = 0.0)
-{
+    softTurn: Double = 0.0
+) {
     var requestedTranslation = Vector2(translation.x, translation.y)
 
     if (fieldCentric) {
@@ -249,7 +259,7 @@ fun SwerveDrive.drive(
 
 data class AngleAndSpeed(val angle: Angle, val power: Double)
 
-private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal : Vector2) : AngleAndSpeed {
+private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal: Vector2): AngleAndSpeed {
     var currAngle = angle
     var power = localGoal.length
     var setPoint = localGoal.angle
@@ -399,7 +409,7 @@ fun SwerveDrive.odometryReset() {
     zeroEncoders()
     position = Vector2(0.0, 0.0)
     poseHistory.clear()
-    poseEstimator.reset(getRealFPGATimestamp(), Vector2L.Zeros)
+    poseEstimator.reset(Vector2L.Zeros, getRealFPGATimestamp())
     resetOdom()
 }
 
@@ -413,16 +423,17 @@ suspend fun SwerveDrive.driveAlongPath(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    turnOverride: () -> Double? = {null},
-    earlyExit: (percentComplete: Double) -> Boolean = {false}
-    ) {
+    turnOverride: () -> Double? = { null },
+    earlyExit: (percentComplete: Double) -> Boolean = { false },
+    useApriltags: Boolean = false
+) {
     println("Driving along path ${path.name}, duration: ${path.durationWithSpeed}, reflected ${path.isReflected}, turnOverride ${turnOverride() != null}")
 
     val pathPoseSupplier: (Double) -> SwerveDrive.PathPose = {
         SwerveDrive.PathPose(path.durationWithSpeed, path.getPosition(it).feet, path.getAbsoluteHeadingDegreesAt(it).degrees)
     }
 
-    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit)
+    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
 }
 
 suspend fun SwerveDrive.driveAlongChoreoPath(
@@ -430,8 +441,9 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    turnOverride: () -> Double? = {null},
-    earlyExit: (percentComplete: Double) -> Boolean = {false}
+    turnOverride: () -> Double? = { null },
+    earlyExit: (percentComplete: Double) -> Boolean = { false },
+    useApriltags: Boolean = false
 ) {
     println("inside driveAlongChoreoPath ${path?.name()}")
 
@@ -448,7 +460,7 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
             currSample.chassisSpeeds.omegaRadiansPerSecond.radians)
     }
 
-    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit)
+    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
 }
 
 suspend fun SwerveDrive.driveAlongPathGeneric(
@@ -456,8 +468,9 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
     resetOdometry: Boolean = false,
     extraTime: Double = 0.0,
     inResetGyro: Boolean? = null,
-    turnOverride: () -> Double? = {null},
-    earlyExit: (percentComplete: Double) -> Boolean = {false}
+    turnOverride: () -> Double? = { null },
+    earlyExit: (percentComplete: Double) -> Boolean = { false },
+    useApriltags: Boolean = false
 ) {
     println("inside driveAlongPathGeneric ${path(0.0)}")
 
@@ -472,9 +485,12 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         println("Position = $position")
 
         // set to the numbers required for the start of the path
-        position = path(0.0).position.asFeet
+        if (useApriltags) {
+            poseEstimator.reset(path(0.0).position)
+        } else {
+            position = path(0.0).position.asFeet
+        }
         if (isSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
-        //        AprilTag.position = path.initialPose.translation.asVector2().meters
 //        prevPosition = position
 
         println("After Reset Position = $position")
@@ -487,7 +503,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
     timer.start()
     var prevPositionError = Vector2(0.0, 0.0).meters
     var prevHeadingError = 0.0.degrees
-    suspendUntil(10) { timer.get() != 0.0}
+    suspendUntil(10) { timer.get() != 0.0 }
     println("entering drive periodic")
     periodic {
         val t = timer.get()
@@ -496,7 +512,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
 
         // position error
         val pathPosition = pathSample.position
-        val currentPosition = position.feet
+        val currentPosition = if (useApriltags) poseEstimator.latestPos else position.feet
         val positionError = pathPosition - currentPosition
 //        println("time=$t   dt=$dt    pathPosition=$pathPosition position=$currentPosition positionError=$positionError")
 
