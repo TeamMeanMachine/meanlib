@@ -29,6 +29,12 @@ val photonStDevDistCurve: SplineInterpolator = SplineInterpolator(
     )
 )
 
+val photonStdDevAreaCurve: SplineInterpolator = SplineInterpolator(
+    mutableMapOf(
+        0.0 to 0.0
+    )
+)
+
 fun AprilTagFieldLayout.removeTags(tagIDs: IntArray): AprilTagFieldLayout {
     return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
 }

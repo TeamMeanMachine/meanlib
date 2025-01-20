@@ -703,11 +703,11 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
     exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean = {seconds, error -> error.length > 0.5.feet},
-    turnOverride: () -> Double? = {null},
+    turnOverride: () -> Double? = {null}
 ) {
     println("driving to point $point")
 
-    var prevPosition = position.feet
+    var prevPosition = poseEstimator.latestPos
     var prevPositionError = Vector2L.Zeros
 
     val t = Timer()
@@ -719,7 +719,7 @@ suspend fun SwerveDrive.driveToPoint(
             stop()
         }
 
-        val currentPosition = position.feet
+        val currentPosition = poseEstimator.latestPos
 
         val positionError = currentPosition - point
 
