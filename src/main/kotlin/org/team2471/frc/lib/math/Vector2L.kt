@@ -22,6 +22,8 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
         return "(${round(x.asFeet, 7)} feet, ${round(y.asFeet, 7)} feet)"
     }
 
+    fun rotate(angle: Angle): Vector2L = rotateRadians(angle.asRadians)
+
     fun rotateRadians(radians: Double): Vector2L {
         val c = cos(radians)
         val s = sin(radians)

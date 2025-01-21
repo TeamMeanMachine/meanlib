@@ -26,6 +26,9 @@ value class AngularVelocity(val changePerSecond: Angle) {
 inline val Angle.perSecond get() = AngularVelocity(this)
 inline val Angle.perMinute get() = AngularVelocity(this / 60.0)
 
+// destructors
+inline val AngularVelocity.changePerFrame get() = changePerSecond / 50.0
+
 inline operator fun Angle.div(time: Time) = AngularVelocity(this / time.asSeconds)
 
 // destructors
