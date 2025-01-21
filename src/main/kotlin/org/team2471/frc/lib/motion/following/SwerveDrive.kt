@@ -731,7 +731,7 @@ suspend fun SwerveDrive.driveToPoint(
 
     periodic {
         if (exitSupplier(t.get(), prevPositionError)) {
-            println("exit supplier return true. time: ${t.get()} error: $prevPositionError ")
+            println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError ")
             stop()
         }
 
