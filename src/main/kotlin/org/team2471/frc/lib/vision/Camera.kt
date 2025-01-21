@@ -8,9 +8,19 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.coroutines.suspendUntil
+import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asVector2
+import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.units.Angle
+import org.team2471.frc.lib.units.asMeters
+import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.util.RobotMode
+import org.team2471.frc.lib.util.Timer
+import org.team2471.frc.lib.util.calculateAverage
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * **NOTE:**
@@ -120,5 +130,48 @@ class Camera(
      */
     fun update(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
         io.update(inputs, currentPos, currentHeading, headingRate)
+    }
+
+    suspend fun multiTagStdDevTest(): Pair<Double, Vector2L>? {
+        val positions: MutableList<Vector2L> = mutableListOf()
+
+        suspendUntil { io.latestResults.isNotEmpty() }
+
+        var averageTagArea = io.latestResults.last().avgTagArea
+        var tagAreaSamples = 1
+
+        val t = Timer().apply { start() }
+
+        periodic {
+            if (positions.size >= 100 || t.get() > 25.0) {
+                stop()
+            }
+
+            positions.addAll(latestPoses.filter { it.tagNumber > 1 }.map { it.pose.translation.asVector2().meters })
+            for (result in io.latestResults) {
+                tagAreaSamples++
+                println("Hello there ${result.avgTagArea}")
+                averageTagArea = calculateAverage(averageTagArea, result.avgTagArea, tagAreaSamples)
+            }
+        }
+
+        if (positions.isEmpty()) {
+            return null
+        } else {
+            var average = positions[0]
+            for (i in 1 until positions.size) {
+                average = Vector2L(calculateAverage(average.x.asMeters, positions[i].x.asMeters, i + 1).meters, calculateAverage(average.x.asMeters, positions[i].x.asMeters, i + 1).meters)
+            }
+
+            // idk what to call it
+            var stdDevThingey = Vector2(0.0, 0.0)
+            for (position in positions) {
+                stdDevThingey += Vector2((position.x.asMeters - average.x.asMeters).pow(2), (position.y.asMeters - average.y.asMeters).pow(2))
+            }
+
+            val stdDevM = Vector2(sqrt(stdDevThingey.x / positions.size), sqrt(stdDevThingey.y / positions.size))
+
+            return Pair(averageTagArea, stdDevM.meters)
+        }
     }
 }

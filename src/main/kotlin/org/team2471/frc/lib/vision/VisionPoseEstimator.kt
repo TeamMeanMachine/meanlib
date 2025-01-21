@@ -103,26 +103,31 @@ class VisionPoseEstimator(
         if (globalPose == GlobalPose.EmptyGlobalPose) {
             return
         }
-        val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
+        try {
+            val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
 
 //        println("huh ${odometryPose}")
-        val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
+            val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
 
-        val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
+            val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
 
-        val covarianceMatrix = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(), stdDevs)
+            val covarianceMatrix = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(), stdDevs)
 
 //        println(covarianceMatrix)
 
-        kalmanFilter.correct(
-            VecBuilder.fill(0.0, 0.0),
-            VecBuilder.fill(odometryOffset.x.asMeters, odometryOffset.y.asMeters),
-            covarianceMatrix
-        )
+            kalmanFilter.correct(
+                VecBuilder.fill(0.0, 0.0),
+                VecBuilder.fill(odometryOffset.x.asMeters, odometryOffset.y.asMeters),
+                covarianceMatrix
+            )
 //        println("aaa ${odometryOffset.y.asMeters}")
 //        println("waa ${kalmanFilter.getXhat(1)}")
 
-        //                                   current time???
-        offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] = Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
+            //                                   current time???
+            offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] =
+                Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
+        } catch (e: Exception) {
+            println("Error updating vision pose: $e")
+        }
     }
 }

@@ -31,7 +31,8 @@ data class CameraResult(
             GlobalPose(
                 this.pose,
                 stdDev,
-                this.timeStampSeconds
+                this.timeStampSeconds,
+                this.numTags
             )
         }
     }
