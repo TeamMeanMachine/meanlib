@@ -177,7 +177,7 @@ fun SwerveDrive.drive(
     softTranslation: Vector2 = Vector2(0.0, 0.0),
     softTurn: Double = 0.0
 ) {
-    var requestedTranslation = Vector2(translation.x, translation.y)
+    var requestedTranslation = translation
 
     if (fieldCentric) {
         requestedTranslation = requestedTranslation.rotateDegrees(-heading.asDegrees)

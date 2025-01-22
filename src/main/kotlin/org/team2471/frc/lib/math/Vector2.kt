@@ -11,9 +11,9 @@ import kotlin.math.pow
 
 data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
-    val angle: Angle get() = Math.atan2(x, y).radians
-    val angleAsRadians: Double get() = Math.atan2(x, y)
-    val angleAsDegrees: Double get() = Math.toDegrees(Math.atan2(x, y))
+    val angle: Angle get() = Math.atan2(y, x).radians
+    val angleAsRadians: Double get() = Math.atan2(y, x)
+    val angleAsDegrees: Double get() = Math.toDegrees(Math.atan2(y, x))
 
     override fun toString(): String {
         return "(${round(x, 7)}, ${round(y, 7)})"
