@@ -71,7 +71,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
 
-    implementation("org.ironmaple:maplesim-java:0.3.1")
+    implementation("org.ironmaple:maplesim-java:0.3.3")
     implementation("choreo:ChoreoLib-java:2025.0.1")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))

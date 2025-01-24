@@ -11,6 +11,7 @@ import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
+import org.team2471.frc.lib.util.MeanLogger
 
 
 class PhotonVisionCamera(
@@ -88,16 +89,15 @@ class PhotonVisionCamera(
 
                         stdDev.coerceIn(0.000001, 1000.0)
 
-//                        cameraResultEntry.setCameraResult(cameraResult)
-//                        CameraResult.recordOutput("$name/CameraResult", cameraResult)
+                        CameraResult.recordOutput("$name/CameraResult", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
                         posePublisher.set(estimatedPose.pose)
-//                        MeanLogger.recordOutput("$name/pose", estimatedPose.pose)
+                        MeanLogger.recordOutput("$name/pose", estimatedPose.pose)
 
                         stdDevEntry.setDouble(estimatedPose.stdDev)
-//                        MeanLogger.recordOutput("$name/stdDev", estimatedPose.stdDev)
+                        MeanLogger.recordOutput("$name/stdDev", estimatedPose.stdDev)
 
                         tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)
