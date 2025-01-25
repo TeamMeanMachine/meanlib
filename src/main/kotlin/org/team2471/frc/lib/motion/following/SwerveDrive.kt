@@ -304,9 +304,11 @@ suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.d
 data class ModuleState(val translation: Vector2, val velocity: Vector2, val acceleration: Vector2)
 
 fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarpet: Double, gyroConnected: Boolean): ModuleState {
+
     val moduleAngle = angle
-    val angleInFieldSpace = if (gyroConnected) heading - moduleAngle else (heading - prevAngle) + (moduleAngle - prevAngle)  //prevAngleInFieldSpace + deltaAngle
-    val wheelDir = Vector2(angleInFieldSpace.cos(), angleInFieldSpace.sin())
+
+    val angleInFieldSpace = if (gyroConnected) heading + moduleAngle else (heading - prevAngle) + (moduleAngle - prevAngle)  //prevAngleInFieldSpace + deltaAngle
+    val wheelDir = angleInFieldSpace.vector2
     var signedWheelDir = wheelDir
 
     val holdDistance = currDistance
@@ -360,16 +362,21 @@ fun SwerveDrive.recordOdometry() {
 
     val time = getRealFPGATimestamp()
     val dt = time - prevTime
+
+    val numberOfModules = modules.size.toDouble()
+
     for (i in modules.indices) {
         val moduleState = modules[i].recordOdometry(heading, carpetFlow, kCarpet, gyroConnected)
+
 
         val translation = moduleState.translation
         modules[i].odometer += translation.length
 
-        val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
+//        val modulePosition = modules[i].modulePosition.asFeet.mirrorYAxis().flipXAndY().rotate(heading)
+        val modulePosition = modules[i].modulePosition.asFeet.rotate(heading)
+
         val deltaAngle = ((translation + modulePosition).angle - modulePosition.angle).wrap() //calculate robot rotation using swerve translation
 
-        val numberOfModules = modules.size.toDouble()
         robotRotation += deltaAngle / numberOfModules
         robotTranslation += translation / numberOfModules
         robotVelocity += moduleState.velocity / numberOfModules

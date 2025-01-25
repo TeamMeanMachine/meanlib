@@ -1,14 +1,21 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Transform2d
+import edu.wpi.first.math.geometry.Transform3d
+import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asVector2
+import org.team2471.frc.lib.math.meters
+import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
-
-class Quest() {
+@OptIn(DelicateCoroutinesApi::class)
+class Quest(val robotToQuest: Transform2d, val outputTable: NetworkTable) {
     val table = NetworkTableInstance.getDefault().getTable("questnav")
 
     private val batteryPercentEntry = table.getDoubleTopic("batteryPercent").subscribe(0.0)
@@ -17,6 +24,8 @@ class Quest() {
     private val anglesEntry = table.getFloatArrayTopic("eulerAngles").subscribe(floatArrayOf(0.0f, 0.0f, 0.0f))
     private val positionsEntry = table.getFloatArrayTopic("position").subscribe(floatArrayOf(0.0f, 0.0f, 0.0f))
     private val isConnectedEntry = table.getEntry("isConnected")
+
+    private val posePublisher = outputTable.getStructTopic("Quest Position", Pose2d.struct).publish()
 
     var isConnected: Boolean = false
         private set(value) {
@@ -45,11 +54,9 @@ class Quest() {
             val x = positionsEntry.get()[2].meters
             val y = -positionsEntry.get()[0].meters
 
-            return (Vector2L(x, y) + field).rotate(yawOffset) - oculusOffset.rotate(yaw)
+            return (Vector2L(x, y) + field).rotate(yawOffset) - robotToQuest.translation.asVector2().meters.rotate(yaw)
         }
         set(value) { field += (value - position).rotate(-yawOffset) }
-
-    val oculusOffset = Vector2L(11.0.inches, 3.0.inches)
 
     var height: Length = 0.0.meters
         get() = positionsEntry.get()[1].meters + field
@@ -62,12 +69,23 @@ class Quest() {
     private var prevTimestamp = timestamp
 
     init {
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch { //isConnected loop
+        GlobalScope.launch { // IsConnected logic
             periodic(0.5) {
+
+
                 val ts = timestamp
                 isConnected = ts != prevTimestamp
                 prevTimestamp = ts
+
+            }
+        }
+
+        GlobalScope.launch {
+            periodic {
+                posePublisher.setAdvantagePose(
+                    position,
+                    yaw
+                )
             }
         }
     }
