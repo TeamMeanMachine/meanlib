@@ -6,6 +6,11 @@ import edu.wpi.first.util.struct.Struct
 import edu.wpi.first.util.struct.StructSerializable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d
+import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asMeters
+import org.team2471.frc.lib.math.toPose2d
+import org.team2471.frc.lib.math.toTranslation2d
+import org.team2471.frc.lib.units.Angle
 import java.util.function.BooleanSupplier
 import java.util.function.DoubleSupplier
 import java.util.function.IntSupplier
@@ -243,6 +248,18 @@ object MeanLogger {
     fun recordOutput(key: String?, value: LoggedMechanism2d) {
         synchronized(lock) {
             Logger.recordOutput(key, value)
+        }
+    }
+
+    fun recordOutput(key: String?, value: Vector2L) {
+        synchronized(lock) {
+            Logger.recordOutput(key, value.asMeters.toTranslation2d())
+        }
+    }
+
+    fun recordOutput(key: String?, value: Vector2L, angle: Angle) {
+        synchronized(lock) {
+            Logger.recordOutput(key, value.asMeters.toPose2d(angle))
         }
     }
 }

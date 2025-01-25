@@ -19,6 +19,7 @@ import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.simulatedDrive
+import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.useMapleSim
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
@@ -75,6 +76,7 @@ interface SwerveDrive {
         private var prevIsRedAlliance: Boolean? = null
         var simulatedDrive = SelfControlledSwerveDriveSimulation(
             SwerveDriveSimulation(DriveTrainSimulationConfig.Default(), Pose2d(2.0, 2.0, Rotation2d(0.0))))
+        var useMapleSim = false
     }
 
     interface Module {
@@ -158,7 +160,7 @@ fun SwerveDrive.stop() {
     for (module in modules) {
         module.stop()
     }
-    if (isSim) simulatedDrive.runSwerveStates(Array(4) { SwerveModuleState(0.0, Rotation2d(0.0)) })
+    if (isSim && useMapleSim) simulatedDrive.runSwerveStates(Array(4) { SwerveModuleState(0.0, Rotation2d(0.0)) })
 }
 
 fun SwerveDrive.zeroEncoders() {
@@ -245,7 +247,7 @@ fun SwerveDrive.drive(
         modules[i].setDrivePower(speeds[i])
     }
 
-    if (isSim) {
+    if (isSim && useMapleSim) {
         val moduleStates = Array(modules.size) { SwerveModuleState() }
         for (i in modules.indices) {
             val moduleIndex = if (i == 2) 3 else if (i == 3) 2 else i
@@ -265,7 +267,7 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal: Vector2): Angle
     var setPoint = localGoal.angle
 
 
-    if (isSim) {
+    if (isSim && useMapleSim) {
         val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
             0
         } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
@@ -320,7 +322,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
 
     if (isReal) {
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
-    } else {
+    } else if (useMapleSim) {
         val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
             0
         } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
@@ -390,7 +392,7 @@ fun SwerveDrive.recordOdometry() {
     velocity = robotVelocity
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
-        if (isSim) {
+        if (isSim && useMapleSim) {
             var sHeading = simulatedDrive.actualPoseInSimulationWorld.rotation.degrees
 
             headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
@@ -484,7 +486,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         heading = path(0.0).heading
-        if (isSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
         println("After Reset Heading = $heading")
     }
 
@@ -497,7 +499,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         } else {
             position = path(0.0).position.asFeet
         }
-        if (isSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
         println("After Reset Position = $position")
