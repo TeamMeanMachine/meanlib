@@ -14,9 +14,9 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
 
     val length: Length get() = sqrt(dot(this).asMeters).meters
 
-    val angle: Angle get() = atan2(x.asMeters, y.asMeters).radians
-    val angleAsRadians: Double get() = atan2(x.asMeters, y.asMeters)
-    val angleAsDegrees: Double get() = atan2(x.asMeters, y.asMeters).radians.asDegrees
+    val angle: Angle get() = atan2(y.asMeters, x.asMeters).radians
+    val angleAsRadians: Double get() = atan2(y.asMeters, x.asMeters)
+    val angleAsDegrees: Double get() = atan2(y.asMeters, x.asMeters).radians.asDegrees
 
     override fun toString(): String {
         return "(${round(x.asFeet, 7)} feet, ${round(y.asFeet, 7)} feet)"

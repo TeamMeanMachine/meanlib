@@ -3,11 +3,15 @@ package org.team2471.frc.lib.units
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.units.Units
 import edu.wpi.first.util.struct.StructSerializable
+import org.team2471.frc.lib.math.Vector2
 import kotlin.math.IEEErem
 import kotlin.math.absoluteValue
 
 @JvmInline
 value class Angle(val asDegrees: Double): StructSerializable {
+
+    val vector2: Vector2 get() = Vector2(this.cos(), this.sin())
+
     operator fun plus(other: Angle) = Angle(asDegrees + other.asDegrees)
 
     operator fun minus(other: Angle) = Angle(asDegrees - other.asDegrees)

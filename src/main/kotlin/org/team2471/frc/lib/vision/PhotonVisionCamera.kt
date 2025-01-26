@@ -82,7 +82,7 @@ class PhotonVisionCamera(
                 for (cameraResult in inputs.cameraResults) {
                     if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
                         // TODO: Change this to reflect average tag area. needs testing on field
-                        var stdDev = 0.1
+                        var stdDev = 0.01
 
 
                         if (cameraResult.numTags < 2) stdDev *= 3.0
