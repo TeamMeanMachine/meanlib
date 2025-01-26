@@ -88,6 +88,9 @@ class Quest() {
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
+        zeroHeading()
+        zeroPosition() //zero quest on startup in both rotation and position
+
         GlobalScope.launch { //isConnected loop
             periodic(0.5) {
                 val ts = timestamp
