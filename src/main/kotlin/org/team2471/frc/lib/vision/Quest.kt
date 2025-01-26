@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -17,12 +18,18 @@ class Quest() {
     private val anglesEntry = table.getFloatArrayTopic("eulerAngles").subscribe(floatArrayOf(0.0f, 0.0f, 0.0f))
     private val positionsEntry = table.getFloatArrayTopic("position").subscribe(floatArrayOf(0.0f, 0.0f, 0.0f))
     private val isConnectedEntry = table.getEntry("isConnected")
+    private val questQuaternion = table.getFloatArrayTopic("quaternion").subscribe(floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f));
+
+    private val questMiso = table.getIntegerTopic("miso").subscribe(0)
+    private val questMosi = table.getIntegerTopic("mosi").publish()
+
 
     var isConnected: Boolean = false
         private set(value) {
             field = value
             isConnectedEntry.setBoolean(value)
         }
+
 
 
     var pitch: Angle = 0.0.degrees
@@ -60,6 +67,24 @@ class Quest() {
     val frameCount: Int get() = frameCountEntry.get().toInt()
     val timestamp: Double get() = timestampEntry.get()
     private var prevTimestamp = timestamp
+
+    fun zeroHeading() { //Zero the heading of the Quest in the yaw direction
+        val eulerAngles: FloatArray = anglesEntry.get()
+        yawOffset = eulerAngles[1].degrees
+    }
+
+    fun zeroPosition(){
+        position = Vector2L.Zeros //reset position
+        if (questMiso.get().toInt() != 99){
+            questMosi.set(1)
+        }
+    }
+
+    fun cleanQuestNav(){ //after processing, subroutine messages must be cleared
+        if (questMiso.get().toInt() == 99) {
+            questMosi.set(0)
+        }
+    }
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
