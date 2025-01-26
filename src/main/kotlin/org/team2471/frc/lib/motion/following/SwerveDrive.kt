@@ -80,6 +80,7 @@ interface SwerveDrive {
     }
 
     interface Module {
+        val index: Int
 
         val gearRatio: Double
 
@@ -250,8 +251,7 @@ fun SwerveDrive.drive(
     if (isSim && useMapleSim) {
         val moduleStates = Array(modules.size) { SwerveModuleState() }
         for (i in modules.indices) {
-            val moduleIndex = if (i == 2) 3 else if (i == 3) 2 else i
-            moduleStates[moduleIndex] = SwerveModuleState(speeds[i] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), -modules[i].angleSetpoint.wrap().asRotation2d)
+            moduleStates[i] = SwerveModuleState(speeds[i] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), modules[i].angleSetpoint.wrap().asRotation2d)
         }
         simulatedDrive.runSwerveStates(moduleStates)
     }
@@ -268,16 +268,7 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal: Vector2): Angle
 
 
     if (isSim && useMapleSim) {
-        val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
-            0
-        } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
-            1
-        } else if (modulePosition.x > 0.0.feet && modulePosition.y < 0.0.feet) {
-            3
-        } else {
-            2
-        }
-        currAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle.wrap()
+        currAngle = simulatedDrive.measuredStates[index].angle.asAngle.wrap()
     }
 
     val angleError = (setPoint - currAngle).wrap()
@@ -323,21 +314,11 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (isReal) {
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else if (useMapleSim) {
-        val moduleIndex = if (modulePosition.x < 0.0.feet && modulePosition.y > 0.0.feet) {
-            0
-        } else if (modulePosition.x > 0.0.feet && modulePosition.y > 0.0.feet) {
-            1
-        } else if (modulePosition.x > 0.0.feet && modulePosition.y < 0.0.feet) {
-            3
-        } else {
-            2
-        }
-
-        val simAngle = -simulatedDrive.measuredStates[moduleIndex].angle.asAngle.wrap()
+        val simAngle = simulatedDrive.measuredStates[index].angle.asAngle.wrap()
         val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
-        val simSpeed = simulatedDrive.measuredStates[moduleIndex].speedMetersPerSecond.meters.asFeet
+        val simSpeed = simulatedDrive.measuredStates[index].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
-        val simDistance = simulatedDrive.latestModulePositions[moduleIndex].distanceMeters.meters.asFeet
+        val simDistance = simulatedDrive.latestModulePositions[index].distanceMeters.meters.asFeet
         val simDeltaDistance = simDistance - prevDistance
 
 
@@ -757,7 +738,7 @@ suspend fun SwerveDrive.driveToPoint(
         val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
 
         drive(
-            Vector2(translation.y.asFeet, -translation.x.asFeet),
+            Vector2(-translation.x.asFeet, -translation.y.asFeet),
             turnOverride() ?: 0.0,
         )
 
