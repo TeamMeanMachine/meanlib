@@ -469,7 +469,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         heading = path(0.0).heading
-        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(-path(0.0).heading + 180.0.degrees))
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
         println("After Reset Heading = $heading")
     }
 
@@ -481,7 +481,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
             poseEstimator.reset(path(0.0).position)
         }
         position = path(0.0).position.asFeet
-        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(-path(0.0).heading + 180.0.degrees))
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
         println("After Reset Position = $position")
