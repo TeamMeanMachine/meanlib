@@ -715,6 +715,7 @@ suspend fun SwerveDrive.driveToPoint(
     turnOverride: () -> Double? = {null}
 ) {
     println("driving to point $point")
+    MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(0.0))
 
     var prevPosition = poseEstimator.latestPos
     var prevPositionError = Vector2L.Zeros
@@ -725,6 +726,7 @@ suspend fun SwerveDrive.driveToPoint(
     periodic {
         if (exitSupplier(t.get(), prevPositionError)) {
             println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError ")
+            MeanLogger.recordOutput("driveToPoint Point", Pose2d())
             stop()
         }
 
