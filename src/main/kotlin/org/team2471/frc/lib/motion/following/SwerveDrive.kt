@@ -251,7 +251,9 @@ fun SwerveDrive.drive(
     if (isSim && useMapleSim) {
         val moduleStates = Array(modules.size) { SwerveModuleState() }
         for (i in modules.indices) {
-            moduleStates[i] = SwerveModuleState(speeds[i] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond), modules[i].angleSetpoint.wrap().asRotation2d)
+            moduleStates[i] = SwerveModuleState(
+                speeds[i] * simulatedDrive.maxLinearVelocity().`in`(MetersPerSecond),
+                modules[i].angleSetpoint.wrap().asRotation2d)
         }
         simulatedDrive.runSwerveStates(moduleStates)
     }
@@ -314,7 +316,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
     if (isReal) {
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else if (useMapleSim) {
-        val simAngle = simulatedDrive.measuredStates[index].angle.asAngle.wrap()
+        val simAngle = -simulatedDrive.measuredStates[index].angle.asAngle.wrap()
         val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
         val simSpeed = simulatedDrive.measuredStates[index].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
@@ -670,8 +672,8 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
            // val t = timer.get()
 //            val dt = t - prevTime
 
-            val x = controller.leftThumbstickX
-            val y = controller.leftThumbstickY
+            val x = -controller.leftThumbstickY
+            val y = -controller.leftThumbstickX
             val turn = 75.0*controller.rightThumbstickX
 
             // position error
@@ -696,8 +698,9 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
 
             val turnControl = headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
 
-            println("Error ${headingError.asDegrees}, setpoint ${pathHeading}, current pos $robotHeading")
-            drive(translationControlField, turnControl, true)
+//            println("Error ${headingError.asDegrees}, setpoint ${pathHeading}, current pos $robotHeading")
+            println("Path Position $pathPosition positionError $positionError")
+            drive(translationControlField, -turnControl, true)
 
            // prevTime = t
         }
@@ -740,14 +743,15 @@ suspend fun SwerveDrive.driveToPoint(
         drive(
             Vector2(-translation.x.asFeet, -translation.y.asFeet),
             turnOverride() ?: 0.0,
+            fieldCentric = true
         )
 
     }
 }
 
 suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, exitSupplier: (Double, Vector2L) -> Boolean, turnOverride: () -> Double? = {null},) {
-    MeanLogger.recordOutput("Goal Pos", position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
-    this.driveToPoint(position.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, exitSupplier, turnOverride)
+    MeanLogger.recordOutput("Goal Pos", poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
+    this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, exitSupplier, turnOverride)
     MeanLogger.recordOutput("Goal Pos", Pose2d())
 }
 
