@@ -29,7 +29,6 @@ import kotlin.math.*
 private val poseHistory = InterpolatingTreeMap<InterpolatingDouble, SwerveDrive.Pose>(75)
 private var prevPosition = Vector2(0.0, 0.0)
 private var prevPose = SwerveDrive.Pose(Vector2(0.0, 0.0), 0.0.degrees)
-private var prevHeading = 0.0
 private var prevPathPosition = Vector2(0.0, 0.0).feet
 private var prevTime = -0.02
 private var prevPathHeading = 0.0.radians
@@ -376,11 +375,10 @@ fun SwerveDrive.recordOdometry() {
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
         if (isSim && useMapleSim) {
-            var sHeading = simulatedDrive.actualPoseInSimulationWorld.rotation.degrees
+            var mHeadingRate = simulatedDrive.actualSpeedsFieldRelative.omegaRadiansPerSecond.radians
 
-            headingRate = ((sHeading - prevHeading) / dt).degrees.perSecond
+            headingRate = mHeadingRate.perSecond
             heading += (headingRate.changePerSecond * dt)
-            prevHeading = sHeading
         } else {
 //        println("robotRotation $robotRotation")
             heading += robotRotation
