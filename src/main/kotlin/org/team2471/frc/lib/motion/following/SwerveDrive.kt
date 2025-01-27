@@ -469,7 +469,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         heading = path(0.0).heading
-        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(-path(0.0).heading + 180.0.degrees))
         println("After Reset Heading = $heading")
     }
 
@@ -479,10 +479,9 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         // set to the numbers required for the start of the path
         if (useApriltags) {
             poseEstimator.reset(path(0.0).position)
-        } else {
-            position = path(0.0).position.asFeet
         }
-        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        position = path(0.0).position.asFeet
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(-path(0.0).heading + 180.0.degrees))
 //        prevPosition = position
 
         println("After Reset Position = $position")
@@ -525,6 +524,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         // heading error
         val robotHeading = heading
         val pathHeading = pathSample.heading
+        MeanLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
@@ -546,7 +546,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         }
 
         // send it
-        drive(translationControlField, turnOverride() ?: turnControl, true)
+        drive(Vector2(translationControlField.y, -translationControlField.x), turnOverride() ?: turnControl, true)
 
         // are we done yet?
         if (t >= path(t).totalTime + extraTime) {
@@ -563,6 +563,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
     println("at the end of driveAlongChoreoPath")
+    MeanLogger.recordOutput("pathPose", Pose2d())
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
