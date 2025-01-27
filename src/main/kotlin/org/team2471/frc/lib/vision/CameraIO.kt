@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.vision
 
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.math.Vector2L
@@ -26,7 +28,7 @@ interface CameraIO {
     var latestGlobalPoses: MutableList<GlobalPose>
 
     fun updateInputs(inputs: CameraIOInputs) {}
-    fun update(inputs: CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {}
+    fun update(inputs: CameraIOInputs, currentPose: Pose2d, headingRatePerSecond: Rotation2d) {}
     fun reset(inputs: CameraIOInputs) {}
 }
 

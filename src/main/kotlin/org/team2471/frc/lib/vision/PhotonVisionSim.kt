@@ -16,6 +16,7 @@ import org.team2471.frc.lib.motion_profiling.MotionCurve
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
+import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 
 
 /**
@@ -67,16 +68,16 @@ import org.team2471.frc.lib.util.robotMode
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
         get() = camera.latestGlobalPoses
 
-    override fun reset(inputs: CameraIO.CameraIOInputs) {
+    override fun reset(inputs: CameraIOInputs) {
         camera.reset(inputs)
     }
 
-    override fun update(inputs: CameraIO.CameraIOInputs, currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
-        visionSystemSim.update(currentPos.asMeters.toPose2d(currentHeading))
-        camera.update(inputs, currentPos, currentHeading, headingRate)
+    override fun update(inputs: CameraIOInputs, currentPose: Pose2d, headingRatePerSecond: Rotation2d) {
+        visionSystemSim.update(currentPose)
+        camera.update(inputs, currentPose, headingRatePerSecond)
     }
 
-    override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
+    override fun updateInputs(inputs: CameraIOInputs) {
         camera.updateInputs(inputs)
     }
 }

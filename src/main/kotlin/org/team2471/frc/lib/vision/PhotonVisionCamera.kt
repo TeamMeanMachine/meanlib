@@ -2,7 +2,9 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Transform3d
+import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
@@ -11,7 +13,7 @@ import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
-import org.team2471.frc.lib.util.MeanLogger
+import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 
 
 class PhotonVisionCamera(
@@ -65,12 +67,9 @@ class PhotonVisionCamera(
     }
 
     override fun update(
-        inputs: CameraIO.CameraIOInputs,
-        currentPos: Vector2L,
-        currentHeading: Angle,
-        headingRate: Angle
+        inputs: CameraIOInputs, currentPose: Pose2d, headingRatePerSecond: Rotation2d
     ) {
-        referencePose = currentPos.asMeters.toPose2d(currentHeading.asRadians)
+        referencePose = currentPose
         updateInputs(inputs)
 
         if (inputs.isConnected) {
@@ -89,15 +88,13 @@ class PhotonVisionCamera(
 
                         stdDev.coerceIn(0.000001, 1000.0)
 
-                        CameraResult.recordOutput("$name/CameraResult", cameraResult)
+                        CameraResult.recordOutput("$name/Camera Result", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
                         posePublisher.set(estimatedPose.pose)
-                        MeanLogger.recordOutput("$name/pose", estimatedPose.pose)
 
                         stdDevEntry.setDouble(estimatedPose.stdDev)
-                        MeanLogger.recordOutput("$name/stdDev", estimatedPose.stdDev)
 
                         tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)
@@ -110,8 +107,9 @@ class PhotonVisionCamera(
             latestGlobalPoses = tempGlobalPoses
 
             if (latestGlobalPoses.isNotEmpty()) {
-                posePublisher.setGlobalPose(latestGlobalPoses.last())
-                stdDevEntry.setDouble(latestGlobalPoses.last().stdDev)
+                val latestGlobalPose = latestGlobalPoses.last()
+                posePublisher.setGlobalPose(latestGlobalPose)
+                stdDevEntry.setDouble(latestGlobalPose.stdDev)
             } else {
                 posePublisher.setEmptyPose()
                 stdDevEntry.setDouble(0.0)
@@ -126,8 +124,8 @@ class PhotonVisionCamera(
             inputs.isConnected = photonCam.isConnected
             if (inputs.isConnected) {
                 poseEstimator.setReferencePose(referencePose)
-                val unreadResults = photonCam.allUnreadResults.map { poseEstimator.update(it).get().toCameraResult() }
-                inputs.cameraResults = unreadResults as ArrayList<CameraResult>
+                val unreadResults = photonCam.allUnreadResults.map { poseEstimator.update(it).get() }
+                inputs.cameraResults = unreadResults.map {it.toCameraResult()} as ArrayList<CameraResult>
             }
         } catch (_: Exception) {
         }

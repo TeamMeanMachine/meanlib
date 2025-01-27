@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout
-import edu.wpi.first.math.geometry.Transform3d
+import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTable
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -9,13 +9,12 @@ import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
-import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.asVector2
-import org.team2471.frc.lib.math.meters
+import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asMeters
+import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.meters
+import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.Timer
 import org.team2471.frc.lib.util.calculateAverage
@@ -57,6 +56,9 @@ class Camera(
      */
     val latestPoses: List<GlobalPose>
         get() = io.latestGlobalPoses
+
+    val hasResults: Boolean
+        get() = io.latestResults.isNotEmpty()
 
     val isConnected: Boolean
         get() = inputs.isConnected
@@ -126,10 +128,23 @@ class Camera(
      *
      * Updates the IO layer, which grabs data from the coprocessor, processes it, calculates standard deviations, and updates the latestPoses.
      *
+     * This version exists only to be compatible with MeanLib units.
+     *
      * @see latestPoses
      */
     fun update(currentPos: Vector2L, currentHeading: Angle, headingRate: Angle) {
-        io.update(inputs, currentPos, currentHeading, headingRate)
+        update(currentPos.asMeters.toPose2d(currentHeading), headingRate.asRotation2d)
+    }
+
+    /**
+     * **THIS IS ESSENTIAL FOR THE CAMERA TO WORK!**
+     *
+     * Updates the IO layer, which grabs data from the coprocessor, processes it, calculates standard deviations, and updates the latestPoses.
+     *
+     * @see latestPoses
+     */
+    fun update(currentPose: Pose2d, headingRatePerSecond: Rotation2d) {
+        io.update(inputs, currentPose, headingRatePerSecond)
     }
 
     suspend fun multiTagStdDevTest(): Pair<Double, Vector2L>? {

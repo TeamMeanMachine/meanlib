@@ -6,10 +6,9 @@ import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.*
-import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 
 // Note: the MT result array contains X,Y,Z, Roll,Pitch,Yaw, total latency (cl + tl), tag count, tag span, avg distance of tag from camera, average tag area (% of image)
 
@@ -48,16 +47,11 @@ class LimelightCamera(
     override fun reset(inputs: CameraIO.CameraIOInputs) {}
 
 
-    override fun update(
-        inputs: CameraIO.CameraIOInputs,
-        currentPos: Vector2L,
-        currentHeading: Angle,
-        headingRate: Angle
-    ) {
+    override fun update(inputs: CameraIOInputs, currentPose: Pose2d, headingRatePerSecond: Rotation2d) {
         LimelightHelpers.SetRobotOrientation(
             name,
-            currentHeading.asDegrees - 180.0,
-            headingRate.asDegrees,
+            currentPose.rotation.degrees,
+            headingRatePerSecond.degrees,
             0.0,
             0.0,
             0.0,
@@ -66,7 +60,7 @@ class LimelightCamera(
 
         updateInputs(inputs)
 
-        if (headingRate.asDegrees <= 45.0 && inputs.isConnected) {
+        if (headingRatePerSecond.degrees <= 45.0 && inputs.isConnected) {
 
             val latestResult = inputs.cameraResults.last()
 
@@ -104,6 +98,7 @@ class LimelightCamera(
 
     override fun updateInputs(inputs: CameraIO.CameraIOInputs) {
         inputs.isConnected = true
-        inputs.cameraResults = arrayListOf(CameraResult.fromLLTable(inputTable))
+        val poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)
+        inputs.cameraResults = arrayListOf(poseEstimate.toCameraResult())
     }
 }

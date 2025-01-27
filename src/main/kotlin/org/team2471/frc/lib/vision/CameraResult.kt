@@ -1,15 +1,12 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.networktables.NetworkTable
 import org.photonvision.EstimatedRobotPose
-import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.MeanLogger
-import org.team2471.frc.lib.util.getRealFPGATimestamp
 import org.team2471.frc.lib.util.length
+import org.team2471.frc.lib.vision.CameraResult.Companion.EmptyCameraResult
 
 @JvmRecord
 data class CameraResult(
@@ -17,7 +14,7 @@ data class CameraResult(
     // Seconds
     val timeStampSeconds: Double,
     val numTags: Int,
-    // In % of image (check if 0-100 or 0-1)
+    // In % of image
     val avgTagArea: Double,
     val cameraType: CameraType,
     val isEmpty: Boolean = false
@@ -37,20 +34,28 @@ data class CameraResult(
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as CameraResult
+
+        if (timeStampSeconds != other.timeStampSeconds) return false
+        if (avgTagArea != other.avgTagArea) return false
+        if (isEmpty != other.isEmpty) return false
+        if (pose != other.pose) return false
+        if (numTags != other.numTags) return false
+        if (cameraType != other.cameraType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
     companion object {
         val EmptyCameraResult = CameraResult(Pose2d(), 0.0, 0, 0.0, CameraType.LIMELIGHT, true)
-
-        fun fromLLTable(llTable: NetworkTable): CameraResult {
-            val llArray = llTable.getEntry("botpose_orb_wpiblue").getDoubleArray(DoubleArray(11))
-            val pos = Vector2L(llArray[0].meters, llArray[1].meters)
-            return if (pos == Vector2L.Zeros) EmptyCameraResult else CameraResult(
-                pose = Pose2d(Translation2d(llArray[0], llArray[1]), Rotation2d.fromRadians(llArray[5])),
-                timeStampSeconds = getRealFPGATimestamp() - (llArray[6] / 1000),
-                numTags = llArray[7].toInt(),
-                avgTagArea = llArray[10],
-                cameraType = CameraType.LIMELIGHT
-            )
-        }
 
         fun recordOutput(key: String, value: CameraResult) {
             MeanLogger.recordOutput("$key/Pose", value.pose)
@@ -63,7 +68,7 @@ data class CameraResult(
 
 fun EstimatedRobotPose.toCameraResult(): CameraResult {
     val targets = this.targetsUsed
-    val targetSize = targets.size
+    val numTargets = targets.size
 
     var avgDist = 0.0.inches
     var avgArea = 0.0
@@ -73,16 +78,27 @@ fun EstimatedRobotPose.toCameraResult(): CameraResult {
         avgArea += target.area
     }
 
-    avgDist /= targetSize.toDouble()
-    avgArea /= targetSize.toDouble()
+    avgDist /= numTargets.toDouble()
+    avgArea /= numTargets.toDouble()
     this.targetsUsed.first().toTarget2D()
 
 
     return CameraResult(
         this.estimatedPose.toPose2d(),
         this.timestampSeconds,
-        targetSize,
+        numTargets,
         avgArea,
         CameraType.PHOTONVISION
+    )
+}
+
+fun LimelightHelpers.PoseEstimate.toCameraResult(): CameraResult {
+    return CameraResult(
+        this.pose,
+        this.timestampSeconds,
+        this.tagCount,
+        this.avgTagArea,
+        CameraType.LIMELIGHT,
+        false
     )
 }

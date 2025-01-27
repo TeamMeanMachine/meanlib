@@ -13,7 +13,8 @@ import kotlin.math.sqrt
 data class CameraIntrinsics(val type: CameraType, val processor: Processor, val resWidth: Double, val resHeight: Double, val horizontalFOV: Angle) {
     val diagonalFOV = horizontalFOV * sqrt(resWidth.pow(2) + resHeight.pow(2)) / resWidth
 
-    val simCameraProperties: SimCameraProperties = SimCameraProperties().apply {
+    val simCameraProperties: SimCameraProperties
+        get() = SimCameraProperties().apply {
         setCalibration(resWidth, resHeight, diagonalFOV.asRotation2d)
         setCalibError(0.0001, 0.001) // Values from docs. Should change
         fps = processor.avgFPS
