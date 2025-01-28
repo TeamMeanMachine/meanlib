@@ -1,15 +1,20 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Transform3d
+import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.networktables.StructPublisher
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
 
-class Quest() {
+@OptIn(DelicateCoroutinesApi::class)
+class Quest(robotToQuest: Transform3d, outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")) {
     val table = NetworkTableInstance.getDefault().getTable("questnav")
 
     private val batteryPercentEntry = table.getDoubleTopic("batteryPercent").subscribe(0.0)
@@ -22,6 +27,8 @@ class Quest() {
 
     private val questMiso = table.getIntegerTopic("miso").subscribe(0)
     private val questMosi = table.getIntegerTopic("mosi").publish()
+
+    private val positionPublisher: StructPublisher<Pose2d> = outTable.getStructTopic("Quest Pose", Pose2d.struct).publish()
 
 
     var isConnected: Boolean = false
@@ -87,7 +94,6 @@ class Quest() {
     }
 
     init {
-        @OptIn(DelicateCoroutinesApi::class)
         zeroHeading()
         zeroPosition() //zero quest on startup in both rotation and position
 
@@ -96,6 +102,12 @@ class Quest() {
                 val ts = timestamp
                 isConnected = ts != prevTimestamp
                 prevTimestamp = ts
+            }
+        }
+
+        GlobalScope.launch {
+            periodic {
+                positionPublisher.setAdvantagePose(position, yaw)
             }
         }
     }
