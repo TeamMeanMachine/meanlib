@@ -316,7 +316,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else if (useMapleSim) {
         val simAngle = -simulatedDrive.measuredStates[index].angle.asAngle.wrap()
-        val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
+        val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle) // heading + simAngle
         val simSpeed = simulatedDrive.measuredStates[index].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
         val simDistance = simulatedDrive.latestModulePositions[index].distanceMeters.meters.asFeet
