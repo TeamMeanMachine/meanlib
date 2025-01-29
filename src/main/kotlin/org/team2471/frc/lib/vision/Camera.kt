@@ -10,10 +10,7 @@ import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.*
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.asMeters
-import org.team2471.frc.lib.units.asRotation2d
-import org.team2471.frc.lib.units.meters
+import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.Timer
@@ -147,41 +144,54 @@ class Camera(
         io.update(inputs, currentPose, headingRatePerSecond)
     }
 
-    suspend fun multiTagStdDevTest(): Pair<Double, Vector2L>? {
+    suspend fun stdDevTest(): Pair<Double, Vector2L>? {
         val positions: MutableList<Vector2L> = mutableListOf()
 
         suspendUntil { io.latestResults.isNotEmpty() }
+        val latestResult = io.latestResults.last()
 
-        var averageTagArea = io.latestResults.last().avgTagArea
+        val tagNum = latestResult.numTags
+        println("Tag number: $tagNum")
+
+        var averageTagArea = latestResult.avgTagArea
         var tagAreaSamples = 1
 
+        var averagePos = latestResult.pose.translation.asVector2().meters
+        var averagePosSamples = 1
+
+        positions.add(latestResult.pose.translation.asVector2().meters)
+
         val t = Timer().apply { start() }
+
 
         periodic {
             if (positions.size >= 100 || t.get() > 25.0) {
                 stop()
             }
 
-            positions.addAll(latestPoses.filter { it.tagNumber > 1 }.map { it.pose.translation.asVector2().meters })
             for (result in io.latestResults) {
-                tagAreaSamples++
-                println("Hello there ${result.avgTagArea}")
-                averageTagArea = calculateAverage(averageTagArea, result.avgTagArea, tagAreaSamples)
+                if (result.numTags == tagNum) {
+                    tagAreaSamples ++
+                    averagePosSamples ++
+                    averageTagArea = calculateAverage(averageTagArea, result.avgTagArea, tagAreaSamples)
+                    averagePos = Vector2L(
+                        calculateAverage(averagePos.x.asMeters, result.pose.x, averagePosSamples).meters,
+                        calculateAverage(averagePos.y.asMeters, result.pose.y, averagePosSamples).meters
+                    )
+                    println("${result.pose.translation}")
+                }
             }
+            MeanLogger.recordOutput("AveragePose", averagePos, 0.0.degrees)
         }
 
         if (positions.isEmpty()) {
             return null
         } else {
-            var average = positions[0]
-            for (i in 1 until positions.size) {
-                average = Vector2L(calculateAverage(average.x.asMeters, positions[i].x.asMeters, i + 1).meters, calculateAverage(average.x.asMeters, positions[i].x.asMeters, i + 1).meters)
-            }
 
-            // idk what to call it
+            // IDK what to call it
             var stdDevThingey = Vector2(0.0, 0.0)
             for (position in positions) {
-                stdDevThingey += Vector2((position.x.asMeters - average.x.asMeters).pow(2), (position.y.asMeters - average.y.asMeters).pow(2))
+                stdDevThingey += Vector2((position.x.asMeters - averagePos.x.asMeters).pow(2), (position.y.asMeters - averagePos.y.asMeters).pow(2))
             }
 
             val stdDevM = Vector2(sqrt(stdDevThingey.x / positions.size), sqrt(stdDevThingey.y / positions.size))

@@ -92,10 +92,6 @@ class PhotonVisionCamera(
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
-                        posePublisher.set(estimatedPose.pose)
-
-                        stdDevEntry.setDouble(estimatedPose.stdDev)
-
                         tempResults.add(cameraResult)
                         tempGlobalPoses.add(estimatedPose)
                     }
