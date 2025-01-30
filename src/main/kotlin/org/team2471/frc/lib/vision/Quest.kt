@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Transform2d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
@@ -10,11 +11,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asVector2
+import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
 
 @OptIn(DelicateCoroutinesApi::class)
-class Quest(robotToQuest: Transform3d, outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")) {
+class Quest(val robotToQuest: Transform2d, val outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")) {
     val table = NetworkTableInstance.getDefault().getTable("questnav")
 
     private val batteryPercentEntry = table.getDoubleTopic("batteryPercent").subscribe(0.0)
@@ -59,11 +62,10 @@ class Quest(robotToQuest: Transform3d, outTable: NetworkTable = NetworkTableInst
             val x = positionsEntry.get()[2].meters
             val y = -positionsEntry.get()[0].meters
 
-            return (Vector2L(x, y) + field).rotate(yawOffset) - oculusOffset.rotate(yaw)
+            return (Vector2L(x, y) + field).rotate(yawOffset) - robotToQuest.translation.rotateBy(yaw.asRotation2d).asVector2().meters
         }
         set(value) { field += (value - position).rotate(-yawOffset) }
 
-    val oculusOffset = Vector2L(11.0.inches, 3.0.inches)
 
     var height: Length = 0.0.meters
         get() = positionsEntry.get()[1].meters + field

@@ -11,21 +11,18 @@ val fieldXRangeM = DoubleRange(0.0, 16.54)
 val fieldYRangeM = DoubleRange(0.0, 8.21)
 
 /**
- * A curve representing the standard deviation of PhotonVision pose results as a function of distance (in meters).
+ * A curve representing the standard deviation of PhotonVision pose results as a function of average tag area (in percent).
  * @author Thatcher Moore
  */
-val photonStDevDistCurve: SplineInterpolator = SplineInterpolator(
+val photonStDevAreaCurve: SplineInterpolator = SplineInterpolator(
     // dist in meters
     mutableMapOf(
-        1.5 to 0.00075,
-        1.9 to 0.00125,
-        2.5 to 0.003,
-        3.0 to 0.0065,
-        3.5 to 0.0023,
-        4.0 to 0.014,
-        4.5 to 0.025, // artificially changed to trust distant tags left. Original: 0.0165
-        5.0 to 0.03, // Original: 0.02
-        6.0 to 0.04 // Original: 0.03
+        1.69212 to 0.0000648,
+        0.89687 to 0.0000722,
+        0.59865 to 0.0002967,
+        0.15958 to 4.8117529,
+        0.11406 to 0.0007479,
+        0.11092 to 0.0026701
     )
 )
 

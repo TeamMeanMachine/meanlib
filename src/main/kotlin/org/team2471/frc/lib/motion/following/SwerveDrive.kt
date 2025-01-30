@@ -316,7 +316,7 @@ fun SwerveDrive.Module.recordOdometry(heading: Angle, carpetFlow: Vector2, kCarp
         deltaDistance *= (1.0 + signedWheelDir.dot(carpetFlow) * kCarpet) * treadWear //direction based kCarpet
     } else if (useMapleSim) {
         val simAngle = -simulatedDrive.measuredStates[index].angle.asAngle.wrap()
-        val simAngleFieldSpace = (heading - prevAngle) + (simAngle - prevAngle)
+        val simAngleFieldSpace = heading + moduleAngle // heading + simAngle
         val simSpeed = simulatedDrive.measuredStates[index].speedMetersPerSecond.meters.asFeet
         val simAccel = simSpeed - prevSpeed
         val simDistance = simulatedDrive.latestModulePositions[index].distanceMeters.meters.asFeet
@@ -475,11 +475,20 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         println("Position = $position")
 
         // set to the numbers required for the start of the path
+
+        if (isSim && useMapleSim) {
+            simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+        }
+        position = path(0.0).position.asFeet
         if (useApriltags) {
             poseEstimator.reset(path(0.0).position, odometryReset = false)
         }
+<<<<<<< HEAD
 //        position = path(0.0).position.asFeet
         if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+=======
+>>>>>>> origin/frc2025
 //        prevPosition = position
 
         println("After Reset Position = $position")
