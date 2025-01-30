@@ -7,6 +7,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
+import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.*
@@ -70,7 +71,8 @@ class Camera(
                     outputTable,
                     name,
                     robotToCamera,
-                    aprilTagFieldLayout
+                    aprilTagFieldLayout,
+                    singleTagStrategy = PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY
                 )
 
                 CameraType.LIMELIGHT -> LimelightCamera(
@@ -147,7 +149,7 @@ class Camera(
     suspend fun stdDevTest(): Pair<Double, Vector2L>? {
         val positions: MutableList<Vector2L> = mutableListOf()
 
-        suspendUntil { io.latestResults.isNotEmpty() }
+        suspendUntil(30) { io.latestResults.isNotEmpty() }
         val latestResult = io.latestResults.last()
 
         val tagNum = latestResult.numTags
@@ -178,7 +180,7 @@ class Camera(
                         calculateAverage(averagePos.x.asMeters, result.pose.x, averagePosSamples).meters,
                         calculateAverage(averagePos.y.asMeters, result.pose.y, averagePosSamples).meters
                     )
-                    println("${result.pose.translation}")
+//                    println("${result.pose.translation}")
                 }
             }
             MeanLogger.recordOutput("AveragePose", averagePos, 0.0.degrees)

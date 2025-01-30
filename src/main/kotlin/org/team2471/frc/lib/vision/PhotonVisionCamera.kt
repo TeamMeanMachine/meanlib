@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
+import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.math.*
@@ -36,9 +37,11 @@ class PhotonVisionCamera(
 
     private var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
         aprilTagFieldLayout,
-        singleTagStrategy,
+        multiTagStrategy,
         robotToCamera
-    )
+    ).apply {
+        setMultiTagFallbackStrategy(singleTagStrategy)
+    }
 
     override var latestResults: MutableList<CameraResult> = mutableListOf()
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
