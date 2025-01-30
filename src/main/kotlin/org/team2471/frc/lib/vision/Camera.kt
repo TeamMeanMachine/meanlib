@@ -63,7 +63,6 @@ class Camera(
     // Instantiates the IO layer, which depends on whether the camera is PhotonVision or Limelight or if the robot is simulated or not.
     private val io: CameraIO = when (robotMode) {
         RobotMode.REAL, RobotMode.REPLAY -> {
-            println("not sim adslkjfjhalksdjfhalksjdghlkjadfshg;lksajdf;lasdjkf;")
             when (cameraIntrinsics.type) {
                 CameraType.PHOTONVISION -> PhotonVisionCamera(
                     inputTable,
@@ -83,7 +82,6 @@ class Camera(
         }
 
         RobotMode.SIM -> {
-            println("Is sim adslkjfjhalksdjfhalksjdghlkjadfshg;lksajdf;lasdjkf;")
             when (cameraIntrinsics.type) {
                 CameraType.PHOTONVISION -> PhotonVisionSim(
                     inputTable,
