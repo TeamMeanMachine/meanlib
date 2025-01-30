@@ -482,13 +482,10 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         }
         position = path(0.0).position.asFeet
         if (useApriltags) {
-            poseEstimator.reset(path(0.0).position, odometryReset = false)
+            poseEstimator.reset(path(0.0).position, odometryReset = true)
         }
-<<<<<<< HEAD
-//        position = path(0.0).position.asFeet
+        position = path(0.0).position.asFeet
         if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
-=======
->>>>>>> origin/frc2025
 //        prevPosition = position
 
         println("After Reset Position = $position")
