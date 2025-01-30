@@ -16,6 +16,7 @@ import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
+import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.MovingAverageTwist2d
 import org.team2471.frc.lib.util.getRealFPGATimestamp
 
@@ -27,7 +28,7 @@ class VisionPoseEstimator(
     val defaultMeasurementStdDevs: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2)
 ) {
     val latestPos: Vector2L
-        get() = (offsetHistory[offsetHistory.lastKey()]?.let { odomPosHistory[odomPosHistory.lastKey()]?.plus(it) }) ?: Vector2L.Zeros
+        get() = try {(offsetHistory[offsetHistory.lastKey()]?.let { odomPosHistory[odomPosHistory.lastKey()]?.plus(it) }) ?: Vector2L.Zeros } catch (e: Exception) { Vector2L.Zeros }
 
     val odomPosHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L> = InterpolatingTreeMap(50)
     val offsetHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L> = InterpolatingTreeMap(50)
@@ -42,6 +43,8 @@ class VisionPoseEstimator(
     // May be useful for shoot on the move.
 //    var predictedVelocity = Twist2d()
 
+    var inReset = false
+
     val kalmanFilter = ExtendedKalmanFilter(
         Nat.N2(), // Dimensions of output (x, y)
         Nat.N2(), // Dimensions of predicted error shift (dx, dy) (always 0),
@@ -53,28 +56,37 @@ class VisionPoseEstimator(
         0.02
     )
 
-    init {
-        reset(Vector2L.Zeros, getRealFPGATimestamp())
-    }
+    fun reset(newPos: Vector2L, currentTimestampSeconds: Double = getRealFPGATimestamp(), odometryReset: Boolean = false) {
+        inReset = true
+        val prevOdomPose = odomPosHistory.lastEntry()
 
-    fun reset(newPos: Vector2L, currentTimestampSeconds: Double = getRealFPGATimestamp()) {
-        odomPosHistory.clear()
-        odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
         offsetHistory.clear()
-        offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
+        if (odometryReset) {
+            odomPosHistory.clear()
+            odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
+            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
+        } else {
+            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos - prevOdomPose.value
+        }
+
 
         measuredVelocityFilter.reset()
 
 //        predictedVelocity = Twist2d()
+
+        inReset = false
     }
 
     fun updateOdometry(currentTimestampSeconds: Double, odometryPose: Vector2L, measuredVelocity: Twist2d,/* predictedVelocity: Twist2d*/) {
-//        println(measuredVelocity)
-        odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = odometryPose
-        kalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
-        this.rawMeasuredVelocity = measuredVelocity
-        this.measuredVelocityFilter.update(measuredVelocity)
-//        this.predictedVelocity = predictedVelocity
+        if (!inReset) {
+    //        println(measuredVelocity)
+                odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = odometryPose
+            kalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
+            this.rawMeasuredVelocity = measuredVelocity
+            this.measuredVelocityFilter.update(measuredVelocity)
+    //        this.predictedVelocity = predictedVelocity
+            MeanLogger.recordOutput("odomPose", latestPos)
+        }
     }
 
     // This is here just to be compatible with meanlib units/classes. Remove when switched to WpiLib
@@ -100,34 +112,36 @@ class VisionPoseEstimator(
     }
 
     fun addVisionUpdate(globalPose: GlobalPose) {
-        if (globalPose == GlobalPose.EmptyGlobalPose) {
-            return
-        }
-        try {
-            val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
+        if (!inReset) {
+            if (globalPose == GlobalPose.EmptyGlobalPose) {
+                return
+            }
+            try {
+                val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
 
 //        println("huh ${odometryPose}")
-            val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
+                val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
 
-            val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
+                val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
 
-            val covarianceMatrix = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(), stdDevs)
+                val covarianceMatrix = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(), stdDevs)
 
 //        println(covarianceMatrix)
 
-            kalmanFilter.correct(
-                VecBuilder.fill(0.0, 0.0),
-                VecBuilder.fill(odometryOffset.x.asMeters, odometryOffset.y.asMeters),
-                covarianceMatrix
-            )
+                kalmanFilter.correct(
+                    VecBuilder.fill(0.0, 0.0),
+                    VecBuilder.fill(odometryOffset.x.asMeters, odometryOffset.y.asMeters),
+                    covarianceMatrix
+                )
 //        println("aaa ${odometryOffset.y.asMeters}")
 //        println("waa ${kalmanFilter.getXhat(1)}")
 
-            //                                   current time???
-            offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] =
-                Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
-        } catch (e: Exception) {
-            println("Error updating vision pose: $e")
+                //                                   current time???
+                offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] =
+                    Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
+            } catch (e: Exception) {
+                println("Error updating vision pose: $e")
+            }
         }
     }
 }

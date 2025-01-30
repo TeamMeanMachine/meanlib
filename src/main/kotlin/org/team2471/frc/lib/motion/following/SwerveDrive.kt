@@ -399,7 +399,7 @@ fun SwerveDrive.odometryReset() {
     zeroEncoders()
     position = Vector2(0.0, 0.0)
     poseHistory.clear()
-    poseEstimator.reset(Vector2L.Zeros, getRealFPGATimestamp())
+    poseEstimator.reset(Vector2L.Zeros, getRealFPGATimestamp(), true)
     resetOdom()
 }
 
@@ -476,13 +476,14 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
 
         // set to the numbers required for the start of the path
         if (useApriltags) {
-            poseEstimator.reset(path(0.0).position)
+            poseEstimator.reset(path(0.0).position, odometryReset = false)
         }
-        position = path(0.0).position.asFeet
+//        position = path(0.0).position.asFeet
         if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
         println("After Reset Position = $position")
+        println("April Tag Position = ${poseEstimator.latestPos}")
     }
 
 
