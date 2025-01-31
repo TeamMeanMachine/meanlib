@@ -16,14 +16,10 @@ data class CameraIntrinsics(val type: CameraType, val processor: Processor, val 
     val simCameraProperties: SimCameraProperties
         get() = SimCameraProperties().apply {
         setCalibration(resWidth, resHeight, diagonalFOV.asRotation2d)
-        setCalibError(0.0001, 0.001) // Values from docs. Should change
+        setCalibError(1.1, 0.5) // Values from docs. Should change
         fps = processor.avgFPS
         avgLatencyMs = processor.avgLatencyMs
         latencyStdDevMs = processor.latencyStdDevMs
-    }
-
-    init {
-        println("eoasdfsjalrkdsgjahdsla dlafjkhdalkdgjh ${diagonalFOV}")
     }
 
     companion object {

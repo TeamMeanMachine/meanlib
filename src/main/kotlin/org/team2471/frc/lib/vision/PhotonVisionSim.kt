@@ -73,7 +73,7 @@ import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
     }
 
     override fun update(inputs: CameraIOInputs, currentPose: Pose2d, headingRatePerSecond: Rotation2d) {
-        visionSystemSim.update(currentPose)
+        visionSystemSim.update(SwerveDrive.simulatedDrive.actualPoseInSimulationWorld)
         camera.update(inputs, currentPose, headingRatePerSecond)
     }
 

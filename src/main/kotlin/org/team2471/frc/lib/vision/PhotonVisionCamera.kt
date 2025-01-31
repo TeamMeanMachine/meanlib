@@ -15,6 +15,7 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
+import kotlin.math.pow
 
 
 class PhotonVisionCamera(
@@ -83,11 +84,11 @@ class PhotonVisionCamera(
             if (inputs.cameraResults.isNotEmpty()) {
                 for (cameraResult in inputs.cameraResults) {
                     if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
-                        // TODO: Change this to reflect average tag area. needs testing on field
-                        var stdDev = 0.01
-
-
-                        if (cameraResult.numTags < 2) stdDev *= 3.0
+                        val stdDev = if (cameraResult.numTags == 1) {
+                            0.0190319 * cameraResult.avgTagArea.pow(-1.16074)
+                        } else {
+                            0.00108089 * cameraResult.avgTagArea.pow(-0.996019)
+                        }
 
                         stdDev.coerceIn(0.000001, 1000.0)
 
