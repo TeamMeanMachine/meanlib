@@ -1,9 +1,11 @@
 package org.team2471.frc.lib.util
 
+import edu.wpi.first.math.geometry.Pose3d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.geometry.Translation3d
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
+import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.square
 import java.lang.System.currentTimeMillis
