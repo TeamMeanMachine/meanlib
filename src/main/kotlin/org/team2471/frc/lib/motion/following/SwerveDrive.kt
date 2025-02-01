@@ -375,7 +375,7 @@ fun SwerveDrive.recordOdometry() {
     acceleration = robotAcceleration
     if (!gyroConnected) { //if gyro is not connected, update heading
         if (isSim && useMapleSim) {
-            var mHeadingRate = simulatedDrive.actualSpeedsFieldRelative.omegaRadiansPerSecond.radians
+            val mHeadingRate = simulatedDrive.actualSpeedsFieldRelative.omegaRadiansPerSecond.radians
 
             headingRate = mHeadingRate.perSecond
             heading += (headingRate.changePerSecond * dt)
@@ -479,13 +479,15 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         if (isSim && useMapleSim) {
             simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
             println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
         }
         position = path(0.0).position.asFeet
         if (useApriltags) {
             poseEstimator.reset(path(0.0).position, odometryReset = true)
         }
         position = path(0.0).position.asFeet
-        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+//        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
         println("After Reset Position = $position")

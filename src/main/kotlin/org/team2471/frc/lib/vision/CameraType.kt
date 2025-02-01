@@ -1,12 +1,9 @@
 package org.team2471.frc.lib.vision
 
-import edu.wpi.first.math.geometry.Rotation2d
 import org.photonvision.simulation.SimCameraProperties
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
-import org.team2471.frc.lib.units.radians
-import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -16,7 +13,7 @@ data class CameraIntrinsics(val type: CameraType, val processor: Processor, val 
     val simCameraProperties: SimCameraProperties
         get() = SimCameraProperties().apply {
         setCalibration(resWidth, resHeight, diagonalFOV.asRotation2d)
-        setCalibError(1.1, 0.5) // Values from docs. Should change
+        setCalibError(0.001, 0.005) // Values from docs. Should change
         fps = processor.avgFPS
         avgLatencyMs = processor.avgLatencyMs
         latencyStdDevMs = processor.latencyStdDevMs
