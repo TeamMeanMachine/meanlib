@@ -70,7 +70,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     val followers = followerIds.map { id ->
         val follower = if (isReal) internalMotorController(id) else MotorControllerSim()
         follower.follow(io)
-        follower
+        Pair(follower, id.name)
     }.toTypedArray()
 
     val name = deviceId.name
@@ -82,6 +82,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         GlobalScope.launch {
             periodic(0.02) {
                 io.updateInputs(inputs)
+                followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
                 Logger.processInputs("Motors", inputs)
             }
         }
@@ -309,10 +310,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     private inline fun allMotorControllers(body: (MotorControllerIO) -> Unit) {
         body(io)
-        followers.forEach(body)
+        followers.forEach { it.apply { it.first.apply(body) } }
     }
     private inline fun allFollowers(body: (MotorControllerIO) -> Unit) {
-        followers.forEach(body)
+        followers.forEach { it.apply { it.first.apply(body) } }
     }
     fun setRawOffset(offset: Double) {
         rawOffset = ((offset / feedbackCoefficient) - io.getSelectedSensorPosition())
