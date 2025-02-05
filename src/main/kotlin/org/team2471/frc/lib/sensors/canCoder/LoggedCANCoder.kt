@@ -19,6 +19,8 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
         get() = inputs.position.rotations
         set(value) { io.setPosition((value).asRotations)}
     val velocity: AngularVelocity get() = inputs.velocity.rotations.perSecond
+    val absolutePosition: Angle
+        get() = inputs.absolutePosition.rotations
 
     init {
         GlobalScope.launch {
