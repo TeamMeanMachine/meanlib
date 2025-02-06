@@ -14,6 +14,7 @@ import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
+import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 import kotlin.math.pow
 
@@ -30,10 +31,6 @@ class PhotonVisionCamera(
 
     var photonCam: PhotonCamera = PhotonCamera(name)
 
-    private val cameraResultEntry: NetworkTableEntry = outputTable.getEntry("CameraResult $name")
-    private val posePublisher: StructPublisher<Pose2d> =
-        outputTable.getStructTopic("Pose $name", Pose2d.struct).publish()
-    private val stdDevEntry: NetworkTableEntry = outputTable.getEntry("stdDev $name")
     private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
 
     private var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
@@ -92,7 +89,7 @@ class PhotonVisionCamera(
 
                         stdDev.coerceIn(0.000001, 1000.0)
 
-                        CameraResult.recordOutput("$name/Camera Result", cameraResult)
+                        CameraResult.recordOutput("Cameras/$name/Camera Result", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
@@ -106,15 +103,6 @@ class PhotonVisionCamera(
             latestResults = tempResults
             latestGlobalPoses = tempGlobalPoses
 
-            if (latestGlobalPoses.isNotEmpty()) {
-                val latestGlobalPose = latestGlobalPoses.last()
-                posePublisher.setGlobalPose(latestGlobalPose)
-                stdDevEntry.setDouble(latestGlobalPose.stdDev)
-            } else {
-                posePublisher.setEmptyPose()
-                stdDevEntry.setDouble(0.0)
-            }
-
             isConnectedEntry.setBoolean(inputs.isConnected)
         }
     }
@@ -126,6 +114,9 @@ class PhotonVisionCamera(
                 poseEstimator.setReferencePose(referencePose)
                 val unreadResults = photonCam.allUnreadResults.map { poseEstimator.update(it).get() }
                 inputs.cameraResults = unreadResults.map {it.toCameraResult()} as ArrayList<CameraResult>
+                if (unreadResults.isNotEmpty()) {
+                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *unreadResults.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
+                }
             }
         } catch (_: Exception) {
         }
