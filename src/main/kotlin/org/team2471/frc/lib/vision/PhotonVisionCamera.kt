@@ -82,9 +82,9 @@ class PhotonVisionCamera(
                 for (cameraResult in inputs.cameraResults) {
                     if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
                         val stdDev = if (cameraResult.numTags == 1) {
-                            0.0190319 * cameraResult.avgTagArea.pow(-1.16074)
+                            0.190319 * cameraResult.avgTagArea.pow(-1.16074)
                         } else {
-                            0.00108089 * cameraResult.avgTagArea.pow(-0.996019)
+                            0.0108089 * cameraResult.avgTagArea.pow(-0.996019)
                         }
 
                         stdDev.coerceIn(0.000001, 1000.0)
