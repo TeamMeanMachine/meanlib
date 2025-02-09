@@ -6,6 +6,7 @@ import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.units.Units.*
@@ -684,9 +685,15 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             val y = -controller.leftThumbstickX
             val turn = 75.0*controller.rightThumbstickX
 
+
+
             // position error
             val pathPosition = Vector2(x, y)
             val positionError = pathPosition - position
+
+            MeanLogger.recordOutput("goalPosition", Pose2d(pathPosition.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
+            MeanLogger.recordOutput("positionError", Pose2d(positionError.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
+
 
             // position d
             val deltaPositionError = positionError - prevPositionError
