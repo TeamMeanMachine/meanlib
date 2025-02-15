@@ -5,9 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.networktables.NetworkTable
-import edu.wpi.first.networktables.NetworkTableEntry
-import edu.wpi.first.networktables.StructPublisher
+import edu.wpi.first.networktables.*
 import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
@@ -15,6 +13,7 @@ import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.util.MeanLogger
+import org.team2471.frc.lib.util.length
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 import kotlin.math.pow
 
@@ -31,7 +30,10 @@ class PhotonVisionCamera(
 
     var photonCam: PhotonCamera = PhotonCamera(name)
 
-    private val isConnectedEntry: NetworkTableEntry = outputTable.getEntry("isConnected $name")
+    private val isConnectedPub: BooleanPublisher = outputTable.getBooleanTopic("$name/Is Connected?").publish()
+    private val posePub: StructPublisher<Pose2d> = outputTable.getStructTopic("$name/Pose", Pose2d.struct).publish()
+    private val stdDevPub: DoublePublisher = outputTable.getDoubleTopic("$name/Standard Deviation").publish()
+    private val avgDistPub: DoublePublisher = outputTable.getDoubleTopic("$name/Average Distance").publish()
 
     private var poseEstimator: PhotonPoseEstimator = PhotonPoseEstimator(
         aprilTagFieldLayout,
@@ -47,7 +49,7 @@ class PhotonVisionCamera(
     private var referencePose: Pose2d = Pose2d()
 
     override fun reset(inputs: CameraIO.CameraIOInputs) {
-        if (!inputs.isConnected) {
+//        if (!inputs.isConnected) {
             try {
                 if (inputTable.containsSubTable(name)) {
                     poseEstimator = PhotonPoseEstimator(
@@ -62,9 +64,9 @@ class PhotonVisionCamera(
             } catch (ex: Exception) {
                 println("Error resetting cam $name: $ex")
             }
-        } else {
-            println("$name already found, skipping reset")
-        }
+//        } else {
+//            println("$name already found, skipping reset")
+//        }
     }
 
     override fun update(
@@ -81,15 +83,9 @@ class PhotonVisionCamera(
             if (inputs.cameraResults.isNotEmpty()) {
                 for (cameraResult in inputs.cameraResults) {
                     if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
-                        val stdDev = if (cameraResult.numTags == 1) {
-                            0.190319 * cameraResult.avgTagArea.pow(-1.16074)
-                        } else {
-                            0.0108089 * cameraResult.avgTagArea.pow(-0.996019)
-                        }
+                        val stdDev = 0.005 * cameraResult.avgTagDistM.pow(2) / cameraResult.numTags
 
                         stdDev.coerceIn(0.000001, 1000.0)
-
-                        CameraResult.recordOutput("Cameras/$name/Camera Result", cameraResult)
 
                         val estimatedPose = cameraResult.toGlobalPose(stdDev)
 
@@ -103,7 +99,22 @@ class PhotonVisionCamera(
             latestResults = tempResults
             latestGlobalPoses = tempGlobalPoses
 
-            isConnectedEntry.setBoolean(inputs.isConnected)
+            isConnectedPub.set(inputs.isConnected)
+            if (latestGlobalPoses.isNotEmpty()) {
+                val latestPose = latestGlobalPoses.last()
+                posePub.set(latestPose.pose)
+                stdDevPub.set(latestPose.stdDev)
+            } else {
+                posePub.set(Pose2d())
+                stdDevPub.set(0.0)
+            }
+
+            if (latestResults.isNotEmpty()) {
+                avgDistPub.set(latestResults.last().avgTagDistM)
+            } else {
+//                avgDistPub.set(0.0)
+            }
+
         }
     }
 
@@ -116,6 +127,8 @@ class PhotonVisionCamera(
                 inputs.cameraResults = unreadResults.map {it.toCameraResult()} as ArrayList<CameraResult>
                 if (unreadResults.isNotEmpty()) {
                     MeanLogger.recordOutput("Cameras/$name/Raw Corners", *unreadResults.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
+                } else {
+                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *arrayOf<Translation2d>())
                 }
             }
         } catch (_: Exception) {
