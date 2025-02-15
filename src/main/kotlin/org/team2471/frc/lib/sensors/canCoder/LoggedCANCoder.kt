@@ -23,6 +23,8 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
         get() = inputs.absolutePosition.rotations
 
     init {
+        io.updateInputs(inputs)
+        Logger.processInputs("Sensors", inputs)
         GlobalScope.launch {
             periodic {
                 io.updateInputs(inputs)
