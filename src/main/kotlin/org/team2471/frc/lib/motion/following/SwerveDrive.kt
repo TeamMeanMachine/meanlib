@@ -6,7 +6,6 @@ import com.team254.lib.util.InterpolatingDouble
 import com.team254.lib.util.InterpolatingTreeMap
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.units.Units.*
@@ -379,7 +378,7 @@ fun SwerveDrive.recordOdometry() {
             val mHeadingRate = simulatedDrive.actualSpeedsFieldRelative.omegaRadiansPerSecond.radians
 
             headingRate = mHeadingRate.perSecond
-            heading += (headingRate.changePerSecond * dt)
+            heading += (mHeadingRate * 0.02)
         } else {
 //        println("robotRotation $robotRotation")
             heading += robotRotation
