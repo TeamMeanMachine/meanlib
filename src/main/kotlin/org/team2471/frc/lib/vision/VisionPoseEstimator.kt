@@ -36,6 +36,10 @@ class VisionPoseEstimator(
     private val lastVisionPosePub = table.getStructTopic("Last Vision Pose", Pose2d.struct).publish()
     private val lastStdDevPub = table.getDoubleTopic("Last StdDev").publish()
 
+    val debugModeSub = table.getBooleanTopic("Debug Mode").subscribe(false)
+    val debugMode: Boolean
+        get() = debugModeSub.get()
+
     val latestPos: Vector2L
         get() = try {
             (offsetHistory[offsetHistory.lastKey()]?.let { odomPosHistory[odomPosHistory.lastKey()]?.plus(it) })
@@ -151,26 +155,43 @@ class VisionPoseEstimator(
             try {
                 val odometryPose = odomPosHistory.getInterpolated(InterpolatingDouble(globalPose.timestampSeconds))
 
-//        println("huh ${odometryPose}")
+                if (debugMode) {
+                    println("odomPose ${odometryPose}")
+                }
+
                 val odometryOffset = globalPose.pose.translation.asVector2().meters - odometryPose
+
+                if (debugMode) {
+                    println("odomOffset ${odometryOffset}")
+                }
 
                 val stdDevs = VecBuilder.fill(globalPose.stdDev, globalPose.stdDev)
 
+                if (debugMode) {
+                    println("stdDevs ${stdDevs}")
+                }
+
                 val covarianceMatrix = StateSpaceUtil.makeCovarianceMatrix(Nat.N2(), stdDevs)
 
-//        println(covarianceMatrix)
+                if (debugMode) {
+                    println("Covariance: $covarianceMatrix")
+                }
 
                 kalmanFilter.correct(
                     VecBuilder.fill(0.0, 0.0),
                     VecBuilder.fill(odometryOffset.x.asMeters, odometryOffset.y.asMeters),
                     covarianceMatrix
                 )
-//        println("aaa ${odometryOffset.y.asMeters}")
-//        println("waa ${kalmanFilter.getXhat(1)}")
 
-                //                                   current time???
+                if (debugMode) {
+                    println("corrected")
+                }
+
                 offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] =
                     Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
+                if (debugMode) {
+                    println("pose: ${Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)}")
+                }
             } catch (e: Exception) {
                 println("Error updating vision pose: $e")
             }
