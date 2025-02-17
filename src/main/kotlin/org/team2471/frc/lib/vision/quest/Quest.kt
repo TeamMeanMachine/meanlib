@@ -13,11 +13,11 @@ import org.team2471.frc.lib.math.asVector2
 import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.isSim
 
 @OptIn(DelicateCoroutinesApi::class)
 class Quest(
     val robotToQuest: Transform3d,
-    isSim: Boolean,
     val outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")
 ){
     private val posePublisher = outTable.getStructTopic("Position", Pose3d.struct).publish()
@@ -31,6 +31,10 @@ class Quest(
 
     val isConnected: Boolean
         get() = inputs.isConnected
+
+    suspend fun reset() {
+        io.reset()
+    }
 
 
     init {
