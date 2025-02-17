@@ -16,21 +16,30 @@ import org.team2471.frc.lib.units.*
 
 @OptIn(DelicateCoroutinesApi::class)
 class Quest(
-    val robotToQuest: Transform3d,
+    val robotToQuest: Transform2d,
     isSim: Boolean,
     val outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")
 ){
-    private val posePublisher = outTable.getStructTopic("Position", Pose3d.struct).publish()
+    private val posePublisher = outTable.getStructTopic("Quest Position", Pose2d.struct).publish()
     private val isConnectedEntry = outTable.getEntry("isConnected")
 
     private val io = if (isSim) QuestIOSim() else QuestIOReal(robotToQuest)
     private val inputs = QuestIO.QuestIOInputs()
 
-    val pose: Pose3d
-        get() = inputs.pose
+    var pose: Pose2d = Pose2d()
+        get() {
+            val rot = inputs.pose.rotation - robotToQuest.rotation + field.rotation
+            return Pose2d(inputs.pose.translation - robotToQuest.translation.rotateBy(rot) + field.translation, rot)
+        }
+        set(value) { field += value - pose}
+
 
     val isConnected: Boolean
         get() = inputs.isConnected
+
+    suspend fun reset() {
+        io.reset()
+    }
 
 
     init {
@@ -38,7 +47,7 @@ class Quest(
             io.reset()
             periodic {
                 io.updateInputs(inputs)
-                posePublisher.set(inputs.pose)
+                posePublisher.set(pose)
                 isConnectedEntry.setBoolean(inputs.isConnected)
             }
         }

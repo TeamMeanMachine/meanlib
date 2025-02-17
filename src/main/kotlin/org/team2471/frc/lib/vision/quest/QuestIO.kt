@@ -1,15 +1,14 @@
 package org.team2471.frc.lib.vision.quest
 
-import edu.wpi.first.math.geometry.Pose3d
-import edu.wpi.first.math.geometry.Rotation3d
-import edu.wpi.first.math.geometry.Transform3d
-import edu.wpi.first.math.geometry.Translation3d
+import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTableInstance
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.asWPIUnit
+import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.radians
 
 interface QuestIO {
@@ -17,7 +16,7 @@ interface QuestIO {
 
         var isConnected: Boolean = false
 
-        var pose: Pose3d = Pose3d()
+        var pose: Pose2d = Pose2d()
 
         override fun toLog(table: LogTable) {
             table.put("Quest/isConnected", isConnected)
@@ -36,7 +35,7 @@ interface QuestIO {
     fun updateInputs(inputs: QuestIOInputs)
 }
 
-class QuestIOReal(val robotToQuest: Transform3d): QuestIO {
+class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     private val table = NetworkTableInstance.getDefault().getTable("questnav")
 
     private val batteryPercentEntry = table.getDoubleTopic("batteryPercent").subscribe(0.0)
@@ -59,9 +58,10 @@ class QuestIOReal(val robotToQuest: Transform3d): QuestIO {
     override suspend fun reset() {
         if (questMisoEntry.get() != 99L) {
             questMosiEntry.set(1)
+//            suspendUntil { questMisoEntry.get() == 99L }
+            delay(0.25)
+            questMosiEntry.set(0)
         }
-        suspendUntil { questMisoEntry.get() == 99L }
-        questMosiEntry.set(0)
     }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
@@ -73,18 +73,15 @@ class QuestIOReal(val robotToQuest: Transform3d): QuestIO {
         val rawPos = positionsEntry.get()
         val rawRotation = anglesEntry.get()
 
-        val rotation = Rotation3d(
-            rawRotation[2].radians.asWPIUnit,
-            rawRotation[0].radians.asWPIUnit,
-            rawRotation[1].radians.asWPIUnit
-        )
+        val rotation = Rotation2d(
+            -rawRotation[1].degrees.asWPIUnit
+        ) + robotToQuest.rotation
 
-        inputs.pose = Pose3d(
-            Translation3d(
+        inputs.pose = Pose2d(
+            Translation2d(
                 rawPos[2].toDouble(),
-                -rawPos[0].toDouble(),
-                rawPos[1].toDouble()
-            ) - robotToQuest.translation.rotateBy(rotation),
+                -rawPos[0].toDouble()
+            ).rotateBy(robotToQuest.rotation) + robotToQuest.translation,
             rotation
         )
     }
@@ -95,6 +92,6 @@ class QuestIOSim(): QuestIO {
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true
-        inputs.pose = Pose3d(SwerveDrive.Companion.simulatedDrive.actualPoseInSimulationWorld)
+        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld
     }
 }
