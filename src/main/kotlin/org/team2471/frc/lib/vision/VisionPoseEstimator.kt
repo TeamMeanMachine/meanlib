@@ -36,9 +36,9 @@ class VisionPoseEstimator(
     private val lastVisionPosePub = table.getStructTopic("Last Vision Pose", Pose2d.struct).publish()
     private val lastStdDevPub = table.getDoubleTopic("Last StdDev").publish()
 
-    val debugModeSub = table.getBooleanTopic("Debug Mode").subscribe(false)
+    val debugModeEntry = table.getEntry("Debug Mode")
     val debugMode: Boolean
-        get() = debugModeSub.get()
+        get() = debugModeEntry.getBoolean(false)
 
     val latestPos: Vector2L
         get() = try {
@@ -201,6 +201,8 @@ class VisionPoseEstimator(
     }
 
     init {
+        debugModeEntry.setBoolean(false)
+
         GlobalScope.launch {
             periodic {
                 if (odomPosHistory.isNotEmpty()) {
