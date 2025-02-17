@@ -1,12 +1,10 @@
 package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Translation2d
 import org.photonvision.EstimatedRobotPose
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.length
-import org.team2471.frc.lib.vision.CameraResult.Companion.EmptyCameraResult
 
 @JvmRecord
 data class CameraResult(
@@ -15,7 +13,7 @@ data class CameraResult(
     val timeStampSeconds: Double,
     val numTags: Int,
     // In % of image
-    val avgTagArea: Double,
+    val avgTagDistM: Double,
     val cameraType: CameraType,
     val isEmpty: Boolean = false
 ) {
@@ -41,7 +39,7 @@ data class CameraResult(
         other as CameraResult
 
         if (timeStampSeconds != other.timeStampSeconds) return false
-        if (avgTagArea != other.avgTagArea) return false
+        if (avgTagDistM != other.avgTagDistM) return false
         if (isEmpty != other.isEmpty) return false
         if (pose != other.pose) return false
         if (numTags != other.numTags) return false
@@ -61,7 +59,7 @@ data class CameraResult(
             MeanLogger.recordOutput("$key/Pose", value.pose)
             MeanLogger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
             MeanLogger.recordOutput("$key/Tag Number", value.numTags.toDouble())
-            MeanLogger.recordOutput("$key/Average Tag Area", value.avgTagArea)
+            MeanLogger.recordOutput("$key/Average Tag Area", value.avgTagDistM)
         }
     }
 }
@@ -71,15 +69,12 @@ fun EstimatedRobotPose.toCameraResult(): CameraResult {
     val numTargets = targets.size
 
     var avgDist = 0.0.inches
-    var avgArea = 0.0
 
     for (target in targets) {
         avgDist += target.bestCameraToTarget.translation.length.meters
-        avgArea += target.area
     }
 
     avgDist /= numTargets.toDouble()
-    avgArea /= numTargets.toDouble()
     this.targetsUsed.first().toTarget2D()
 
 
@@ -87,7 +82,7 @@ fun EstimatedRobotPose.toCameraResult(): CameraResult {
         this.estimatedPose.toPose2d(),
         this.timestampSeconds,
         numTargets,
-        avgArea,
+        avgDist.asMeters,
         CameraType.PHOTONVISION
     )
 }

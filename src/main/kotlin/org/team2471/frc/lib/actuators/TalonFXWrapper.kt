@@ -24,7 +24,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         inputs.position = _motorController.position.valueAsDouble
         inputs.outputPercent = _motorController.dutyCycle.valueAsDouble
         inputs.velocity = _motorController.velocity.valueAsDouble
-        inputs.current = _motorController.statorCurrent.valueAsDouble
+        inputs.current = _motorController.supplyCurrent.valueAsDouble
         inputs.temp = _motorController.deviceTemp.valueAsDouble
 
         this.inputs = inputs
@@ -171,7 +171,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
-        _motorController.setControl(PositionDutyCycle(position).withFeedForward(feedForward).withSlot(0))
+        _motorController.setControl(PositionDutyCycle(position).withFeedForward(feedForward).withSlot(0).withEnableFOC(true))
     }
 
     override fun setSelectedSensorPosition(sensorPos: Double) {

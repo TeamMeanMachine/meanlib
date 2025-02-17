@@ -13,6 +13,7 @@ import org.team2471.frc.lib.math.asVector2
 import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.isSim
 
 @OptIn(DelicateCoroutinesApi::class)
 class Quest(

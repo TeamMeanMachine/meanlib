@@ -12,6 +12,7 @@ class LoggedCANCoderReal(id: Int, canbus: String? = ""): LoggedCANCoderIO {
 
     override fun updateInputs(inputs: LoggedCANCoderIO.CANCoderIOInputs) {
         inputs.position = canCoder.position.valueAsDouble * if (inverted) -1.0 else 1.0
+        inputs.absolutePosition = canCoder.absolutePosition.valueAsDouble * if (inverted) -1.0 else 1.0
         inputs.velocity = canCoder.velocity.valueAsDouble * if (inverted) -1.0 else 1.0
     }
 

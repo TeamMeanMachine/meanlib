@@ -153,7 +153,7 @@ class Camera(
         val tagNum = latestResult.numTags
         println("Tag number: $tagNum")
 
-        var averageTagArea = latestResult.avgTagArea
+        var averageDist = latestResult.avgTagDistM
         var tagAreaSamples = 1
 
         var averagePos = latestResult.pose.translation.asVector2().meters
@@ -173,7 +173,7 @@ class Camera(
                 if (result.numTags == tagNum) {
                     tagAreaSamples ++
                     averagePosSamples ++
-                    averageTagArea = calculateAverage(averageTagArea, result.avgTagArea, tagAreaSamples)
+                    averageDist = calculateAverage(averageDist, result.avgTagDistM, tagAreaSamples)
                     averagePos = Vector2L(
                         calculateAverage(averagePos.x.asMeters, result.pose.x, averagePosSamples).meters,
                         calculateAverage(averagePos.y.asMeters, result.pose.y, averagePosSamples).meters
@@ -196,7 +196,7 @@ class Camera(
 
             val stdDevM = Vector2(sqrt(stdDevThingey.x / positions.size), sqrt(stdDevThingey.y / positions.size))
 
-            return Pair(averageTagArea, stdDevM.meters)
+            return Pair(averageDist, stdDevM.meters)
         }
     }
 }

@@ -68,7 +68,7 @@ class LimelightCamera(
             var stdDev = 0.1
 
 
-            stdDev *= 0.25 / latestResult.avgTagArea
+            stdDev *= 0.25 / latestResult.avgTagDistM
             //            println("area: ${cameraResult.avgTagArea}")
 
 
