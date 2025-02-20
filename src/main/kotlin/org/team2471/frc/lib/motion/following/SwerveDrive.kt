@@ -486,7 +486,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         if (useApriltags) {
             poseEstimator.reset(path(0.0).position, odometryReset = true)
         }
-        position = path(0.0).position.asFeet
+//        position = path(0.0).position.asFeet
 //        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
@@ -560,7 +560,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
             println("exiting path")
             stop()
         }
-        if (earlyExit(t / path(t).totalTime)) {
+        if (earlyExit(t / (path(t).totalTime + extraTime))) {
             println("early exiting path. time: $t  duration: ${path(t).totalTime} percent complete: ${t / path(t).totalTime}")
             stop()
         }
