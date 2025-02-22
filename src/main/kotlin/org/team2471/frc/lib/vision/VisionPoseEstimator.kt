@@ -21,13 +21,16 @@ import org.team2471.frc.lib.util.getRealFPGATimestamp
 class VisionPoseEstimator(
     odomStdDev: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2),
     defaultVisionStdDev: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2),
-    questStdDev: Matrix<N2, N1> = VecBuilder.fill(0.005, 0.005)
+    questStdDev: Matrix<N2, N1> = VecBuilder.fill(0.0005, 0.0005)
 ) {
 
     val latestPos: Vector2L
         get() = try {
-            (odomOffsetHistory[odomOffsetHistory.lastKey()]?.let { odomPosHistory[odomPosHistory.lastKey()]?.plus(it) })
-                ?: Vector2L.Zeros
+            if (isQuestConnected) {
+                (questOffsetHistory.lastEntry().value.let { questPosHistory.lastEntry().value.plus(it) })
+            } else {
+                (odomOffsetHistory.lastEntry().value.let { odomPosHistory.lastEntry().value.plus(it) })
+            }
         } catch (e: Exception) {
             Vector2L.Zeros
         }

@@ -2,9 +2,12 @@ package org.team2471.frc.lib.vision.quest
 
 import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTableInstance
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.coroutines.delay
+import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.asWPIUnit
@@ -49,10 +52,22 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     private val questMisoEntry = table.getIntegerTopic("miso").subscribe(0)
     private val questMosiEntry = table.getIntegerTopic("mosi").publish()
 
+    var isConnected = false
+
     val timestamp: Double
         get() = timestampEntry.get()
 
     private var prevTimestamp = 0.0
+
+    init {
+        GlobalScope.launch {
+            periodic(3.0) {
+                val ts = timestamp
+                isConnected = ts != prevTimestamp
+                prevTimestamp = ts
+            }
+        }
+    }
 
     // Only call if quest is connected
     override suspend fun reset() {
@@ -65,9 +80,7 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
-        val ts = timestamp
-        inputs.isConnected = ts != prevTimestamp
-        prevTimestamp = ts
+        inputs.isConnected = isConnected
         isConnectedEntry.setBoolean(inputs.isConnected)
 
         val rawPos = positionsEntry.get()
