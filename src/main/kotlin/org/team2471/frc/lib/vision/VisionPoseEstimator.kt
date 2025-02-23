@@ -9,6 +9,9 @@ import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.estimator.ExtendedKalmanFilter
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N2
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
@@ -21,7 +24,7 @@ import org.team2471.frc.lib.util.getRealFPGATimestamp
 class VisionPoseEstimator(
     odomStdDev: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2),
     defaultVisionStdDev: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2),
-    questStdDev: Matrix<N2, N1> = VecBuilder.fill(0.0005, 0.0005)
+    questStdDev: Matrix<N2, N1> = VecBuilder.fill(0.2, 0.2)
 ) {
 
     val latestPos: Vector2L
@@ -75,9 +78,9 @@ class VisionPoseEstimator(
     ) {
         inReset = true
 
-        resetHistories(odomPosHistory, odomOffsetHistory, newPos, currentTimestampSeconds, odometryReset)
+        resetHistories(odomKalmanFilter, odomPosHistory, odomOffsetHistory, newPos, currentTimestampSeconds, odometryReset)
         if (doesQuestExist) {
-            resetHistories(questPosHistory, questOffsetHistory, newPos, currentTimestampSeconds, questReset)
+            resetHistories(odomKalmanFilter, questPosHistory, questOffsetHistory, newPos, currentTimestampSeconds, questReset)
         }
 
 //        val prevQuestPose =
@@ -87,8 +90,9 @@ class VisionPoseEstimator(
         inReset = false
     }
 
-    private fun resetHistories(baseHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, offsetHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, newPos: Vector2L, currentTimestampSeconds: Double, baseReset: Boolean) {
+    private fun resetHistories(kalmanFilter: ExtendedKalmanFilter<N2, N2, N2>, baseHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, offsetHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, newPos: Vector2L, currentTimestampSeconds: Double, baseReset: Boolean) {
         val prevPos = baseHistory.lastEntry().value
+        kalmanFilter.reset()
 
         offsetHistory.clear()
         if (baseReset) {
@@ -96,6 +100,8 @@ class VisionPoseEstimator(
             baseHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
             offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
         } else {
+            baseHistory.clear()
+            baseHistory[InterpolatingDouble(currentTimestampSeconds)] = prevPos
             offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos - prevPos
         }
     }

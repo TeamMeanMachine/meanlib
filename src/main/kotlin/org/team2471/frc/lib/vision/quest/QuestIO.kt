@@ -9,6 +9,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
+import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.asWPIUnit
 import org.team2471.frc.lib.units.degrees
@@ -101,10 +102,15 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 }
 
 class QuestIOSim(): QuestIO {
-    override suspend fun reset() {}
+    var offset = Transform2d()
+    var pose = Pose2d()
+    override suspend fun reset() {
+        offset = Pose2d() - pose
+    }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true
-        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld
+        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld + offset
+        pose = inputs.pose
     }
 }

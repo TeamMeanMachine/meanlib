@@ -13,12 +13,13 @@ import org.team2471.frc.lib.math.asVector2
 import org.team2471.frc.lib.math.meters
 import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
+import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isSim
 
 @OptIn(DelicateCoroutinesApi::class)
 class Quest(
     val robotToQuest: Transform2d,
-    isSim: Boolean,
+    val isSim: Boolean,
     val outTable: NetworkTable = NetworkTableInstance.getDefault().getTable("questnav")
 ){
     private val posePublisher = outTable.getStructTopic("Quest Position", Pose2d.struct).publish()
@@ -29,8 +30,12 @@ class Quest(
 
     var pose: Pose2d = Pose2d()
         get() {
-            val rot = inputs.pose.rotation - robotToQuest.rotation + field.rotation
-            return Pose2d(inputs.pose.translation - robotToQuest.translation.rotateBy(rot) + field.translation, rot)
+            if (isSim) {
+                return inputs.pose
+            } else {
+                val rot = inputs.pose.rotation - robotToQuest.rotation + field.rotation
+                return Pose2d(inputs.pose.translation - robotToQuest.translation.rotateBy(rot) + field.translation, rot)
+            }
         }
         set(value) { field += value - pose}
 
