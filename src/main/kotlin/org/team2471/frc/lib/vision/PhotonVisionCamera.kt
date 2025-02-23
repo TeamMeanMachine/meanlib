@@ -83,7 +83,7 @@ class PhotonVisionCamera(
             if (inputs.cameraResults.isNotEmpty()) {
                 for (cameraResult in inputs.cameraResults) {
                     if (!cameraResult.isEmpty && cameraResult.numTags > 0 && cameraResult.pose.isOnField()) {
-                        val stdDev = 0.005 * cameraResult.avgTagDistM.pow(2) / cameraResult.numTags
+                        val stdDev = photonStdDevCalculator.calculateStdDev(cameraResult.avgTagDistM, cameraResult.numTags)
 
                         stdDev.coerceIn(0.000001, 1000.0)
 

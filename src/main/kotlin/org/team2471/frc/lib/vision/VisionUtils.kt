@@ -13,7 +13,7 @@ import kotlin.math.pow
 val fieldXRangeM = DoubleRange(0.0, 16.54)
 val fieldYRangeM = DoubleRange(0.0, 8.21)
 
-val photonStdDevCalculator: StdDevCalculator = StdDevCalculator(1.0, Pair(0.1, 0.001), Pair(2.5, 1.5))
+val photonStdDevCalculator: StdDevCalculator = StdDevCalculator(1.0, Pair(0.1, 0.001), Pair(2.5, 2.5))
 
 fun AprilTagFieldLayout.removeTags(tagIDs: IntArray): AprilTagFieldLayout {
     return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
@@ -46,7 +46,7 @@ fun Pose2d.isOnField(): Boolean {
  */
 class StdDevCalculator(var multiplier: Double, point1: Pair<Double, Double>, point2: Pair<Double, Double>) {
 
-    val b = ln(point1.second / point2.second) / ln(point1.first / point1.second)
+    val b = ln(point1.second / point2.second) / ln(point1.first / point2.second)
     val a = point1.second / point1.first.pow(b)
 
     fun calculateStdDev(avgDistM: Double, numTagsSeen: Int) = multiplier * a * avgDistM.pow(b) / numTagsSeen
