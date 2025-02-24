@@ -46,7 +46,7 @@ interface MotorControllerIO {
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double)
     fun encoderContinuous(continuous: Boolean) {}
     fun follow(followerID: MotorControllerIO)
-    fun fuseCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {}
+    fun remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {}
     fun getClosedLoopError(): Double
     fun getPValue(): Double
     fun getDValue() : Double
@@ -57,12 +57,15 @@ interface MotorControllerIO {
     fun getSelectedSensorVelocity(): Double
     fun getSelectedSensorAcceleration(): Double
     fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
+    fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) {}
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}
     fun restoreFactoryDefaults()
     fun setInverted(invert: Boolean)
     fun setMotionMagicSetpoint(position: Double) {}
     fun setMotionMagicSetpoint(position: Double, feedForward: Double) {}
+    fun setMotionMagicExpoSetpoint(position: Double) {}
+    fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double) {}
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)

@@ -15,9 +15,8 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
         RobotMode.REPLAY, RobotMode.SIM -> LoggedCANCoderSim(simRotationSupplier)
     }
 
-    var position: Angle
+    val position: Angle
         get() = inputs.position.rotations
-        set(value) { io.setPosition((value).asRotations)}
     val velocity: AngularVelocity get() = inputs.velocity.rotations.perSecond
     val absolutePosition: Angle
         get() = inputs.absolutePosition.rotations
@@ -39,5 +38,12 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
 
     fun setSimAngleSupplier(angleSupplier: () -> Angle) {
         io.simAngleSupplier = (angleSupplier)
+    }
+
+    /**
+     * [offset] units in rotations
+     */
+    fun setMagnetSensorOffset(offset: Angle) {
+        io.setMagnetOffset(offset.asRotations)
     }
 }

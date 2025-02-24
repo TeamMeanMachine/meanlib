@@ -9,7 +9,6 @@ import org.team2471.frc.lib.math.DoubleRange
 class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO {
     private val _motorController = TalonFX(deviceID, canBus)
     private var config: TalonFXConfiguration = TalonFXConfiguration()
-    private var appliedConfig: TalonFXConfiguration = TalonFXConfiguration()
     private var inputs: MotorControllerIO.MotorControllerIOInputs = MotorControllerIO.MotorControllerIOInputs("null")
 
     private val timeoutSec = 0.050
@@ -75,6 +74,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
 
     override fun config_kF(f: Double, simF: Double?) {
         config.Slot0.kS = f
+        config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign
         configUnsaved = true
     }
 
@@ -98,8 +98,8 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(StrictFollower((followerID as TalonFXWrapper).deviceID))
     }
 
-    override fun fuseCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double) {
-        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder
+    override fun remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double) {
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder
         config.Feedback.FeedbackRemoteSensorID = encoderID
         config.Feedback.RotorToSensorRatio = motorToSensorRatio
         config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
@@ -122,8 +122,14 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     override fun getSelectedSensorAcceleration(): Double = _motorController.acceleration.valueAsDouble
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        config.MotionMagic.MotionMagicAcceleration = acceleration / 10.0
-        config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity / 10.0
+        config.MotionMagic.MotionMagicAcceleration = acceleration
+        config.MotionMagic.MotionMagicCruiseVelocity = cruisingVelocity
+        configUnsaved = true
+    }
+
+    override fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double ) {
+        config.MotionMagic.MotionMagicExpo_kA = acceleration
+        config.MotionMagic.MotionMagicExpo_kV = cruisingVelocityPower
         configUnsaved = true
     }
 
@@ -160,6 +166,14 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.setControl(
             MotionMagicDutyCycle(position).withFeedForward(feedForward)
         )
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double) {
+        _motorController.setControl(MotionMagicExpoDutyCycle(position))
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double) {
+        _motorController.setControl(MotionMagicExpoDutyCycle(position).withFeedForward(feedForward))
     }
 
     override fun setPercentOutput(percent: Double) {
@@ -212,9 +226,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
      */
     override fun applyConfig() {
         configUnsaved = false
-        val newConfig = config
-        _motorController.configurator.apply(newConfig, timeoutSec)
-        appliedConfig = newConfig
+        _motorController.configurator.apply(config, timeoutSec)
     }
 
 

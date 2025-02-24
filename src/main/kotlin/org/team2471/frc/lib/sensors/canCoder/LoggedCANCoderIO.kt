@@ -27,7 +27,6 @@ interface LoggedCANCoderIO {
 
     fun updateInputs(inputs: CANCoderIOInputs)
 
-    fun setMagnetSensorOffset(offset: Double) {}
-    fun setPosition(position: Double) {}
+    fun setMagnetOffset(offset: Double) {}
     fun setInverted(invert: Boolean) {}
 }

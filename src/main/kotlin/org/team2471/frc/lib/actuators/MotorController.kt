@@ -57,6 +57,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         RobotMode.REPLAY, RobotMode.SIM -> MotorControllerSim()
     }
     private val inputs = MotorControllerIO.MotorControllerIOInputs(deviceId.name)
+    private var doUpdate = true
 
     private var feedbackCoefficient = 1.0
         set(value) {
@@ -81,9 +82,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         Logger.processInputs("Motors", inputs)
         GlobalScope.launch {
             periodic(0.02) {
-                io.updateInputs(inputs)
-                followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
-                Logger.processInputs("Motors", inputs)
+                if (doUpdate) {
+                    io.updateInputs(inputs)
+                    followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
+                    Logger.processInputs("Motors", inputs)
+                }
             }
         }
     }
@@ -161,6 +164,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         }
 
         io.setSelectedSensorPosition(0.0)
+    }
+
+    fun stopUpdates() {
+        doUpdate = false
+    }
+    fun startUpdates() {
+        doUpdate = true
     }
 
     fun setStatusFramePeriod(periodHz: Int, timeoutSec: Double = 0.05) = allMotorControllers { it.setStatusFramePeriod(periodHz, timeoutSec) }
@@ -493,11 +503,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
          * @param motorToSensorRatio amount of motor rotations for 1 CANcoder rotation.
          * @param sensorToMechanismRatio amount of sensor rotations for 1 mechanism rotations.
          */
-        fun fuseCANcoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {
-            io.fuseCANCoder(encoderID, motorToSensorRatio, sensorToMechanismRatio)
+        fun remoteCANcoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) {
+            io.remoteCANCoder(encoderID, motorToSensorRatio, sensorToMechanismRatio)
         }
-        fun fuseCANcoder(encoder: LoggedCANCoder, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) =
-            fuseCANcoder(encoder.id, motorToSensorRatio, sensorToMechanismRatio)
+        fun remoteCANcoder(encoder: LoggedCANCoder, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0) =
+            remoteCANcoder(encoder.id, motorToSensorRatio, sensorToMechanismRatio)
 
         inner class PIDConfigScope {
             //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
