@@ -39,13 +39,13 @@ fun CoroutineScope.meanlibLaunch(
  */
 suspend inline fun periodic(
     period: Double = 0.02,
-    watchOverrun: Boolean = false,
+    watchOverrunMessage: String? = null,
     crossinline body: PeriodicScope.() -> Unit
 ) {
     val scope = PeriodicScope(period)
 
-    val watchdog = if (watchOverrun) {
-        Watchdog(period) { DriverStation.reportWarning("Periodic loop overrun", true) }
+    val watchdog = if (watchOverrunMessage != null) {
+        Watchdog(period) { DriverStation.reportWarning("Periodic loop overrun. $watchOverrunMessage", true) }
     } else {
         null
     }

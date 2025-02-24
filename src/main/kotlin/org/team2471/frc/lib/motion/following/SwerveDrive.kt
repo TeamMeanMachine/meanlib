@@ -282,7 +282,7 @@ private fun SwerveDrive.Module.calculateAngleAndSpeed(localGoal: Vector2): Angle
 
 suspend fun SwerveDrive.Module.steerToAngle(angle: Angle, tolerance: Angle = 2.degrees) {
     try {
-        periodic(watchOverrun = false) {
+        periodic() {
             angleSetpoint = angle
 
             val error = (angle - this@steerToAngle.angle).wrap()
