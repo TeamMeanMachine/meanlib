@@ -72,7 +72,7 @@ interface MotorControllerIO {
     fun setPositionSetpoint(position: Double, feedForward: Double)
     fun setSelectedSensorPosition(sensorPos: Double)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
-    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0)
+    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0) {}
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
     fun setTorqueCurrent(current: Double) {}
