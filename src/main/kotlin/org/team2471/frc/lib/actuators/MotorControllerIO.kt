@@ -42,7 +42,7 @@ interface MotorControllerIO {
     fun config_kD(d: Double, simD: Double? = 0.0)
     fun config_kI(i: Double, simI: Double? = 0.0)
     fun config_kF(f: Double, simF: Double? = 0.0)
-    fun config_kV(v: Double)
+    fun config_kV(v: Double) {}
     fun configSim(motor: DCMotor, jKgMetersSquared: Double) {}
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double)
     fun encoderContinuous(continuous: Boolean) {}
