@@ -42,6 +42,7 @@ interface MotorControllerIO {
     fun config_kD(d: Double, simD: Double? = 0.0)
     fun config_kI(i: Double, simI: Double? = 0.0)
     fun config_kF(f: Double, simF: Double? = 0.0)
+    fun config_kV(v: Double)
     fun configSim(motor: DCMotor, jKgMetersSquared: Double) {}
     fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double)
     fun encoderContinuous(continuous: Boolean) {}
@@ -71,6 +72,7 @@ interface MotorControllerIO {
     fun setPositionSetpoint(position: Double, feedForward: Double)
     fun setSelectedSensorPosition(sensorPos: Double)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
+    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0)
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
     fun setTorqueCurrent(current: Double) {}

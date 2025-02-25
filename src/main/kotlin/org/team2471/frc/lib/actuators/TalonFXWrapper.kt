@@ -78,6 +78,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         configUnsaved = true
     }
 
+    override fun config_kV(v: Double) {
+        config.Slot0.kV = v
+        configUnsaved = true
+    }
+
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         config.CurrentLimits.apply {
             SupplyCurrentLowerLimit = continuousLimit.toDouble()
@@ -196,8 +201,12 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         _motorController.position.setUpdateFrequency(periodMs.toDouble(), timeoutSec)
     }
 
+    override fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double) {
+        _motorController.setControl(VelocityVoltage(velocity).withFeedForward(feedForward))
+    }
+
     override fun setVelocitySetpoint(velocity: Double) {
-        _motorController.setControl(VelocityDutyCycle(velocity / 10.0).withSlot(0))
+        _motorController.setControl(VelocityDutyCycle(velocity).withSlot(0))
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {

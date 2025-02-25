@@ -206,6 +206,15 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }
 
     /**
+     * Sets the closed-loop velocity setpoint using voltage control.
+     *
+     * @param velocity the closed-loop velocity setpoint
+     */
+    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0) {
+        io.setVelocitySetpointVoltage(velocity / feedbackCoefficient / 10.0, feedForward)
+    }
+
+    /**
      * Sets the closed-loop velocity setpoint.
      *
      * @param velocity the closed-loop velocity setpoint
@@ -299,6 +308,9 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     }
     fun setF(f: Double, simF: Double? = 0.0) {
         io.config_kF(f, simF)
+    }
+    fun setV(v: Double, simF: Double? = 0.0) {
+        io.config_kV(v / feedbackCoefficient)
     }
 
     fun getP() : Double = io.getPValue() * feedbackCoefficient
@@ -525,6 +537,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
             fun f(f: Double, simF: Double? = null) {
                 io.config_kF(f, simF)
+            }
+
+            fun v(v: Double) {
+                io.config_kV(v / feedbackCoefficient)
             }
         }
     }

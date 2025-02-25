@@ -11,6 +11,7 @@ value class Length(val asInches: Double) {
     operator fun times(factor: Double) = Length(asInches * factor)
 
     operator fun div(factor: Double) = Length(asInches / factor)
+    operator fun div(factor: Length) = Length(asInches / factor.asInches)
 
     operator fun rem(other: Length) = Length(asInches % other.asInches)
 
