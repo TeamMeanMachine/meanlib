@@ -80,7 +80,7 @@ class VisionPoseEstimator(
 
         resetHistories(odomKalmanFilter, odomPosHistory, odomOffsetHistory, newPos, currentTimestampSeconds, odometryReset)
         if (doesQuestExist) {
-            resetHistories(odomKalmanFilter, questPosHistory, questOffsetHistory, newPos, currentTimestampSeconds, questReset)
+            resetHistories(questKalmanFilter, questPosHistory, questOffsetHistory, newPos, currentTimestampSeconds, questReset)
         }
 
 //        val prevQuestPose =
@@ -95,14 +95,18 @@ class VisionPoseEstimator(
         kalmanFilter.reset()
 
         offsetHistory.clear()
+        kalmanFilter.reset()
         if (baseReset) {
             baseHistory.clear()
             baseHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
             offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
+            kalmanFilter.xhat = VecBuilder.fill(0.0, 0.0)
         } else {
+            val newOffset = newPos - prevPos
             baseHistory.clear()
             baseHistory[InterpolatingDouble(currentTimestampSeconds)] = prevPos
-            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos - prevPos
+            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newOffset
+            kalmanFilter.xhat = VecBuilder.fill(newOffset.x.asMeters, newOffset.y.asMeters)
         }
     }
 
