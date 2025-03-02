@@ -43,7 +43,7 @@ class AngleStruct : Struct<Angle> {
     /**
      * Gets the schema of the struct.
      *
-     * @return A string representing the schema as "double value".
+     * @return A string representing the schema.
      */
     override fun getSchema(): String {
         return "double value"

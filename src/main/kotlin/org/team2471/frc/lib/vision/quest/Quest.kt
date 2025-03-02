@@ -30,12 +30,7 @@ class Quest(
 
     var pose: Pose2d = Pose2d()
         get() {
-            if (isSim) {
-                return inputs.pose
-            } else {
-                val rot = inputs.pose.rotation - robotToQuest.rotation + field.rotation
-                return Pose2d(inputs.pose.translation - robotToQuest.translation.rotateBy(rot) + field.translation, rot)
-            }
+            return Pose2d(inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
         }
         set(value) { field += value - pose}
 

@@ -3,6 +3,7 @@
 
 import org.junit.jupiter.api.Test
 import org.team2471.frc.lib.math.Vector2
+import java.nio.ByteBuffer
 
 class Vector2Tests {
     @Test

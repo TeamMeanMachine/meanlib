@@ -95,22 +95,19 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
             Translation2d(
                 rawPos[2].toDouble(),
                 -rawPos[0].toDouble()
-            ).rotateBy(robotToQuest.rotation) + robotToQuest.translation,
+            ) + robotToQuest.translation.rotateBy(rotation),
             rotation
         )
     }
 }
 
 class QuestIOSim(): QuestIO {
-    var offset = Transform2d()
     var pose = Pose2d()
-    override suspend fun reset() {
-        offset = Pose2d() - pose
-    }
+    override suspend fun reset() {}
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true
-        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld + offset
+        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld
         pose = inputs.pose
     }
 }
