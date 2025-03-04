@@ -584,22 +584,9 @@ fun SwerveDrive.driveWithVelocity(translationPerSecond: Vector2L, turnPerSecond:
 
     if (fieldCentric) {
         requestedTranslation = requestedTranslation.rotateDegrees(-heading.asDegrees)
-        // Correct for moving while spinning
-//        requestedTranslation = requestedTranslation.rotateDegrees(turn * parameters.kMoveWhileSpin)
-        //println("Correction: ${turn * 60.0}")
     }
 
-//    if (!SmartDashboard.containsKey("DemoSpeed")) {
-//        SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
-//        SmartDashboard.setPersistent("DemoSpeed")
-//    }
-//    requestedTranslation *= demoSpeed
-
-    var requestedTurn = turnPerSecond
-
-//    requestedTurn *= demoSpeed
-
-    if (requestedTranslation.x.asFeet == 0.0 && requestedTranslation.y.asFeet == 0.0 && requestedTurn.asDegrees == 0.0) {
+    if (requestedTranslation.x.asFeet == 0.0 && requestedTranslation.y.asFeet == 0.0 && turnPerSecond.asDegrees == 0.0) {
         return stop()
     }
 
@@ -608,32 +595,32 @@ fun SwerveDrive.driveWithVelocity(translationPerSecond: Vector2L, turnPerSecond:
         requestedLocalGoals[i] = requestedTranslation + (modules[i].modulePosition - robotPivot).perpendicular() * (2.0 * Math.PI) * turnPerSecond.asRotations
     }
 
-    val speeds = Array(modules.size) { 0.0.feet }
+    val speeds = Array(modules.size) { 0.0 }
 
     for (i in modules.indices) {
         val angleAndSpeed = modules[i].calculateAngleAndSpeed(requestedLocalGoals[i].asFeet)
         modules[i].angleSetpoint = angleAndSpeed.angle
-        speeds[i] = angleAndSpeed.power.feet
+        speeds[i] = angleAndSpeed.power
     }
 
     // adjust wheels to account for velocity of highest speed wheel
-    val maxSpeed = speeds.maxByOrNull { it.asFeet.absoluteValue }!!
-    if (maxSpeed > MAXTRANSLATIONSPEED_FEET_PER_SECOND.feet) {
+    val maxSpeed = speeds.maxByOrNull { it.absoluteValue }!!
+    if (maxSpeed > MAXTRANSLATIONSPEED_FEET_PER_SECOND) {
         for (i in speeds.indices) {
-            speeds[i] /= maxSpeed
+            speeds[i] /= maxSpeed * MAXTRANSLATIONSPEED_FEET_PER_SECOND
         }
     }
 
     for (i in modules.indices) {
         //print("${modules[i].currDistance} ")
-        modules[i].setDriveVelocityVoltage(speeds[i].perSecond)
+        modules[i].setDriveVelocityVoltage(speeds[i].feet.perSecond)
     }
 
     if (isSim && useMapleSim) {
         val moduleStates = Array(modules.size) { SwerveModuleState() }
         for (i in modules.indices) {
             moduleStates[i] = SwerveModuleState(
-                speeds[i].asMeters,
+                speeds[i].feet.asMeters,
                 modules[i].angleSetpoint.wrap().asRotation2d)
         }
         simulatedDrive.runSwerveStates(moduleStates)

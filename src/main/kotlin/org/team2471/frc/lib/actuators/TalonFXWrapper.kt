@@ -186,7 +186,7 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     }
 
     override fun setPositionSetpoint(position: Double) {
-        _motorController.setControl(PositionDutyCycle(position).withSlot(0))
+        _motorController.setControl(PositionDutyCycle(position).withSlot(0).withEnableFOC(true))
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
@@ -202,16 +202,16 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
     }
 
     override fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double) {
-        _motorController.setControl(VelocityVoltage(velocity).withFeedForward(feedForward))
+        _motorController.setControl(VelocityVoltage(velocity).withFeedForward(feedForward).withEnableFOC(true))
     }
 
     override fun setVelocitySetpoint(velocity: Double) {
-        _motorController.setControl(VelocityDutyCycle(velocity).withSlot(0))
+        _motorController.setControl(VelocityDutyCycle(velocity).withSlot(0).withEnableFOC(true))
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
         _motorController.setControl(
-            VelocityDutyCycle(velocity).withFeedForward(feedForward).withSlot(0)
+            VelocityDutyCycle(velocity).withFeedForward(feedForward).withSlot(0).withEnableFOC(true)
         )
     }
 

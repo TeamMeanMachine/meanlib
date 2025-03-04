@@ -211,7 +211,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param velocity the closed-loop velocity setpoint
      */
     fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0) {
-        io.setVelocitySetpointVoltage(velocity / feedbackCoefficient / 10.0, feedForward)
+        io.setVelocitySetpointVoltage(velocity / feedbackCoefficient, feedForward)
     }
 
     /**
