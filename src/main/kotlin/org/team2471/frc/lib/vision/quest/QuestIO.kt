@@ -11,9 +11,7 @@ import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
 import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.motion.following.SwerveDrive
-import org.team2471.frc.lib.units.asWPIUnit
-import org.team2471.frc.lib.units.degrees
-import org.team2471.frc.lib.units.radians
+import org.team2471.frc.lib.units.*
 
 interface QuestIO {
     class QuestIOInputs : LoggableInputs {
@@ -35,7 +33,7 @@ interface QuestIO {
 
     }
 
-    suspend fun reset()
+    suspend fun reset(heading: Angle)
     fun updateInputs(inputs: QuestIOInputs)
 }
 
@@ -52,6 +50,8 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 
     private val questMisoEntry = table.getIntegerTopic("miso").subscribe(0)
     private val questMosiEntry = table.getIntegerTopic("mosi").publish()
+
+    private var headingOffset = Rotation2d()
 
     var isConnected = false
 
@@ -71,13 +71,14 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     }
 
     // Only call if quest is connected
-    override suspend fun reset() {
+    override suspend fun reset(heading: Angle) {
         if (questMisoEntry.get() != 99L) {
             questMosiEntry.set(1)
 //            suspendUntil { questMisoEntry.get() == 99L }
             delay(0.25)
             questMosiEntry.set(0)
         }
+        headingOffset = Rotation2d(heading.asWPIUnit)
     }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
@@ -97,13 +98,13 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
                 -rawPos[0].toDouble()
             ) + robotToQuest.translation.rotateBy(rotation),
             rotation
-        )
+        ).rotateBy(headingOffset)
     }
 }
 
 class QuestIOSim(): QuestIO {
     var pose = Pose2d()
-    override suspend fun reset() {}
+    override suspend fun reset(heading: Angle) {}
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true

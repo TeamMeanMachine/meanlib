@@ -38,14 +38,14 @@ class Quest(
     val isConnected: Boolean
         get() = inputs.isConnected
 
-    suspend fun reset() {
-        io.reset()
+    suspend fun reset(heading: Angle) {
+        io.reset(heading)
     }
 
 
     init {
         GlobalScope.launch {
-            io.reset()
+            io.reset(0.0.degrees)
             periodic {
                 io.updateInputs(inputs)
                 posePublisher.set(pose)
