@@ -360,6 +360,8 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      */
     fun coastMode() = allMotorControllers { it.coastMode() }
 
+    fun openLoopRamp(secondsToFull: Double) = allMotorControllers { it.openLoopRamp(secondsToFull) }
+
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
          * The primary, "master" [internalMotorController].

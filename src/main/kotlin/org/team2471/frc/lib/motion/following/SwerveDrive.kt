@@ -795,7 +795,7 @@ suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
     heading: Angle? = null,
     useApriltags: Boolean = true,
-    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean = {seconds, error -> error.length > 0.5.feet},
+    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean = {seconds, error -> error.length < 0.5.feet},
     turnOverride: () -> Double? = {null}
 ) {
     println("driving to point $point")
@@ -808,12 +808,6 @@ suspend fun SwerveDrive.driveToPoint(
     t.start()
 
     periodic {
-        if (exitSupplier(t.get(), prevPositionError)) {
-            println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError ")
-            MeanLogger.recordOutput("driveToPoint Point", Pose2d())
-            stop()
-        }
-
         val currentPosition = if (useApriltags) poseEstimator.latestPos else position.feet
         val positionError = currentPosition - point
         val velocity = velocity.feet
@@ -849,6 +843,11 @@ suspend fun SwerveDrive.driveToPoint(
             } else if (headingError < 3.0.degrees) {
                 stop()
             }
+        }
+        if (exitSupplier(t.get(), prevPositionError)) {
+            println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError ")
+            MeanLogger.recordOutput("driveToPoint Point", Pose2d())
+            stop()
         }
     }
 }
