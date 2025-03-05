@@ -434,7 +434,8 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
     inResetGyro: Boolean? = null,
     turnOverride: () -> Double? = { null },
     earlyExit: (percentComplete: Double) -> Boolean = { false },
-    useApriltags: Boolean = false
+    useApriltags: Boolean = false,
+    useVelocity: Boolean = false
 ) {
     println("inside driveAlongChoreoPath ${path?.name()}")
 
@@ -451,7 +452,11 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
             currSample.chassisSpeeds.omegaRadiansPerSecond.radians)
     }
 
-    driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
+    if (useVelocity) {
+        driveAlongPathGenericWithVelocity(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
+    } else {
+        driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
+    }
 }
 
 suspend fun SwerveDrive.driveAlongPathGeneric(
@@ -555,6 +560,130 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
 
         // send it
         drive(Vector2(translationControlField.y, -translationControlField.x), turnOverride() ?: turnControl, true)
+
+        // are we done yet?
+        if (t >= path(t).totalTime + extraTime) {
+            println("exiting path")
+            stop()
+        }
+        if (earlyExit(t / (path(t).totalTime + extraTime))) {
+            println("early exiting path. time: $t  duration: ${path(t).totalTime} percent complete: ${t / path(t).totalTime}")
+            stop()
+        }
+        prevTime = t
+
+//        println("Time=$t Path Position=$pathPosition Position=$position")
+//        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
+    }
+    println("at the end of driveAlongChoreoPath")
+    MeanLogger.recordOutput("pathPose", Pose2d())
+
+    // shut it down
+    drive(Vector2(0.0, 0.0), 0.0, true)
+//    actualRoute.setDoubleArray(doubleArrayOf())
+//    plannedPath.setString("")
+}
+suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
+    path: (seconds: Double) -> SwerveDrive.PathPose,
+    resetOdometry: Boolean = false,
+    extraTime: Double = 0.0,
+    inResetGyro: Boolean? = null,
+    turnOverride: () -> Double? = { null },
+    earlyExit: (percentComplete: Double) -> Boolean = { false },
+    useApriltags: Boolean = false
+) {
+    println("inside driveAlongPathGeneric ${path(0.0)}")
+    if (path(0.0).velocityPerSec == null || path(0.0).rotationalVelocityPerSec == null) throw IllegalArgumentException("Path Velocity is null, path is corrupted or not using choreo path")
+
+    if (inResetGyro ?: resetOdometry) {
+        println("Heading = $heading")
+        heading = path(0.0).heading
+        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+        println("After Reset Heading = $heading")
+    }
+
+    if (resetOdometry) {
+        println("Position = $position")
+
+        // set to the numbers required for the start of the path
+
+        if (isSim && useMapleSim) {
+            simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+            println("maplesim pose after reset ${simulatedDrive.actualPoseInSimulationWorld.translation.asVector2().meters.asFeet}")
+        }
+        position = path(0.0).position.asFeet
+        if (useApriltags) {
+            poseEstimator.reset(path(0.0).position, odometryReset = true)
+        }
+//        position = path(0.0).position.asFeet
+//        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
+//        prevPosition = position
+
+        println("After Reset Position = $position")
+        println("April Tag Position = ${poseEstimator.latestPos}")
+    }
+
+
+    var prevTime = -0.2
+
+    val timer = Timer()
+    timer.start()
+    var prevPositionError = Vector2(0.0, 0.0).meters
+    var prevHeadingError = 0.0.degrees
+    suspendUntil(10) { timer.get() != 0.0 }
+    println("entering drive periodic")
+    periodic {
+        val t = timer.get()
+        val dt = if (t - prevTime != 0.0) t - prevTime else 0.02
+        val pathSample = path(t)
+
+        // position error
+        val pathPosition = pathSample.position
+        val currentPosition = if (useApriltags) poseEstimator.latestPos else position.feet
+        val positionError = pathPosition - currentPosition
+//        println("time=$t   dt=$dt    pathPosition=$pathPosition position=$currentPosition positionError=$positionError")
+
+        // position feed forward
+        val pathVelocity = pathSample.velocityPerSec!!
+
+        // position d
+        val deltaPositionError = positionError - prevPositionError
+        prevPositionError = positionError
+
+        var translationControlField = pathVelocity.asFeet + positionError.asFeet * parameters.kpPosition * 14.5 + deltaPositionError.asFeet * parameters.kdPosition * 00.0
+
+        translationControlField = Vector2(-translationControlField.y, translationControlField.x)
+//        println("translationControlField = $translationControlField")
+
+
+        // heading error
+        val robotHeading = heading
+        val pathHeading = pathSample.heading
+        MeanLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
+        val headingError = (robotHeading - pathHeading).wrap()
+//        println("Heading Error: $headingError. pathHeading: $pathHeading")
+
+        // heading feed forward
+        val headingVelocity = pathSample.rotationalVelocityPerSec!!
+
+        // heading d
+        val deltaHeadingError = headingError - prevHeadingError
+        prevHeadingError = headingError
+
+        val turnControl = headingVelocity.asDegrees + headingError.asDegrees * parameters.kpHeading * 500.0 + deltaHeadingError.asDegrees * parameters.kdHeading * 500.0
+//        println("Turn Control: $turnControl")
+        if (turnControl.isNaN() || translationControlField.y.isNaN() || translationControlField.x.isNaN()) {
+            println("turnControl: $turnControl")
+            println("translationControlField $translationControlField")
+            println("dt: $dt")
+
+//            throw IllegalArgumentException("requestedVolts == NaN")
+        }
+
+        // send it
+        driveWithVelocity(Vector2L(translationControlField.y.feet, -translationControlField.x.feet), turnOverride()?.degrees ?: turnControl.degrees, true)
 
         // are we done yet?
         if (t >= path(t).totalTime + extraTime) {
