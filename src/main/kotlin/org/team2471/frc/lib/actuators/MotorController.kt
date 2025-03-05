@@ -309,7 +309,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     fun setF(f: Double, simF: Double? = 0.0) {
         io.config_kF(f, simF)
     }
-    fun setV(v: Double, simF: Double? = 0.0) {
+    fun setV(v: Double) {
         io.config_kV(v / feedbackCoefficient)
     }
 
