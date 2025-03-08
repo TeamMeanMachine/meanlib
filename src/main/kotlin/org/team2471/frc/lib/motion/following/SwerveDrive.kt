@@ -941,7 +941,9 @@ suspend fun SwerveDrive.driveToPoint(
         prevPosition = currentPosition
         val deltaPositionError = positionError - prevPositionError
         prevPositionError = positionError
-        val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
+
+        val staticFriction = if (positionError.length > 0.0.inches) { positionError.normalize() * 0.02 } else Vector2(0.0, 0.0).inches
+        val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition + staticFriction
 
         val turnControl: Double
         var headingError = 0.0.degrees
