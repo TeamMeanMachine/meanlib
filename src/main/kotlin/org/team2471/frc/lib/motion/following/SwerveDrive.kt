@@ -964,7 +964,7 @@ suspend fun SwerveDrive.driveToPoint(
             fieldCentric = true
        )
 
-        if (positionError.length < 1.0.inches) {
+        if (positionError.length < 0.5.inches) {
             if (heading == null) {
                 stop()
             } else if (headingError < 3.0.degrees) {
