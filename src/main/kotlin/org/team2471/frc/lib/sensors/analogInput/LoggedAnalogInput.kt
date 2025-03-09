@@ -2,11 +2,11 @@ package org.team2471.frc.lib.sensors.analogInput
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
 import edu.wpi.first.wpilibj.AnalogInput
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 
 
 /**
@@ -30,7 +30,7 @@ class LoggedAnalogInput(id: Int, name: String, simTicksSupplier: () -> Int = {0}
         GlobalScope.launch {
             periodic {
                 io.updateInputs(inputs)
-                Logger.processInputs("Sensors", inputs)
+                MeanLogger.processInputs("Sensors", inputs)
             }
         }
     }

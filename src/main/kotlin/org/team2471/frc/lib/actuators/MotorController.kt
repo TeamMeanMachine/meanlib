@@ -4,8 +4,8 @@ import edu.wpi.first.math.system.plant.DCMotor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.sensors.canCoder.LoggedCANCoder
 import org.team2471.frc.lib.units.*
@@ -79,13 +79,13 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     init {
         io.updateInputs(inputs)
-        Logger.processInputs("Motors", inputs)
+        MeanLogger.processInputs("Motors", inputs)
         GlobalScope.launch {
             periodic(0.02) {
                 if (doUpdate) {
                     io.updateInputs(inputs)
                     followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
-                    Logger.processInputs("Motors", inputs)
+                    MeanLogger.processInputs("Motors", inputs)
                 }
             }
         }

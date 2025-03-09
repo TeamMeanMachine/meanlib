@@ -9,13 +9,9 @@ import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.estimator.ExtendedKalmanFilter
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N2
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
-import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.getRealFPGATimestamp
 
 // Huge thanks to 1678, thank you so much for pioneering this

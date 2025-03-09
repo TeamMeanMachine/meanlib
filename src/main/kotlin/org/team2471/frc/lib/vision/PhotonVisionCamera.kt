@@ -6,16 +6,10 @@ import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.*
-import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
-import org.team2471.frc.lib.math.*
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.asRadians
-import org.team2471.frc.lib.util.MeanLogger
-import org.team2471.frc.lib.util.length
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
-import kotlin.math.pow
 
 
 class PhotonVisionCamera(

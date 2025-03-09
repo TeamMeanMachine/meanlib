@@ -6,13 +6,12 @@ import edu.wpi.first.networktables.NetworkTable
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.Logger
 import org.photonvision.PhotonPoseEstimator
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.Timer
 import org.team2471.frc.lib.util.calculateAverage
@@ -108,7 +107,7 @@ class Camera(
             periodic {
                 // Updates and logs the inputs
                 io.updateInputs(inputs)
-                Logger.processInputs("Cameras/", inputs)
+                MeanLogger.processInputs("Cameras/", inputs)
             }
         }
     }

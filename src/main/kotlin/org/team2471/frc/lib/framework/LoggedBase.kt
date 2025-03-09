@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.Timer.delay
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.LoggedRobot
 import org.team2471.frc.lib.coroutines.MeanlibDispatcher
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLoggedRobot
 
 private val m_word = DSControlWord()
 
@@ -16,7 +16,7 @@ private val m_word = DSControlWord()
  * The core robot program to run. The methods in this interface can be overridden in order to
  * execute code in the specified mode.
  */
-abstract class LoggedMeanlibRobot : LoggedRobot() {
+abstract class LoggedMeanlibRobot : MeanLoggedRobot() {
     val mainSubsystem = Subsystem("Robot").apply { enable() }
 
     @OptIn(DelicateCoroutinesApi::class)

@@ -2,8 +2,8 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
 import org.photonvision.EstimatedRobotPose
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.MeanLogger
 import org.team2471.frc.lib.util.length
 
 @JvmRecord
