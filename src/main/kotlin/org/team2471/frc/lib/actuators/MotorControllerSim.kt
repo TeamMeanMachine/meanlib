@@ -28,6 +28,7 @@ class MotorControllerSim: MotorControllerIO {
     private val pid = PIDController(0.0, 0.0, 0.0)
     private var positionSetpoint: Double? = null
     private var feedForward: Double = 0.0
+    private var remoteSensorFeedbackCoefficient: Double = 1.0
 
     //break mode
     private var breakMode = false
@@ -77,8 +78,8 @@ class MotorControllerSim: MotorControllerIO {
     override fun updateInputs(inputs: MotorControllerIO.MotorControllerIOInputs) {
         sim.update(0.02)
 
-        inputs.position = (sim.angularPositionRotations)
-        inputs.velocity = (sim.angularVelocityRPM) / 60.0
+        inputs.position = sim.angularPositionRotations / remoteSensorFeedbackCoefficient
+        inputs.velocity = sim.angularVelocityRPM / 60.0
         inputs.current = sim.currentDrawAmps.absoluteValue
         inputs.outputPercent = outputPercent
         inputs.temp = 0.0
@@ -115,6 +116,10 @@ class MotorControllerSim: MotorControllerIO {
     override fun restoreFactoryDefaults() = configSim(DCMotor.getKrakenX60Foc(1), 1.0)
 
     override fun stop() = setPercentOutput(0.0)
+
+    override fun remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double) {
+        remoteSensorFeedbackCoefficient = motorToSensorRatio
+    }
 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         this.motor = motor
