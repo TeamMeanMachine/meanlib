@@ -921,9 +921,9 @@ suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
     heading: Angle? = null,
     useApriltags: Boolean = true,
-    exitSupplier: (elapsedTime: Double, error: Vector2L) -> Boolean = {seconds, error -> error.length < 0.5.feet},
+    exitSupplier: (elapsedTime: Double, error: Vector2L, headingError: Angle?) -> Boolean = {seconds, error, headingError -> error.length < 0.5.feet && (headingError == null || headingError < 3.0.degrees)},
     turnOverride: () -> Double? = {null},
-    logFunction: (point: Vector2L) -> Unit = {null}
+    logFunction: (point: Vector2L) -> Unit = {}
 ) {
     println("driving to point $point")
     MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(0.0))
@@ -947,7 +947,7 @@ suspend fun SwerveDrive.driveToPoint(
         val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition + staticFriction
 
         val turnControl: Double
-        var headingError = 0.0.degrees
+        var headingError: Angle? = null
         if (heading!=null) {
             // heading error
             val robotHeading = heading
@@ -967,24 +967,17 @@ suspend fun SwerveDrive.driveToPoint(
             fieldCentric = true
        )
 
-        if (positionError.length < 0.5.inches) {
-            if (heading == null) {
-                stop()
-            } else if (headingError < 3.0.degrees) {
-                stop()
-            }
-        }
-        if (exitSupplier(t.get(), prevPositionError)) {
-            println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError ")
+        if (exitSupplier(t.get(), positionError, headingError)) {
+            println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError headingError: $headingError")
             MeanLogger.recordOutput("driveToPoint Point", Pose2d())
             stop()
         }
     }
 }
 
-suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, exitSupplier: (Double, Vector2L) -> Boolean, turnOverride: () -> Double? = {null},) {
+suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, exitSupplier: (Double, Vector2L, Angle?) -> Boolean, turnOverride: () -> Double? = {null},) {
     MeanLogger.recordOutput("Goal Pos", poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
-    this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, null, true, exitSupplier, turnOverride)
+    this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, useApriltags = true, exitSupplier = exitSupplier, turnOverride = turnOverride)
     MeanLogger.recordOutput("Goal Pos", Pose2d())
 }
 
