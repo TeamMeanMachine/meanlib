@@ -14,7 +14,6 @@ package org.team2471.frc.lib.framework.internal.akitLoggers
 
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.networktables.StringArraySubscriber
-import org.littletonrobotics.junction.Logger
 import java.util.HashMap
 
 internal object KAlertLogger {
@@ -46,7 +45,7 @@ internal object KAlertLogger {
     fun periodic() {
         if (groups == null) return
         for (group in groups!!.keys) {
-            Logger.recordOutput("$group/.type", "Alerts")
+            MeanLogger.recordOutput("$group/.type", "Alerts")
 
             // Create NetworkTables subscribers
             if (!errorSubscribers.containsKey(group)) {
@@ -66,15 +65,15 @@ internal object KAlertLogger {
             }
 
             // Get values
-            Logger.recordOutput(
+            MeanLogger.recordOutput(
                 "$group/errors", errorSubscribers[group]!!
                     .get()
             )
-            Logger.recordOutput(
+            MeanLogger.recordOutput(
                 "$group/warnings", warningSubscribers[group]!!
                     .get()
             )
-            Logger.recordOutput(
+            MeanLogger.recordOutput(
                 "$group/infos", infoSubscribers[group]!!
                     .get()
             )

@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.RobotController
 import org.littletonrobotics.conduit.ConduitApi
 import org.littletonrobotics.junction.*
-import org.littletonrobotics.junction.LogTable.LogValue
 import org.littletonrobotics.junction.console.ConsoleSource
 import org.littletonrobotics.junction.console.RIOConsoleSource
 import org.littletonrobotics.junction.console.SimConsoleSource
@@ -308,9 +307,9 @@ object MeanLogger {
                             val bytes = ByteArray(buffers[i].remaining())
                             buffers[i][bytes]
                             when (i) {
-                                0 -> entry.put("URCL/Raw/Persistent", LogValue(bytes, "URCLr3_persistent"))
-                                1 -> entry.put("URCL/Raw/Periodic", LogValue(bytes, "URCLr3_periodic"))
-                                2 -> entry.put("URCL/Raw/Aliases", LogValue(bytes, "URCLr3_aliases"))
+                                0 -> entry.put("URCL/Raw/Persistent", LogTable.LogValue(bytes, "URCLr3_persistent"))
+                                1 -> entry.put("URCL/Raw/Periodic", LogTable.LogValue(bytes, "URCLr3_periodic"))
+                                2 -> entry.put("URCL/Raw/Aliases", LogTable.LogValue(bytes, "URCLr3_aliases"))
                             }
                         }
                     }
@@ -1356,14 +1355,14 @@ object MeanLogger {
 
     fun recordOutput(key: String?, value: Vector2L) {
         synchronized(lock) {
-            try {Logger.recordOutput(key, value.asMeters.toTranslation2d())} catch (_:Exception) {}
+            try {outputTable!!.put(key, value.asMeters.toTranslation2d())} catch (_:Exception) {}
         }
     }
 
 
     fun recordOutput(key: String?, value: Vector2L, angle: Angle) {
         synchronized(lock) {
-            try {Logger.recordOutput(key, value.asMeters.toPose2d(angle))} catch (_:Exception) {}
+            try {outputTable!!.put(key, value.asMeters.toPose2d(angle))} catch (_:Exception) {}
         }
     }
 }

@@ -17,7 +17,6 @@ import edu.wpi.first.util.WPISerializable
 import edu.wpi.first.util.struct.StructSerializable
 import edu.wpi.first.wpilibj.DriverStation
 import org.littletonrobotics.junction.AutoLogOutput
-import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d
 import java.lang.reflect.Field
 import java.lang.reflect.InvocationTargetException
@@ -307,93 +306,93 @@ object KAutoLogOutputManager {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Boolean)
+                        if (value != null) MeanLogger.recordOutput(key, value as Boolean)
                     })
             } else if (type == Int::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Int)
+                        if (value != null) MeanLogger.recordOutput(key, value as Int)
                     })
             } else if (type == Long::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Long)
+                        if (value != null) MeanLogger.recordOutput(key, value as Long)
                     })
             } else if (type == Float::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Float)
+                        if (value != null) MeanLogger.recordOutput(key, value as Float)
                     })
             } else if (type == Double::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Double)
+                        if (value != null) MeanLogger.recordOutput(key, value as Double)
                     })
             } else if (type == String::class.java) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as String)
+                        if (value != null) MeanLogger.recordOutput(key, value as String)
                     })
             } else if (type.isEnum) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
                         if (value != null)  // Cannot cast to enum subclass, log the name directly
-                            Logger.recordOutput(key, (value as Enum<*>).name)
+                            MeanLogger.recordOutput(key, (value as Enum<*>).name)
                     })
             } else if (BooleanSupplier::class.java.isAssignableFrom(type)) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as BooleanSupplier)
+                        if (value != null) MeanLogger.recordOutput(key, value as BooleanSupplier)
                     })
             } else if (IntSupplier::class.java.isAssignableFrom(type)) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as IntSupplier)
+                        if (value != null) MeanLogger.recordOutput(key, value as IntSupplier)
                     })
             } else if (LongSupplier::class.java.isAssignableFrom(type)) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as LongSupplier)
+                        if (value != null) MeanLogger.recordOutput(key, value as LongSupplier)
                     })
             } else if (DoubleSupplier::class.java.isAssignableFrom(type)) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as DoubleSupplier)
+                        if (value != null) MeanLogger.recordOutput(key, value as DoubleSupplier)
                     })
             } else if (Measure::class.java.isAssignableFrom(type)) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Measure<*>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Measure<*>)
                     })
             } else if (type == LoggedMechanism2d::class.java) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as LoggedMechanism2d)
+                        if (value != null) MeanLogger.recordOutput(key, value as LoggedMechanism2d)
                     })
             } else if (type.isRecord) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Record)
+                        if (value != null) MeanLogger.recordOutput(key, value as Record)
                     })
             } else {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
                         if (value != null) try {
-                            Logger.recordOutput(key, value as WPISerializable)
+                            MeanLogger.recordOutput(key, value as WPISerializable)
                         } catch (e: ClassCastException) {
                             DriverStation.reportError(
                                 "[AdvantageKit] Auto serialization is not supported for type " + type.simpleName,
@@ -409,43 +408,43 @@ object KAutoLogOutputManager {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as ByteArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as ByteArray)
                     })
             } else if (componentType == Boolean::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as BooleanArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as BooleanArray)
                     })
             } else if (componentType == Int::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as IntArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as IntArray)
                     })
             } else if (componentType == Long::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as LongArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as LongArray)
                     })
             } else if (componentType == Float::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as FloatArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as FloatArray)
                     })
             } else if (componentType == Double::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as DoubleArray)
+                        if (value != null) MeanLogger.recordOutput(key, value as DoubleArray)
                     })
             } else if (componentType == String::class.java) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<String?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<String?>)
                     })
             } else if (componentType.isEnum) {
                 callbacks.add(
@@ -458,14 +457,14 @@ object KAutoLogOutputManager {
                             for (i in enumValue.indices) {
                                 names[i] = enumValue[i].name
                             }
-                            Logger.recordOutput(key, names)
+                            MeanLogger.recordOutput(key, names)
                         }
                     })
             } else if (componentType.isRecord) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, *value as Array<Record?>)
+                        if (value != null) MeanLogger.recordOutput(key, *value as Array<Record?>)
                     })
             } else {
                 callbacks.add(
@@ -473,7 +472,7 @@ object KAutoLogOutputManager {
                         val value = supplier.get()
                         if (value != null) {
                             try {
-                                Logger.recordOutput(key, *value as Array<StructSerializable?>)
+                                MeanLogger.recordOutput(key, *value as Array<StructSerializable?>)
                             } catch (e: ClassCastException) {
                                 DriverStation.reportError(
                                     "[AdvantageKit] Auto serialization is not supported for array type "
@@ -491,43 +490,43 @@ object KAutoLogOutputManager {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<ByteArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<ByteArray?>)
                     })
             } else if (componentType == Boolean::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<BooleanArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<BooleanArray?>)
                     })
             } else if (componentType == Int::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<IntArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<IntArray?>)
                     })
             } else if (componentType == Long::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<LongArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<LongArray?>)
                     })
             } else if (componentType == Float::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<FloatArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<FloatArray?>)
                     })
             } else if (componentType == Double::class.javaPrimitiveType) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<DoubleArray?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<DoubleArray?>)
                     })
             } else if (componentType == String::class.java) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<Array<String?>?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<Array<String?>?>)
                     })
             } else if (componentType.isEnum) {
                 callbacks.add(
@@ -544,14 +543,14 @@ object KAutoLogOutputManager {
                                     names[row]?.set(column, rowValue[column].name)
                                 }
                             }
-                            Logger.recordOutput(key, names)
+                            MeanLogger.recordOutput(key, names)
                         }
                     })
             } else if (componentType.isRecord) {
                 callbacks.add(
                     Runnable {
                         val value = supplier.get()
-                        if (value != null) Logger.recordOutput(key, value as Array<Array<Record>?>)
+                        if (value != null) MeanLogger.recordOutput(key, value as Array<Array<Record>?>)
                     })
             } else {
                 callbacks.add(
@@ -559,7 +558,7 @@ object KAutoLogOutputManager {
                         val value = supplier.get()
                         if (value != null) {
                             try {
-                                Logger.recordOutput(key, value as Array<Array<StructSerializable>?>)
+                                MeanLogger.recordOutput(key, value as Array<Array<StructSerializable>?>)
                             } catch (e: ClassCastException) {
                                 DriverStation.reportError(
                                     "[AdvantageKit] Auto serialization is not supported for 2D array type "
