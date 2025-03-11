@@ -37,6 +37,7 @@ class PhotonVisionCamera(
         setMultiTagFallbackStrategy(singleTagStrategy)
     }
 
+    override var latestPose: Pose2d = Pose2d()
     override var latestResults: MutableList<CameraResult> = mutableListOf()
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 
@@ -92,6 +93,7 @@ class PhotonVisionCamera(
 
             latestResults = tempResults
             latestGlobalPoses = tempGlobalPoses
+            if (latestGlobalPoses.isNotEmpty()) {latestPose = latestGlobalPoses.last().pose}
 
             isConnectedPub.set(inputs.isConnected)
             if (latestGlobalPoses.isNotEmpty()) {
@@ -99,7 +101,7 @@ class PhotonVisionCamera(
                 posePub.set(latestPose.pose)
                 stdDevPub.set(latestPose.stdDev)
             } else {
-                posePub.set(Pose2d())
+//                posePub.set(Pose2d())
                 stdDevPub.set(0.0)
             }
 
@@ -117,10 +119,12 @@ class PhotonVisionCamera(
             inputs.isConnected = photonCam.isConnected
             if (inputs.isConnected) {
                 poseEstimator.setReferencePose(referencePose)
-                val unreadResults = photonCam.allUnreadResults.map { poseEstimator.update(it).get() }
-                inputs.cameraResults = unreadResults.map {it.toCameraResult()} as ArrayList<CameraResult>
+                val unreadResults = photonCam.allUnreadResults
+                val ambiguities = unreadResults.map { it.bestTarget.poseAmbiguity }
+                val estimatedRobotPoses = unreadResults.map { poseEstimator.update(it).get() }
+                inputs.cameraResults = estimatedRobotPoses.mapIndexed {i, it -> it.toCameraResult(ambiguities[i])} as ArrayList<CameraResult>
                 if (unreadResults.isNotEmpty()) {
-                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *unreadResults.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
+                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *estimatedRobotPoses.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
                 } else {
                     MeanLogger.recordOutput("Cameras/$name/Raw Corners", *arrayOf<Translation2d>())
                 }

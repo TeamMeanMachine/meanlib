@@ -7,11 +7,12 @@ import edu.wpi.first.networktables.StructPublisher
 data class GlobalPose (
     val pose: Pose2d,
     val stdDev: Double,
+    val ambiguity: Double,
     val timestampSeconds: Double,
     val tagNumber: Int
 ) {
     companion object {
-        val EmptyGlobalPose = GlobalPose(Pose2d(), Double.POSITIVE_INFINITY, 0.0, 0)
+        val EmptyGlobalPose = GlobalPose(Pose2d(), Double.POSITIVE_INFINITY, 0.0, 0.0, 0)
     }
 }
 

@@ -63,6 +63,8 @@ import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
         addCamera(cameraSim, Transform3d(robotToCamera.translation, Rotation3d(robotToCamera.rotation.x, robotToCamera.rotation.y, robotToCamera.rotation.z)))
     }
 
+    override var latestPose: Pose2d = Pose2d()
+        get() = camera.latestPose
     override var latestResults: MutableList<CameraResult> = mutableListOf()
         get() = camera.latestResults
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()

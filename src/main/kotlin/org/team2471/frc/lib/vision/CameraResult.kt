@@ -14,6 +14,7 @@ data class CameraResult(
     val numTags: Int,
     // In % of image
     val avgTagDistM: Double,
+    val ambiguity: Double,
     val cameraType: CameraType,
     val isEmpty: Boolean = false
 ) {
@@ -26,6 +27,7 @@ data class CameraResult(
             GlobalPose(
                 this.pose,
                 stdDev,
+                this.ambiguity,
                 this.timeStampSeconds,
                 this.numTags
             )
@@ -53,18 +55,19 @@ data class CameraResult(
     }
 
     companion object {
-        val EmptyCameraResult = CameraResult(Pose2d(), 0.0, 0, 0.0, CameraType.LIMELIGHT, true)
+        val EmptyCameraResult = CameraResult(Pose2d(), 0.0, 0, 0.0, 0.0, CameraType.LIMELIGHT, true)
 
         fun recordOutput(key: String, value: CameraResult) {
             MeanLogger.recordOutput("$key/Pose", value.pose)
             MeanLogger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
             MeanLogger.recordOutput("$key/Tag Number", value.numTags.toDouble())
             MeanLogger.recordOutput("$key/Average Tag Area", value.avgTagDistM)
+            MeanLogger.recordOutput("$key/Ambiguity", value.ambiguity)
         }
     }
 }
 
-fun EstimatedRobotPose.toCameraResult(): CameraResult {
+fun EstimatedRobotPose.toCameraResult(ambiguity: Double): CameraResult {
     val targets = this.targetsUsed
     val numTargets = targets.size
 
@@ -83,6 +86,7 @@ fun EstimatedRobotPose.toCameraResult(): CameraResult {
         this.timestampSeconds,
         numTargets,
         avgDist.asMeters,
+        ambiguity,
         CameraType.PHOTONVISION
     )
 }
@@ -93,6 +97,7 @@ fun LimelightHelpers.PoseEstimate.toCameraResult(): CameraResult {
         this.timestampSeconds,
         this.tagCount,
         this.avgTagArea,
+        0.0,
         CameraType.LIMELIGHT,
         false
     )

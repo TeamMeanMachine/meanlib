@@ -24,6 +24,7 @@ class LimelightCamera(
         outputTable.getStructTopic("Pose $name", Pose2d.struct).publish()
     private val stdDevEntry: NetworkTableEntry = outputTable.getEntry("stdDev $name")
 
+    override var latestPose: Pose2d = Pose2d()
     override var latestResults: MutableList<CameraResult> = mutableListOf()
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 
@@ -81,6 +82,7 @@ class LimelightCamera(
 
             latestResults = inputs.cameraResults
             latestGlobalPoses = arrayListOf(globalPose)
+            latestPose = globalPose.pose
 
 
             if (inputs.isConnected) {

@@ -24,6 +24,7 @@ interface CameraIO {
         }
     }
 
+    var latestPose: Pose2d
     var latestResults: MutableList<CameraResult>
     var latestGlobalPoses: MutableList<GlobalPose>
 
@@ -40,4 +41,5 @@ interface CameraIO {
 class EmptyCamera : CameraIO {
     override var latestResults: MutableList<CameraResult> = mutableListOf()
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
+    override var latestPose: Pose2d = Pose2d()
 }
