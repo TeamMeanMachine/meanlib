@@ -120,7 +120,7 @@ class PhotonVisionCamera(
             if (inputs.isConnected) {
                 poseEstimator.setReferencePose(referencePose)
                 val unreadResults = photonCam.allUnreadResults
-                val ambiguities = unreadResults.map { it.bestTarget.poseAmbiguity }
+                val ambiguities = unreadResults.filter { it.hasTargets() }.map { it.bestTarget.poseAmbiguity }
                 val estimatedRobotPoses = unreadResults.map { poseEstimator.update(it).get() }
                 inputs.cameraResults = estimatedRobotPoses.mapIndexed {i, it -> it.toCameraResult(ambiguities[i])} as ArrayList<CameraResult>
                 if (unreadResults.isNotEmpty()) {
