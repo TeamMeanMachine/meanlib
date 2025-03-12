@@ -966,6 +966,8 @@ suspend fun SwerveDrive.driveToPoint(
                 turnControl,
                 fieldCentric = true
             )
+        } else {
+            drive(Vector2(0.0, 0.0), 0.0)
         }
         MeanLogger.recordOutput("driveToPoint PositionError", positionError.length.asInches)
 

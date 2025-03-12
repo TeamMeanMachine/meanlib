@@ -76,7 +76,7 @@ data class Vector2L(var x: Length, var y: Length) : Interpolable<Vector2L> {
     }
 
     fun getClosestPoint(vararg points: Vector2L): Vector2L {
-        return this.asMeters.getClosestPoint(*points.map {it.asMeters}.toTypedArray()).meters
+        return this.asInches.getClosestPoint(*points.map {it.asInches}.toTypedArray()).inches
     }
 
     override fun interpolate(other: Vector2L, x: Double): Vector2L {
