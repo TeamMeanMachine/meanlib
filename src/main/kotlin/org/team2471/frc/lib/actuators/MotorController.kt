@@ -544,6 +544,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
             fun v(v: Double) {
                 io.config_kV(v / feedbackCoefficient)
             }
+
+            fun a(a: Double) {
+                io.config_kA(a / feedbackCoefficient)
+            }
         }
     }
 }

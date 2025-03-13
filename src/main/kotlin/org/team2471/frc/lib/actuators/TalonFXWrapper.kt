@@ -83,6 +83,11 @@ class TalonFXWrapper(val deviceID: Int, canBus: String = "") : MotorControllerIO
         configUnsaved = true
     }
 
+    override fun config_kA(a: Double) {
+        config.Slot0.kA = a
+        configUnsaved = true
+    }
+
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         config.CurrentLimits.apply {
             SupplyCurrentLowerLimit = continuousLimit.toDouble()
