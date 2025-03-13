@@ -47,8 +47,6 @@ import java.util.function.*
 object MeanLogger {
     private const val receiverQueueCapcity = 500 // 10s at 50Hz
 
-    val lock = Any()
-
     private var running = false
     private var cycleCount: Long = 0
     private val entry = LogTable(0)
@@ -357,7 +355,7 @@ object MeanLogger {
                 // Send a copy of the data to the receivers. The original object will be
                 // kept and updated with the next timestamp (and new data if replaying).
                 // synchronized is used to prevent concurrent modification.
-                synchronized(lock) {
+                synchronized(entry) {
                     receiverQueue.add(LogTable.clone(entry))
                 }
                 receiverQueueFault = false
@@ -452,7 +450,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: ByteArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -474,7 +472,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<ByteArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -496,7 +494,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Boolean) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -518,7 +516,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: BooleanSupplier) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable?.put(key, value.asBoolean)} catch (_:Exception) {}
             }
         }
@@ -540,7 +538,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: BooleanArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -562,7 +560,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<BooleanArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -584,7 +582,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Int) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -606,7 +604,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: IntSupplier) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable?.put(key, value.asInt)} catch (_:Exception) {}
             }
         }
@@ -628,7 +626,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: IntArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -650,7 +648,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<IntArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -672,7 +670,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Long) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -694,7 +692,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: LongSupplier) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value.asLong)} catch (_:Exception) {}
             }
         }
@@ -716,7 +714,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: LongArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -738,7 +736,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<LongArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -760,7 +758,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Float) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -782,7 +780,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: FloatArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -804,7 +802,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<FloatArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -826,7 +824,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Double) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -848,7 +846,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: DoubleSupplier) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value.asDouble)} catch (_:Exception) {}
             }
         }
@@ -870,7 +868,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: DoubleArray?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -892,7 +890,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<DoubleArray?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -914,7 +912,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: String?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -936,7 +934,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<String?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -958,7 +956,7 @@ object MeanLogger {
      */
     fun recordOutput(key: String?, value: Array<Array<String?>?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -980,7 +978,7 @@ object MeanLogger {
      */
     fun <E : Enum<E>?> recordOutput(key: String?, value: E) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1002,7 +1000,7 @@ object MeanLogger {
      */
     fun <E : Enum<E>?> recordOutput(key: String?, value: Array<E>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1024,7 +1022,7 @@ object MeanLogger {
      */
     fun <E : Enum<E>?> recordOutput(key: String?, value: Array<Array<E>?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1046,7 +1044,7 @@ object MeanLogger {
      */
     fun <U : Unit?> recordOutput(key: String?, value: Measure<U>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1073,7 +1071,7 @@ object MeanLogger {
      */
     fun <T> recordOutput(key: String?, struct: Struct<T>?, value: T) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, struct, value)} catch (_:Exception) {}
             }
         }
@@ -1103,7 +1101,7 @@ object MeanLogger {
      */
     fun <T> recordOutput(key: String?, struct: Struct<T>?, vararg value: T) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, struct, *value)} catch (_:Exception) {}
             }
         }
@@ -1125,7 +1123,7 @@ object MeanLogger {
      */
     fun <T> recordOutput(key: String?, struct: Struct<T>?, value: Array<Array<T>?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, struct, value)} catch (_:Exception) {}
             }
         }
@@ -1182,7 +1180,7 @@ object MeanLogger {
     </T> */
     fun <T : WPISerializable?> recordOutput(key: String?, value: T) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1210,7 +1208,7 @@ object MeanLogger {
     </T> */
     fun <T : StructSerializable?> recordOutput(key: String?, vararg value: T) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, *value)} catch (_:Exception) {}
             }
         }
@@ -1238,7 +1236,7 @@ object MeanLogger {
     </T> */
     fun <T : StructSerializable?> recordOutput(key: String?, value: Array<Array<T>?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1266,7 +1264,7 @@ object MeanLogger {
     </R> */
     fun <R : Record?> recordOutput(key: String?, value: R) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1294,7 +1292,7 @@ object MeanLogger {
     </R> */
     fun <R : Record?> recordOutput(key: String?, vararg value: R) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, *value)} catch (_:Exception) {}
             }
         }
@@ -1322,7 +1320,7 @@ object MeanLogger {
     </R> */
     fun <R : Record?> recordOutput(key: String?, value: Array<Array<R>?>?) {
         if (running) {
-            synchronized(lock) {
+            synchronized(entry) {
                 try {outputTable!!.put(key, value)} catch (_:Exception) {}
             }
         }
@@ -1354,14 +1352,14 @@ object MeanLogger {
     }
 
     fun recordOutput(key: String?, value: Vector2L) {
-        synchronized(lock) {
+        synchronized(entry) {
             try {outputTable!!.put(key, value.asMeters.toTranslation2d())} catch (_:Exception) {}
         }
     }
 
 
     fun recordOutput(key: String?, value: Vector2L, angle: Angle) {
-        synchronized(lock) {
+        synchronized(entry) {
             try {outputTable!!.put(key, value.asMeters.toPose2d(angle))} catch (_:Exception) {}
         }
     }
