@@ -238,7 +238,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
      * @param position the closed-loop Motion Magic position setpoint
      */
     fun setMotionMagicSetpoint(position: Double) {
-        println("magicSetpoint = " + ((position / feedbackCoefficient) - rawOffset) + " rawPosition: $rawPosition position: $position feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
+//        println("magicSetpoint = " + ((position / feedbackCoefficient) - rawOffset) + " rawPosition: $rawPosition position: $position feedbackCoefficient: $feedbackCoefficient.toInt() rawOffset: $rawOffset")
         io.setMotionMagicSetpoint(((position / feedbackCoefficient) - rawOffset))
     }
     /**
@@ -458,11 +458,11 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         /**
          * Sets the [acceleration] and [cruisingVelocity] for use in Motion Magic closed loop control.
          *
-         * @param acceleration the target acceleration for Motion Magic to use
-         * @param cruisingVelocity the peak target velocity for Motion Magic to use
+         * @param acceleration the target acceleration for Motion Magic to use. Unit/sec^2
+         * @param cruisingVelocity the peak target velocity for Motion Magic to use Unit/sec
          */
         fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-            io.motionMagic(acceleration, cruisingVelocity)
+            io.motionMagic(acceleration / feedbackCoefficient, cruisingVelocity / feedbackCoefficient)
         }
 
         /**
