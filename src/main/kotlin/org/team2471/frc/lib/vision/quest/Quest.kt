@@ -30,7 +30,8 @@ class Quest(
 
     var pose: Pose2d = Pose2d()
         get() {
-            return Pose2d(inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
+            // negatives bc quest is upside down. change later
+            return Pose2d(-inputs.pose.translation + field.translation, -inputs.pose.rotation + field.rotation)
         }
         set(value) { field += value - pose}
 
