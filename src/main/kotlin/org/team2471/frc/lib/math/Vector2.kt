@@ -7,7 +7,8 @@ import edu.wpi.first.math.geometry.Translation2d
 import org.team2471.frc.lib.units.*
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.pow
+import kotlin.math.max
+import kotlin.math.min
 
 data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
     val length: Double get() = Math.sqrt(dot(this))
@@ -74,6 +75,13 @@ data class Vector2(var x: Double, var y: Double) : Interpolable<Vector2> {
         set(
             this.x.coerceIn(otherMin.x, otherMax.x),
             this.y.coerceIn(otherMin.y, otherMax.y)
+        )
+    }
+
+    fun coerceInDynamic(oneLimit: Vector2, twoLimit: Vector2) {
+        set(
+            this.x.coerceIn(min(oneLimit.x, twoLimit.x), max(oneLimit.x, twoLimit.y)),
+            this.y.coerceIn(min(oneLimit.y, twoLimit.y), max(oneLimit.y, twoLimit.y))
         )
     }
 
