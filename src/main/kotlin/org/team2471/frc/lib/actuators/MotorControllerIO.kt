@@ -58,22 +58,22 @@ interface MotorControllerIO {
     fun getSelectedSensorPosition(): Double
     fun getSelectedSensorVelocity(): Double
     fun getSelectedSensorAcceleration(): Double
-    fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
-    fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) {}
+    fun motionMagic(acceleration: Double, cruisingVelocity: Double)
+    fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double)
     fun openLoopRamp(secondsToFull: Double)
     fun peakOutputRange(range: DoubleRange) {}
     fun restoreFactoryDefaults()
     fun setInverted(invert: Boolean)
-    fun setMotionMagicSetpoint(position: Double) {}
-    fun setMotionMagicSetpoint(position: Double, feedForward: Double) {}
-    fun setMotionMagicExpoSetpoint(position: Double) {}
-    fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double) {}
+    fun setMotionMagicSetpoint(position: Double)
+    fun setMotionMagicSetpoint(position: Double, feedForward: Double)
+    fun setMotionMagicExpoSetpoint(position: Double)
+    fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double)
     fun setPercentOutput(percent: Double)
     fun setPositionSetpoint(position: Double)
     fun setPositionSetpoint(position: Double, feedForward: Double)
     fun setSelectedSensorPosition(sensorPos: Double)
     fun setStatusFramePeriod(periodMs: Int, timeoutSec: Double = 0.05) {}
-    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0) {}
+    fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double = 0.0)
     fun setVelocitySetpoint(velocity: Double)
     fun setVelocitySetpoint(velocity: Double, feedForward: Double)
     fun setTorqueCurrent(current: Double) {}

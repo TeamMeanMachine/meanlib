@@ -107,8 +107,8 @@ class QuestIOSim(): QuestIO {
     override suspend fun reset(heading: Angle) {}
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
-        inputs.isConnected = false
-        inputs.pose = SwerveDrive.simulatedDrive.actualPoseInSimulationWorld
+        inputs.isConnected = true
+        inputs.pose = Pose2d(-SwerveDrive.simulatedDrive.actualPoseInSimulationWorld.x, -SwerveDrive.simulatedDrive.actualPoseInSimulationWorld.y, SwerveDrive.simulatedDrive.actualPoseInSimulationWorld.rotation)
         pose = inputs.pose
     }
 }

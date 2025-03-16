@@ -88,6 +88,10 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         _motorController.encoder.position = sensorPos
     }
 
+    override fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double) {
+        setVelocitySetpoint(velocity, feedForward)
+    }
+
     override fun setPercentOutput(percent: Double) {
         _motorController.set(percent)
     }
@@ -138,6 +142,18 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun setMotionMagicSetpoint(position: Double) {
         _motorController.closedLoopController.setReference(position, SparkBase.ControlType.kMAXMotionPositionControl)
+    }
+
+    override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
+        _motorController.closedLoopController.setReference(position, SparkBase.ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, feedForward)
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double) {
+        println("MM expo does not exist in SparkMax")
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double) {
+        println("MM expo does not exist in SparkMax")
     }
 
     override fun config_kP(p: Double, simP: Double?) {
@@ -191,6 +207,8 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
             .allowedClosedLoopError(0.0)
         })
     }
+
+    override fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) { println("MM expo does not exist in SparkMax")}
 
     private fun applyConfig(newConfig: SparkBaseConfig) {
         _motorController.configure(newConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)

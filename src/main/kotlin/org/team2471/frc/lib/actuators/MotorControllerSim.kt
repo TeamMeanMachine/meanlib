@@ -27,7 +27,6 @@ class MotorControllerSim: MotorControllerIO {
     //control
     private val pid = PIDController(0.0, 0.0, 0.0)
     private var positionSetpoint: Double? = null
-    private var feedForward: Double = 0.0
     private var remoteSensorFeedbackCoefficient: Double = 1.0
 
     //break mode
@@ -57,7 +56,7 @@ class MotorControllerSim: MotorControllerIO {
                 if (positionSetpoint != null) { //do closed loop control
 //                    if (inputs.name == "Drive/FLS") println("error ${getClosedLoopError().round(1)} \t setpoint ${positionSetpoint!!.round(1)} \t angle ${getSelectedSensorPosition().round(1)}")
                     setPercentOutput(
-                        pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition()) + feedForward
+                        pid.calculate(getSelectedSensorPosition(), positionSetpoint ?: getSelectedSensorPosition())
                     )
                 }
 
@@ -90,12 +89,13 @@ class MotorControllerSim: MotorControllerIO {
     //if simP is set to 0.0 it will not change (in cases when you only want to change the "real p")
     override fun config_kP(p: Double, simP: Double?) { pid.p = if (simP == 0.0) pid.p else simP ?: p }
     override fun config_kI(i: Double, simI: Double?) { pid.i = if (simI == 0.0) pid.i else simI ?: i }
+    override fun config_kF(f: Double, simF: Double?) {}
+
     override fun config_kD(d: Double, simD: Double?) { pid.d = if (simD == 0.0) pid.d else simD ?: d }
-    override fun config_kF(f: Double, simF: Double?) { feedForward = if (simF == 0.0) feedForward else simF ?: f}
 
     override fun getPValue(): Double = pid.p
     override fun getIValue(): Double = pid.i
-    override fun getFValue(): Double = feedForward
+    override fun getFValue(): Double = 0.0
 
     override fun getDValue(): Double = pid.d
 
@@ -108,10 +108,14 @@ class MotorControllerSim: MotorControllerIO {
     override fun getSelectedSensorPosition(): Double = inputs.position
     override fun getSelectedSensorVelocity(): Double = inputs.velocity
     override fun getSelectedSensorAcceleration(): Double = acceleration
+    override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {}
+
+    override fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) {}
 
     override fun getClosedLoopError(): Double = (positionSetpoint ?: 0.0) - getSelectedSensorPosition()
 
     override fun setSelectedSensorPosition(sensorPos: Double) = sim.setState(sensorPos.rotations.asRadians, getSelectedSensorVelocity())
+    override fun setVelocitySetpointVoltage(velocity: Double, feedForward: Double) {}
 
     override fun restoreFactoryDefaults() = configSim(DCMotor.getKrakenX60Foc(1), 1.0)
 
@@ -138,7 +142,22 @@ class MotorControllerSim: MotorControllerIO {
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
         positionSetpoint = position
-        this.feedForward = feedForward
+    }
+
+    override fun setMotionMagicSetpoint(position: Double) {
+        positionSetpoint = position
+    }
+
+    override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
+        positionSetpoint = position
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double) {
+        positionSetpoint = position
+    }
+
+    override fun setMotionMagicExpoSetpoint(position: Double, feedForward: Double) {
+        positionSetpoint = position
     }
 
     private fun setVoltageOutput(requestedVolts: Double) {
