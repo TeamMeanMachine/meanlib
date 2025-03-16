@@ -239,14 +239,14 @@ object MeanLogger {
         if (running) {
             // Get next entry
             val entryUpdateStart = RobotController.getFPGATime()
-            if (replaySource == null) {
-                synchronized(entry) {
+            synchronized(entry) {
+                if (replaySource == null) {
                     entry.timestamp = RobotController.getFPGATime()
-                }
-            } else {
-                if (!replaySource!!.updateTable(entry)) {
-                    end()
-                    System.exit(0)
+                } else {
+                    if (!replaySource!!.updateTable(entry)) {
+                        end()
+                        System.exit(0)
+                    }
                 }
             }
 
@@ -288,26 +288,34 @@ object MeanLogger {
             // Update Driver Station
             val dsStart = RobotController.getFPGATime()
             if (!hasReplaySource()) {
-                LoggedDriverStation.saveToLog(entry.getSubtable("DriverStation"))
+                synchronized(entry) {
+                    LoggedDriverStation.saveToLog(entry.getSubtable("DriverStation"))
+                }
             }
 
             // Save other conduit inputs
             val conduitSaveStart = RobotController.getFPGATime()
             if (!hasReplaySource()) {
-                LoggedSystemStats.saveToLog(entry.getSubtable("SystemStats"))
+                synchronized(entry) {
+                    LoggedSystemStats.saveToLog(entry.getSubtable("SystemStats"))
+                }
                 val loggedPowerDistribution = LoggedPowerDistribution.getInstance()
-                loggedPowerDistribution?.saveToLog(entry.getSubtable("PowerDistribution"))
+                synchronized(entry) {
+                    loggedPowerDistribution?.saveToLog(entry.getSubtable("PowerDistribution"))
+                }
                 if (urclSupplier != null && RobotBase.isReal()) {
                     val buffers = urclSupplier!!.get()
                     if (buffers.size == 3) {
-                        for (i in 0..2) {
-                            buffers[i].rewind()
-                            val bytes = ByteArray(buffers[i].remaining())
-                            buffers[i][bytes]
-                            when (i) {
-                                0 -> entry.put("URCL/Raw/Persistent", LogTable.LogValue(bytes, "URCLr3_persistent"))
-                                1 -> entry.put("URCL/Raw/Periodic", LogTable.LogValue(bytes, "URCLr3_periodic"))
-                                2 -> entry.put("URCL/Raw/Aliases", LogTable.LogValue(bytes, "URCLr3_aliases"))
+                        synchronized(entry) {
+                            for (i in 0..2) {
+                                buffers[i].rewind()
+                                val bytes = ByteArray(buffers[i].remaining())
+                                buffers[i][bytes]
+                                when (i) {
+                                    0 -> entry.put("URCL/Raw/Persistent", LogTable.LogValue(bytes, "URCLr3_persistent"))
+                                    1 -> entry.put("URCL/Raw/Periodic", LogTable.LogValue(bytes, "URCLr3_periodic"))
+                                    2 -> entry.put("URCL/Raw/Aliases", LogTable.LogValue(bytes, "URCLr3_aliases"))
+                                }
                             }
                         }
                     }
@@ -427,7 +435,9 @@ object MeanLogger {
     fun processInputs(key: String?, inputs: LoggableInputs) {
         if (running) {
             if (replaySource == null) {
-                inputs.toLog(entry.getSubtable(key))
+                synchronized(entry) {
+                    inputs.toLog(entry.getSubtable(key))
+                }
             } else {
                 inputs.fromLog(entry.getSubtable(key))
             }

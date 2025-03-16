@@ -597,12 +597,9 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     earlyExit: (percentComplete: Double) -> Boolean = { false },
     useApriltags: Boolean = false
 ) {
-    val t = Timer()
-    t.start()
     println("inside driveAlongPathGeneric ${path(0.0)}. New timer started.")
     if (path(0.0).velocityPerSec == null || path(0.0).rotationalVelocityPerSec == null) throw IllegalArgumentException("Path Velocity is null, path is corrupted or not using choreo path")
 
-    println("Before reset: ${t.get()}")
     if (inResetGyro ?: resetOdometry) {
         println("Heading = $heading")
         heading = path(0.0).heading
@@ -633,7 +630,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
         println("April Tag Position = ${poseEstimator.latestPos}")
     }
 
-    println("After reset. (we don't reset but still adding this) t: ${t.get()}")
+    println("After reset. (we don't reset but still adding this)")
 
 
     var prevTime = -0.2
@@ -643,7 +640,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     var prevPositionError = Vector2(0.0, 0.0).meters
     var prevHeadingError = 0.0.degrees
     suspendUntil(10) { timer.get() != 0.0 }
-    println("entering drive periodic. time: ${t.get()}")
+    println("entering drive periodic.")
     periodic {
         val t = timer.get()
         val dt = if (t - prevTime != 0.0) t - prevTime else 0.02
