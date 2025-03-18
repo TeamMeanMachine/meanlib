@@ -743,7 +743,8 @@ fun SwerveDrive.driveWithVelocity(translationPerSecond: Vector2L, turnPerSecond:
     val maxSpeed = speeds.maxByOrNull { it.absoluteValue }!!
     if (maxSpeed > MAXTRANSLATIONSPEED_FEET_PER_SECOND) {
         for (i in speeds.indices) {
-            speeds[i] /= maxSpeed * MAXTRANSLATIONSPEED_FEET_PER_SECOND
+            speeds[i] /= maxSpeed
+            speeds[i] *= MAXTRANSLATIONSPEED_FEET_PER_SECOND
         }
     }
 
