@@ -27,11 +27,11 @@ class LoggedAnalogInput(id: Int, name: String, simTicksSupplier: () -> Int = {0}
     val voltage: Double get() = inputs.voltage
 
     init {
-        GlobalScope.launch {
-            periodic {
-                io.updateInputs(inputs)
-                MeanLogger.processInputs("Sensors", inputs)
-            }
-        }
+        MasterAnalogInput.addAnalogInput(this)
+    }
+
+    fun periodicLoop() {
+        io.updateInputs(inputs)
+        MeanLogger.processInputs("Sensors", inputs)
     }
 }

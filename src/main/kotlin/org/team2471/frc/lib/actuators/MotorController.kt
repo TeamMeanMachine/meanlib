@@ -80,14 +80,14 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
     init {
         io.updateInputs(inputs)
         MeanLogger.processInputs("Motors", inputs)
-        GlobalScope.launch {
-            periodic(0.02) {
-                if (doUpdate) {
-                    io.updateInputs(inputs)
-                    followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
-                    MeanLogger.processInputs("Motors", inputs)
-                }
-            }
+        MasterMotor.addMotor(this)
+    }
+
+    fun periodicLoop() {
+        if (doUpdate) {
+            io.updateInputs(inputs)
+            followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
+            MeanLogger.processInputs("Motors", inputs)
         }
     }
 

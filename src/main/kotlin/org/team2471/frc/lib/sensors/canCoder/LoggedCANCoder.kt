@@ -24,12 +24,12 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
     init {
         io.updateInputs(inputs)
         MeanLogger.processInputs("Sensors", inputs)
-        GlobalScope.launch {
-            periodic {
-                io.updateInputs(inputs)
-                MeanLogger.processInputs("Sensors", inputs)
-            }
-        }
+        MasterCANCoder.addCANCoder(this)
+    }
+
+    fun periodicLoop() {
+        io.updateInputs(inputs)
+        MeanLogger.processInputs("Sensors", inputs)
     }
 
     fun setInverted(invert: Boolean) {
