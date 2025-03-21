@@ -87,22 +87,25 @@ class VisionPoseEstimator(
     }
 
     private fun resetHistories(kalmanFilter: ExtendedKalmanFilter<N2, N2, N2>, baseHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, offsetHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L>, newPos: Vector2L, currentTimestampSeconds: Double, baseReset: Boolean) {
-        val prevPos = baseHistory.lastEntry().value
-        kalmanFilter.reset()
-
         offsetHistory.clear()
         kalmanFilter.reset()
-        if (baseReset) {
-            baseHistory.clear()
-            baseHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
-            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
-            kalmanFilter.xhat = VecBuilder.fill(0.0, 0.0)
-        } else {
-            val newOffset = newPos - prevPos
-            baseHistory.clear()
-            baseHistory[InterpolatingDouble(currentTimestampSeconds)] = prevPos
-            offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newOffset
-            kalmanFilter.xhat = VecBuilder.fill(newOffset.x.asMeters, newOffset.y.asMeters)
+        try {
+            val prevPos = baseHistory.lastEntry().value
+
+            if (baseReset) {
+                baseHistory.clear()
+                baseHistory[InterpolatingDouble(currentTimestampSeconds)] = newPos
+                offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = Vector2L.Zeros
+                kalmanFilter.xhat = VecBuilder.fill(0.0, 0.0)
+            } else {
+                val newOffset = newPos - prevPos
+                baseHistory.clear()
+                baseHistory[InterpolatingDouble(currentTimestampSeconds)] = prevPos
+                offsetHistory[InterpolatingDouble(currentTimestampSeconds)] = newOffset
+                kalmanFilter.xhat = VecBuilder.fill(newOffset.x.asMeters, newOffset.y.asMeters)
+            }
+        } catch (_:Exception) {
+            println("Reset Error D:")
         }
     }
 
@@ -172,7 +175,8 @@ class VisionPoseEstimator(
 
             offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] = Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
         } catch (e: Exception) {
-            println("Error updating vision pose: $e")
+            println("Error updating vision pose")
+//            e.printStackTrace()
         }
     }
 }
