@@ -122,7 +122,11 @@ class PhotonVisionCamera(
                 val unreadResults = photonCam.allUnreadResults
                 val ambiguities = unreadResults.filter { it.hasTargets() }.map { it.bestTarget.poseAmbiguity }
                 val estimatedRobotPoses = unreadResults.map { poseEstimator.update(it).get() }
+                val tempCameraResults = ArrayList<CameraResult>()
                 inputs.cameraResults = estimatedRobotPoses.mapIndexed {i, it -> it.toCameraResult(ambiguities[i])} as ArrayList<CameraResult>
+                for (i in estimatedRobotPoses.indices) {
+                    estimatedRobotPoses[i].toCameraResult(ambiguities[i])
+                }
                 if (unreadResults.isNotEmpty()) {
                     MeanLogger.recordOutput("Cameras/$name/Raw Corners", *estimatedRobotPoses.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
                 } else {

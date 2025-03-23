@@ -78,7 +78,7 @@ fun EstimatedRobotPose.toCameraResult(ambiguity: Double): CameraResult {
     }
 
     avgDist /= numTargets.toDouble()
-    this.targetsUsed.first().toTarget2D()
+//    this.targetsUsed.first().toTarget2D()
 
 
     return CameraResult(
