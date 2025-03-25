@@ -69,6 +69,7 @@ class PhotonVisionCamera(
     ) {
         referencePose = currentPose
         updateInputs(inputs)
+        MeanLogger.processInputs("Cameras/", inputs)
 
         if (inputs.isConnected) {
 

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.networktables.StructPublisher
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
@@ -60,6 +61,7 @@ class LimelightCamera(
         )
 
         updateInputs(inputs)
+        MeanLogger.processInputs("Cameras/", inputs)
 
         if (headingRatePerSecond.degrees <= 45.0 && inputs.isConnected) {
 

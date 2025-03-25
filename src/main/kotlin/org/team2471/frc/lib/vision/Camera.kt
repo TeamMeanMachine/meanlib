@@ -101,17 +101,6 @@ class Camera(
     // Instantiates the inputs
     private val inputs = CameraIO.CameraIOInputs(name)
 
-    init {
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch {
-            periodic {
-                // Updates and logs the inputs
-                io.updateInputs(inputs)
-                MeanLogger.processInputs("Cameras/", inputs)
-            }
-        }
-    }
-
     /**
      * Resets the camera, which, for PhotonVision, rechecks whether the camera exists. On Limelight this does nothing.
      */
