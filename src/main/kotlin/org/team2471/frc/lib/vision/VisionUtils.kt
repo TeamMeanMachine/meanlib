@@ -13,7 +13,7 @@ import kotlin.math.pow
 val fieldXRangeM = DoubleRange(0.0, 16.54)
 val fieldYRangeM = DoubleRange(0.0, 8.21)
 
-val photonStdDevCalculator: StdDevCalculator = StdDevCalculator(1.0, Pair(0.5, 0.0001), Pair(2.5, 2.5))
+val photonStdDevCalculator: StdDevCalculator = StdDevCalculator(1.0, Pair(0.5, 0.0001), Pair(3.0, 2.5))
 
 fun AprilTagFieldLayout.removeTags(tagIDs: IntArray): AprilTagFieldLayout {
     return AprilTagFieldLayout(this.tags.filter { it.ID !in tagIDs }, this.fieldLength, this.fieldWidth)
