@@ -51,6 +51,10 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     private val questMisoEntry = table.getIntegerTopic("miso").subscribe(0)
     private val questMosiEntry = table.getIntegerTopic("mosi").publish()
 
+    private val heartbeatSub = table.getDoubleTopic("heartbeat/quest_to_robot").subscribe(0.0)
+    private val heartbeatPub = table.getDoubleTopic("heartbeat/robot_to_quest").publish()
+    private var lastHeartbeatId = 0.0;
+
     private var headingOffset = Rotation2d()
 
     var isConnected = false
@@ -60,12 +64,26 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 
     private var prevTimestamp = 0.0
 
+    private fun doHeartbeat() {
+        val requestId = heartbeatSub.get()
+
+        if (requestId > 0 && requestId != lastHeartbeatId) {
+            heartbeatPub.set(requestId)
+            lastHeartbeatId = requestId
+        }
+    }
+
     init {
         GlobalScope.launch {
             periodic(3.0) {
                 val ts = timestamp
                 isConnected = ts != prevTimestamp
                 prevTimestamp = ts
+            }
+        }
+        GlobalScope.launch {
+            periodic {
+                doHeartbeat()
             }
         }
     }

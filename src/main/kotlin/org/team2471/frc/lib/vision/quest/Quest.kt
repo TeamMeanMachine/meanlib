@@ -44,7 +44,6 @@ class Quest(
         io.reset(heading)
     }
 
-
     init {
         GlobalScope.launch {
             io.reset(0.0.degrees)
