@@ -972,6 +972,7 @@ suspend fun SwerveDrive.driveToPoint(
         if (exitSupplier(t.get(), positionError, headingError)) {
             println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError headingError: $headingError")
             MeanLogger.recordOutput("driveToPoint Point", Pose2d())
+            drive(Vector2(0.0, 0.0), 0.0)
             stop()
         }
     }
