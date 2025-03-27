@@ -14,6 +14,7 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
         RobotMode.REAL -> LoggedCANCoderReal(id, canBus)
         RobotMode.REPLAY, RobotMode.SIM -> LoggedCANCoderSim(simRotationSupplier)
     }
+    private var doUpdate = true
 
     val position: Angle
         get() = inputs.position.rotations
@@ -28,8 +29,10 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
     }
 
     fun periodicLoop() {
-        io.updateInputs(inputs)
-        MeanLogger.processInputs("Sensors", inputs)
+        if (doUpdate) {
+            io.updateInputs(inputs)
+            MeanLogger.processInputs("Sensors", inputs)
+        }
     }
 
     fun setInverted(invert: Boolean) {
@@ -38,6 +41,13 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
 
     fun setSimAngleSupplier(angleSupplier: () -> Angle) {
         io.simAngleSupplier = (angleSupplier)
+    }
+
+    fun stopUpdates() {
+        doUpdate = false
+    }
+    fun startUpdates() {
+        doUpdate = true
     }
 
     /**

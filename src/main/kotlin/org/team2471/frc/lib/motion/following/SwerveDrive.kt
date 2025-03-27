@@ -630,7 +630,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
         println("April Tag Position = ${poseEstimator.latestPos}")
     }
 
-    println("After reset. (we don't reset but still adding this)")
+    println("After reset code.")
 
 
     var prevTime = -0.2
@@ -639,11 +639,10 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     timer.start()
     var prevPositionError = Vector2(0.0, 0.0).meters
     var prevHeadingError = 0.0.degrees
-    suspendUntil(10) { timer.get() != 0.0 }
     println("entering drive periodic.")
     periodic {
         val t = timer.get()
-        val dt = if (t - prevTime != 0.0) t - prevTime else 0.02
+        val dt = t - prevTime
         val pathSample = path(t)
 
         // position error
