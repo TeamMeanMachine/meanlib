@@ -78,14 +78,14 @@ internal object SubsystemCoordinator {
                 val allSubsystems = message.subsystems + prevSubsystems
 
                 // verify that all required subsystems are enabled
-                if (allSubsystems.any { !it.isEnabled }) {
-                    return message.continuation.resumeWithException(CancellationException(
-                        "Action not allowed to use disabled subsystems { ${allSubsystems.filter {
-                            !it.isEnabled
-                        }.joinToString { it.name }} }"
-                    )
-                    )
-                }
+//                if (allSubsystems.any { !it.isEnabled }) {
+//                    return message.continuation.resumeWithException(CancellationException(
+//                        "Action not allowed to use disabled subsystems { ${allSubsystems.filter {
+//                            !it.isEnabled
+//                        }.joinToString { it.name }} }"
+//                    )
+//                    )
+//                }
 
                 // find conflicting subsystems
                 val conflictResources = newSubsystems.filter { it.activeJob != null }
