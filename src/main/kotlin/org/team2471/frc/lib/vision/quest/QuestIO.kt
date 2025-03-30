@@ -33,7 +33,7 @@ interface QuestIO {
 
     }
 
-    suspend fun reset(heading: Angle)
+    fun reset(heading: Angle)
     fun updateInputs(inputs: QuestIOInputs)
 }
 
@@ -79,6 +79,8 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
                 val ts = timestamp
                 isConnected = ts != prevTimestamp
                 prevTimestamp = ts
+                questMosiEntry.set(0)
+
             }
         }
         GlobalScope.launch {
@@ -89,14 +91,11 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     }
 
     // Only call if quest is connected
-    override suspend fun reset(heading: Angle) {
+    override fun reset(heading: Angle) {
         if (questMisoEntry.get() != 99L) {
             questMosiEntry.set(1)
-//            suspendUntil { questMisoEntry.get() == 99L }
-            delay(0.25)
-            questMosiEntry.set(0)
         }
-        headingOffset = Rotation2d(heading.asWPIUnit)
+        headingOffset = Rotation2d(heading.asWPIUnit) + robotToQuest.rotation
     }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
@@ -122,7 +121,7 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 
 class QuestIOSim(): QuestIO {
     var pose = Pose2d()
-    override suspend fun reset(heading: Angle) {}
+    override fun reset(heading: Angle) {}
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true

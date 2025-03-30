@@ -32,15 +32,15 @@ class Quest(
     var pose: Pose2d = Pose2d()
         get() {
             // negatives bc quest is upside down. change later
-            return Pose2d(-inputs.pose.translation + field.translation, -inputs.pose.rotation + field.rotation)
+            return Pose2d(-inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
         }
-        set(value) { field += value - pose}
+        set(value) { field = Pose2d(value.translation + inputs.pose.translation, Rotation2d()) }
 
 
     val isConnected: Boolean
         get() = inputs.isConnected
 
-    suspend fun reset(heading: Angle) {
+    fun reset(heading: Angle) {
         io.reset(heading)
     }
 
