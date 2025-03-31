@@ -370,7 +370,7 @@ fun SwerveDrive.recordOdometry() {
     }
 
     position += Vector2(robotTranslation.x, robotTranslation.y)
-    poseEstimator.updateOdometry(getRealFPGATimestamp(), position.feet)
+//    poseEstimator.updateOdometry(getRealFPGATimestamp(), position.feet)
 //    println("hi there: ${modules.map { it.wpiPosition.distanceMeters }}")
     deltaPos = Vector2L(robotTranslation.x.feet, robotTranslation.y.feet)
     velocity = robotVelocity
