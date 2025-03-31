@@ -875,21 +875,19 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             val y = -controller.leftThumbstickX
             val turn = 75.0*controller.rightThumbstickX
 
-
-
             // position error
             val pathPosition = Vector2(x, y)
             val positionError = pathPosition - position
 
+            MeanLogger.recordOutput("position", position.feet, heading)
             MeanLogger.recordOutput("goalPosition", Pose2d(pathPosition.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
             MeanLogger.recordOutput("positionError", Pose2d(positionError.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
-
 
             // position d
             val deltaPositionError = positionError - prevPositionError
             prevPositionError = positionError
 
-            val translationControlField = positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition
+            val translationControlField = positionError * parameters.kpPosition * 14.5 + deltaPositionError * parameters.kdPosition * 0.0
 
             // heading error
             val robotHeading = heading.asDegrees
@@ -901,11 +899,11 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             val deltaHeadingError = headingError - prevHeadingError
             prevHeadingError = headingError
 
-            val turnControl = headingError.asDegrees * parameters.kpHeading + deltaHeadingError.asDegrees * parameters.kdHeading
+            val turnControl = headingError.asDegrees * parameters.kpHeading * 500.0 + deltaHeadingError.asDegrees * parameters.kdHeading * 500.0
 
 //            println("Error ${headingError.asDegrees}, setpoint ${pathHeading}, current pos $robotHeading")
             println("Path Position $pathPosition positionError $positionError")
-            drive(translationControlField, -turnControl, true)
+            driveWithVelocity(translationControlField.feet * MAXTRANSLATIONSPEED_FEET_PER_SECOND, 0.0.degrees/*(-turnControl * MAXHEADINGSPEED_DEGREES_PER_SECOND).degrees*/, true)
 
            // prevTime = t
         }

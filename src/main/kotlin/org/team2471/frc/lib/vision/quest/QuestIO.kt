@@ -92,9 +92,9 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 
     // Only call if quest is connected
     override fun reset(heading: Angle) {
-        if (questMisoEntry.get() != 99L) {
+//        if (questMisoEntry.get() != 99L) {
             questMosiEntry.set(1)
-        }
+//        }
         headingOffset = Rotation2d(heading.asWPIUnit) + robotToQuest.rotation
     }
 
