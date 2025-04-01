@@ -113,10 +113,12 @@ class VisionPoseEstimator(
         currentTimestampSeconds: Double,
         odometryPose: Vector2L,
     ) {
-        if (!inReset) {
-            odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = odometryPose
-            odomKalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
-        }
+        try {
+            if (!inReset) {
+                odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = odometryPose
+                odomKalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
+            }
+        } catch(_: Exception) { }
     }
 
     fun updateQuest(
