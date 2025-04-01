@@ -3,19 +3,12 @@ package org.team2471.frc.lib.vision.quest
 import edu.wpi.first.math.geometry.*
 import edu.wpi.first.networktables.NetworkTable
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.networktables.StructPublisher
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
-import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.asVector2
-import org.team2471.frc.lib.math.meters
-import org.team2471.frc.lib.math.setAdvantagePose
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.isReal
-import org.team2471.frc.lib.util.isSim
 
 @OptIn(DelicateCoroutinesApi::class)
 class Quest(
@@ -32,7 +25,7 @@ class Quest(
     var pose: Pose2d = Pose2d()
         get() {
             // negatives bc quest is upside down. change later
-            return Pose2d(-inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
+            return Pose2d(inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
         }
         set(value) { field = Pose2d(value.translation + inputs.pose.translation, Rotation2d()) }
 
@@ -40,18 +33,19 @@ class Quest(
     val isConnected: Boolean
         get() = inputs.isConnected
 
-    fun reset(heading: Angle) {
-        io.reset(heading)
+    fun resetHeading(heading: Angle) {
+        io.resetHeading(heading)
     }
 
     init {
         GlobalScope.launch {
-            io.reset(0.0.degrees)
+            io.resetHeading(0.0.degrees)
             periodic {
                 io.updateInputs(inputs)
                 MeanLogger.processInputs("", inputs)
 
 
+                MeanLogger.recordOutput("Quest/Pose", pose)
                 posePublisher.set(pose)
                 isConnectedEntry.setBoolean(inputs.isConnected)
             }

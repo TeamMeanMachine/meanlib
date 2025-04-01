@@ -7,8 +7,13 @@ import edu.wpi.first.math.Nat
 import edu.wpi.first.math.StateSpaceUtil
 import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.estimator.ExtendedKalmanFilter
+import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N2
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.team2471.frc.lib.coroutines.periodic
+import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
@@ -43,6 +48,7 @@ class VisionPoseEstimator(
     val questOffsetHistory: InterpolatingTreeMap<InterpolatingDouble, Vector2L> = InterpolatingTreeMap(50)
 
     private var inReset = false
+    private var odomHeartbeat = 0
 
     private val odomKalmanFilter = ExtendedKalmanFilter(
         Nat.N2(), // Dimensions of output (x, y)
@@ -90,7 +96,7 @@ class VisionPoseEstimator(
         offsetHistory.clear()
         kalmanFilter.reset()
         try {
-            val prevPos = baseHistory.lastEntry().value
+            val prevPos = if (baseHistory.isNotEmpty()) Vector2L.Zeros else baseHistory.lastEntry().value
 
             if (baseReset) {
                 baseHistory.clear()
@@ -117,6 +123,19 @@ class VisionPoseEstimator(
             odomPosHistory[InterpolatingDouble(currentTimestampSeconds)] = odometryPose
             odomKalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
         }
+
+        odomHeartbeat++
+        MeanLogger.recordOutput("PoseEstimator/OdomHeartbeat", odomHeartbeat)
+
+        if (odomOffsetHistory.isNotEmpty() && odomPosHistory.isNotEmpty()) {
+            MeanLogger.recordOutput(
+                "PoseEstimator/DriveOffsetPos",
+                (odomOffsetHistory.lastEntry().value.let { odomPosHistory.lastEntry().value.plus(it) }).asMeters.toPose2d(
+                    0.0
+                )
+            )
+            MeanLogger.recordOutput("PoseEstimator/DrivePos", odomPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
+        }
     }
 
     fun updateQuest(
@@ -131,6 +150,16 @@ class VisionPoseEstimator(
                 questPosHistory[InterpolatingDouble(currentTimestampSeconds)] = questPose
                 questKalmanFilter.predict(VecBuilder.fill(0.0, 0.0), 0.02)
             }
+        }
+        if (questPosHistory.isNotEmpty() && questOffsetHistory.isNotEmpty()) {
+            MeanLogger.recordOutput(
+                "PoseEstimator/OffsetQuestPos",
+                (questOffsetHistory.lastEntry().value.let { questPosHistory.lastEntry().value.plus(it) }).asMeters.toPose2d(
+                    0.0
+                )
+            )
+
+            MeanLogger.recordOutput("PoseEstimator/QuestPos", questPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
         }
     }
 
@@ -149,9 +178,9 @@ class VisionPoseEstimator(
     fun addVisionUpdate(globalPose: GlobalPose) {
         if (!inReset) {
             addVisionUpdateToHistory(globalPose, odomKalmanFilter, odomPosHistory, odomOffsetHistory)
-            if (doesQuestExist) {
+//            if (doesQuestExist) {
                 addVisionUpdateToHistory(globalPose, questKalmanFilter, questPosHistory, questOffsetHistory)
-            }
+//            }
         }
     }
 

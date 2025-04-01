@@ -688,6 +688,8 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
 //            throw IllegalArgumentException("requestedVolts == NaN")
         }
 
+        println("turnOverride: ${turnOverride()?.degrees} ")
+
         // send it
         driveWithVelocity(Vector2L(translationControlField.y.feet, -translationControlField.x.feet), turnOverride()?.degrees ?: turnControl.degrees, true)
 
@@ -709,7 +711,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     MeanLogger.recordOutput("pathPose", Pose2d())
 
     // shut it down
-    drive(Vector2(0.0, 0.0), 0.0, true)
+//    drive(Vector2(0.0, 0.0), 0.0, true)
 //    actualRoute.setDoubleArray(doubleArrayOf())
 //    plannedPath.setString("")
 }
