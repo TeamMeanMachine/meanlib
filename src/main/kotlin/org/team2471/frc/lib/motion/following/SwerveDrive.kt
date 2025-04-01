@@ -438,9 +438,7 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
     useApriltags: Boolean = false,
     useVelocity: Boolean = false
 ) {
-    val t = Timer()
-    t.start()
-    println("inside driveAlongChoreoPath ${path?.name()} time: ${t.get()}")
+    println("inside driveAlongChoreoPath ${path?.name()}")
 
     if (path == null || path.getInitialPose(false).isEmpty) { println("path is null or empty"); return } //exit if path is null
 
@@ -455,13 +453,11 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
             currSample.chassisSpeeds.omegaRadiansPerSecond.radians)
     }
 
-    println("Created supplier, calling generic. t: ${t.get()}")
     if (useVelocity) {
         driveAlongPathGenericWithVelocity(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
     } else {
         driveAlongPathGeneric(pathPoseSupplier, resetOdometry, extraTime, inResetGyro, turnOverride, earlyExit, useApriltags)
     }
-    println("finished generic. t: ${t.get()}")
 }
 
 suspend fun SwerveDrive.driveAlongPathGeneric(
@@ -597,7 +593,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     earlyExit: (percentComplete: Double) -> Boolean = { false },
     useApriltags: Boolean = false
 ) {
-    println("inside driveAlongPathGeneric ${path(0.0)}. New timer started.")
+    println("inside driveAlongPathGeneric ${path(0.0)}.")
     if (path(0.0).velocityPerSec == null || path(0.0).rotationalVelocityPerSec == null) throw IllegalArgumentException("Path Velocity is null, path is corrupted or not using choreo path")
 
     if (inResetGyro ?: resetOdometry) {
@@ -626,12 +622,8 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
 //        if (isSim && useMapleSim) simulatedDrive.setSimulationWorldPose(path(0.0).position.asMeters.toPose2d(path(0.0).heading))
 //        prevPosition = position
 
-        println("After Reset Position = $position")
-        println("April Tag Position = ${poseEstimator.latestPos}")
+        println("After Reset Position = drive: $position  vision: ${poseEstimator.latestPos}")
     }
-
-    println("After reset code.")
-
 
     var prevTime = -0.2
 
@@ -661,7 +653,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
         var translationControlField = pathVelocity.asFeet + positionError.asFeet * parameters.kpPosition * 14.5 + deltaPositionError.asFeet * parameters.kdPosition * 00.0
 
         translationControlField = Vector2(-translationControlField.y, translationControlField.x)
-        println("translationControlField = $translationControlField")
+//        println("translationControlField = $translationControlField")
 
 
         // heading error
@@ -688,7 +680,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
 //            throw IllegalArgumentException("requestedVolts == NaN")
         }
 
-        println("turnOverride: ${turnOverride()?.degrees} ")
+//        println("turnOverride: ${turnOverride()?.degrees} ")
 
         // send it
         driveWithVelocity(Vector2L(translationControlField.y.feet, -translationControlField.x.feet), turnOverride()?.degrees ?: turnControl.degrees, true)

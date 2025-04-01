@@ -8,6 +8,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asMeters
+import org.team2471.frc.lib.math.toTranslation2d
 import org.team2471.frc.lib.units.*
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -35,6 +39,14 @@ class Quest(
 
     fun resetHeading(heading: Angle) {
         io.setHeading(heading)
+    }
+
+    fun resetPosition(position: Vector2L) {
+        io.setPosition(-(position.asMeters.toTranslation2d().rotateBy(-pose.rotation)))
+    }
+
+    fun resetPosition(position: Translation2d) {
+        io.setPosition(-(position.rotateBy(-pose.rotation)))
     }
 
     init {

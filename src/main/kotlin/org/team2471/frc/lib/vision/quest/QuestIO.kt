@@ -102,16 +102,11 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     }
 
     override fun setHeading(heading: Angle) {
-        println("Hi there. I am resetting heading.")
-        println("current heading: ${offsetPose.rotation.degrees} degrees. current pos: ${offsetPose.translation}")
-        println("goal heading: ${heading.asDegrees}")
         val newRotation = heading.asRotation2d - pose.rotation
         offset = Transform2d(
             (offsetPose.translation - pose.translation.rotateBy(newRotation)).rotateBy(-newRotation),
             newRotation
         )
-        println("new offset: ${offset.translation}")
-        println("new pos: ${offsetPose.translation}")
     }
 
     override fun setPosition(position: Translation2d) {
