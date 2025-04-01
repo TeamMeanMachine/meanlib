@@ -22,24 +22,24 @@ class Quest(
     private val io = if (isSim) QuestIOSim() else QuestIOReal(robotToQuest)
     private val inputs = QuestIO.QuestIOInputs()
 
-    var pose: Pose2d = Pose2d()
-        get() {
-            // negatives bc quest is upside down. change later
-            return Pose2d(inputs.pose.translation + field.translation, inputs.pose.rotation + field.rotation)
+    var pose: Pose2d
+        get() = inputs.pose
+        set(value) {
+            io.setPosition(value.translation)
         }
-        set(value) { field = Pose2d(value.translation + inputs.pose.translation, Rotation2d()) }
+
 
 
     val isConnected: Boolean
         get() = inputs.isConnected
 
     fun resetHeading(heading: Angle) {
-        io.resetHeading(heading)
+        io.setHeading(heading)
     }
 
     init {
         GlobalScope.launch {
-            io.resetHeading(0.0.degrees)
+            io.setHeading(0.0.degrees)
             periodic {
                 io.updateInputs(inputs)
                 MeanLogger.processInputs("", inputs)

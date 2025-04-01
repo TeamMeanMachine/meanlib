@@ -8,6 +8,9 @@ import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.math.Vector2L
+import org.team2471.frc.lib.math.asMeters
+import org.team2471.frc.lib.math.toTranslation2d
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
 
@@ -31,7 +34,8 @@ interface QuestIO {
 
     }
 
-    fun resetHeading(heading: Angle)
+    fun setHeading(heading: Angle)
+    fun setPosition(position: Translation2d)
     fun updateInputs(inputs: QuestIOInputs)
 }
 
@@ -53,8 +57,10 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     private val heartbeatPub = table.getDoubleTopic("heartbeat/robot_to_quest").publish()
     private var lastHeartbeatId = 0.0;
 
-    private var headingOffset = robotToQuest.rotation
+    private var offset = Transform2d(Translation2d(), robotToQuest.rotation)
     private var pose = Pose2d()
+    private val offsetPose: Pose2d
+        get() = pose.rotateBy(offset.rotation).let { Pose2d(it.translation + offset.translation, it.rotation) }
     private var wasConnected = false
 
     var isConnected = false
@@ -95,8 +101,20 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
         }
     }
 
-    override fun resetHeading(heading: Angle) {
-        headingOffset = Rotation2d(heading.asWPIUnit) - pose.rotation
+    override fun setHeading(heading: Angle) {
+        println("Hi there. I am resetting heading.")
+        println("current heading: ${offsetPose.rotation.degrees} degrees. current pos: ${offsetPose.translation}")
+        println("goal heading: ${heading.asDegrees}")
+        offset = Transform2d(
+            pose.translation.rotateBy(offsetPose.rotation) - pose.translation.rotateBy(heading.asRotation2d),
+            Rotation2d(heading.asWPIUnit) - pose.rotation
+        )
+        println("new offset: ${offset.translation}")
+        println("new pos: ${offsetPose.translation}")
+    }
+
+    override fun setPosition(position: Translation2d) {
+        offset = Transform2d(position - pose.translation , offset.rotation)
     }
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
@@ -120,15 +138,16 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
 
         MeanLogger.recordOutput("Quest/VeryRawQuestPose", Pose2d(Translation2d(rawPos[2].toDouble(), -rawPos[0].toDouble()), Rotation2d(-rawRotation[1].degrees.asWPIUnit)))
         MeanLogger.recordOutput("Quest/RawQuestPose", pose)
-        inputs.pose = Pose2d(pose.translation, pose.rotation.rotateBy(headingOffset))
-        MeanLogger.recordOutput("Quest/AfterHeadingOffsetPose", inputs.pose)
+        inputs.pose = Pose2d(-(pose.translation.plus(offset.translation).rotateBy(offset.rotation)), pose.rotation.rotateBy(offset.rotation))
+        MeanLogger.recordOutput("Quest/AfterOffsetPose", inputs.pose)
 
     }
 }
 
 class QuestIOSim: QuestIO {
     var pose = Pose2d()
-    override fun resetHeading(heading: Angle) {}
+    override fun setHeading(heading: Angle) {}
+    override fun setPosition(position: Translation2d) {}
 
     override fun updateInputs(inputs: QuestIO.QuestIOInputs) {
         inputs.isConnected = true
