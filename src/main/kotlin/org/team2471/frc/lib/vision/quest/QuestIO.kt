@@ -60,7 +60,7 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
     private var offset = Transform2d(Translation2d(), robotToQuest.rotation)
     private var pose = Pose2d()
     private val offsetPose: Pose2d
-        get() = pose.rotateBy(offset.rotation).let { Pose2d(it.translation + offset.translation, it.rotation) }
+        get() = Pose2d((pose.translation.plus(offset.translation).rotateBy(offset.rotation)), pose.rotation.rotateBy(offset.rotation))
     private var wasConnected = false
 
     var isConnected = false
@@ -105,9 +105,10 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
         println("Hi there. I am resetting heading.")
         println("current heading: ${offsetPose.rotation.degrees} degrees. current pos: ${offsetPose.translation}")
         println("goal heading: ${heading.asDegrees}")
+        val newRotation = heading.asRotation2d - pose.rotation
         offset = Transform2d(
-            pose.translation.rotateBy(offsetPose.rotation) - pose.translation.rotateBy(heading.asRotation2d),
-            Rotation2d(heading.asWPIUnit) - pose.rotation
+            (offsetPose.translation - pose.translation.rotateBy(newRotation)).rotateBy(-newRotation),
+            newRotation
         )
         println("new offset: ${offset.translation}")
         println("new pos: ${offsetPose.translation}")
