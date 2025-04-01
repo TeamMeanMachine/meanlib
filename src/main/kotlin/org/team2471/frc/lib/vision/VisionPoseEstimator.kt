@@ -204,7 +204,7 @@ class VisionPoseEstimator(
 
             offsetHistory[InterpolatingDouble(globalPose.timestampSeconds)] = Vector2L(kalmanFilter.getXhat(0).meters, kalmanFilter.getXhat(1).meters)
         } catch (e: Exception) {
-            println("Error updating vision pose")
+//            println("Error updating vision pose")
 //            e.printStackTrace()
         }
     }
