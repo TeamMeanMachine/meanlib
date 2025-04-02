@@ -913,6 +913,7 @@ suspend fun SwerveDrive.driveToPoint(
     posSupplier: () -> Vector2L = {this.position.feet},
     exitSupplier: (elapsedTime: Double, error: Vector2L, headingError: Angle?) -> Boolean = {seconds, error, headingError -> error.length < 0.5.feet && (headingError == null || headingError < 3.0.degrees)},
     turnOverride: () -> Double? = {null},
+    overrideP: Double? = null
 ) {
 //    println("driving to point $point")
     MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: this.heading))
@@ -930,7 +931,7 @@ suspend fun SwerveDrive.driveToPoint(
         prevPositionError = positionError
 
         val staticFriction = if (positionError.length > 0.0.inches) { positionError.normalize() * 0.02 } else Vector2(0.0, 0.0).inches
-        val translation = velocity * parameters.kPositionFeedForward + positionError * parameters.kpPosition + deltaPositionError * parameters.kdPosition + staticFriction
+        val translation = velocity * parameters.kPositionFeedForward + positionError * (overrideP ?: parameters.kpPosition) + deltaPositionError * parameters.kdPosition + staticFriction
 
         val turnControl: Double
         var headingError: Angle? = null
