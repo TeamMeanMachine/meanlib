@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.*
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
+import org.photonvision.targeting.PhotonPipelineResult
 import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 
@@ -42,6 +43,9 @@ class PhotonVisionCamera(
     override var latestGlobalPoses: MutableList<GlobalPose> = mutableListOf()
 
     private var referencePose: Pose2d = Pose2d()
+
+    // We had a weird edge case once
+    private var prevFirstResult: PhotonPipelineResult = PhotonPipelineResult()
 
     override fun reset(inputs: CameraIO.CameraIOInputs) {
 //        if (!inputs.isConnected) {
@@ -123,13 +127,19 @@ class PhotonVisionCamera(
                 val unreadResults = photonCam.allUnreadResults
                 val ambiguities = unreadResults.filter { it.hasTargets() }.map { it.bestTarget.poseAmbiguity }
                 val estimatedRobotPoses = unreadResults.map { poseEstimator.update(it).get() }
-                val tempCameraResults = ArrayList<CameraResult>()
                 inputs.cameraResults = estimatedRobotPoses.mapIndexed {i, it -> it.toCameraResult(ambiguities[i])} as ArrayList<CameraResult>
                 for (i in estimatedRobotPoses.indices) {
                     estimatedRobotPoses[i].toCameraResult(ambiguities[i])
                 }
                 if (unreadResults.isNotEmpty()) {
-                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *estimatedRobotPoses.last().targetsUsed.map { it.getDetectedCorners().map { Translation2d(it.x, it.y) } }.flatten().toTypedArray())
+                    if (prevFirstResult != unreadResults.first()) {
+                        MeanLogger.recordOutput("Cameras/$name/Raw Corners",
+                            *estimatedRobotPoses.last().targetsUsed.map {
+                                it.getDetectedCorners().map { Translation2d(it.x, it.y) }
+                            }.flatten().toTypedArray()
+                        )
+                    }
+                    prevFirstResult = unreadResults.first()
                 } else {
                     MeanLogger.recordOutput("Cameras/$name/Raw Corners", *arrayOf<Translation2d>())
                 }

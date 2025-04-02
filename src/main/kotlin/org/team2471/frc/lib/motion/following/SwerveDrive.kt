@@ -703,7 +703,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
     MeanLogger.recordOutput("pathPose", Pose2d())
 
     // shut it down
-//    drive(Vector2(0.0, 0.0), 0.0, true)
+    drive(Vector2(0.0, 0.0), 0.0, true)
 //    actualRoute.setDoubleArray(doubleArrayOf())
 //    plannedPath.setString("")
 }
@@ -914,10 +914,9 @@ suspend fun SwerveDrive.driveToPoint(
     exitSupplier: (elapsedTime: Double, error: Vector2L, headingError: Angle?) -> Boolean = {seconds, error, headingError -> error.length < 0.5.feet && (headingError == null || headingError < 3.0.degrees)},
     turnOverride: () -> Double? = {null},
 ) {
-    println("driving to point $point")
+//    println("driving to point $point")
     MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: this.heading))
 
-    var prevPosition = posSupplier.invoke()
     var prevPositionError = Vector2L.Zeros
 
     val t = Timer()
@@ -927,7 +926,6 @@ suspend fun SwerveDrive.driveToPoint(
         val currentPosition = posSupplier.invoke()
         val positionError = currentPosition - point
         val velocity = velocity.feet
-        prevPosition = currentPosition
         val deltaPositionError = positionError - prevPositionError
         prevPositionError = positionError
 
@@ -958,7 +956,7 @@ suspend fun SwerveDrive.driveToPoint(
         } else {
             drive(Vector2(0.0, 0.0), 0.0)
         }
-        MeanLogger.recordOutput("driveToPoint PositionError", positionError.length.asInches)
+//        MeanLogger.recordOutput("driveToPoint PositionError", positionError.length.asInches)
 
         if (exitSupplier(t.get(), positionError, headingError)) {
             println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError headingError: $headingError")

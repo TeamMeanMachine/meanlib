@@ -109,7 +109,7 @@ internal object SubsystemCoordinator {
                     CoroutineStart.ATOMIC
                 ) {
                     try {
-                        println("Subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
+//                        println("Subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
                         if (message.name == null || message.name.toString() == "null") {
                             println("message.name = null: ${message.body}")
                         }
@@ -130,7 +130,7 @@ internal object SubsystemCoordinator {
                         // pass exception to calling coroutine
                         message.continuation.resumeWithException(exception)
                     } finally {
-                        println("Freeing subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
+//                        println("Freeing subsystems [ ${newSubsystems.joinToString { it.name }} ] used by ${message.name}")
                         newSubsystems.forEach { it.reset() }
                         // tell the scheduler that the action job has finished executing
                         messageChannel.trySend(Message.Clean(newSubsystems, coroutineContext[Job]!!)).isSuccess
