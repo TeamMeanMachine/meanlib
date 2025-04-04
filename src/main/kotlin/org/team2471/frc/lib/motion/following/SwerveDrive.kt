@@ -11,6 +11,8 @@ import edu.wpi.first.networktables.NetworkTableEntry
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
@@ -1014,21 +1016,27 @@ suspend fun SwerveDrive.driveToPoint(
     point: Vector2L,
     heading: Angle? = null,
     stopMovingDeadband: Length = 0.0.inches,
-    posSupplier: () -> Vector2L = {this.position.feet},
+//    posSupplier: () -> Vector2L = {this.position.feet},
     exitSupplier: (elapsedTime: Double, error: Vector2L, headingError: Angle?) -> Boolean = {seconds, error, headingError -> error.length < 0.5.feet && (headingError == null || headingError < 3.0.degrees)},
     turnOverride: () -> Double? = {null},
     overrideP: Double? = null
 ) {
+    val t = Timer()
+    t.start()
 //    println("driving to point $point")
-    MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: this.heading))
+    val currHeading = this.heading
+
+
+    GlobalScope.launch {
+        MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: currHeading))
+    }
 
     var prevPositionError = Vector2L.Zeros
 
-    val t = Timer()
-    t.start()
+
 
     periodic {
-        val currentPosition = posSupplier.invoke()
+        val currentPosition = poseEstimator.latestPos
         val positionError = currentPosition - point
         val velocity = velocity.feet
         val deltaPositionError = positionError - prevPositionError
@@ -1074,7 +1082,7 @@ suspend fun SwerveDrive.driveToPoint(
 
 suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, posSupplier: () -> Vector2L, exitSupplier: (Double, Vector2L, Angle?) -> Boolean, turnOverride: () -> Double? = {null},) {
     MeanLogger.recordOutput("Goal Pos", poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
-    this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet, posSupplier = posSupplier, exitSupplier = exitSupplier, turnOverride = turnOverride)
+    this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet/*, posSupplier = posSupplier*/, exitSupplier = exitSupplier, turnOverride = turnOverride)
     MeanLogger.recordOutput("Goal Pos", Pose2d())
 }
 
