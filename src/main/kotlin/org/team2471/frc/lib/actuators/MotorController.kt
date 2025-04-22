@@ -362,6 +362,10 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     fun openLoopRamp(secondsToFull: Double) = allMotorControllers { it.openLoopRamp(secondsToFull) }
 
+    fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
+        io.motionMagic(acceleration / feedbackCoefficient, cruisingVelocity / feedbackCoefficient)
+    }
+
     inner class ConfigScope(private val timeoutMs: Int) {
         /**
          * The primary, "master" [internalMotorController].
