@@ -182,7 +182,8 @@ fun SwerveDrive.drive(
     fieldCentric: Boolean = true,
     closedLoopHeading: Boolean = false,
     softTranslation: Vector2 = Vector2(0.0, 0.0),
-    softTurn: Double = 0.0
+    softTurn: Double = 0.0,
+    alternateDemoSpeed: Boolean = false
 ) {
     var requestedTranslation = translation
 
@@ -198,7 +199,14 @@ fun SwerveDrive.drive(
         SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
         SmartDashboard.setPersistent("DemoSpeed")
     }
-    requestedTranslation *= demoSpeed
+    if (!alternateDemoSpeed) {
+        requestedTranslation *= demoSpeed
+    } else {
+        requestedTranslation = Vector2(
+            requestedTranslation.x.coerceIn(-demoSpeed, demoSpeed),
+            requestedTranslation.y.coerceIn(-demoSpeed, demoSpeed)
+        )
+    }
 
     var requestedTurn = turn + softTurn
 
@@ -1065,7 +1073,8 @@ suspend fun SwerveDrive.driveToPoint(
             drive(
                 Vector2(-translation.x.asFeet, -translation.y.asFeet),
                 turnControl,
-                fieldCentric = true
+                fieldCentric = true,
+                alternateDemoSpeed = true
             )
         } else {
             drive(Vector2(0.0, 0.0), 0.0)
