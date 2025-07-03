@@ -21,6 +21,8 @@ open class Controller(val port: Int) {
         get() = DriverStation.getStickAxisCount(port)
     val povCount
         get() = DriverStation.getStickPOVCount(port)
+    val name
+        get() = DriverStation.getJoystickName(port)
 
     val isConnected
         get() = buttonCount != 0 || axisCount != 0 || povCount != 0
