@@ -31,7 +31,7 @@ class XboxController(port: Int) : Controller(port) {
         get() = getButton(9)
 
     val rightThumbstickButton: Boolean
-        get() = getButton(1)
+        get() = getButton(10)
 
     val leftThumbstickX: Double
         get() = getAxis(0)
