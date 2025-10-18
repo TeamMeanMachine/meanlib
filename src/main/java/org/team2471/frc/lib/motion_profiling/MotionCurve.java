@@ -1,8 +1,6 @@
-package motion_profiling;
+package org.team2471.frc.lib.motion_profiling;
 
 import com.google.gson.Gson;
-import org.team2471.frc.lib.motion_profiling.BooleanPair;
-import org.team2471.frc.lib.motion_profiling.MotionKey;
 
 public class MotionCurve {
     private transient final double MAXFRAMEERROR = 0.003;

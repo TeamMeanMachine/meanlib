@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.motion_profiling
 
-import motion_profiling.MotionCurve
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
