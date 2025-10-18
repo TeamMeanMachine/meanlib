@@ -39,7 +39,6 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
-import frc.team2471.off2025.util.*
 import org.team2471.frc.lib.motion.control.commands.beforeRun
 import org.team2471.frc.lib.motion.control.commands.beforeWait
 import org.team2471.frc.lib.motion.control.commands.finallyRun

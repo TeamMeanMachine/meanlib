@@ -1,0 +1,21 @@
+{
+  "fileName": "questnavlib.json",
+  "name": "questnavlib",
+  "version": "2025-1.1.1-beta",
+  "uuid": "a706fe68-86e5-4aed-92c5-ce05aca007f0",
+  "frcYear": "2025",
+  "mavenUrls": [
+    "https://maven.questnav.gg/releases",
+    "https://maven.questnav.gg/snapshots"
+  ],
+  "jsonUrl": "https://maven.questnav.gg/releases/gg/questnav/questnavlib-json/2025-1.1.1-beta/questnavlib-json-2025-1.1.1-beta.json",
+  "javaDependencies": [
+    {
+      "groupId": "gg.questnav",
+      "artifactId": "questnavlib-java",
+      "version": "2025-1.1.1-beta"
+    }
+  ],
+  "cppDependencies": [],
+  "jniDependencies": []
+}

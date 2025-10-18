@@ -1,0 +1,18 @@
+{
+  "name": "Autopilot",
+  "uuid": "4e922d47-9954-4db5-929f-c708cc62e152",
+  "fileName": "Autopilot.json",
+  "version": "1.3.0",
+  "frcYear": "2025",
+  "jsonUrl": "https://therekrab.github.io/autopilot/vendordep.json",
+  "mavenUrls": [ "https://jitpack.io" ],
+  "javaDependencies": [
+    {
+      "groupId": "com.github.therekrab",
+      "artifactId": "autopilot",
+      "version": "1.3.0"
+    }
+  ],
+  "cppDependencies": [],
+  "jniDependencies": []
+}

@@ -1,0 +1,155 @@
+import groovy.json.JsonSlurper
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:2.0.0"
+    }
+}
+
+plugins {
+    id "java"
+    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "org.jetbrains.kotlin.jvm" version "2.2.0"
+    id "org.jetbrains.kotlin.kapt" version "2.2.0"
+    id "idea"
+    id "maven-publish"
+    id "java-library"
+}
+
+group = "org.team2471.lib"
+version = "2025"
+
+// Set to true to use debug for JNI.
+wpi.java.debugJni = false
+
+wpi.sim.addGui().defaultEnabled = true
+wpi.sim.addDriverstation()
+
+ext {
+    includeDesktopSupport = true
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://frcmaven.wpi.edu/artifactory/release/" }
+    maven { url "https://plugins.gradle.org/m2/" }
+    maven { url "https://maven.ctr-electronics.com/release/" }
+    maven { url "https://maven.revrobotics.com/" }
+    maven { url "https://maven.photonvision.org/repository/internal" }
+    maven { url "https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release/" }
+    maven { url "https://lib.choreo.autos/dep" }
+    maven { url "https://shenzhen-robotics-alliance.github.io/maple-sim/vendordep/repos/releases" }
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+// Dependencies
+dependencies {
+    // WPILib / vendor integration (this is what makes vendordeps work)
+    annotationProcessor wpi.java.deps.wpilibAnnotations()
+    implementation wpi.java.deps.wpilib()
+    implementation wpi.java.vendor.java()
+
+    // Native / JNI - desktop & simulation
+    nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
+    nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
+    simulationDebug wpi.sim.enableDebug()
+
+    nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
+    nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
+    simulationRelease wpi.sim.enableRelease()
+
+    // Kotlin libs
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+
+    // Other dependencies you had
+    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+
+    // Tests
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.1"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    def akitFile = file("${projectDir}/vendordeps/AdvantageKit.json")
+    if (akitFile.exists()) {
+        def akitJson = new JsonSlurper().parseText(akitFile.text)
+        kapt "org.littletonrobotics.akit:akit-autolog:${akitJson.version}"
+        // Optionally add runtime/implementation akit jars if you want them in classpath:
+//        implementation "org.littletonrobotics.akit:akit-java:${akitJson.version}"
+//        implementation "org.littletonrobotics.akit:akit-wpilibio:${akitJson.version}"
+    }
+
+    // If you want to add other explicit libs, put them here (commented examples)
+    // implementation "com.revrobotics.frc:REVLib-java:2025.0.0"
+    // implementation "com.ctre.phoenix6:wpiapi-java:25.1.0"
+}
+
+tasks.register("replayWatch", JavaExec) {
+    group = "application"
+    description = "Run AdvantageKit ReplayWatch"
+    main = "org.littletonrobotics.junction.ReplayWatch"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// Tests
+test {
+    useJUnitPlatform()
+    systemProperty "junit.jupiter.extensions.autodetection.enabled", "true"
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    from sourceSets.main.allSource
+    // manifest {
+    //     attributes 'Main-Class': 'frc.team2471.off2025.Main'
+    // }
+}
+
+wpi.java.configureExecutableTasks(jar)
+wpi.java.configureTestTasks(test)
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-XDstringConcat=inline")
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+        // freeCompilerArgs = ["-XXLanguage:+InlineClasses", "-Xopt-in=kotlin.RequiresOptIn"]
+    }
+}
+
+// Optional: a convenience task to list vendordeps read (useful for debugging)
+tasks.register("printVendordeps") {
+    doLast {
+        def vendordepsDir = file("${projectDir}/vendordeps")
+        if (!vendordepsDir.exists()) {
+            println "No vendordeps directory found at ${vendordepsDir}"
+        } else {
+            vendordepsDir.eachFile { f ->
+                if (f.name.endsWith(".json")) {
+                    println "Found vendordep: ${f.name}"
+                    try {
+                        def json = new JsonSlurper().parseText(f.text)
+                        println "  name: ${json.name ?: 'n/a'}, version: ${json.version ?: 'n/a'}"
+                    } catch (Exception e) {
+                        println "  (failed to parse JSON): ${e.message}"
+                    }
+                }
+            }
+        }
+    }
+}

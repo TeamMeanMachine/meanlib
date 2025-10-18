@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.units.measure.Angle
-import frc.team2471.off2025.Robot
 import org.team2471.frc.lib.motion.units.asDegrees
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
@@ -26,6 +25,8 @@ class VisionIOLimelight(val name: String, val headingSupplier: () -> Angle): Vis
 
     val heartbeatSub = NetworkTableInstance.getDefault().getTable(name).getDoubleTopic("hb").subscribe(0.0)
     var prevHeartbeats = MutableList(3) { 0.0 }
+    var beforeFirstEnable = true
+    var isEnabled = false
 
     override fun updateInputs(inputs: VisionIO.VisionIOInputs) {
 
@@ -45,7 +46,7 @@ class VisionIOLimelight(val name: String, val headingSupplier: () -> Angle): Vis
 
         if (mode == LimelightMode.APRILTAG) {
             val llPoseEstimate =
-                if (Robot.beforeFirstEnable) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+                if (beforeFirstEnable) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
                     name
                 )
 
@@ -81,18 +82,21 @@ class VisionIOLimelight(val name: String, val headingSupplier: () -> Angle): Vis
         // I want to test not even switching to 1
         LimelightHelpers.SetIMUMode(name, 3)
 
-        if (Robot.isDisabled) {
-            LimelightHelpers.SetThrottle(name, 200)
-        } else {
+        if (isEnabled) {
             LimelightHelpers.SetThrottle(name, 0)
+        } else {
+            LimelightHelpers.SetThrottle(name, 200)
         }
     }
 
     override fun enable() {
+        beforeFirstEnable = false
+        isEnabled = true
         LimelightHelpers.SetThrottle(name, 0)
     }
 
     override fun disable() {
+        isEnabled = false
         LimelightHelpers.SetThrottle(name, 200)
     }
 
