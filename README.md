@@ -19,7 +19,7 @@ git submodule add https://github.com/TeamMeanMachine/meanlib/
 
 Checkout current year's branch
 ```command line
-git checkout frc[CURRENT_YEAR]
+git checkout frc[CURRENT_YEAR] # ex: git checkout frc2026
 ```
 
 
