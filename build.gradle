@@ -1,15 +1,5 @@
 import groovy.json.JsonSlurper
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:2.0.0"
-    }
-}
-
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2025.3.2"
@@ -19,19 +9,21 @@ plugins {
     id "maven-publish"
     id "java-library"
 }
+// Disable all simulation and deploy tasks since meanlib is a library
+gradle.afterProject { proj ->
+    if (proj.name == "meanlib") {
+        proj.tasks.configureEach { task ->
+            if (task.name.toLowerCase().contains("simulate") ||
+                    task.name.toLowerCase().contains("deploy")) {
+                task.enabled = false
+            }
+        }
+    }
+}
+
 
 group = "org.team2471.lib"
 version = "2025"
-
-// Set to true to use debug for JNI.
-wpi.java.debugJni = false
-
-wpi.sim.addGui().defaultEnabled = true
-wpi.sim.addDriverstation()
-
-ext {
-    includeDesktopSupport = true
-}
 
 repositories {
     mavenCentral()
@@ -49,14 +41,15 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Dependencies
+wpi.java.debugJni = false
+wpi.sim.addGui().defaultEnabled = true
+wpi.sim.addDriverstation()
+
 dependencies {
-    // WPILib / vendor integration (this is what makes vendordeps work)
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
-    // Native / JNI - desktop & simulation
     nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
     nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
     simulationDebug wpi.sim.enableDebug()
@@ -65,41 +58,20 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
-    // Kotlin libs
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
-    implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    // Other dependencies you had
-    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+    implementation "org.apache.commons:commons-math3:3.6.1"
 
-    // Tests
     testImplementation "org.junit.jupiter:junit-jupiter:5.10.1"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
-    def akitFile = file("${projectDir}/vendordeps/AdvantageKit.json")
-    if (akitFile.exists()) {
-        def akitJson = new JsonSlurper().parseText(akitFile.text)
-        kapt "org.littletonrobotics.akit:akit-autolog:${akitJson.version}"
-        // Optionally add runtime/implementation akit jars if you want them in classpath:
-//        implementation "org.littletonrobotics.akit:akit-java:${akitJson.version}"
-//        implementation "org.littletonrobotics.akit:akit-wpilibio:${akitJson.version}"
-    }
-
-    // If you want to add other explicit libs, put them here (commented examples)
-    // implementation "com.revrobotics.frc:REVLib-java:2025.0.0"
-    // implementation "com.ctre.phoenix6:wpiapi-java:25.1.0"
+    def akitFile = file("$projectDir/vendordeps/AdvantageKit.json")
+    kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
 }
 
-tasks.register("replayWatch", JavaExec) {
-    group = "application"
-    description = "Run AdvantageKit ReplayWatch"
-    main = "org.littletonrobotics.junction.ReplayWatch"
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-// Tests
-test {
+tasks.test {
     useJUnitPlatform()
     systemProperty "junit.jupiter.extensions.autodetection.enabled", "true"
     testLogging {
@@ -107,49 +79,49 @@ test {
     }
 }
 
-jar {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    from sourceSets.main.allSource
-    // manifest {
-    //     attributes 'Main-Class': 'frc.team2471.off2025.Main'
-    // }
-}
-
-wpi.java.configureExecutableTasks(jar)
-wpi.java.configureTestTasks(test)
-
 tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs.add("-XDstringConcat=inline")
+    options.compilerArgs += "-XDstringConcat=inline"
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-        // freeCompilerArgs = ["-XXLanguage:+InlineClasses", "-Xopt-in=kotlin.RequiresOptIn"]
+        jvmTarget = "17"
     }
 }
 
-// Optional: a convenience task to list vendordeps read (useful for debugging)
+wpi.java.configureTestTasks(tasks.test)
+// Prevent GradleRIO from trying to configure executable tasks
+wpi.java.configureExecutableTasks(null)
+
+/*tasks.matching { it.name.startsWith("simulate") || it.name.startsWith("deploy") }.configureEach {
+    enabled = false
+}*/
+
+
+
 tasks.register("printVendordeps") {
     doLast {
-        def vendordepsDir = file("${projectDir}/vendordeps")
-        if (!vendordepsDir.exists()) {
-            println "No vendordeps directory found at ${vendordepsDir}"
+        def vd = file("$projectDir/vendordeps")
+        if (!vd.exists()) {
+            println "No vendordeps folder found"
         } else {
-            vendordepsDir.eachFile { f ->
-                if (f.name.endsWith(".json")) {
-                    println "Found vendordep: ${f.name}"
+            vd.listFiles().each {
+                if (it.name.endsWith(".json")) {
+                    println "Vendordep: ${it.name}"
                     try {
-                        def json = new JsonSlurper().parseText(f.text)
-                        println "  name: ${json.name ?: 'n/a'}, version: ${json.version ?: 'n/a'}"
-                    } catch (Exception e) {
-                        println "  (failed to parse JSON): ${e.message}"
+                        def json = new JsonSlurper().parseText(it.text)
+                        println "  name: ${json.name}, version: ${json.version}"
+                    } catch (e) {
+                        println "  (bad JSON)"
                     }
                 }
             }
         }
     }
 }
+
+/*tasks.matching { it.name.startsWith("simulate") || it.name.startsWith("deploy") }.configureEach {
+    enabled = false
+}
+wpi.java.configureExecutableTasks(null)*/
+
