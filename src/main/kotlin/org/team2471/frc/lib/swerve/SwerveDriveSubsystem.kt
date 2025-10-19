@@ -133,9 +133,12 @@ abstract class SwerveDriveSubsystem(
     var savedState: SwerveDriveState = stateCopy
         private set
 
+    val robotRelativeSpeeds: ChassisSpeeds
+        get() = savedState.Speeds
+
     @get:AutoLogOutput(key = "Drive/State/Speeds")
     val speeds: ChassisSpeeds
-        get() = savedState.Speeds.robotToFieldCentric(pose.rotation)
+        get() = robotRelativeSpeeds.robotToFieldCentric(pose.rotation)
 
     @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: UTranslation2d<LinearVelocityUnit>
