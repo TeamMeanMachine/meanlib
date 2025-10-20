@@ -1,4 +1,4 @@
-package org.team2471.frc.lib
+package org.team2471.frc.lib.util
 
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d

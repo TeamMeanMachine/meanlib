@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.control
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
-import org.team2471.frc.lib.isSim
+import org.team2471.frc.lib.util.isSim
 
 /** Sometimes the sim GUI doesn't detect an Xbox controller as a gamepad and does not bind it as such. [simBeingDumb] attempts to rebind the joystick as if the "map gamepad" button was pressed. */
 class MeanCommandXboxController(port: Int, val simBeingDumb: Boolean = false): CommandXboxController(port) {

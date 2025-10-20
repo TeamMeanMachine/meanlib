@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.control.LoopLogger
-import org.team2471.frc.lib.isSim
-import org.team2471.frc.lib.toTransform2d
+import org.team2471.frc.lib.util.isSim
+import org.team2471.frc.lib.util.toTransform2d
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera

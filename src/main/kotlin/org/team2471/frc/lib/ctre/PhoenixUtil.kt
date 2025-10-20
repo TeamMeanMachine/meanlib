@@ -25,7 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
-import org.team2471.frc.lib.isSim
+import org.team2471.frc.lib.util.isSim
 import java.util.function.Supplier
 
 object PhoenixUtil {

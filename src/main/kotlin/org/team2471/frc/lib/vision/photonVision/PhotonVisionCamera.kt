@@ -6,8 +6,8 @@ import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N3
 import edu.wpi.first.math.numbers.N8
 import edu.wpi.first.wpilibj.Timer
-import org.team2471.frc.lib.isReal
-import org.team2471.frc.lib.isSim
+import org.team2471.frc.lib.util.isReal
+import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineConfig
 import org.team2471.frc.lib.vision.PipelineVisionPacket

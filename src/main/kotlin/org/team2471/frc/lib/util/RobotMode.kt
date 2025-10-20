@@ -1,4 +1,4 @@
-package org.team2471.frc.lib
+package org.team2471.frc.lib.util
 
 import edu.wpi.first.hal.HALUtil
 import edu.wpi.first.wpilibj.DriverStation

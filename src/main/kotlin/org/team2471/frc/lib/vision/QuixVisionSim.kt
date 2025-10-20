@@ -2,7 +2,7 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
-import org.team2471.frc.lib.isReal
+import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.vision.photonVision.PhotonVisionCamera
 import org.photonvision.estimation.TargetModel
 import org.photonvision.simulation.VisionSystemSim

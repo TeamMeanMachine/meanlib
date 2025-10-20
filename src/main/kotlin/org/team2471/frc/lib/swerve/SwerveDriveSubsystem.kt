@@ -81,12 +81,12 @@ import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
-import org.team2471.frc.lib.fieldToRobotCentric
-import org.team2471.frc.lib.isReal
-import org.team2471.frc.lib.isRedAlliance
-import org.team2471.frc.lib.isSim
-import org.team2471.frc.lib.robotToFieldCentric
-import org.team2471.frc.lib.translation
+import org.team2471.frc.lib.util.fieldToRobotCentric
+import org.team2471.frc.lib.util.isReal
+import org.team2471.frc.lib.util.isRedAlliance
+import org.team2471.frc.lib.util.isSim
+import org.team2471.frc.lib.util.robotToFieldCentric
+import org.team2471.frc.lib.util.translation
 import kotlin.math.abs
 import kotlin.math.min
 

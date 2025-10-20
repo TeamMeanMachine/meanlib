@@ -5,7 +5,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.math.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
-import org.team2471.frc.lib.isReal
+import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.units.volts
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
