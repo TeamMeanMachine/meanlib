@@ -39,6 +39,9 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.team2471.frc.lib.control.commands.beforeRun
 import org.team2471.frc.lib.control.commands.beforeWait
 import org.team2471.frc.lib.control.commands.finallyRun
@@ -81,12 +84,14 @@ import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.robotToFieldCentric
 import org.team2471.frc.lib.util.translation
+import org.team2471.frc.lib.vision.QuixVisionSim
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -893,5 +898,15 @@ abstract class SwerveDriveSubsystem(
             DriverStation.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
         }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun simulationPeriodic() {
+        LoopLogger.record("b4 Drive Sim piodic")
+        GlobalScope.launch {
+            updateSimState(0.02, 12.0)
+            QuixVisionSim.updatePose(pose)
+        }
+        LoopLogger.record("Drive Sim piodic")
     }
 }
