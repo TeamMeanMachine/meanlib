@@ -242,7 +242,7 @@ abstract class SwerveDriveSubsystem(
     val demoSpeed: Double
         get() = SmartDashboard.getNumber("DemoSpeed", 1.0).coerceIn(0.0, 1.0)
     val demoMode: Boolean
-        get() = false/*demoSpeed < 1.0*/
+        get() = demoSpeed < 1.0
 
     private val driveAtAngleRequest = FieldCentricFacingAngle()
 
