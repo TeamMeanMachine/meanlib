@@ -11,7 +11,7 @@ import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 
 
-class VisionIOLimelight(val name: String, val headingSupplier: () -> Angle): VisionIO {
+class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle): VisionIO {
 
     override var mode: LimelightMode = LimelightMode.APRILTAG
         set(value) {
@@ -46,7 +46,7 @@ class VisionIOLimelight(val name: String, val headingSupplier: () -> Angle): Vis
 
         if (mode == LimelightMode.APRILTAG) {
             val llPoseEstimate =
-                if (beforeFirstEnable) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+                if (beforeFirstEnable || !useMegatag2) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
                     name
                 )
 
@@ -125,6 +125,7 @@ interface VisionIO {
         var mode = LimelightMode.APRILTAG
 
         var aprilTagPoseEstimate = Pose2d()
+        // Seconds
         var aprilTagTimestamp = 0.0
         var targetCorners: DoubleArray = DoubleArray(8) { 0.0 }
         var targetCoords: DoubleArray = DoubleArray(2) { 0.0 }
