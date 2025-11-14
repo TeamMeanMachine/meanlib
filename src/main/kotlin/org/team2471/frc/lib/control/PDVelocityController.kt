@@ -21,7 +21,7 @@ class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coa
         }
     }
 
-    fun update(velocitySetpoint: Double, currVelocity: Double): Double {
+    fun updatePercentage(velocitySetpoint: Double, currVelocity: Double): Double {
         val error = velocitySetpoint - currVelocity
         val ffPower = velocitySetpoint * ff
 
@@ -40,5 +40,26 @@ class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coa
         if (pdPower + ffPower > 1.0) pdPower = 1.0 - ffPower
 
         return power
+    }
+
+    fun updateVoltage(velocitySetpoint: Double, currVelocity: Double): Double {
+        val error = velocitySetpoint - currVelocity
+        val ffVoltage = velocitySetpoint * ff
+
+        val deltaError = error - lastError
+        lastError = error
+
+        pdPower += error * p + deltaError * d
+
+        var voltage = pdPower + ffVoltage
+
+        if (coastToStop && velocitySetpoint == 0.0) {
+            voltage = 0.0
+            pdPower = 0.0
+        }
+
+        if (pdPower + ffVoltage > 12.0) pdPower = 12.0 - ffVoltage
+
+        return voltage
     }
 }
