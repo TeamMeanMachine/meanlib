@@ -64,6 +64,18 @@ fun TalonFXConfiguration.currentLimits(continuousLimit: Double, peakLimit: Doubl
 }
 
 /**
+ * Set the stator current limits.
+ * @param peakLimit the maximum possible current the motor can draw.
+ */
+fun TalonFXConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXConfiguration {
+    this.CurrentLimits.apply {
+        StatorCurrentLimit = peakLimit
+        StatorCurrentLimitEnable = true
+    }
+    return this
+}
+
+/**
  * Motor will update its position and velocity whenever the CANcoder publishes its information on the CAN bus.
  * The motor's internal rotor will not be used.
  *
@@ -284,6 +296,7 @@ fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = 
  * @see applyConfiguration
  */
 fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
+    // Get the current motor configuration, apply modifications, then apply to the motor.
     val oldConfiguration = TalonFXConfiguration()
     this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
     this.configurator.apply(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
