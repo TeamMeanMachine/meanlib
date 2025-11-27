@@ -5,10 +5,14 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.units.measure.Angle
+import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.units.asDegrees
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team2471.frc.lib.units.asSeconds
+import org.team2471.frc.lib.units.milliseconds
+import org.team2471.frc.lib.units.seconds
 
 
 class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle): VisionIO {
@@ -51,7 +55,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
                 )
 
             inputs.aprilTagPoseEstimate = llPoseEstimate?.pose ?: Pose2d()
-            inputs.aprilTagTimestamp = Utils.fpgaToCurrentTime(llPoseEstimate?.timestampSeconds ?: 0.0)
+            inputs.aprilTagTimestamp = Timer.getFPGATimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
             inputs.targetCorners = DoubleArray(8) { 0.0 }
             inputs.targetCoords = DoubleArray(2) { 0.0 }
         } else {
