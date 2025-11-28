@@ -8,6 +8,7 @@ package org.team2471.frc.lib.control
  * @param ff the velocity feedforward gain of the system (gets multiplied by velocity setpoint)
  * @param coastToStop disable the PD controller when the setpoint is zero.
  */
+
 class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coastToStop: Boolean = false ) {
     var lastError: Double = 0.0
     var pdPower: Double = 0.0
