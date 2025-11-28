@@ -7,11 +7,6 @@ Meanlib is a Kotlin FRC Robot utility library made by Team 2471 Mean Machine.
 
 ## Installation
 
-Inside your robot project folder, clone meanlib from git:
-```shell
-git clone https://github.com/TeamMeanMachine/meanlib/
-```
-
 Add meanlib as a submodule:
 ```shell
 git submodule add https://github.com/TeamMeanMachine/meanlib/
