@@ -18,6 +18,7 @@ import com.ctre.phoenix6.Utils.getCurrentTimeSeconds
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.controls.VoltageOut
+import com.ctre.phoenix6.signals.ControlModeValue
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
@@ -29,6 +30,17 @@ import org.team2471.frc.lib.util.isSim
 import java.util.function.Supplier
 
 object PhoenixUtil {
+
+    val positionControlModes = listOf(
+        ControlModeValue.PositionVoltage, ControlModeValue.PositionVoltageFOC,
+        ControlModeValue.PositionTorqueCurrentFOC, ControlModeValue.MotionMagicDutyCycle,
+        ControlModeValue.MotionMagicDutyCycleFOC, ControlModeValue.MotionMagicVoltage,
+        ControlModeValue.MotionMagicVoltageFOC, ControlModeValue.PositionDutyCycle,
+        ControlModeValue.PositionDutyCycleFOC, ControlModeValue.MotionMagicExpoDutyCycle,
+        ControlModeValue.MotionMagicExpoDutyCycleFOC, ControlModeValue.MotionMagicExpoVoltage,
+        ControlModeValue.MotionMagicExpoVoltageFOC, ControlModeValue.MotionMagicExpoTorqueCurrentFOC,
+    )
+
     /** Attempts to run the command until no error is produced.  */
     fun tryUntilOk(maxAttempts: Int, command: Supplier<StatusCode>) {
         for (i in 0..<maxAttempts) {

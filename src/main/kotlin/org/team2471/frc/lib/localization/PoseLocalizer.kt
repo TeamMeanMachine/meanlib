@@ -46,18 +46,17 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
     // If empty, uses all tags.
     private val tagsToTrack = HashSet<Int>()
-    private val singleTagTagsToTrack = HashSet<Fiducial>()
 
     // Buffer of poses so we can get the interpolated pose at the time of a vision measurement.
     private val bufferHistorySeconds = 10.0
-    /** Buffer of only the swerve odometry pose. */
-    val odometryPoseBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
-    /** Buffer of swerve odometry, Quest, and single tag pose. */
-    val singleTagOdometryBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
-    /** Buffer of the swerve odometry, Quest, and vision measurements. */
-    val visionOdometryBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
+    // Buffer of only the swerve odometry pose.
+    private val odometryPoseBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
+    // Buffer of swerve odometry, Quest, and single tag pose.
+    private val singleTagOdometryBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
+    // Buffer of the swerve odometry, Quest, and vision measurements.
+    private val visionOdometryBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
 
-    /** Buffer of chassis speeds so we can get the interpolated chassis speed at the time of a vision measurement. */
+    // Buffer of chassis speeds so we can get the interpolated chassis speed at the time of a vision measurement.
     private val chassisSpeedsBuffer = TimeInterpolatableBuffer.createBuffer<InterpolatableChassisSpeeds>(bufferHistorySeconds)
 
 
@@ -336,7 +335,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             return
         }
 
-        val tagID = determineClosestTagID(this.pose)
+        val tagID = determineClosestTagID(this.pose, DriverStation.getAlliance().get() == Alliance.Blue)
 
         // Get latest measurement from either camera with a target.
         var latestTimestamp = 0.0
@@ -408,23 +407,23 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
     }
 
-    fun determineClosestTagID(robotPose: Pose2d): Int {
+    fun determineClosestTagID(robotPose: Pose2d, isBlue: Boolean): Int {
         // Define tag indices
-        val targetedTags = singleTagTagsToTrack
+        val tagIndices = if (isBlue) intArrayOf(16, 17, 18, 19, 20, 21) else intArrayOf(5, 6, 7, 8, 9, 10)
 
         // Evaluate each canidate
-        var closestTagID = 0 // Is this the right initial value?
+        var closestTagIndex = 0 // Is this the right initial value?
         var closestTagDist = Double.POSITIVE_INFINITY
-        targetedTags.forEach {
-            val tag: Pose2d = it.pose.toPose2d()
+        for (tagIndex in tagIndices) {
+            val tag: Pose2d = allTargets[tagIndex].pose.toPose2d()
             val tagDist: Double = tag.translation.getDistance(robotPose.translation)
 
             if (tagDist < closestTagDist) {
-                closestTagID = it.id
+                closestTagIndex = tagIndex
                 closestTagDist = tagDist
             }
         }
-        return closestTagID
+        return closestTagIndex + 1
     }
 
     init {
@@ -437,7 +436,6 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         networkTable.publishTargets(allTargets)
 
         trackAllTags()
-        setSingleTagTagsToTrack(*allTargets)
     }
 
     fun trackAllTags() {
@@ -445,11 +443,6 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         for (tag in allTargets) {
             tagsToTrack.add(tag.id)
         }
-    }
-
-    fun setSingleTagTagsToTrack(vararg tags: Fiducial) {
-        singleTagTagsToTrack.clear()
-        singleTagTagsToTrack.addAll(tags)
     }
 
     data class OdometryMeasurement(val robotPose: Pose2d, val dataTimestamp: Double)

@@ -506,15 +506,6 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
-    /**
-     * Translates the robot using the joystick, does not turn. [getChassisSpeedsFromJoystick]
-     */
-    fun joystickOnlyTranslationDrive(): Command {
-        return run {
-            driveVelocity(getChassisSpeedsFromJoystick().apply { omegaRadiansPerSecond = 0.0 })
-        }
-    }
-
     fun driveToPoint(
         wantedPose: Pose2d,
         poseSupplier: () -> Pose2d = { pose },
