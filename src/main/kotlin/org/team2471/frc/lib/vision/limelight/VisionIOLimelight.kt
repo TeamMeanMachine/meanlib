@@ -1,25 +1,25 @@
 package org.team2471.frc.lib.vision.limelight
 
-import com.ctre.phoenix6.Utils
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.units.measure.Angle
 import edu.wpi.first.wpilibj.Timer
-import org.team2471.frc.lib.units.asDegrees
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team2471.frc.lib.units.asDegrees
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.units.milliseconds
-import org.team2471.frc.lib.units.seconds
+import kotlin.math.sqrt
 
 
-class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle): VisionIO {
+class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle) :
+    VisionIO {
 
     override var mode: LimelightMode = LimelightMode.APRILTAG
         set(value) {
-            when(value) {
+            when (value) {
                 LimelightMode.APRILTAG -> LimelightHelpers.setPipelineIndex(name, 0)
                 LimelightMode.GAMEPIECE -> LimelightHelpers.setPipelineIndex(name, 1)
             }
@@ -53,18 +53,32 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
                 if (beforeFirstEnable || !useMegatag2) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
                     name
                 )
+            //                                                                                                                                                                  kinda satisfies the compiler? ive already filtered the nulls out
+            val veryRawFiducials: List<LimelightHelpers.RawFiducial> = LimelightHelpers.getRawFiducials(name)
+                .filterIndexed { index, fiducial -> fiducial != null && index < 4 } as List<LimelightHelpers.RawFiducial>
+            val rawFiducials = DoubleArray(15) { 0.0 }
+
+            for (i in veryRawFiducials.indices) {
+                rawFiducials[i * 4] = veryRawFiducials[i].id.toDouble()
+                rawFiducials[i * 4 + 1] = veryRawFiducials[i].txnc
+                rawFiducials[i * 4 + 2] = veryRawFiducials[i].tync
+                rawFiducials[i * 4 + 3] = veryRawFiducials[i].ta
+            }
 
             inputs.aprilTagPoseEstimate = llPoseEstimate?.pose ?: Pose2d()
-            inputs.aprilTagTimestamp = Timer.getFPGATimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
+            inputs.aprilTagTimestamp =
+                Timer.getFPGATimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
+            inputs.rawFiducials = rawFiducials
+
             inputs.targetCorners = DoubleArray(8) { 0.0 }
             inputs.targetCoords = DoubleArray(2) { 0.0 }
         } else {
             inputs.targetCoords = doubleArrayOf(
-                LimelightHelpers.getTX(name),
-                LimelightHelpers.getTY(name)
+                LimelightHelpers.getTX(name), LimelightHelpers.getTY(name)
             )
 
-            inputs.targetCorners = NetworkTableInstance.getDefault().getTable(name).getEntry("tcornxy").getDoubleArray(DoubleArray(8) { 0.0 })
+            inputs.targetCorners = NetworkTableInstance.getDefault().getTable(name).getEntry("tcornxy")
+                .getDoubleArray(DoubleArray(8) { 0.0 })
 
             inputs.aprilTagPoseEstimate = Pose2d()
             inputs.aprilTagTimestamp = 0.0
@@ -73,8 +87,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         Logger.processInputs(name, inputs)
     }
 
-    fun onConnect() {
-        /*
+    fun onConnect() {/*
             There are 5 different limelight IMU modes.
             0: Ignores internal imu, only uses external IMU through setRobotOrientation()
             1: Resets internal IMU to the given angle whenever setRobotOrientation() is called
@@ -110,6 +123,34 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         LimelightHelpers.SetIMUMode(name, 3)
     }
 
+    private fun updateCropping(fiducials: List<Triple<Double, Pair<Double, Double>, Double>>) {
+        // todo tune this
+        val overshootPercentage = 1.25
+
+        var minCoord = Pair(-1.0, -1.0)
+        var maxCoord = Pair(1.0, 1.0)
+
+        for (fiducial in fiducials) {
+            // Todo figure these out
+            val normalizedTx = fiducial.second.first / 1.0
+            val normalizedTy = fiducial.second.second / 1.0
+
+            // half a side length               area of image (when x and y are between -1 and 1)
+            val targetRadius = sqrt(fiducial.third) / 2.0 * 4.0
+
+            val minX = normalizedTx - targetRadius * overshootPercentage
+            val maxX = normalizedTx + targetRadius * overshootPercentage
+            val minY = normalizedTy - targetRadius * overshootPercentage
+            val maxY = normalizedTy + targetRadius * overshootPercentage
+
+            if (minX < minCoord.first) minCoord = Pair(minX, minCoord.second)
+            if (maxX > minCoord.first) maxCoord = Pair(maxX, minCoord.second)
+            if (minY < minCoord.second) minCoord = Pair(minCoord.first, minY)
+            if (maxY < minCoord.second) maxCoord = Pair(minCoord.first, maxY)
+        }
+
+        LimelightHelpers.setCropWindow(name, minCoord.first, maxCoord.first, minCoord.second, maxCoord.second)
+    }
 }
 
 interface VisionIO {
@@ -128,15 +169,36 @@ interface VisionIO {
         var isConnected = false
         var mode = LimelightMode.APRILTAG
 
+        // April Tag
         var aprilTagPoseEstimate = Pose2d()
+
         // Seconds
         var aprilTagTimestamp = 0.0
+
+        //id, x, y, area, id, x, y, area, id, x, y, area,...
+        // if you end up seeing more than 5 tags ill be shocked
+        var rawFiducials: DoubleArray = DoubleArray(20) { 0.0 }
+
+        // (id, (x, y), area),...
+        val trimmedFiducials: List<Triple<Double, Pair<Double, Double>, Double>>
+            get() {
+                return rawFiducials.filterIndexed { index, value -> index % 4 == 0 && value != 0.0 }
+                    .mapIndexed { index, id ->
+                        Triple(
+                            id,
+                            Pair(rawFiducials[index * 4 + 1], rawFiducials[index * 4 + 2]),
+                            rawFiducials[index * 4 + 3]
+                        )
+                    }
+            }
+
+
+        // object detection
         var targetCorners: DoubleArray = DoubleArray(8) { 0.0 }
         var targetCoords: DoubleArray = DoubleArray(2) { 0.0 }
 
-        // object detection
         val hasTargets: Boolean
-            get()  = targetCorners.isNotEmpty() && targetCoords.isNotEmpty()
+            get() = targetCorners.isNotEmpty() && targetCoords.isNotEmpty()
 
         val targetCenter: Translation2d
             get() {
@@ -186,6 +248,5 @@ interface VisionIO {
 }
 
 enum class LimelightMode {
-    APRILTAG,
-    GAMEPIECE
+    APRILTAG, GAMEPIECE
 }

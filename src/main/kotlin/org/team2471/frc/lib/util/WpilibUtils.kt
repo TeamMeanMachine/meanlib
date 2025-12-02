@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.math.kinematics.SwerveModuleState
+import edu.wpi.first.units.measure.Angle
 
 inline val ChassisSpeeds.translation: Translation2d get() = Translation2d(this.vxMetersPerSecond, this.vyMetersPerSecond)
 fun ChassisSpeeds.fieldToRobotCentric(heading: Rotation2d): ChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(this, heading)
@@ -21,4 +22,7 @@ fun Pose2d.changeRotation(newRotation: Rotation2d): Pose2d {
 }
 fun Pose2d.addRotation(rotation: Rotation2d): Pose2d {
     return Pose2d(this.translation, this.rotation.plus(rotation))
+}
+fun Translation2d.angleTo(other: Translation2d): Angle {
+    return (other - this).angle.measure
 }
