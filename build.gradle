@@ -41,6 +41,14 @@ kotlin {
     jvmToolchain(17)
 }
 
+// Automatically download library documentation from libraries
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 wpi.java.debugJni = false
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()

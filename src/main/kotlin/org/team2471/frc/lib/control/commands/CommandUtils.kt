@@ -40,6 +40,14 @@ fun Command.finallyRun(command: Command): Command = this.finallyRun { command.sc
 fun Command.finallyWait(seconds: Double) = this.andThen(waitCommand(seconds))!!
 
 /**
+ * After the initial command finishes, wait until a condition becomes true.
+ * @param condition the condition
+ * @see Command.andThen
+ * @see Commands.waitUntil
+ */
+fun Command.finallyWaitUntil(condition: () -> Boolean) = this.andThen(waitUntilCommand(condition))!!
+
+/**
  * Only schedule and continue running the command if [condition] is true.
  *
  * Combines onlyIf and onlyWhile and will only start the command if the [condition] is true
