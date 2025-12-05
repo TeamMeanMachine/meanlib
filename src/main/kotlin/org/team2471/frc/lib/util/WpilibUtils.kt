@@ -23,6 +23,7 @@ fun Pose2d.changeRotation(newRotation: Rotation2d): Pose2d {
 fun Pose2d.addRotation(rotation: Rotation2d): Pose2d {
     return Pose2d(this.translation, this.rotation.plus(rotation))
 }
+
 fun Translation2d.angleTo(other: Translation2d): Angle {
     return (other - this).angle.measure
 }

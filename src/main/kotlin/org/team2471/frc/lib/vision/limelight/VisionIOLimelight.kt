@@ -97,7 +97,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
          */
         // We primarily use 3, but will switch to 1 on gyro reset
         // I want to test not even switching to 1
-        LimelightHelpers.SetIMUMode(name, 3)
+        LimelightHelpers.SetIMUMode(name, 2)
 
         if (isEnabled) {
             LimelightHelpers.SetThrottle(name, 0)
@@ -120,7 +120,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
     override fun gyroReset() {
         LimelightHelpers.SetIMUMode(name, 1)
         LimelightHelpers.SetRobotOrientation(name, headingSupplier.invoke().asDegrees, 0.0, 0.0, 0.0, 0.0, 0.0)
-        LimelightHelpers.SetIMUMode(name, 3)
+        LimelightHelpers.SetIMUMode(name, 2)
     }
 
     private fun updateCropping(fiducials: List<Triple<Double, Pair<Double, Double>, Double>>) {
