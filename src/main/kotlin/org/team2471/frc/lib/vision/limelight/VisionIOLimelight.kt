@@ -232,6 +232,7 @@ interface VisionIO {
             table.put("Mode", mode)
             table.put("AprilTag Pose Estimate", aprilTagPoseEstimate)
             table.put("AprilTag Timestamp", aprilTagTimestamp)
+            table.put("RawFiducials", rawFiducials)
             table.put("Target Corners", targetCorners)
             table.put("Target Coordinates", targetCoords)
         }
@@ -241,6 +242,7 @@ interface VisionIO {
             mode = table.get("Mode", mode)
             aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first()
             aprilTagTimestamp = table.get("AprilTag Timestamp", aprilTagTimestamp)
+            rawFiducials = table.get("RawFiducials", rawFiducials)
             targetCorners = table.get("Target Corners", targetCorners)
             targetCoords = table.get("Target Coordinates", targetCoords)
         }
