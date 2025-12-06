@@ -23,7 +23,7 @@ var doReplay = false
 group = "org.team2471.lib"
 version = "2025"
 var wpiLibVersion =  "2025.2.1"
-var advantageKitVersion = "4.0.0"
+var advantageKitVersion = "4.1.2"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
