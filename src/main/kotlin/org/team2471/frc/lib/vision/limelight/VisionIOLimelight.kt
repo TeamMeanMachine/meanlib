@@ -49,6 +49,8 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         inputs.mode = mode
 
         if (mode == LimelightMode.APRILTAG) {
+            inputs.seesTag = LimelightHelpers.getTV(name)
+
             val llPoseEstimate =
                 if (beforeFirstEnable || !useMegatag2) LimelightHelpers.getBotPoseEstimate_wpiBlue(name) else LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
                     name
@@ -70,14 +72,14 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
                 Timer.getFPGATimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
             inputs.rawFiducials = rawFiducials
 
-            inputs.targetCorners = DoubleArray(8) { 0.0 }
-            inputs.targetCoords = DoubleArray(2) { 0.0 }
+            inputs.objectCorners = DoubleArray(8) { 0.0 }
+            inputs.objectCoords = DoubleArray(2) { 0.0 }
         } else {
-            inputs.targetCoords = doubleArrayOf(
+            inputs.objectCoords = doubleArrayOf(
                 LimelightHelpers.getTX(name), LimelightHelpers.getTY(name)
             )
 
-            inputs.targetCorners = NetworkTableInstance.getDefault().getTable(name).getEntry("tcornxy")
+            inputs.objectCorners = NetworkTableInstance.getDefault().getTable(name).getEntry("tcornxy")
                 .getDoubleArray(DoubleArray(8) { 0.0 })
 
             inputs.aprilTagPoseEstimate = Pose2d()
@@ -170,6 +172,8 @@ interface VisionIO {
         var mode = LimelightMode.APRILTAG
 
         // April Tag
+        var seesTag = false
+
         var aprilTagPoseEstimate = Pose2d()
 
         // Seconds
@@ -194,17 +198,17 @@ interface VisionIO {
 
 
         // object detection
-        var targetCorners: DoubleArray = DoubleArray(8) { 0.0 }
-        var targetCoords: DoubleArray = DoubleArray(2) { 0.0 }
+        var objectCorners: DoubleArray = DoubleArray(8) { 0.0 }
+        var objectCoords: DoubleArray = DoubleArray(2) { 0.0 }
 
-        val hasTargets: Boolean
-            get() = targetCorners.isNotEmpty() && targetCoords.isNotEmpty()
+        val hasObjects: Boolean
+            get() = objectCorners.isNotEmpty() && objectCoords.isNotEmpty()
 
-        val targetCenter: Translation2d
+        val objectCenter: Translation2d
             get() {
-                if (hasTargets) {
-                    val targetCornersX = targetCorners.filterIndexed { index, _ -> index % 2 == 0 }
-                    val targetCornersY = targetCorners.filterIndexed { index, _ -> index % 2 == 1 }
+                if (hasObjects) {
+                    val targetCornersX = objectCorners.filterIndexed { index, _ -> index % 2 == 0 }
+                    val targetCornersY = objectCorners.filterIndexed { index, _ -> index % 2 == 1 }
 
                     return Translation2d(
                         (targetCornersX.max() + targetCornersX.min()) / 2,
@@ -215,11 +219,11 @@ interface VisionIO {
                 }
             }
 
-        val targetDimensions: Pair<Double, Double>
+        val objectDimensions: Pair<Double, Double>
             get() {
                 try {
-                    val targetCornersX = targetCorners.filterIndexed { index, _ -> index % 2 == 0 }
-                    val targetCornersY = targetCorners.filterIndexed { index, _ -> index % 2 == 1 }
+                    val targetCornersX = objectCorners.filterIndexed { index, _ -> index % 2 == 0 }
+                    val targetCornersY = objectCorners.filterIndexed { index, _ -> index % 2 == 1 }
 
                     return targetCornersX.max() - targetCornersX.min() to targetCornersY.max() - targetCornersY.min()
                 } catch (_: Exception) {
@@ -230,21 +234,23 @@ interface VisionIO {
         override fun toLog(table: LogTable) {
             table.put("Is Connected", isConnected)
             table.put("Mode", mode)
+            table.put("Sees Tag", seesTag)
             table.put("AprilTag Pose Estimate", aprilTagPoseEstimate)
             table.put("AprilTag Timestamp", aprilTagTimestamp)
             table.put("RawFiducials", rawFiducials)
-            table.put("Target Corners", targetCorners)
-            table.put("Target Coordinates", targetCoords)
+            table.put("Object Corners", objectCorners)
+            table.put("Object Coordinates", objectCoords)
         }
 
         override fun fromLog(table: LogTable) {
             isConnected = table.get("Is Connected", isConnected)
             mode = table.get("Mode", mode)
+            seesTag = table.get("Sees Tag", seesTag)
             aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first()
             aprilTagTimestamp = table.get("AprilTag Timestamp", aprilTagTimestamp)
             rawFiducials = table.get("RawFiducials", rawFiducials)
-            targetCorners = table.get("Target Corners", targetCorners)
-            targetCoords = table.get("Target Coordinates", targetCoords)
+            objectCorners = table.get("Object Corners", objectCorners)
+            objectCoords = table.get("Object Coordinates", objectCoords)
         }
     }
 }
