@@ -14,8 +14,30 @@ import org.team2471.frc.lib.units.milliseconds
 import kotlin.math.sqrt
 
 
-class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle) :
-    VisionIO {
+class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle): VisionIO {
+
+    /*
+        There are 5 different limelight IMU modes.
+        0: Ignores internal imu, only uses external IMU through setRobotOrientation()
+        1: Resets internal IMU to the given angle whenever setRobotOrientation() is called
+        2: Solely relies on the internal IMU
+        3: IMU_ASSIST_MT1 - uses seen AprilTags in MegaTag1 to update heading
+        4: IMU_ASSIST_EXTERNALIMU - uses external IMU for gradual heading correction.
+    */
+    override var imuMode = 1
+        set(value) {
+            println("Resetting Limelight IMU")
+            LimelightHelpers.SetIMUMode(name, value)
+            field = value
+        }
+
+    override var imuAssistAlpha = 0.001
+        set(value) {
+            LimelightHelpers.SetIMUAssistAlpha(name, value)
+            field = value
+        }
+
+
 
     override var mode: LimelightMode = LimelightMode.APRILTAG
         set(value) {
@@ -89,40 +111,41 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         Logger.processInputs(name, inputs)
     }
 
-    fun onConnect() {/*
-            There are 5 different limelight IMU modes.
-            0: Ignores internal imu, only uses external IMU through setRobotOrientation()
-            1: Resets internal IMU to the given angle whenever setRobotOrientation() is called
-            2: Solely relies on the internal IMU
-            3: IMU_ASSIST_MT1 - uses seen AprilTags in MegaTag1 to update heading
-            4: IMU_ASSIST_EXTERNALIMU - uses external IMU for gradual heading correction.
-         */
-        // We primarily use 3, but will switch to 1 on gyro reset
-        // I want to test not even switching to 1
-        LimelightHelpers.SetIMUMode(name, 2)
+    fun onConnect() {
+        LimelightHelpers.SetIMUMode(name, imuMode)
+        LimelightHelpers.SetIMUAssistAlpha(name, imuAssistAlpha)
 
         if (isEnabled) {
             LimelightHelpers.SetThrottle(name, 0)
         } else {
-            LimelightHelpers.SetThrottle(name, 200)
+//            LimelightHelpers.SetThrottle(name, 200)
         }
     }
 
     override fun enable() {
         beforeFirstEnable = false
         isEnabled = true
+        LimelightHelpers.SetIMUMode(name, imuMode)
+        LimelightHelpers.SetIMUAssistAlpha(name, imuAssistAlpha)
         LimelightHelpers.SetThrottle(name, 0)
     }
 
     override fun disable() {
         isEnabled = false
-        LimelightHelpers.SetThrottle(name, 200)
+//        LimelightHelpers.SetThrottle(name, 200)
     }
+
+
 
     override fun gyroReset() {
         LimelightHelpers.SetIMUMode(name, 1)
         LimelightHelpers.SetRobotOrientation(name, headingSupplier.invoke().asDegrees, 0.0, 0.0, 0.0, 0.0, 0.0)
-        LimelightHelpers.SetIMUMode(name, 2)
+        imuMode = imuMode
+    }
+
+    override fun disabledGyroReset() {
+        LimelightHelpers.SetIMUMode(name, 1)
+        LimelightHelpers.SetRobotOrientation(name, headingSupplier.invoke().asDegrees, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
     private fun updateCropping(fiducials: List<Triple<Double, Pair<Double, Double>, Double>>) {
@@ -157,6 +180,8 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
 
 interface VisionIO {
 
+    var imuMode: Int
+    var imuAssistAlpha: Double
     var mode: LimelightMode
 
     fun updateInputs(inputs: VisionIOInputs)
@@ -165,6 +190,7 @@ interface VisionIO {
     fun disable()
 
     fun gyroReset()
+    fun disabledGyroReset()
 
     open class VisionIOInputs : LoggableInputs {
 
