@@ -148,33 +148,8 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         LimelightHelpers.SetRobotOrientation(name, headingSupplier.invoke().asDegrees, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
-    private fun updateCropping(fiducials: List<Triple<Double, Pair<Double, Double>, Double>>) {
-        // todo tune this
-        val overshootPercentage = 1.25
-
-        var minCoord = Pair(-1.0, -1.0)
-        var maxCoord = Pair(1.0, 1.0)
-
-        for (fiducial in fiducials) {
-            // Todo figure these out
-            val normalizedTx = fiducial.second.first / 1.0
-            val normalizedTy = fiducial.second.second / 1.0
-
-            // half a side length               area of image (when x and y are between -1 and 1)
-            val targetRadius = sqrt(fiducial.third) / 2.0 * 4.0
-
-            val minX = normalizedTx - targetRadius * overshootPercentage
-            val maxX = normalizedTx + targetRadius * overshootPercentage
-            val minY = normalizedTy - targetRadius * overshootPercentage
-            val maxY = normalizedTy + targetRadius * overshootPercentage
-
-            if (minX < minCoord.first) minCoord = Pair(minX, minCoord.second)
-            if (maxX > minCoord.first) maxCoord = Pair(maxX, minCoord.second)
-            if (minY < minCoord.second) minCoord = Pair(minCoord.first, minY)
-            if (maxY < minCoord.second) maxCoord = Pair(minCoord.first, maxY)
-        }
-
-        LimelightHelpers.setCropWindow(name, minCoord.first, maxCoord.first, minCoord.second, maxCoord.second)
+    override fun updateCropping(minX: Double, maxX: Double, minY: Double, maxY: Double) {
+        LimelightHelpers.setCropWindow(name, minX, maxX, minY, maxY)
     }
 }
 
@@ -192,7 +167,9 @@ interface VisionIO {
     fun gyroReset()
     fun disabledGyroReset()
 
-    open class VisionIOInputs : LoggableInputs {
+    fun updateCropping(minX: Double, maxX: Double, minY: Double, maxY: Double)
+
+        open class VisionIOInputs : LoggableInputs {
 
         var isConnected = false
         var mode = LimelightMode.APRILTAG
