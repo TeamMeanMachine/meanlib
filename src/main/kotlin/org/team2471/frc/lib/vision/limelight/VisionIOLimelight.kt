@@ -118,7 +118,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
         if (isEnabled) {
             LimelightHelpers.SetThrottle(name, 0)
         } else {
-            LimelightHelpers.SetThrottle(name, 100)
+//            LimelightHelpers.SetThrottle(name, 100)
         }
     }
 
@@ -132,7 +132,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
 
     override fun disable() {
         isEnabled = false
-        LimelightHelpers.SetThrottle(name, 100)
+//        LimelightHelpers.SetThrottle(name, 100)
     }
 
 

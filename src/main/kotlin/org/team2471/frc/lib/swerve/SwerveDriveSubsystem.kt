@@ -326,10 +326,10 @@ abstract class SwerveDriveSubsystem(
         moduleErrorIndex = (moduleErrorIndex + 1) % modules.size
 
         // Calculate heading from swerve odometry when gyro is disconnected.
-        if (!isGyroConnected && isReal) {
-            val deltaYaw = kinematics.toChassisSpeeds(*moduleStates).omegaRadiansPerSecond * deltaTime
-            resetRotation(heading + deltaYaw.radians.asRotation2d)
-        }
+//        if (!isGyroConnected && isReal) {
+//            val deltaYaw = kinematics.toChassisSpeeds(*moduleStates).omegaRadiansPerSecond * deltaTime
+//            resetRotation(heading + deltaYaw.radians.asRotation2d)
+//        }
 
         prevTime = currTime
         Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
@@ -783,6 +783,77 @@ abstract class SwerveDriveSubsystem(
             println("Running DriveAlongChoreoPath")
 
             Logger.recordOutput("Drive/Path/Name", path.name())
+            Logger.recordOutput("Drive/Path/TotalTime", totalTime)
+
+            t = 0.0
+
+            timer.restart()
+        }.onlyRunWhileFalse {
+            val p = t / totalTime
+            Logger.recordOutput("Drive/Path/Done %", p)
+            exitSupplier(p)
+        }.finallyRun {
+            // Tell drivetrain to apply no output
+            stop()
+
+            println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
+            // Publish empty data to show that the path is done
+            Logger.recordOutput("Drive/Path/Pose", Pose2d())
+        }.withName("DriveAlongChoreoPath")
+    }
+
+
+    fun driveAlongChoreoPath(
+        path: () -> Trajectory<SwerveSample>,
+        poseSupplier: () -> Pose2d = { pose },
+        resetOdometry: Boolean = false,
+        exitSupplier: (Double) -> Boolean = { it >= 1.0 }
+    ): Command {
+        var totalTime = 0.0
+        var t = 0.0
+        val timer = Timer()
+
+        return run {
+            val currentPose = poseSupplier()
+            t = min(timer.get(), totalTime)
+            val sample = path().sampleAt(t, false).get()
+            val wantedPose = sample.pose
+            val wantedSpeeds = sample.chassisSpeeds
+            val moduleForcesX = sample.moduleForcesX()
+            val moduleForcesY = sample.moduleForcesY()
+
+            Logger.recordOutput("Drive/Path/Time", t)
+            Logger.recordOutput("Drive/Path/Pose", wantedPose)
+            Logger.recordOutput("Drive/Path/Speeds", wantedSpeeds)
+            Logger.recordOutput("Drive/Path/Path Acceleration", Translation2d(sample.ax, sample.ay).norm.metersPerSecondPerSecond)
+            Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
+            Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
+            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
+
+            // Add heading and xy error
+            wantedSpeeds.apply {
+                vxMetersPerSecond += pathXController.calculate(currentPose.x, wantedPose.x)
+                vyMetersPerSecond += pathYController.calculate(currentPose.y, wantedPose.y)
+                omegaRadiansPerSecond += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
+            }
+            setControl(
+                ApplyFieldSpeeds().apply {
+                    Speeds = wantedSpeeds
+                    WheelForceFeedforwardsX = moduleForcesX
+                    WheelForceFeedforwardsY = moduleForcesY
+                    DriveRequestType = SwerveModule.DriveRequestType.Velocity
+                }
+            )
+        }.beforeRun {
+            totalTime = path().totalTime
+            if (resetOdometry) {
+                println("resetting odom to inital pose")
+                pose = path().getInitialPose(false).get()
+            }
+
+            println("Running DriveAlongChoreoPath")
+
+            Logger.recordOutput("Drive/Path/Name", path().name())
             Logger.recordOutput("Drive/Path/TotalTime", totalTime)
 
             t = 0.0
