@@ -20,6 +20,8 @@ class MeanCommandXboxController(port: Int, val simBeingDumb: Boolean = false): C
     }
 }
 
+/** Extension functions for raw button values. */
+
 inline val CommandXboxController.a: Boolean get() = this.hid.aButton
 inline val CommandXboxController.b: Boolean get() = this.hid.bButton
 inline val CommandXboxController.x: Boolean get() = this.hid.xButton

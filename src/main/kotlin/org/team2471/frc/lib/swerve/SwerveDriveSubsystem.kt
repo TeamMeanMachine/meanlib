@@ -238,11 +238,6 @@ abstract class SwerveDriveSubsystem(
     /** The maximum rotational speed of drivetrain. */
     val maxAngularSpeed: AngularVelocity = (maxSpeed.asMetersPerSecond / driveBaseRadius.asMeters).radiansPerSecond
 
-    val demoSpeed: Double
-        get() = SmartDashboard.getNumber("DemoSpeed", 1.0).coerceIn(0.0, 1.0)
-    val demoMode: Boolean
-        get() = demoSpeed < 1.0
-
     /**
      * choreoPathsStartOnRed:
      * Initial value determines which side all choreo paths are made for.

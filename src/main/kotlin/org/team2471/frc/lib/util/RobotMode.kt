@@ -3,6 +3,7 @@ package org.team2471.frc.lib.util
 import edu.wpi.first.hal.HALUtil
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RuntimeType
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 
 /** Stores basic robot information like Alliance color and isReal/Sim/Replay */
 
@@ -33,3 +34,16 @@ val isRedAlliance: Boolean
     }
 val isBlueAlliance: Boolean get() = !isRedAlliance
 private var prevIsRedAlliance: Boolean? = null
+
+//Demo mode
+private val demoSpeedEntry = SmartDashboard.getEntry("DemoSpeed").apply {
+    if (!exists()) {
+        println("DemoSpeed does not exist, setting it to 1.0")
+        setDouble(1.0)
+        setPersistent()
+    }
+}
+val demoSpeed: Double
+    get() = demoSpeedEntry.getDouble(1.0).coerceIn(0.0, 1.0)
+val demoMode: Boolean
+    get() = demoSpeed < 1.0
