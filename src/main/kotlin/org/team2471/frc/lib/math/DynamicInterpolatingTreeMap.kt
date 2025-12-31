@@ -1,8 +1,9 @@
-package org.team2471.frc.lib.util
+package org.team2471.frc.lib.math
 
 import edu.wpi.first.math.interpolation.Interpolator
 import edu.wpi.first.math.interpolation.InverseInterpolator
-import java.util.*
+import java.util.Comparator
+import java.util.TreeMap
 
 /**
  * This is a copy of WPILib's InterpolatingTreeMap that allows for deleting of keys
