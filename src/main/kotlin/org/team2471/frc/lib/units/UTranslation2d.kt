@@ -101,6 +101,6 @@ inline val UTranslation2d<LinearAccelerationUnit>.asMetersPerSecondPerSecond: Tr
 inline val UTranslation2d<LinearAccelerationUnit>.perSecond: UTranslation2d<VelocityUnit<LinearAccelerationUnit>> get() = UTranslation2d(this.x.perSecond, this.y.perSecond)
 
 // Jerk UTranslation2d destructors
-inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asFeetJerk: Translation2d get() = Translation2d(this.x.asFeetJerk, this.y.asFeetJerk)
-inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asInchesJerk: Translation2d get() = Translation2d(this.x.asInchesJerk, this.y.asInchesJerk)
-inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asMetersJerk: Translation2d get() = Translation2d(this.x.asMetersJerk, this.y.asMetersJerk)
+inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asFeetJerk: Translation2d get() = Translation2d(this.x.asFeetPerSecondCubed, this.y.asFeetPerSecondCubed)
+inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asInchesJerk: Translation2d get() = Translation2d(this.x.asInchesPerSecondCubed, this.y.asInchesPerSecondCubed)
+inline val UTranslation2d<VelocityUnit<LinearAccelerationUnit>>.asMetersJerk: Translation2d get() = Translation2d(this.x.asMetersPerSecondCubed, this.y.asMetersPerSecondCubed)

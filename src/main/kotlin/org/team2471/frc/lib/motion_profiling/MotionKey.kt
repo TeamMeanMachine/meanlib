@@ -245,7 +245,6 @@ class MotionKey {
             }
 
             SlopeMethod.SLOPE_STEPPED, SlopeMethod.SLOPE_STEPPED_NEXT -> assert(false) // Not a valid method for PREV Interp Method, it is only valid for NEXT key direction
-            else -> {}
         }
 
         when (this.nextSlopeMethod) {
@@ -310,7 +309,6 @@ class MotionKey {
             }
 
             SlopeMethod.SLOPE_STEPPED, SlopeMethod.SLOPE_STEPPED_NEXT -> {}
-            else -> {}
         }
 
         if (bCalcSmoothPrev || bCalcSmoothNext) {

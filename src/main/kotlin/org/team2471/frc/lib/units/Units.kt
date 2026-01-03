@@ -15,7 +15,7 @@ inline val Measure<DistanceUnit>.asInches: Double get() = `in`(Inches)
 inline val Measure<DistanceUnit>.asFeet: Double get() = `in`(Feet)
 inline val Measure<DistanceUnit>.asMeters: Double get() = `in`(Meters)
 inline val Measure<DistanceUnit>.asCentimeters: Double get() = `in`(Centimeters)
-inline val Measure<DistanceUnit>.asMillimeters: Double get() = `in`(Millimeter)
+inline val Measure<DistanceUnit>.asMillimeters: Double get() = `in`(Millimeters)
 
 inline val Double.inches: Distance get() = Inches.of(this)
 inline val Double.feet: Distance get() = Feet.of(this)
@@ -25,14 +25,16 @@ inline val Double.millimeters: Distance get() = Millimeters.of(this)
 
 
 //Angle
-inline val Angle.asDegrees: Double get() = `in`(Degrees)
-inline val Angle.asRotations: Double get() = `in`(Rotations)
-inline val Angle.asRadians: Double get() = `in`(Radians)
-inline val Angle.asRotation2d: Rotation2d get() = Rotation2d(this)
+inline val Measure<AngleUnit>.asDegrees: Double get() = `in`(Degrees)
+inline val Measure<AngleUnit>.asRotations: Double get() = `in`(Rotations)
+inline val Measure<AngleUnit>.asRadians: Double get() = `in`(Radians)
 
 inline val Double.degrees: Angle get() = Degrees.of(this)
 inline val Double.rotations: Angle get() = Rotations.of(this)
 inline val Double.radians: Angle get() = Radians.of(this)
+
+//Rotation2d
+inline val Measure<AngleUnit>.asRotation2d: Rotation2d get() = Rotation2d.fromRadians(this.asRadians)
 
 
 //Time
@@ -52,7 +54,7 @@ inline val Measure<LinearVelocityUnit>.asInchesPerSecond: Double get() = `in`(In
 inline val Measure<LinearVelocityUnit>.asFeetPerSecond: Double get() = `in`(FeetPerSecond)
 inline val Measure<LinearVelocityUnit>.asMetersPerSecond: Double get() = `in`(MetersPerSecond)
 
-inline val Measure<DistanceUnit>.perSecond: LinearVelocity get() = InchesPerSecond.of(this.asInches)
+inline val Measure<DistanceUnit>.perSecond: LinearVelocity get() = MetersPerSecond.of(this.asMeters)
 
 inline val Double.inchesPerSecond: LinearVelocity get() = InchesPerSecond.of(this)
 inline val Double.feetPerSecond: LinearVelocity get() = FeetPerSecond.of(this)
@@ -60,12 +62,12 @@ inline val Double.metersPerSecond: LinearVelocity get() = MetersPerSecond.of(thi
 
 
 //Angular Velocity
-inline val AngularVelocity.asDegreesPerSecond: Double get() = `in`(DegreesPerSecond)
-inline val AngularVelocity.asRotationsPerSecond: Double get() = `in`(RotationsPerSecond)
-inline val AngularVelocity.asRPM: Double get() = `in`(RPM)
-inline val AngularVelocity.asRadiansPerSecond: Double get() = `in`(RadiansPerSecond)
+inline val Measure<AngularVelocityUnit>.asDegreesPerSecond: Double get() = `in`(DegreesPerSecond)
+inline val Measure<AngularVelocityUnit>.asRotationsPerSecond: Double get() = `in`(RotationsPerSecond)
+inline val Measure<AngularVelocityUnit>.asRPM: Double get() = `in`(RPM)
+inline val Measure<AngularVelocityUnit>.asRadiansPerSecond: Double get() = `in`(RadiansPerSecond)
 
-inline val Angle.perSecond: AngularVelocity get() = DegreesPerSecond.of(this.asDegrees)
+inline val Measure<AngleUnit>.perSecond: AngularVelocity get() = RadiansPerSecond.of(this.asRadians)
 
 inline val Double.degreesPerSecond: AngularVelocity get() = DegreesPerSecond.of(this)
 inline val Double.rotationsPerSecond: AngularVelocity get() = RotationsPerSecond.of(this)
@@ -79,33 +81,56 @@ inline val Measure<LinearAccelerationUnit>.asFeetPerSecondPerSecond: Double get(
 inline val Measure<LinearAccelerationUnit>.asMetersPerSecondPerSecond: Double get() = `in`(MetersPerSecondPerSecond)
 inline val Measure<LinearAccelerationUnit>.asGs: Double get() = `in`(Gs)
 
-inline val Measure<DistanceUnit>.perSecondPerSecond: LinearAcceleration get() = FeetPerSecondPerSecond.of(this.asFeet)
-inline val Measure<LinearVelocityUnit>.perSecond: LinearAcceleration get() = FeetPerSecondPerSecond.of(this.asFeetPerSecond)
+inline val Measure<DistanceUnit>.perSecondPerSecond: LinearAcceleration get() = MetersPerSecondPerSecond.of(this.asMeters)
+inline val Measure<LinearVelocityUnit>.perSecond: LinearAcceleration get() = MetersPerSecondPerSecond.of(this.asMetersPerSecond)
 
 inline val Double.inchesPerSecondPerSecond: LinearAcceleration get() = InchesPerSecond.per(Second).of(this)
 inline val Double.feetPerSecondPerSecond: LinearAcceleration get() = FeetPerSecondPerSecond.of(this)
 inline val Double.metersPerSecondPerSecond: LinearAcceleration get() = MetersPerSecondPerSecond.of(this)
 inline val Double.Gs: LinearAcceleration get() = Units.Gs.of(this)
 
-//Linear Jerk
-inline val Measure<LinearAccelerationUnit>.perSecond: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this.asMetersPerSecondPerSecond)
-
-inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asInchesJerk: Double get() = `in`(MetersPerSecondPerSecond.per(Second))
-inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asFeetJerk: Double get() = `in`(InchesPerSecond.per(Second).per(Second))
-inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asMetersJerk: Double get() = `in`(FeetPerSecondPerSecond.per(Second))
-
 
 //Angular Acceleration
-inline val AngularAcceleration.asDegreesPerSecondPerSecond: Double get() = `in`(DegreesPerSecondPerSecond)
-inline val AngularAcceleration.asRotationsPerSecondPerSecond: Double get() = `in`(RotationsPerSecondPerSecond)
-inline val AngularAcceleration.asRadiansPerSecondPerSecond: Double get() = `in`(RadiansPerSecondPerSecond)
+inline val Measure<AngularAccelerationUnit>.asDegreesPerSecondPerSecond: Double get() = `in`(DegreesPerSecondPerSecond)
+inline val Measure<AngularAccelerationUnit>.asRotationsPerSecondPerSecond: Double get() = `in`(RotationsPerSecondPerSecond)
+inline val Measure<AngularAccelerationUnit>.asRadiansPerSecondPerSecond: Double get() = `in`(RadiansPerSecondPerSecond)
 
-inline val Angle.perSecondPerSecond: AngularAcceleration get() = DegreesPerSecondPerSecond.of(this.asDegrees)
-inline val AngularVelocity.perSecond: AngularAcceleration get() = DegreesPerSecondPerSecond.of(this.asDegreesPerSecond)
+inline val Measure<AngleUnit>.perSecondPerSecond: AngularAcceleration get() = RadiansPerSecondPerSecond.of(this.asRadians)
+inline val Measure<AngularVelocityUnit>.perSecond: AngularAcceleration get() = RadiansPerSecondPerSecond.of(this.asRadiansPerSecond)
 
 inline val Double.degreesPerSecondPerSecond: AngularAcceleration get() = DegreesPerSecondPerSecond.of(this)
 inline val Double.rotationsPerSecondPerSecond: AngularAcceleration get() = RotationsPerSecondPerSecond.of(this)
 inline val Double.radiansPerSecondPerSecond: AngularAcceleration get() = RadiansPerSecondPerSecond.of(this)
+
+
+//Linear Jerk
+inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asInchesPerSecondCubed: Double get() = `in`(InchesPerSecondPerSecond.per(Second))
+inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asFeetPerSecondCubed: Double get() = `in`(FeetPerSecondPerSecond.per(Second))
+inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asMetersPerSecondCubed: Double get() = `in`(MetersPerSecondPerSecond.per(Second))
+
+@get:JvmName("getLinearPerSecondCubed")
+inline val Measure<DistanceUnit>.perSecondCubed: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this.asMeters)
+@get:JvmName("getLinearAccelerationPerSecond")
+inline val Measure<LinearAccelerationUnit>.perSecond: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this.asMetersPerSecondPerSecond)
+
+inline val Double.inchesPerSecondCubed: Velocity<LinearAccelerationUnit> get() = InchesPerSecondPerSecond.per(Second).of(this)
+inline val Double.feetPerSecondCubed: Velocity<LinearAccelerationUnit> get() = FeetPerSecondPerSecond.per(Second).of(this)
+inline val Double.metersPerSecondCubed: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this)
+
+
+//Angular Jerk
+inline val Measure<VelocityUnit<AngularAccelerationUnit>>.asDegreesPerSecondCubed: Double get() = `in`(DegreesPerSecondPerSecond.per(Second))
+inline val Measure<VelocityUnit<AngularAccelerationUnit>>.asRotationsPerSecondCubed: Double get() = `in`(RotationsPerSecondPerSecond.per(Second))
+inline val Measure<VelocityUnit<AngularAccelerationUnit>>.asRadiansPerSecondCubed: Double get() = `in`(RadiansPerSecondPerSecond.per(Second))
+
+@get:JvmName("getAngularPerSecondCubed")
+inline val Measure<AngleUnit>.perSecondCubed: Velocity<AngularAccelerationUnit> get() = RadiansPerSecondPerSecond.per(Second).of(this.asRadians)
+@get:JvmName("getAngularAccelerationPerSecond")
+inline val Measure<AngularAccelerationUnit>.perSecond: Velocity<AngularAccelerationUnit> get() = RadiansPerSecondPerSecond.per(Second).of(this.asRadiansPerSecondPerSecond)
+
+inline val Double.degreesPerSecondCubed: Velocity<AngularAccelerationUnit> get() = DegreesPerSecondPerSecond.per(Second).of(this)
+inline val Double.rotationsPerSecondCubed: Velocity<AngularAccelerationUnit> get() = RotationsPerSecondPerSecond.per(Second).of(this)
+inline val Double.radiansPerSecondCubed: Velocity<AngularAccelerationUnit> get() = RadiansPerSecondPerSecond.per(Second).of(this)
 
 
 //Mass
@@ -172,52 +197,55 @@ inline val Velocity<VoltageUnit>.asVoltsPerSecond: Double get() = `in`(Volts.per
 
 
 //Formulas
-fun Measure<LinearVelocityUnit>.toAngular(radius: Measure<DistanceUnit>) = RadiansPerSecond.of(this.asMetersPerSecond / radius.asMeters)!!
-fun AngularVelocity.toLinear(radius: Measure<DistanceUnit>) = MetersPerSecond.of(this.asRadiansPerSecond * radius.asMeters)!!
+fun Measure<LinearVelocityUnit>.toAngular(radius: Measure<DistanceUnit>): AngularVelocity = RadiansPerSecond.of(this.asMetersPerSecond / radius.asMeters)
+fun Measure<AngularVelocityUnit>.toLinear(radius: Measure<DistanceUnit>): LinearVelocity = MetersPerSecond.of(this.asRadiansPerSecond * radius.asMeters)
 
 
 /**Converts a [Double] in hertz into an equivalent [Time] unit.*/
-fun Double.hertzToTime() = if (this == 0.0) 0.0.seconds else (1.0 / this).seconds
+fun Double.hertzToTime() = if (this == 0.0) Double.POSITIVE_INFINITY.seconds else (1.0 / this).seconds
 
 @JvmName("sinOf")
-fun sin(angle: Angle) = sin(angle.asRadians)
+fun sin(angle: Measure<AngleUnit>) = sin(angle.asRadians)
 @JvmName("cosOf")
-fun cos(angle: Angle) = cos(angle.asRadians)
+fun cos(angle: Measure<AngleUnit>) = cos(angle.asRadians)
 @JvmName("tanOf")
-fun tan(angle: Angle) = tan(angle.asRadians)
-fun Angle.sin() = sin(this)
-fun Angle.cos() = cos(this)
-fun Angle.tan() = tan(this)
+fun tan(angle: Measure<AngleUnit>) = tan(angle.asRadians)
+fun Measure<AngleUnit>.sin() = sin(this)
+fun Measure<AngleUnit>.cos() = cos(this)
+fun Measure<AngleUnit>.tan() = tan(this)
 
 fun asin(value: Double) = kotlin.math.asin(value).radians
 fun acos(value: Double) = kotlin.math.acos(value).radians
 fun atan(value: Double) = kotlin.math.atan(value).radians
 
-fun atan2(y: Measure<DistanceUnit>, x: Measure<DistanceUnit>) = atan2(y.asInches, x.asInches).radians
+fun atan2(y: Measure<DistanceUnit>, x: Measure<DistanceUnit>) = atan2(y.asMeters, x.asMeters).radians
 
-fun Angle.wrap() = asDegrees.IEEErem(360.0).degrees
-fun Angle.unWrap(nearByAngle: Angle): Angle = nearByAngle + (this - nearByAngle).wrap()
+fun Measure<AngleUnit>.wrap() = asDegrees.IEEErem(360.0).degrees
+fun Measure<AngleUnit>.unWrap(nearByAngle: Angle): Angle = nearByAngle + (this - nearByAngle).wrap()
 
 fun Rotation2d.wrap() = measure.wrap().asRotation2d
 fun Rotation2d.unWrap(nearByAngle: Angle) = measure.unWrap(nearByAngle).asRotation2d
 
-fun Angle.absoluteValue() = asDegrees.absoluteValue.degrees
+fun Measure<AngleUnit>.absoluteValue() = asDegrees.absoluteValue.degrees
 fun Rotation2d.absoluteValue() = degrees.absoluteValue.degrees.asRotation2d
 fun Measure<DistanceUnit>.absoluteValue() = asFeet.absoluteValue.feet
-fun AngularVelocity.absoluteValue() = asDegreesPerSecond.absoluteValue.degreesPerSecond
+fun Measure<AngularVelocityUnit>.absoluteValue() = asDegreesPerSecond.absoluteValue.degreesPerSecond
 fun Measure<LinearVelocityUnit>.absoluteValue() = asFeetPerSecond.absoluteValue.feetPerSecond
-fun AngularAcceleration.absoluteValue() = asDegreesPerSecondPerSecond.absoluteValue.degreesPerSecondPerSecond
+fun Measure<AngularAccelerationUnit>.absoluteValue() = asDegreesPerSecondPerSecond.absoluteValue.degreesPerSecondPerSecond
 fun Measure<LinearAccelerationUnit>.absoluteValue() = asFeetPerSecondPerSecond.absoluteValue.feetPerSecondPerSecond
 
 //String
-fun Angle.toReadableString() = "$asDegrees degrees"
-@JvmName("DistanceToReadableString")
+@JvmName("angleToReadableString")
+fun Measure<AngleUnit>.toReadableString() = "$asDegrees degrees"
+@JvmName("distanceToReadableString")
 fun Measure<DistanceUnit>.toReadableString() = "$asFeet feet"
-fun AngularVelocity.toReadableString() = "$asDegreesPerSecond degrees/second"
-@JvmName("LinearVelocityToReadableString")
+@JvmName("angularVelocityToReadableString")
+fun Measure<AngularVelocityUnit>.toReadableString() = "$asDegreesPerSecond degrees/second"
+@JvmName("linearVelocityToReadableString")
 fun Measure<LinearVelocityUnit>.toReadableString() = "$asFeetPerSecond feet/second"
-fun AngularAcceleration.toReadableString() = "$asDegreesPerSecondPerSecond degrees/second^2"
-@JvmName("LinearAccelerationToReadableString")
+@JvmName("angularAccelerationToReadableString")
+fun Measure<AngularAccelerationUnit>.toReadableString() = "$asDegreesPerSecondPerSecond degrees/second^2"
+@JvmName("linearAccelerationToReadableString")
 fun Measure<LinearAccelerationUnit>.toReadableString() = "$asFeetPerSecondPerSecond feet/second^2"
 fun Time.toReadableString() = "$asSeconds seconds"
 fun Voltage.toReadableString() = "$asVolts volts"

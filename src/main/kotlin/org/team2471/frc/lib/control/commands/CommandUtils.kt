@@ -2,6 +2,7 @@ package org.team2471.frc.lib.control.commands
 
 import edu.wpi.first.units.measure.Time
 import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.DeferredCommand
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup
@@ -29,7 +30,7 @@ fun Command.finallyRun(run: (Boolean) -> Unit): WrapperCommand =
  * @param command A command to run after the main command has been interrupted or finished
  * @return: the decorated command
  */
-fun Command.finallyRun(command: Command): Command = this.finallyRun { command.schedule() }
+fun Command.finallyRun(command: Command): Command = this.finallyRun { CommandScheduler.getInstance().schedule(command) }
 
 /**
  * After the initial command finishes, wait [seconds] more than finish.

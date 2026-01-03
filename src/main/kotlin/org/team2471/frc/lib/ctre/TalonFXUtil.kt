@@ -14,8 +14,10 @@ import edu.wpi.first.wpilibj.DriverStation
 /**
  * Add a follower to the main motor and applies the master's configuration.
  *
- * Make sure to call this function AFTER configuring the master motor.
+ * MUST call this function AFTER configuring the master motor.
  * If the master motor's configuration changes after this function is called, the follower configuration will NOT update to match the master motor.
+ *
+ * (If you need to change both configurations, create another [TalonFX] object for the follower and apply configuration to both)
  *
  * @param followerID The CAN ID of a [TalonFX] follower motor.
  * @param opposeMasterDirection Whether to respect the master motor's invert setting or do the opposite.

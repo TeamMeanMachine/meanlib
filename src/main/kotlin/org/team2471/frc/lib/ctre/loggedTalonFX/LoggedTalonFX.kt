@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.ctre.loggedTalonFX
 
+import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.system.plant.DCMotor
@@ -14,10 +15,14 @@ import kotlinx.coroutines.launch
 /**
  * Wrapper for that [TalonFX] class that supports simulation when [configSim] is called.
  * Also supports backing safe calls when calling [brakeMode] & [coastMode]
+ *
+ * @param id The CAN ID of the motor.
+ * @param canBus The CAN bus to use. Defaults to roboRIO or if null.
+ *
  * @see TalonFX
  * @see DCMotorSim
  */
-class LoggedTalonFX(id: Int, canBus: String? = ""): TalonFX(id, canBus), LoggedMotor {
+class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), LoggedMotor {
     private val talonFXSim = this.simState
     private var motor: DCMotor? = null
     private var motorSim: DCMotorSim? = null

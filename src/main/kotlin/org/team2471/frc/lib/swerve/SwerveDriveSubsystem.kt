@@ -3,6 +3,7 @@ package org.team2471.frc.lib.swerve
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
 import com.ctre.phoenix6.BaseStatusSignal
+import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.configs.TalonFXConfiguration
@@ -84,6 +85,8 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.units.asMetersPerSecondCubed
+import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -98,9 +101,9 @@ abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
 ): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-    { deviceId: Int, canbus: String? -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: String? -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: String? -> CANcoder(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
     driveConstants,
     *moduleConstants
 ), Subsystem {
@@ -108,7 +111,8 @@ abstract class SwerveDriveSubsystem(
     /** Percentage of max speed to drive using the joysticks. */
     abstract fun getJoystickPercentageSpeeds(): ChassisSpeeds
 
-    /** Autopilot limits velocity, acceleration, and jerk when driving to a point. It can also respect an approach angle. Alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct an instance. */
+    /** Autopilot limits velocity, acceleration, and jerk when driving to a point. It can also respect an approach angle.
+     * Better alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct and configure an instance. */
     abstract val autoPilot: Autopilot
 
     /** Path following x error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added x velocity m/s. */
@@ -126,6 +130,20 @@ abstract class SwerveDriveSubsystem(
     /** [driveAtAngle] pid controller, used in anything that the robot automatically moves heading excluding path following. Error in radians -> applied rotational speed rad/s. */
     abstract val driveAtAnglePIDController: PhoenixPIDController //= PhoenixPIDController(7.7, 0.0, 0.072)
 
+    /**
+     * choreoPathsStartOnRed:
+     * Initial value determines which side all choreo paths are made for.
+     * False = all choreo paths are made on the blue side.
+     * True = all choreo paths are made on the red side.
+     */
+    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
+    abstract val choreoPathsStartOnRed: Boolean
+
+    /**
+     * Supplier that provides if the robot is disabled.
+     *
+     * (Could have used [DriverStation.isDisabled], but I found that it would sometimes cause small occasional loop overruns when called periodically) - J 2026
+     */
     abstract val isDisabledSupplier: () -> Boolean
 
     @get:AutoLogOutput(key = "Drive/Pose")
@@ -237,15 +255,6 @@ abstract class SwerveDriveSubsystem(
 
     /** The maximum rotational speed of drivetrain. */
     val maxAngularSpeed: AngularVelocity = (maxSpeed.asMetersPerSecond / driveBaseRadius.asMeters).radiansPerSecond
-
-    /**
-     * choreoPathsStartOnRed:
-     * Initial value determines which side all choreo paths are made for.
-     * False = all choreo paths are made on the blue side.
-     * True = all choreo paths are made on the red side.
-     */
-    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
-    val choreoPathsStartOnRed = false
 
     @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
     val flipChoreoPaths
@@ -796,9 +805,9 @@ abstract class SwerveDriveSubsystem(
 
             timer.restart()
         }.onlyRunWhileFalse {
-            val p = t / totalTime
-            Logger.recordOutput("Drive/Path/Done %", p)
-            exitSupplier(p)
+            val percentComplete = t / totalTime
+            Logger.recordOutput("Drive/Path/Done %", percentComplete)
+            exitSupplier(percentComplete)
         }.finallyRun {
             // Tell drivetrain to apply no output
             stop()
@@ -806,6 +815,10 @@ abstract class SwerveDriveSubsystem(
             println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
             // Publish empty data to show that the path is done
             Logger.recordOutput("Drive/Path/Pose", Pose2d())
+            // Stop and reset timer so command can run again
+            t = 0.0
+            timer.stop()
+            timer.reset()
         }.withName("DriveAlongChoreoPath")
     }
 
@@ -825,8 +838,15 @@ abstract class SwerveDriveSubsystem(
      * @see APConstraints
      * @see APProfile
      */
-    fun createAPObject(maxVelocity: Double, maxAcceleration: Double, maxJerk: Double, xyTolerance: Distance, thetaTolerance: Angle, beelineRadius: Distance = 8.0.centimeters): Autopilot {
-        return Autopilot(APProfile(APConstraints(maxVelocity, maxAcceleration, maxJerk))
+    fun createAPObject(
+        maxVelocity: LinearVelocity,
+        maxAcceleration: LinearAcceleration,
+        maxJerk: Velocity<LinearAccelerationUnit>,
+        xyTolerance: Distance,
+        thetaTolerance: Angle,
+        beelineRadius: Distance = 8.0.centimeters
+    ): Autopilot {
+        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondPerSecond, maxJerk.asMetersPerSecondCubed))
             .withErrorXY(xyTolerance).withErrorTheta(thetaTolerance).withBeelineRadius(beelineRadius)
         )
     }
@@ -859,8 +879,9 @@ abstract class SwerveDriveSubsystem(
             /* output is actually radians per second, but SysId only supports "volts" */
             setControl(SysIdSwerveRotation().withRotationalRate(output.asVolts))
             /* also log the requested output for SysId */
-            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + Math.random() * 0.0001) // Value needs to constantly be updating for sysid to pick up new samples
-            Logger.recordOutput("Rotational_Rate", output.asVolts + Math.random() * 0.0001)
+            // Adding randomness because values need to constantly be updating for sysid to pick up new samples
+            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
         }, null, this)
     )
     /** Used to find steer motor PID and SVA constants. */
