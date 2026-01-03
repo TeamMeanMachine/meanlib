@@ -169,7 +169,7 @@ interface VisionIO {
 
     fun updateCropping(minX: Double, maxX: Double, minY: Double, maxY: Double)
 
-        open class VisionIOInputs : LoggableInputs {
+    open class VisionIOInputs : LoggableInputs {
 
         var isConnected = false
         var mode = LimelightMode.APRILTAG

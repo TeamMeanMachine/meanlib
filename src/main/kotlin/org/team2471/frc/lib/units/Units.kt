@@ -104,7 +104,7 @@ inline val Double.radiansPerSecondPerSecond: AngularAcceleration get() = Radians
 
 
 //Linear Jerk
-inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asInchesPerSecondCubed: Double get() = `in`(InchesPerSecondPerSecond.per(Second))
+inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asInchesPerSecondCubed: Double get() = `in`(InchesPerSecond.per(Second).per(Second))
 inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asFeetPerSecondCubed: Double get() = `in`(FeetPerSecondPerSecond.per(Second))
 inline val Measure<VelocityUnit<LinearAccelerationUnit>>.asMetersPerSecondCubed: Double get() = `in`(MetersPerSecondPerSecond.per(Second))
 
@@ -113,7 +113,7 @@ inline val Measure<DistanceUnit>.perSecondCubed: Velocity<LinearAccelerationUnit
 @get:JvmName("getLinearAccelerationPerSecond")
 inline val Measure<LinearAccelerationUnit>.perSecond: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this.asMetersPerSecondPerSecond)
 
-inline val Double.inchesPerSecondCubed: Velocity<LinearAccelerationUnit> get() = InchesPerSecondPerSecond.per(Second).of(this)
+inline val Double.inchesPerSecondCubed: Velocity<LinearAccelerationUnit> get() = InchesPerSecond.per(Second).per(Second).of(this)
 inline val Double.feetPerSecondCubed: Velocity<LinearAccelerationUnit> get() = FeetPerSecondPerSecond.per(Second).of(this)
 inline val Double.metersPerSecondCubed: Velocity<LinearAccelerationUnit> get() = MetersPerSecondPerSecond.per(Second).of(this)
 
