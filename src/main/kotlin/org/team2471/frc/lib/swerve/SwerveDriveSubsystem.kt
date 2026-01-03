@@ -101,9 +101,9 @@ abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
 ): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
+    { deviceId: Int, canbus: String -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: String -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: String -> CANcoder(deviceId, canbus) },
     driveConstants,
     *moduleConstants
 ), Subsystem {
