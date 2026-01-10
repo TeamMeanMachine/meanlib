@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
  * @see TalonFX
  * @see DCMotorSim
  */
-class LoggedTalonFX(id: Int, canBus: String = ""): TalonFX(id, canBus), LoggedMotor {
+class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), LoggedMotor {
     private val talonFXSim = this.simState
     private var motor: DCMotor? = null
     private var motorSim: DCMotorSim? = null

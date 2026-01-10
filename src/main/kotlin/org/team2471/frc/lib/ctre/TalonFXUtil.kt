@@ -7,6 +7,8 @@ import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
+import com.ctre.phoenix6.signals.MotorAlignmentValue
+import com.ctre.phoenix6.signals.MotorArrangementValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import edu.wpi.first.wpilibj.DriverStation
@@ -20,17 +22,18 @@ import edu.wpi.first.wpilibj.DriverStation
  * (If you need to change both configurations, create another [TalonFX] object for the follower and apply configuration to both)
  *
  * @param followerID The CAN ID of a [TalonFX] follower motor.
- * @param opposeMasterDirection Whether to respect the master motor's invert setting or do the opposite.
+ * @param motorAlignment Relationship between this motor and the master motor direction.
  *
  * @see Follower
+ * @see MotorAlignmentValue
  */
-fun TalonFX.addFollower(followerID: Int, opposeMasterDirection: Boolean = false) {
+fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) {
     try {
         val follower = TalonFX(followerID, network)
         val masterConfig = TalonFXConfiguration()
         this.configurator.refresh(masterConfig)
         follower.configurator.apply(masterConfig)
-        follower.setControl(Follower(deviceID, opposeMasterDirection))
+        follower.setControl(Follower(deviceID, motorAlignment))
     } catch (e: Exception) {
         DriverStation.reportError("Failed to add follower to $deviceID: ${e.message}", true)
     }
@@ -43,11 +46,12 @@ fun TalonFX.addFollower(followerID: Int, opposeMasterDirection: Boolean = false)
  * If the master motor's configuration changes after this function is called, the follower configuration will NOT update to match the master motor.
  *
  * @param follower The follower motor.
- * @param opposeMasterDirection Whether to respect the master motor's invert setting or do the opposite.
+ * @param motorAlignment Relationship between this motor and the master motor direction.
  *
  * @see Follower
+ * @see MotorAlignmentValue
  */
-fun TalonFX.addFollower(follower: TalonFX, opposeMasterDirection: Boolean) = this.addFollower(follower.deviceID, opposeMasterDirection)
+fun TalonFX.addFollower(follower: TalonFX, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) = this.addFollower(follower.deviceID, motorAlignment)
 
 /**
  * Set the supply current limits.

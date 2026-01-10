@@ -101,9 +101,9 @@ abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
 ): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-    { deviceId: Int, canbus: String -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: String -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: String -> CANcoder(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
     driveConstants,
     *moduleConstants
 ), Subsystem {
@@ -622,7 +622,7 @@ abstract class SwerveDriveSubsystem(
         println("running driveToAutopilotPoint")
 
         run {
-            val output = autopilotSupplier.calculate(poseSupplier(), speeds.translation, target)
+            val output = autopilotSupplier.calculate(poseSupplier(), speeds, target)
             val velocity = Translation2d(output.vx.asMetersPerSecond, output.vy.asMetersPerSecond)
             Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
 

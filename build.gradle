@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "edu.wpi.first.GradleRIO" version "2026.1.1"
     id "org.jetbrains.kotlin.jvm" version "2.2.0"
     id "org.jetbrains.kotlin.kapt" version "2.2.0"
     id "idea"
@@ -23,7 +23,7 @@ gradle.afterProject { proj ->
 
 
 group = "org.team2471.lib"
-version = "2025"
+version = "2026"
 
 repositories {
     mavenCentral()
