@@ -65,7 +65,7 @@ abstract class Autonomi {
         }
     }
 
-    /** Warm up the paths in the JVM by reading them (May speed up code time) */
+    /** Warm up the paths in the JVM by reading them (May speed up path execution time) */
     fun readAutoPaths() {
         val startTime = RobotController.getMeasureFPGATime()
         val pathNameAndStartPose = mutableListOf<Pair<String, Pose2d>>()
@@ -80,7 +80,7 @@ abstract class Autonomi {
                 segments.add(it.value.sampleAt(i * pathSegment, true).getOrNull()?.chassisSpeeds)
             }
         }
-        println("paths: $pathNameAndStartPose")
+        println("paths: ${pathNameAndStartPose.map { it.first }}")
         println("reading ${paths.size} paths and ${segments.size} samples. Took ${(RobotController.getMeasureFPGATime() - startTime).asSeconds.round(4)} seconds.")
     }
 

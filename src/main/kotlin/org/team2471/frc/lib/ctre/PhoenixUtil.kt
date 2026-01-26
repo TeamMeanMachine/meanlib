@@ -41,6 +41,9 @@ object PhoenixUtil {
         ControlModeValue.MotionMagicExpoVoltageFOC, ControlModeValue.MotionMagicExpoTorqueCurrentFOC,
     )
 
+    /** Determines if the control mode controls the position of the motor. As used in this list: [positionControlModes]*/
+    fun ControlModeValue.isPositionControlMode() = positionControlModes.contains(this)
+
     /** Attempts to run the command until no error is produced.  */
     fun tryUntilOk(maxAttempts: Int, command: Supplier<StatusCode>) {
         for (i in 0..<maxAttempts) {

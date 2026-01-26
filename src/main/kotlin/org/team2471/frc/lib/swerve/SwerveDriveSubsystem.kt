@@ -90,6 +90,7 @@ import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
+import org.team2471.frc.lib.util.isReplay
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.robotToFieldCentric
 import org.team2471.frc.lib.util.translation
@@ -348,7 +349,8 @@ abstract class SwerveDriveSubsystem(
 //        }
 
         prevTime = currTime
-        Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
+        //This errors only in replay
+        if (!isReplay) Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
     }
 
     /**

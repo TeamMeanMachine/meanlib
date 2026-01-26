@@ -137,7 +137,7 @@ class PhotonVisionCamera(
             }
 
             val endTimestamp = Timer.getFPGATimestamp()
-            Logger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
+            Logger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,
