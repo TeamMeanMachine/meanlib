@@ -80,7 +80,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
             //                                                                                                                                                                  kinda satisfies the compiler? ive already filtered the nulls out
             val veryRawFiducials: List<LimelightHelpers.RawFiducial> = LimelightHelpers.getRawFiducials(name)
                 .filterIndexed { index, fiducial -> fiducial != null && index < 4 } as List<LimelightHelpers.RawFiducial>
-            val rawFiducials = DoubleArray(15) { 0.0 }
+            val rawFiducials = DoubleArray(veryRawFiducials.size * 4) { 0.0 }
 
             for (i in veryRawFiducials.indices) {
                 rawFiducials[i * 4] = veryRawFiducials[i].id.toDouble()
