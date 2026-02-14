@@ -49,10 +49,6 @@ idea {
     }
 }
 
-wpi.java.debugJni = false
-wpi.sim.addGui().defaultEnabled = true
-wpi.sim.addDriverstation()
-
 dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
@@ -101,10 +97,6 @@ wpi.java.configureTestTasks(tasks.test)
 // Prevent GradleRIO from trying to configure executable tasks
 wpi.java.configureExecutableTasks(null)
 
-/*tasks.matching { it.name.startsWith("simulate") || it.name.startsWith("deploy") }.configureEach {
-    enabled = false
-}*/
-
 
 
 tasks.register("printVendordeps") {
@@ -119,7 +111,7 @@ tasks.register("printVendordeps") {
                     try {
                         def json = new JsonSlurper().parseText(it.text)
                         println "  name: ${json.name}, version: ${json.version}"
-                    } catch (e) {
+                    } catch (ignored) {
                         println "  (bad JSON)"
                     }
                 }
@@ -128,8 +120,4 @@ tasks.register("printVendordeps") {
     }
 }
 
-/*tasks.matching { it.name.startsWith("simulate") || it.name.startsWith("deploy") }.configureEach {
-    enabled = false
-}
-wpi.java.configureExecutableTasks(null)*/
 

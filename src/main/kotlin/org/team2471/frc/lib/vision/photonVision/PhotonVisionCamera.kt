@@ -48,7 +48,7 @@ class PhotonVisionCamera(
 
         override fun toLog(table: LogTable) {
             table.put("PipelineIndex", pipelineIndex)
-//            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large
+            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large
             table.put("CameraMatrixIsPresent", cameraMatrix.isPresent)
             if (cameraMatrix.isPresent) table.put("CameraMatrixData", cameraMatrix.get().data)
             table.put("DistCoeffsIsPresent", distCoeffs.isPresent)

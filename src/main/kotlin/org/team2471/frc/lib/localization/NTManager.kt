@@ -5,14 +5,12 @@ import edu.wpi.first.networktables.*
 import edu.wpi.first.util.struct.StructBuffer
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.QuixVisionCamera
-import org.littletonrobotics.junction.AutoLog
-import org.littletonrobotics.junction.Logger
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * The NTManager class is responsible for managing network table interactions related to robot
- * localization. It handles publishing and subscribing to various topics such as measurements,
+ * The NTManager class is responsible for managing network table interactions related to the
+ * particle filter. It handles publishing and subscribing to various topics such as measurements,
  * targets, and camera information. It also maintains the latest pose estimate and updates inputs
  * accordingly.
  */
@@ -31,9 +29,9 @@ class NTManager {
     // Use an AtomicReference to make updating the value thread-safe
     private val latestPoseEstimateReference = AtomicReference<PoseEstimate>()
 
-    private val inputs = PoseEstimateInputsAutoLogged()
+    private val inputs = PoseEstimateInputs()
 
-    @AutoLog
+//    @AutoLog
     open class PoseEstimateInputs {
         @JvmField var id: Int = 0
         @JvmField var pose: Pose2d? = null
@@ -135,7 +133,7 @@ class NTManager {
             inputs.pose = latestEstimate.pose
             inputs.hasVision = latestEstimate.hasVision
         }
-        Logger.processInputs("Inputs/NTManager", inputs)
+//        Logger.processInputs("Inputs/NTManager", inputs)
     }
 
     /**
