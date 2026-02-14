@@ -8,7 +8,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.MotorAlignmentValue
-import com.ctre.phoenix6.signals.MotorArrangementValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import edu.wpi.first.wpilibj.DriverStation
@@ -85,7 +84,7 @@ fun TalonFXConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXConfigura
  * Motor will update its position and velocity whenever the CANcoder publishes its information on the CAN bus.
  * The motor's internal rotor will not be used.
  *
- * @param encoderID CAN ID of the CANcoder.
+ * @param encoderID CAN ID of the CANcoder on the same CAN bus as the motor.
  * @param motorToSensorRatio number of motor rotations for 1 CANcoder rotation.
  * @param sensorToMechanismRatio number of sensor rotations for 1 mechanism rotation.
  *
@@ -93,7 +92,7 @@ fun TalonFXConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXConfigura
  * @see fusedCANCoder
  * @see alternateFeedbackSensor
  *
- * @author Justin likes "Remote" better than "Fused." Test both but start with RemoteCANCoder.
+ * @author Justin likes "Remote" modes better than "Fused." Test both but start with RemoteCANCoder.
  */
 fun TalonFXConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration =
     alternateFeedbackSensor(encoderID, FeedbackSensorSourceValue.RemoteCANcoder, motorToSensorRatio, sensorToMechanismRatio)
@@ -103,7 +102,7 @@ fun TalonFXConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Doub
  *
  * Make sure the motor and encoder move in the same direction.
  *
- * @param encoderID CAN ID of the CANcoder.
+ * @param encoderID CAN ID of the CANcoder on the same CAN bus as the motor.
  * @param motorToSensorRatio number of motor rotations for 1 CANcoder rotation.
  * @param sensorToMechanismRatio number of sensor rotations for 1 mechanism rotation.
  *
@@ -111,18 +110,18 @@ fun TalonFXConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Doub
  * @see remoteCANCoder
  * @see alternateFeedbackSensor
  *
- * @author Justin likes "Remote" better than "Fused." Test both but start with RemoteCANCoder.
+ * @author Justin likes "Remote" modes better than "Fused." Test both but start with RemoteCANCoder.
  */
 fun TalonFXConfiguration.fusedCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration =
     alternateFeedbackSensor(encoderID, FeedbackSensorSourceValue.FusedCANcoder, motorToSensorRatio, sensorToMechanismRatio)
 
 /**
- * Sets the configs that affect the feedback of this motor. Aka: What it will think its own position/velocity is.
+ * Sets the configs that affect the feedback sensor of this motor. Aka: What it will think its own position/velocity is.
  * Useful for eliminating control error between the motor and the mechanism.
  *
  * This will automatically apply any gear ratio you put in, causing the motor to be in the "mechanism perspective"
  *
- * @param encoderID CAN ID of the feedback device.
+ * @param encoderID CAN ID of the feedback device on the same CAN bus as the motor.
  * @param feedbackSensorSource the type of feedback device.
  * @param motorToSensorRatio number of motor rotations for 1 feedback device rotation.
  * @param sensorToMechanismRatio number of sensor rotations for 1 mechanism rotation.
@@ -141,6 +140,43 @@ fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorS
 }
 
 /**
+ * The ratio of sensor rotations to the mechanism's output, where a ratio greater than 1 is a reduction.
+ *
+ * This is equivalent to the mechanism's gear ratio if the sensor is located on the input of a gearbox. If sensor is on the output of a gearbox, then this is typically set to 1.
+ *
+ * @param sensorToMechanismRatio The ratio of sensor rotations to the mechanism's output. Defaults to 1.
+ *
+ * @see TalonFXConfiguration.Feedback
+ */
+fun TalonFXConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double): TalonFXConfiguration {
+    this.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
+    return this
+}
+/**
+ * The ratio of motor rotor rotations to remote sensor rotations, where a ratio greater than 1 is a reduction.
+ *
+ * @param rotorToSensorRatio The ratio of motor rotor rotations to feedback sensor rotations. Defaults to 1.
+ *
+ * @see TalonFXConfiguration.Feedback
+ */
+fun TalonFXConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFXConfiguration {
+    this.Feedback.RotorToSensorRatio = rotorToSensorRatio
+    return this
+}
+
+/**
+ * Wrap differential difference position error within [-0.5, +0.5) mechanism rotations.
+ *
+ * @param continuousWrap Whether to wrap the position error. Defaults to false
+ *
+ * @see TalonFXConfiguration.ClosedLoopGeneral
+ */
+fun TalonFXConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): TalonFXConfiguration {
+    this.ClosedLoopGeneral.ContinuousWrap = continuousWrap
+    return this
+}
+
+/**
  * Set whether the motor should be inverted.
  *
  * True - Clockwise_Positive
@@ -152,8 +188,22 @@ fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorS
  * @see InvertedValue.CounterClockwise_Positive
  * @see InvertedValue.Clockwise_Positive
  */
-fun TalonFXConfiguration.inverted(invert: Boolean): TalonFXConfiguration {
-    this.MotorOutput.Inverted = if (invert) InvertedValue.Clockwise_Positive else InvertedValue.CounterClockwise_Positive
+fun TalonFXConfiguration.inverted(invert: Boolean): TalonFXConfiguration =
+    this.inverted(if (invert) InvertedValue.Clockwise_Positive else InvertedValue.CounterClockwise_Positive)
+
+
+/**
+ * Set which direction is positive for the motor.
+ *
+ * CounterClockwise_Positive (Factory Default)
+ *
+ * @param invertedValue determines the positive direction of the motor.
+ *
+ * @see InvertedValue.CounterClockwise_Positive
+ * @see InvertedValue.Clockwise_Positive
+ */
+fun TalonFXConfiguration.inverted(invertedValue: InvertedValue): TalonFXConfiguration {
+    this.MotorOutput.Inverted =  invertedValue
     return this
 }
 
