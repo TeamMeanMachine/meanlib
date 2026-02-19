@@ -363,10 +363,14 @@ abstract class SwerveDriveSubsystem(
             setControl(ApplyModuleStates())
             if (isReal) {
                 modules.forEach {
-                    // Set steer motor to encoder position if it is not already there.
-                    val encoderPosition = it.encoder.position.value
-                    if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
-                        it.steerMotor.setPosition(encoderPosition)
+                    if (it.steerMotor.isConnected && it.encoder.isConnected) {
+                        // Set steer motor to encoder position if it is not already there.
+                        val encoderPosition = it.encoder.position.value
+                        if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
+                            println("steer motor position: ${it.steerMotor.position.value}")
+                            println("encoder position: ${it.encoder.position}")
+                            it.steerMotor.setPosition(encoderPosition)
+                        }
                     }
                 }
             }
