@@ -9,7 +9,7 @@ package org.team2471.frc.lib.control
  * @param coastToStop disable the PD controller when the setpoint is zero.
  */
 
-class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coastToStop: Boolean = false ) {
+class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coastToStop: Boolean = false, val maxVoltage: Double = 13.0) {
     var lastError: Double = 0.0
     var pdPower: Double = 0.0
 
@@ -59,22 +59,8 @@ class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coa
             pdPower = 0.0
         }
 
-        if (pdPower + ffVoltage > 12.0) pdPower = 12.0 - ffVoltage
+        if (pdPower + ffVoltage > maxVoltage) pdPower = maxVoltage - ffVoltage
 
         return voltage
-    }
-
-    fun updateNoFF(velocitySetpoint: Double, currVelocity: Double): Double {
-        val error = velocitySetpoint - currVelocity
-        val deltaError = error - lastError
-        lastError = error
-
-        pdPower += error * p + deltaError * d
-
-        if (coastToStop && velocitySetpoint == 0.0) {
-            pdPower = 0.0
-        }
-
-        return pdPower
     }
 }
