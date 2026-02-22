@@ -63,4 +63,18 @@ class PDVelocityController(var p: Double, var d: Double, var ff: Double, val coa
 
         return voltage
     }
+
+    fun updateNoFF(velocitySetpoint: Double, currVelocity: Double): Double {
+        val error = velocitySetpoint - currVelocity
+        val deltaError = error - lastError
+        lastError = error
+
+        pdPower += error * p + deltaError * d
+
+        if (coastToStop && velocitySetpoint == 0.0) {
+            pdPower = 0.0
+        }
+
+        return pdPower
+    }
 }
