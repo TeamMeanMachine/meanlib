@@ -3,7 +3,6 @@ package org.team2471.frc.lib.ctre
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXSConfiguration
 import com.ctre.phoenix6.controls.Follower
-import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.hardware.TalonFXS
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
