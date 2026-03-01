@@ -799,7 +799,9 @@ abstract class SwerveDriveSubsystem(
         }.beforeRun {
             totalTime = path.totalTime
             if (resetOdometry) {
+                println("Resetting odometry pose")
                 pose = path.getInitialPose(flipChoreoPaths).get()
+                println("pose = $pose")
             }
 
             println("Running DriveAlongChoreoPath")
