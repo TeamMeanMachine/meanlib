@@ -228,8 +228,12 @@ fun TalonFXConfiguration.coastMode(): TalonFXConfiguration {
  *
  * @see TalonFXConfiguration.Slot0
  */
-fun TalonFXConfiguration.p(p: Double): TalonFXConfiguration {
-    this.Slot0.kP = p
+fun TalonFXConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kP = p
+        2 -> this.Slot2.kP = p
+        else -> this.Slot0.kP = p
+    }
     return this
 }
 
@@ -238,8 +242,12 @@ fun TalonFXConfiguration.p(p: Double): TalonFXConfiguration {
  *
  * @see TalonFXConfiguration.Slot0
  */
-fun TalonFXConfiguration.d(d: Double): TalonFXConfiguration {
-    this.Slot0.kD = d
+fun TalonFXConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kD = d
+        2 -> this.Slot2.kD = d
+        else -> this.Slot0.kD = d
+    }
     return this
 }
 
@@ -248,8 +256,12 @@ fun TalonFXConfiguration.d(d: Double): TalonFXConfiguration {
  *
  * @see TalonFXConfiguration.Slot0
  */
-fun TalonFXConfiguration.i(i: Double): TalonFXConfiguration {
-    this.Slot0.kI = i
+fun TalonFXConfiguration.i(i: Double, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kI = i
+        2 -> this.Slot2.kI = i
+        else -> this.Slot0.kI = i
+    }
     return this
 }
 
@@ -259,10 +271,11 @@ fun TalonFXConfiguration.i(i: Double): TalonFXConfiguration {
  * @see StaticFeedforwardSignValue.UseClosedLoopSign
  * @see StaticFeedforwardSignValue.UseVelocitySign
  */
-fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue): TalonFXConfiguration {
-    this.Slot0.apply {
-        kS = s
-        StaticFeedforwardSign = staticFeedforwardSign
+fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
+        2 -> this.Slot2.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
+        else -> this.Slot0.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
     }
     return this
 }
@@ -272,8 +285,12 @@ fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSi
  *
  * @see TalonFXConfiguration.Slot0
  */
-fun TalonFXConfiguration.v(v: Double): TalonFXConfiguration {
-    this.Slot0.kV = v
+fun TalonFXConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kV = v
+        2 -> this.Slot2.kV = v
+        else -> this.Slot0.kV = v
+    }
     return this
 }
 
@@ -282,8 +299,12 @@ fun TalonFXConfiguration.v(v: Double): TalonFXConfiguration {
  *
  * @see TalonFXConfiguration.Slot0
  */
-fun TalonFXConfiguration.a(a: Double): TalonFXConfiguration {
-    this.Slot0.kA = a
+fun TalonFXConfiguration.a(a: Double, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kA = a
+        2 -> this.Slot2.kA = a
+        else -> this.Slot0.kA = a
+    }
     return this
 }
 
@@ -293,10 +314,20 @@ fun TalonFXConfiguration.a(a: Double): TalonFXConfiguration {
  * @see GravityTypeValue.Elevator_Static
  * @see GravityTypeValue.Arm_Cosine
  */
-fun TalonFXConfiguration.g(g: Double, gravityType: GravityTypeValue): TalonFXConfiguration {
-    this.Slot0.apply {
-        kG = g
-        GravityType = gravityType
+fun TalonFXConfiguration.g(g: Double, gravityType: GravityTypeValue, slotNumber: Int = 0): TalonFXConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.apply {
+            kG = g
+            GravityType = gravityType
+        }
+        2 -> this.Slot2.apply {
+            kG = g
+            GravityType = gravityType
+        }
+        else -> this.Slot0.apply {
+            kG = g
+            GravityType = gravityType
+        }
     }
     return this
 }

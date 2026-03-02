@@ -44,7 +44,7 @@ abstract class Autonomi {
     }
 
     /** Refreshes the selectedAuto var if the chooser has changed. Call this during disabled periodic to save on auto init time.  */
-    fun updateSelectedAuto() {
+    fun updateSelectedAuto(continuouslySetPosition: Boolean = false) {
         val startTime = RobotController.getMeasureFPGATime()
         val newAuto = autoChooser.get()
         if (selectedAuto != newAuto) {
@@ -54,13 +54,16 @@ abstract class Autonomi {
             readAutoPaths()
             println("finished reading auto in ${(RobotController.getMeasureFPGATime() - startTime).asSeconds} seconds")
         }
+        if (continuouslySetPosition) {
+            setDrivePositionToAutoStartPose(true)
+        }
     }
 
     /** Set the drive pose to the starting pose of the selected auto. */
-    fun setDrivePositionToAutoStartPose() {
+    fun setDrivePositionToAutoStartPose(hidePrint: Boolean = false) {
         val startingPose = selectedAuto?.startingPoseSupplier?.invoke()
         if (startingPose != null) {
-            println("resetting drive pose to auto start pose")
+            if (!hidePrint) println("resetting drive pose to auto start pose")
             drivePoseSetter(startingPose) // Set robot pose
         }
     }

@@ -95,6 +95,7 @@ import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.robotToFieldCentric
 import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
+import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -817,8 +818,21 @@ abstract class SwerveDriveSubsystem(
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
             exitSupplier(percentComplete)
         }.finallyRun {
-            // Tell drivetrain to apply no output
-            stop()
+            val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
+            // Are we stopping?
+            if (finalSample != null) {
+                println("final sample ${finalSample.chassisSpeeds.translation.norm} m/s")
+                setControl(
+                    ApplyFieldSpeeds().apply {
+                        Speeds = finalSample.chassisSpeeds
+                        DriveRequestType = SwerveModule.DriveRequestType.Velocity
+                    }
+                )
+            } else {
+                // Tell drivetrain to apply no output
+                stop()
+            }
+
 
             println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
             // Publish empty data to show that the path is done
