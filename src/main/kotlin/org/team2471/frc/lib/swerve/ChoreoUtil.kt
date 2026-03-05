@@ -4,7 +4,6 @@ import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
 import choreo.util.ChoreoAllianceFlipUtil.Flipper
 import java.util.ArrayList
-import java.util.Arrays
 
 /**
  * Instead of Rotating or Mirroring across the center of the field,
@@ -42,8 +41,8 @@ fun SwerveSample.rotateAround(): SwerveSample {
         -this.ax,
         -this.ay,
         this.alpha,
-        Arrays.stream(this.moduleForcesX()).map { x: Double -> -x }.toArray(),
-        Arrays.stream(this.moduleForcesY()).map { y: Double -> -y }.toArray()
+        this.moduleForcesX(),
+        this.moduleForcesY()
     )
 }
 
@@ -63,18 +62,18 @@ fun SwerveSample.modifiedMirror(): SwerveSample {
         // Mirrored
         // -FR, -FL, -BR, -BL
         doubleArrayOf(
-            -this.moduleForcesX()[0],
-            -this.moduleForcesX()[1],
-            -this.moduleForcesX()[2],
-            -this.moduleForcesX()[3]
+            this.moduleForcesX()[2],
+            this.moduleForcesX()[3],
+            this.moduleForcesX()[0],
+            this.moduleForcesX()[1]
         ),  // FL, FR, BL, BR
         // Mirrored
         // FR, FL, BR, BL
         doubleArrayOf(
-            this.moduleForcesY()[0],
-            this.moduleForcesY()[1],
-            this.moduleForcesY()[2],
-            this.moduleForcesY()[3]
+            -this.moduleForcesY()[2],
+            -this.moduleForcesY()[3],
+            -this.moduleForcesY()[0],
+            -this.moduleForcesY()[1]
         )
     )
 }

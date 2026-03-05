@@ -298,7 +298,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val singleStartTime = Timer.getFPGATimestamp()
         computeSingleTagPose()
         LoopLogger.record("After computeSingleTagPose()")
-        Logger.recordOutput("Localizer/SingleTag calc time", Timer.getFPGATimestamp() - singleStartTime)
+//        Logger.recordOutput("Localizer/SingleTag calc time", Timer.getFPGATimestamp() - singleStartTime)
     }
 
     /** Handles NT publishing, ID finalization, and cleanup.  */
