@@ -50,10 +50,12 @@ abstract class Autonomi {
         if (selectedAuto != newAuto) {
             selectedAuto = autoChooser.get()
             println("selected auto changed ${autoChooser.sendableChooser.selected}")
+            println("Auto is ${autonomousCommand?.name}")
             setDrivePositionToAutoStartPose()
             readAutoPaths()
             println("finished reading auto in ${(RobotController.getMeasureFPGATime() - startTime).asSeconds} seconds")
         }
+        autonomousCommand?.name
         if (continuouslySetPosition) {
             setDrivePositionToAutoStartPose(true)
         }

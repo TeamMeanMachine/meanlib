@@ -43,7 +43,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.team2471.frc.lib.control.commands.beforeRun
 import org.team2471.frc.lib.control.commands.beforeWait
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
@@ -97,6 +96,7 @@ import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.min
 
 abstract class SwerveDriveSubsystem(
@@ -762,26 +762,35 @@ abstract class SwerveDriveSubsystem(
         resetOdometry: Boolean = false,
         exitSupplier: (Double) -> Boolean = { it >= 1.0 }
     ): Command {
-        var totalTime = 0.0
+        val totalTime = path.totalTime
         var t = 0.0
         val timer = Timer()
+        var firstLoop = true
 
         return run {
-            val currentPose = poseSupplier()
+            if (firstLoop) {
+                t = 0.0
+                timer.restart()
+                firstLoop = false
+
+                if (resetOdometry) {
+                    pose = path.getInitialPose(flipChoreoPaths).get()
+                    println("Resetting odometry. pose = $pose")
+                }
+                println("Running DriveAlongChoreoPath")
+
+                Logger.recordOutput("Drive/Path/Name", path.name())
+                Logger.recordOutput("Drive/Path/TotalTime", totalTime)
+            }
+//            println("Inside driveAlongPathLoop ${timer.get()}")
+
             t = min(timer.get(), totalTime)
+            val currentPose = poseSupplier()
             val sample = path.sampleAt(t, flipChoreoPaths).get()
             val wantedPose = sample.pose
             val wantedSpeeds = sample.chassisSpeeds
             val moduleForcesX = sample.moduleForcesX()
             val moduleForcesY = sample.moduleForcesY()
-
-            Logger.recordOutput("Drive/Path/Time", t)
-            Logger.recordOutput("Drive/Path/Pose", wantedPose)
-            Logger.recordOutput("Drive/Path/Speeds", wantedSpeeds)
-            Logger.recordOutput("Drive/Path/Path Acceleration", Translation2d(sample.ax, sample.ay).norm.metersPerSecondPerSecond)
-            Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
-            Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
-            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
 
             // Add heading and xy error
             wantedSpeeds.apply {
@@ -797,22 +806,15 @@ abstract class SwerveDriveSubsystem(
                     DriveRequestType = SwerveModule.DriveRequestType.Velocity
                 }
             )
-        }.beforeRun {
-            totalTime = path.totalTime
-            if (resetOdometry) {
-                println("Resetting odometry pose")
-                pose = path.getInitialPose(flipChoreoPaths).get()
-                println("pose = $pose")
-            }
 
-            println("Running DriveAlongChoreoPath")
-
-            Logger.recordOutput("Drive/Path/Name", path.name())
-            Logger.recordOutput("Drive/Path/TotalTime", totalTime)
-
-            t = 0.0
-
-            timer.restart()
+            Logger.recordOutput("Drive/Path/Time", t)
+            Logger.recordOutput("Drive/Path/Pose", wantedPose)
+            Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+            Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+            Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay).metersPerSecondPerSecond)
+            Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
+            Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
+            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
         }.onlyRunWhileFalse {
             val percentComplete = t / totalTime
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
@@ -838,6 +840,7 @@ abstract class SwerveDriveSubsystem(
             // Publish empty data to show that the path is done
             Logger.recordOutput("Drive/Path/Pose", Pose2d())
             // Stop and reset timer so command can run again
+            firstLoop = true
             t = 0.0
             timer.stop()
             timer.reset()
