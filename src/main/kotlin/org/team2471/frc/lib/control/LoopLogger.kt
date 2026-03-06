@@ -30,4 +30,13 @@ object LoopLogger {
         Logger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
         return Pair(period, sinceReset)
     }
+
+    /**
+     * Executes the given block and returns elapsed time in seconds.
+     */
+    inline fun measureTimeFPGA(body: () -> Unit): Double {
+        val start = Timer.getFPGATimestamp()
+        body()
+        return Timer.getFPGATimestamp() - start
+    }
 }
