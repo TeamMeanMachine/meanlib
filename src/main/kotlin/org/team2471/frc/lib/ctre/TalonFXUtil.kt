@@ -372,7 +372,7 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
  */
 fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
     // Create a factory default configuration, apply modifications, then apply to the motor.
-    this.configurator.apply(TalonFXConfiguration().apply { modifications() })
+    this.configurator.apply(TalonFXConfiguration().apply{ Audio.BeepOnBoot = false; Audio.BeepOnConfig = false }.apply { modifications() })
 }
 
 /**
