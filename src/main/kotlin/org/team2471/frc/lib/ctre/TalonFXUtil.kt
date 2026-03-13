@@ -386,5 +386,5 @@ fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
     // Get the current motor configuration, apply modifications, then apply to the motor.
     val oldConfiguration = TalonFXConfiguration()
     this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
-    this.configurator.apply(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
+    this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
 }
