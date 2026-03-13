@@ -378,9 +378,9 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.kZero)).translation
             .rotateBy(Rotation3d(robotToCam.rotation.getX(), robotToCam.rotation.getY(), 0.0)).toTranslation2d()
         if(camToTagTranslation.norm < 1e-6) {
-            println("camToTagTranslation was equal to 0")
-            println("distance: ${distance}")
-            println("robotToCam: ${robotToCam.translation.norm}")
+//            println("camToTagTranslation was equal to 0")
+//            println("distance: ${distance}")
+//            println("robotToCam: ${robotToCam.translation.norm}")
 
             return
         }
