@@ -37,6 +37,8 @@ class PhotonVisionCamera(
 
     override var allDataPopulated: Boolean = false
 
+    override val isConnected: Boolean
+        get() = camera.isConnected
 
     class PhotonCameraInputs : LoggableInputs {
         // TODO: Monitor performance and consider not logging the whole PhotonPipelineResult.

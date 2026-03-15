@@ -36,6 +36,8 @@ class LimelightCamera(
 
     private val inputs = LimelightCameraInputs()
 
+    // TODO: make work
+    override val isConnected: Boolean = false
 
     class LimelightCameraInputs : LoggableInputs {
         var latestResult: PhotonPipelineResult = PhotonPipelineResult()

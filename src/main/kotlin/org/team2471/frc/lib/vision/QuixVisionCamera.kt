@@ -34,4 +34,6 @@ interface QuixVisionCamera {
     val fiducialType: Fiducial.Type
 
     var allDataPopulated: Boolean
+
+    val isConnected: Boolean
 }
