@@ -23,7 +23,7 @@ import org.photonvision.targeting.PhotonPipelineResult
 import java.util.Optional
 
 class PhotonVisionCamera(
-    cameraName: String,
+    override val cameraName: String,
     override val transform: Transform3d,
     private val pipelineConfigs: Array<PipelineConfig>
 ) : QuixVisionCamera {

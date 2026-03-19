@@ -9,6 +9,8 @@ import org.photonvision.simulation.PhotonCameraSim
 import java.util.*
 
 interface QuixVisionCamera {
+    val cameraName: String
+
     /** Returns the simulated camera object.  */
     val cameraSim: PhotonCameraSim
 

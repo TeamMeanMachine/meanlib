@@ -23,7 +23,7 @@ import org.photonvision.targeting.TargetCorner
 import java.util.Optional
 
 class LimelightCamera(
-    val cameraName: String,
+    override val cameraName: String,
     override val transform: Transform3d,
     override val cameraMatrix: Optional<Matrix<N3, N3>>,
     override val distCoeffs: Optional<Matrix<N8, N1>>
