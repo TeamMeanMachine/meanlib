@@ -766,7 +766,7 @@ abstract class SwerveDriveSubsystem(
      */
     fun driveAlongChoreoPath(
         path: Trajectory<SwerveSample>,
-        poseSupplier: () -> Pose2d = { pose },
+        poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
         exitSupplier: (Double) -> Boolean = { it >= 1.0 }
     ): Command {
@@ -796,12 +796,16 @@ abstract class SwerveDriveSubsystem(
 //            println("Inside driveAlongPathLoop ${timer.get()}")
 
             t = min(timer.get(), totalTime)
+            LoopLogger.record("DriveAlongPath time")
             val currentPose = poseSupplier()
+            LoopLogger.record("DriveAlongPath poseSupplier")
             val sample = path.sampleAt(t, flipChoreoPaths).get()
+            LoopLogger.record("DriveAlongPath sampleAt")
             val wantedPose = sample.pose
             val wantedSpeeds = sample.chassisSpeeds
             val moduleForcesX = sample.moduleForcesX()
             val moduleForcesY = sample.moduleForcesY()
+            LoopLogger.record("DriveAlongPath pathInfo")
 
             // Add heading and xy error
             wantedSpeeds.apply {
@@ -809,6 +813,7 @@ abstract class SwerveDriveSubsystem(
                 vyMetersPerSecond += pathYController.calculate(currentPose.y, wantedPose.y)
                 omegaRadiansPerSecond += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
             }
+            LoopLogger.record("DriveAlongPath pid")
             setControl(
                 ApplyFieldSpeeds().apply {
                     Speeds = wantedSpeeds
@@ -829,7 +834,9 @@ abstract class SwerveDriveSubsystem(
 //            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
             LoopLogger.record("DriveAlongPath logger")
         }.onlyRunWhileFalse {
+            LoopLogger.record("DriveAlongPath b4 ORWF")
             val percentComplete = t / totalTime
+            LoopLogger.record("DriveAlongPath ORWF percent")
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
             exitSupplier(percentComplete)
         }.finallyRun {
