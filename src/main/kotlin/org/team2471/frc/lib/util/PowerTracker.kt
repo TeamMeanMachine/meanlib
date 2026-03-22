@@ -17,6 +17,8 @@ class PowerTracker {
 
     fun update(currentVoltage: Double) {
         Logger.recordOutput("PowerTracker/Rio Voltage", currentVoltage, "volts")
+        totalCharge = 0.0
+        totalPower = 0.0
         motors.forEach { it ->
             it.update(currentVoltage)
             totalCharge += it.totalCharge
@@ -40,8 +42,8 @@ private class MotorTracker(val name: String, val currentSupplier: () -> Double, 
         Logger.recordOutput("PowerTracker/${name} Current Draw", current, "amps")
         Logger.recordOutput("PowerTracker/${name} Power Draw", power, "watts")
 
-        totalCharge += current * 0.02 / 60.0 / 60.0
-        totalPower += power * 0.02 / 60.0 / 60.0
+        totalCharge += current / 50.0
+        totalPower += power / 50.0
 
         Logger.recordOutput("PowerTracker/${name} Total Charge", totalCharge, "amp hours")
         Logger.recordOutput("PowerTracker/${name} Energy Usage", totalPower, "watt hours")

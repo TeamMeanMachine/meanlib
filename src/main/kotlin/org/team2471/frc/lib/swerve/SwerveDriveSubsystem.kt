@@ -379,6 +379,8 @@ abstract class SwerveDriveSubsystem(
                 }
             }
         } else {
+            totalDriveCurrent = 0.0
+            totalSteerCurrent = 0.0
             modules.forEach {
                 totalDriveCurrent += it.driveMotor.supplyCurrent.valueAsDouble
                 totalSteerCurrent += it.steerMotor.supplyCurrent.valueAsDouble
