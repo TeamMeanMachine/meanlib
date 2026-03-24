@@ -24,7 +24,7 @@ class PowerTracker {
             totalCharge += it.totalCharge
             totalPower += it.totalPower
         }
-        Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge, "amp hours")
+        Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge, "amp seconds")
         Logger.recordOutput("PowerTracker/Robot Energy Usage", totalPower, "watt hours")
     }
 }
@@ -45,7 +45,7 @@ private class MotorTracker(val name: String, val currentSupplier: () -> Double, 
         totalCharge += current / 50.0
         totalPower += power / 50.0
 
-        Logger.recordOutput("PowerTracker/${name} Total Charge", totalCharge, "amp hours")
+        Logger.recordOutput("PowerTracker/${name} Total Charge", totalCharge, "amp seconds")
         Logger.recordOutput("PowerTracker/${name} Energy Usage", totalPower, "watt hours")
     }
 }
