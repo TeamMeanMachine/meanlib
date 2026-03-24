@@ -776,6 +776,7 @@ abstract class SwerveDriveSubsystem(
         var t = 0.0
         val timer = Timer()
         var firstLoop = true
+        val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
 
         return run {
             LoopLogger.record("DriveAlongPath start")
@@ -817,12 +818,10 @@ abstract class SwerveDriveSubsystem(
             }
             LoopLogger.record("DriveAlongPath pid")
             setControl(
-                ApplyFieldSpeeds().apply {
-                    Speeds = wantedSpeeds
-                    WheelForceFeedforwardsX = moduleForcesX
-                    WheelForceFeedforwardsY = moduleForcesY
-                    DriveRequestType = SwerveModule.DriveRequestType.Velocity
-                }
+                applyFieldSpeedsRequest
+                    .withSpeeds(wantedSpeeds)
+                    .withWheelForceFeedforwardsX(moduleForcesX)
+                    .withWheelForceFeedforwardsY(moduleForcesY)
             )
             LoopLogger.record("DriveAlongPath setControl")
 
@@ -836,9 +835,7 @@ abstract class SwerveDriveSubsystem(
 //            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
             LoopLogger.record("DriveAlongPath logger")
         }.onlyRunWhileFalse {
-            LoopLogger.record("DriveAlongPath b4 ORWF")
             val percentComplete = t / totalTime
-            LoopLogger.record("DriveAlongPath ORWF percent")
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
             exitSupplier(percentComplete)
         }.finallyRun {
