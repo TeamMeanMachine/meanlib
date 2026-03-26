@@ -798,7 +798,7 @@ abstract class SwerveDriveSubsystem(
             LoopLogger.record("DriveAlongPath reset odom")
 //            println("Inside driveAlongPathLoop ${timer.get()}")
 
-            t = min(timer.get(), totalTime)
+            t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving faster.
             LoopLogger.record("DriveAlongPath time")
             val currentPose = poseSupplier()
             LoopLogger.record("DriveAlongPath poseSupplier")
