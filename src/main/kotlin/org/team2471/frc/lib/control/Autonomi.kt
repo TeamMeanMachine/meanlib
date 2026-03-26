@@ -30,6 +30,9 @@ abstract class Autonomi {
     /** Set the drive pose to the starting pose of the selected auto. Abstract so it can change per robot */
     abstract val drivePoseSetter: (Pose2d) -> Unit
 
+    /** Runs when the selected auto changes. Used for warming up a path following command or any other pre-auto tasks. */
+    abstract val warmupFunction: () -> Unit
+
     /** The currently selected AutoCommand (Command + starting pose) */
     var selectedAuto: AutoCommand? = null
         private set
@@ -54,6 +57,7 @@ abstract class Autonomi {
             setDrivePositionToAutoStartPose()
             readAutoPaths()
             println("finished reading auto in ${(RobotController.getMeasureFPGATime() - startTime).asSeconds} seconds")
+            warmupFunction()
         }
         autonomousCommand?.name
         if (continuouslySetPosition) {

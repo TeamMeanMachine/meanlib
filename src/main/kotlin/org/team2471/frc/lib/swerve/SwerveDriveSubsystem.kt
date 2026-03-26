@@ -842,7 +842,7 @@ abstract class SwerveDriveSubsystem(
             val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
             // Are we stopping?
             if (finalSample != null) {
-                println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
+//                println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
                 setControl(
                     ApplyFieldSpeeds().apply {
                         Speeds = finalSample.chassisSpeeds
