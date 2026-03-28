@@ -43,7 +43,6 @@ import kotlin.math.max
 class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisionCamera>) {
     private val networkTable = NTManager()
 
-    // If empty, uses all tags.
     private val tagsToTrack = HashSet<Int>()
     private val singleTagTagsToTrack = HashSet<Fiducial>()
 
@@ -452,6 +451,10 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         for (tag in allTargets) {
             tagsToTrack.add(tag.id)
         }
+    }
+
+    fun unTrackTags(vararg ids: Int) {
+        ids.forEach { tagsToTrack.remove(it) }
     }
 
     fun setSingleTagTagsToTrack(vararg tags: Fiducial) {
