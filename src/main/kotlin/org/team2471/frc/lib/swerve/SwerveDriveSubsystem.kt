@@ -22,6 +22,7 @@ import com.therekrab.autopilot.Autopilot
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.Transform2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveModulePosition
@@ -43,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.team2471.frc.lib.control.commands.beforeWait
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
@@ -770,13 +772,14 @@ abstract class SwerveDriveSubsystem(
         path: Trajectory<SwerveSample>,
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
-        exitSupplier: (Double) -> Boolean = { it >= 1.0 }
+        exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
     ): Command {
         val totalTime = path.totalTime
         var t = 0.0
         val timer = Timer()
         var firstLoop = true
         val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+        var error = Transform2d(Double.MAX_VALUE, Double.MAX_VALUE, Rotation2d(Double.MAX_VALUE))
 
         return run {
             LoopLogger.record("DriveAlongPath start")
@@ -808,6 +811,7 @@ abstract class SwerveDriveSubsystem(
             val wantedSpeeds = sample.chassisSpeeds
             val moduleForcesX = sample.moduleForcesX()
             val moduleForcesY = sample.moduleForcesY()
+            error = wantedPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
 
             // Add heading and xy error
@@ -837,7 +841,7 @@ abstract class SwerveDriveSubsystem(
         }.onlyRunWhileFalse {
             val percentComplete = t / totalTime
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
-            exitSupplier(percentComplete)
+            exitSupplier(percentComplete, error)
         }.finallyRun {
             val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
             // Are we stopping?
