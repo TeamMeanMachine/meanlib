@@ -333,13 +333,13 @@ fun TalonFXConfiguration.g(g: Double, gravityType: GravityTypeValue, slotNumber:
 }
 
 /**
- * Configure the motion magic cruse velocity, acceleration, and optional jerk.
+ * Configure the motion magic cruise velocity, acceleration, and optional jerk.
  *
  * @see TalonFXConfiguration.MotionMagic
  */
-fun TalonFXConfiguration.motionMagic(cruseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXConfiguration {
+fun TalonFXConfiguration.motionMagic(cruiseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXConfiguration {
     this.MotionMagic.apply {
-        MotionMagicCruiseVelocity = cruseVelocity
+        MotionMagicCruiseVelocity = cruiseVelocity
         MotionMagicAcceleration = acceleration
         if (jerk != null) MotionMagicJerk = jerk
     }

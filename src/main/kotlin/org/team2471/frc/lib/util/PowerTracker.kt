@@ -15,37 +15,36 @@ class PowerTracker {
         motors.add(MotorTracker(name, currentSupplier, voltageSupplier, numMotors))
     }
 
-    fun update(/*currentVoltage: Double,*/ delta: Double = 0.02) {
-//        Logger.recordOutput("PowerTracker/Rio Voltage", currentVoltage, "volts")
-        totalCharge = 0.0
-//        totalPower = 0.0
+    fun update(delta: Double = 0.02) {
+        var newTotalCharge = 0.0
         motors.forEach { it ->
-            it.update(/*currentVoltage*/delta)
-            totalCharge += it.totalCharge
+            it.update(delta)
+            newTotalCharge += it.totalCharge
 //            totalPower += it.totalPower
         }
+        totalCharge = newTotalCharge
+    }
+
+    fun logData() {
+        motors.forEach {
+            Logger.recordOutput("PowerTracker/${it.name} Current Draw", it.current, "amps")
+            Logger.recordOutput("PowerTracker/${it.name} Total Charge", it.totalCharge, "amp seconds")
+        }
         Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge, "amp seconds")
-//        Logger.recordOutput("PowerTracker/Robot Energy Usage", totalPower, "watt hours")
     }
 }
 
 private class MotorTracker(val name: String, val currentSupplier: () -> Double, val voltageSupplier: () -> Double? = {null}, val numMotors: Int = 1) {
     var totalCharge = 0.0
+    var current = 0.0
 //    var totalPower = 0.0
 
-    fun update(/*currentVoltage: Double,*/ delta: Double = 0.02) {
-        val current = numMotors * currentSupplier.invoke()
+    fun update(delta: Double = 0.02) {
+        current = numMotors * currentSupplier.invoke()
 //        val power = (voltageSupplier.invoke() ?: currentVoltage) * numMotors * currentSupplier.invoke()
 
-//        Logger.recordOutput("PowerTracker/${name} Supply Voltage", voltageSupplier.invoke() ?: 0.0, "volts")
-
-        Logger.recordOutput("PowerTracker/${name} Current Draw", current, "amps")
-//        Logger.recordOutput("PowerTracker/${name} Power Draw", power, "watts")
 
         totalCharge += current * delta
 //        totalPower += power * delta
-
-        Logger.recordOutput("PowerTracker/${name} Total Charge", totalCharge, "amp seconds")
-//        Logger.recordOutput("PowerTracker/${name} Energy Usage", totalPower, "watt hours")
     }
 }
