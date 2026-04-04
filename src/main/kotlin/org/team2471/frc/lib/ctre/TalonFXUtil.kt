@@ -388,3 +388,15 @@ fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
     this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
     this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
 }
+
+/**
+ * Applies a [TalonFXConfiguration] to the [TalonFX] motor.
+ *
+ * Wrapper function just to simplify code.
+ *
+ * @see TalonFX.getConfigurator
+ * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
+ */
+fun TalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
+    this.configurator.apply(configuration)
+}
