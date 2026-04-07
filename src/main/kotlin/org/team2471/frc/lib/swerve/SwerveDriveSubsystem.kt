@@ -911,7 +911,14 @@ abstract class SwerveDriveSubsystem(
             SignalLogger.writeString("SysIdTranslation_State", state.toString())
             Logger.recordOutput("SysIdTranslation_State", state.toString())
           },
-        Mechanism({ output: Voltage -> setControl(SysIdSwerveTranslation().withVolts(output))}, null, this)
+        Mechanism({ output: Voltage ->
+            modules.forEachIndexed { i, m ->
+                Logger.recordOutput("SysID/Translation/motor${i}Position", m.driveMotor.position.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+                Logger.recordOutput("SysID/Translation/motor${i}Velocity", m.driveMotor.velocity.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+                Logger.recordOutput("SysID/Translation/motor${i}Volts Applied", m.driveMotor.motorVoltage.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+            }
+            setControl(SysIdSwerveTranslation().withVolts(output))
+        }, null, this)
     )
     /** Used to find [driveAtAnglePIDController] PID values. */
     private val rotationSysIdRoutine = SysIdRoutine(
@@ -930,6 +937,8 @@ abstract class SwerveDriveSubsystem(
             // Adding randomness because values need to constantly be updating for sysid to pick up new samples
             SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
             Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("SysID/Rotation/yaw", gyro.yaw.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("SysID/Rotation/yawRate", gyro.angularVelocityZWorld.valueAsDouble + (Math.random() - 0.5) * 0.0001)
         }, null, this)
     )
     /** Used to find steer motor PID and SVA constants. */
