@@ -30,9 +30,15 @@ fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = M
     try {
         val follower = TalonFX(followerID, network)
         val masterConfig = TalonFXConfiguration()
-        this.configurator.refresh(masterConfig)
-        follower.configurator.apply(masterConfig)
-        follower.setControl(Follower(deviceID, motorAlignment))
+        val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(masterConfig) } // Get motor configuration parameters
+        if (isSuccessful) {
+            follower.configurator.apply(masterConfig)
+            follower.setControl(Follower(deviceID, motorAlignment))
+        } else {
+            println("Failed to add follower, could not refresh config for id ${this.deviceID}")
+            throw Exception("Failed to add follower, could not refresh config for id ${this.deviceID}")
+        }
+
     } catch (e: Exception) {
         DriverStation.reportError("Failed to add follower to $deviceID: ${e.message}", true)
     }
@@ -372,7 +378,7 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
  */
 fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
     // Create a factory default configuration, apply modifications, then apply to the motor.
-    this.configurator.apply(TalonFXConfiguration().apply{ Audio.BeepOnBoot = false; Audio.BeepOnConfig = false }.apply { modifications() })
+    this.configurator.apply(TalonFXConfiguration().apply { modifications() })
 }
 
 /**
@@ -385,8 +391,13 @@ fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = 
 fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
     // Get the current motor configuration, apply modifications, then apply to the motor.
     val oldConfiguration = TalonFXConfiguration()
-    this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
-    this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
+    val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
+    if (isSuccessful) {
+        this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
+    } else {
+        DriverStation.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
+        println("Failed to modify configuration for motor id ${this.deviceID}")
+    }
 }
 
 /**

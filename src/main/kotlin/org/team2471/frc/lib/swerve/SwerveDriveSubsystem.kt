@@ -44,7 +44,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.team2471.frc.lib.control.commands.beforeWait
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
@@ -379,13 +378,6 @@ abstract class SwerveDriveSubsystem(
                         }
                     }
                 }
-            }
-        } else {
-            totalDriveCurrent = 0.0
-            totalSteerCurrent = 0.0
-            modules.forEach {
-                totalDriveCurrent += it.driveMotor.supplyCurrent.valueAsDouble
-                totalSteerCurrent += it.steerMotor.supplyCurrent.valueAsDouble
             }
         }
     }

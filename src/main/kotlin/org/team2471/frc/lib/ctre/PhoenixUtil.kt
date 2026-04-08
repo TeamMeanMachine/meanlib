@@ -45,12 +45,16 @@ object PhoenixUtil {
     fun ControlModeValue.isPositionControlMode() = positionControlModes.contains(this)
 
     /** Attempts to run the command until no error is produced.  */
-    fun tryUntilOk(maxAttempts: Int, command: Supplier<StatusCode>) {
+    fun tryUntilOk(maxAttempts: Int, command: Supplier<StatusCode>): Boolean {
         for (i in 0..<maxAttempts) {
             val error = command.get()
             if (error.isOK || isSim) break
-            if (i == maxAttempts - 1) DriverStation.reportError("tryUntilOk() reached max attempts of $maxAttempts and failed with error: ${error.description}", true)
+            if (i == maxAttempts - 1) {
+                DriverStation.reportError("tryUntilOk() reached max attempts of $maxAttempts and failed with error: ${error.description}", true)
+                return false
+            }
         }
+        return true
     }
 
     /**

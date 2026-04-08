@@ -46,6 +46,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     private val tagsToTrack = HashSet<Int>()
     private val singleTagTagsToTrack = HashSet<Fiducial>()
 
+    private var doSingleTagCalculation = true
+
     // Buffer of poses so we can get the interpolated pose at the time of a vision measurement.
     private val bufferHistorySeconds = 10.0
     /** Buffer of only the swerve odometry pose. */
@@ -293,9 +295,10 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         LoopLogger.record("After pubImmutableEntries()")
         val endTimestamp = Timer.getFPGATimestamp()
         Logger.recordOutput("Localizer/Update seconds", (endTimestamp - startTimestamp))
-
         val singleStartTime = Timer.getFPGATimestamp()
-        computeSingleTagPose()
+        if (doSingleTagCalculation) {
+            computeSingleTagPose()
+        }
         LoopLogger.record("After computeSingleTagPose()")
 //        Logger.recordOutput("Localizer/SingleTag calc time", Timer.getFPGATimestamp() - singleStartTime)
     }
@@ -455,6 +458,13 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
     fun unTrackTags(vararg ids: Int) {
         ids.forEach { tagsToTrack.remove(it) }
+    }
+
+    fun disableSingleTagCalculation() {
+        doSingleTagCalculation = false
+    }
+    fun enableSingleTagCalculation() {
+        doSingleTagCalculation = true
     }
 
     fun setSingleTagTagsToTrack(vararg tags: Fiducial) {
