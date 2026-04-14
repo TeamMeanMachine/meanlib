@@ -196,6 +196,18 @@ abstract class SwerveDriveSubsystem(
     val rawHeading: Rotation2d
         get() = savedState.RawHeading.wrap()
 
+    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
+    val gyroLatency get() = gyro.yaw.timestamp.latency
+
+    @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
+    val gyroVoltage get() = gyro.supplyVoltage
+
+    @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
+    val gyroBootIntoMotionFault get() = gyro.fault_BootIntoMotion.value
+
+    @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
+    val gyroUnderVoltageFault get() = gyro.fault_Undervoltage.value
+
     @get:AutoLogOutput(key = "Drive/State/Timestamp")
     val stateTimestamp: Double
         get() = savedState.Timestamp
