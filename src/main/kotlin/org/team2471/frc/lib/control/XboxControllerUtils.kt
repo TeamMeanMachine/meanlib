@@ -1,7 +1,8 @@
 package org.team2471.frc.lib.control
 
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController
+import edu.wpi.first.wpilibj.DriverStation
 import org.team2471.frc.lib.util.isSim
+import org.wpilib.commands3.button.CommandXboxController
 
 /** Sometimes the sim GUI doesn't detect an Xbox controller as a gamepad and does not bind it as such. [simBeingDumb] attempts to rebind the joystick as if the "map gamepad" button was pressed. */
 class MeanCommandXboxController(port: Int, val simBeingDumb: Boolean = false): CommandXboxController(port) {
@@ -37,15 +38,15 @@ inline val CommandXboxController.rightStickButton: Boolean get() = this.hid.righ
 inline val CommandXboxController.leftStickButton: Boolean get() = this.hid.leftStickButton
 
 inline val CommandXboxController.dPad: Direction get() = when (this.hid.pov) {
-    -1 -> Direction.IDLE
-    0 -> Direction.UP
-    45 -> Direction.UP_RIGHT
-    90 -> Direction.RIGHT
-    135 -> Direction.DOWN_RIGHT
-    180 -> Direction.DOWN
-    225 -> Direction.DOWN_LEFT
-    270 -> Direction.LEFT
-    315 -> Direction.UP_LEFT
+    DriverStation.POVDirection.Center -> Direction.IDLE
+    DriverStation.POVDirection.Up -> Direction.UP
+    DriverStation.POVDirection.UpRight -> Direction.UP_RIGHT
+    DriverStation.POVDirection.Right -> Direction.RIGHT
+    DriverStation.POVDirection.DownRight -> Direction.DOWN_RIGHT
+    DriverStation.POVDirection.Down -> Direction.DOWN
+    DriverStation.POVDirection.DownLeft -> Direction.DOWN_LEFT
+    DriverStation.POVDirection.Left -> Direction.LEFT
+    DriverStation.POVDirection.UpLeft -> Direction.UP_LEFT
     else -> throw IllegalStateException("Invalid DPAD value ${this.hid.pov}")
 }
 

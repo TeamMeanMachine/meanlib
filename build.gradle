@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2026.2.1"
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-2"
     id "org.jetbrains.kotlin.jvm" version "2.2.0"
     id "org.jetbrains.kotlin.kapt" version "2.2.0"
     id "idea"
@@ -21,13 +21,23 @@ gradle.afterProject { proj ->
     }
 }
 
+wpi.maven.useLocal = true
+wpi.maven.useDevelopment = false
+wpi.versions.wpilibVersion = '2027.0.0-alpha-3'
+
 
 group = "org.team2471.lib"
-version = "2026"
+//version = "2026"
 
 repositories {
     mavenCentral()
+    maven {
+        name = "wpilib"
+        url = uri("${System.getProperty('user.home')}/repository/org/")
+    }
+    mavenLocal()
     maven { url "https://frcmaven.wpi.edu/artifactory/release/" }
+    maven { url "https://frcmaven.wpi.edu/ui/native/development-2027/" }
     maven { url "https://plugins.gradle.org/m2/" }
     maven { url "https://maven.ctr-electronics.com/release/" }
     maven { url "https://maven.revrobotics.com/" }
@@ -38,7 +48,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(24)
 }
 
 // Automatically download library documentation from libraries
@@ -89,7 +99,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "24"
     }
 }
 

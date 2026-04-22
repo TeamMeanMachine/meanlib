@@ -7,12 +7,11 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.Filesystem
 import edu.wpi.first.wpilibj.RobotController
-import edu.wpi.first.wpilibj2.command.Command
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
-import org.team2471.frc.lib.control.commands.toCommand
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.util.demoMode
+import org.wpilib.commands3.Command
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
@@ -53,13 +52,13 @@ abstract class Autonomi {
         if (selectedAuto != newAuto) {
             selectedAuto = autoChooser.get()
             println("selected auto changed ${autoChooser.sendableChooser.selected}")
-            println("Auto is ${autonomousCommand?.name}")
+            println("Auto is ${autonomousCommand?.name()}")
             setDrivePositionToAutoStartPose()
             readAutoPaths()
             println("finished reading auto in ${(RobotController.getMeasureFPGATime() - startTime).asSeconds} seconds")
             warmupFunction()
         }
-        autonomousCommand?.name
+        autonomousCommand?.name()
         if (continuouslySetPosition) {
             setDrivePositionToAutoStartPose(true)
         }
