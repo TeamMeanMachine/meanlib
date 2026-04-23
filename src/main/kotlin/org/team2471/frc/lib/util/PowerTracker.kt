@@ -27,10 +27,10 @@ class PowerTracker {
 
     fun logData() {
         motors.forEach {
-            Logger.recordOutput("PowerTracker/${it.name} Current Draw", it.current, "amps")
-            Logger.recordOutput("PowerTracker/${it.name} Total Charge", it.totalCharge, "amp seconds")
+            Logger.recordOutput("PowerTracker/${it.name} Current Draw", it.current)
+            Logger.recordOutput("PowerTracker/${it.name} Total Charge", it.totalCharge)
         }
-        Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge, "amp seconds")
+        Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge)
     }
 }
 

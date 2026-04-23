@@ -35,20 +35,10 @@ import edu.wpi.first.wpilibj.Preferences
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog
-import edu.wpi.first.wpilibj2.command.Command
-import edu.wpi.first.wpilibj2.command.CommandScheduler
-import edu.wpi.first.wpilibj2.command.Commands
-import edu.wpi.first.wpilibj2.command.Subsystem
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
+import gg.questnav.questnav.protos.generated.Commands
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.team2471.frc.lib.control.commands.beforeWait
-import org.team2471.frc.lib.control.commands.finallyRun
-import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
-import org.team2471.frc.lib.control.commands.sequenceCommand
-import org.team2471.frc.lib.control.commands.use
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
@@ -85,16 +75,18 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.control.commands.named
+import org.team2471.frc.lib.control.commands.use
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
-import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
 import org.team2471.frc.lib.util.isReplay
 import org.team2471.frc.lib.util.isSim
-import org.team2471.frc.lib.util.robotToFieldCentric
 import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
+import org.wpilib.commands3.Command
+import org.wpilib.commands3.Mechanism
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
 import kotlin.math.hypot
@@ -103,13 +95,15 @@ import kotlin.math.min
 abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
-    driveConstants,
-    *moduleConstants
-), Subsystem {
+): Mechanism("Drive") {
+
+    val io = SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
+        { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+        { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+        { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
+        driveConstants,
+        *moduleConstants
+    )
 
     /** Percentage of max speed to drive using the joysticks. */
     abstract fun getJoystickPercentageSpeeds(): ChassisSpeeds
@@ -155,7 +149,7 @@ abstract class SwerveDriveSubsystem(
     abstract var heading: Rotation2d // Abstract to allow for other heading sources to also reset when this gets set.
 
     /** Stores information about the current state of the drivetrain */
-    var savedState: SwerveDriveState = stateCopy
+    var savedState: SwerveDrivetrain.SwerveDriveState = io.stateCopy
         private set
 
     val robotRelativeSpeeds: ChassisSpeeds
@@ -163,7 +157,7 @@ abstract class SwerveDriveSubsystem(
 
     @get:AutoLogOutput(key = "Drive/State/Speeds")
     val speeds: ChassisSpeeds
-        get() = robotRelativeSpeeds.robotToFieldCentric(pose.rotation)
+        get() = robotRelativeSpeeds.toFieldRelative(pose.rotation)
 
     @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: UTranslation2d<LinearVelocityUnit>
@@ -225,7 +219,7 @@ abstract class SwerveDriveSubsystem(
         get() = savedState.FailedDaqs
 
     private val gyro: Pigeon2
-        get() = pigeon2
+        get() = io.pigeon2
 
     @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
     val gyroConnected: Boolean get() = gyro.isConnected
@@ -290,9 +284,6 @@ abstract class SwerveDriveSubsystem(
     // INITIALIZATION
 
     init {
-        //Register the subsystem into the CommandScheduler so periodic methods can be called.
-        CommandScheduler.getInstance().registerSubsystem(this)
-
         println("drivetrain max speed is ${maxSpeed.asFeetPerSecond.round(2)} f/s and ${maxAngularSpeed.asDegreesPerSecond.round(2)} deg/s")
 
         if (!SmartDashboard.containsKey("DemoSpeed")) {
@@ -301,8 +292,8 @@ abstract class SwerveDriveSubsystem(
             SmartDashboard.setPersistent("DemoSpeed")
         }
 
-        // Register the telemetry loop function to be called during the odometry thread.
-        registerTelemetry(::telemetryLoop)
+        runRepeatedly(::periodic)
+
     }
 
     /**
@@ -326,7 +317,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * Loop that is called every 10 ms (or less) during the odometry thread.
      */
-    private fun telemetryLoop(state: SwerveDriveState) {
+    private fun telemetryLoop(state: SwerveDrivetrain.SwerveDriveState) {
         val currTime = Timer.getFPGATimestamp()
         updateSavedState(state) // Refresh so we get current data
 
@@ -337,8 +328,8 @@ abstract class SwerveDriveSubsystem(
         // To have accurate acceleration, we grab directly from the drive motor.
         // Although during sim, the motor's acceleration doesn't get updated (as of 2025), so we manually calculate it from ∆velocity.
         if (isReal) {
-            acceleration = kinematics.toChassisSpeeds(*moduleStates.mapIndexed { i, m -> m.apply {
-                speedMetersPerSecond = modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
+            acceleration = io.kinematics.toChassisSpeeds(*moduleStates.mapIndexed { i, m -> m.apply {
+                speed = io.modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
             } }.toTypedArray()).translation.metersPerSecondPerSecond
         } else {
             val currVelocity = velocity
@@ -353,11 +344,11 @@ abstract class SwerveDriveSubsystem(
         gyroDisconnectedAlert.set(!isGyroConnected)
 
         // Check if a part of any modules have been disconnected. Save on cycle time by only checking one module every loop.
-        val module = modules[moduleErrorIndex]
+        val module = io.modules[moduleErrorIndex]
         driveDisconnectAlerts[moduleErrorIndex].set(!module.driveMotor.isConnected)
         steerDisconnectAlerts[moduleErrorIndex].set(!module.steerMotor.isConnected)
         encoderDisconnectAlerts[moduleErrorIndex].set(!module.encoder.isConnected)
-        moduleErrorIndex = (moduleErrorIndex + 1) % modules.size
+        moduleErrorIndex = (moduleErrorIndex + 1) % io.modules.size
 
         // Calculate heading from swerve odometry when gyro is disconnected.
 //        if (!isGyroConnected && isReal) {
@@ -373,13 +364,13 @@ abstract class SwerveDriveSubsystem(
     /**
      * This is responsible for providing disconnect warnings, and more good things.
      */
-    override fun periodic() {
+    fun periodic() {
         // Disabled actions
         if (isDisabledSupplier()) {
             // Set module setpoints to their current position.
-            setControl(ApplyModuleStates())
+            io.setControl(ApplyModuleStates())
             if (isReal) {
-                modules.forEach {
+                io.modules.forEach {
                     if (it.steerMotor.isConnected && it.encoder.isConnected) {
                         // Set steer motor to encoder position if it is not already there.
                         val encoderPosition = it.encoder.position.value
@@ -401,21 +392,21 @@ abstract class SwerveDriveSubsystem(
      *
      *  Sometimes takes a long time when data acquisitions fail, this is why it's not a getter.
      */
-    fun updateSavedState(state: SwerveDriveState = stateCopy) {
+    fun updateSavedState(state: SwerveDrivetrain.SwerveDriveState = io.stateCopy) {
         savedState = state
     }
 
-    override fun resetTranslation(translation: Translation2d?) {
-        super.resetTranslation(translation)
+    fun resetTranslation(translation: Translation2d?) {
+        io.resetTranslation(translation)
         updateSavedState() // Refresh state so we see an instant response.
     }
 
-    override fun resetRotation(rotation: Rotation2d?) {
-        super.resetRotation(rotation)
+    fun resetRotation(rotation: Rotation2d?) {
+        io.resetRotation(rotation)
         updateSavedState() // Refresh state so we see an instant response.
     }
 
-    override fun resetPose(pose2d: Pose2d) {
+    fun resetPose(pose2d: Pose2d) {
         resetTranslation(pose2d.translation)
         heading = pose2d.rotation
     }
@@ -433,12 +424,12 @@ abstract class SwerveDriveSubsystem(
     /**
      * Set the module offsets to the current position of the module.
      */
-    fun setAngleOffsets(): Command = runOnce {
-        val offsets = modules.map { it.encoder.setCANCoderAngle(0.0.degrees) }
+    fun setAngleOffsets(): Command = run {
+        val offsets = io.modules.map { it.encoder.setCANCoderAngle(0.0.degrees) }
         offsets.forEachIndexed { i, offset ->
             Preferences.setDouble("Module $i Offset", offset.asDegrees)
         }
-    }
+    }.named("SetModuleOffsets")
 
     // CONTROL METHODS
 
@@ -447,8 +438,8 @@ abstract class SwerveDriveSubsystem(
      * @param speeds Speeds in meters/sec
      */
     fun driveVelocity(speeds: ChassisSpeeds) {
-        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.fieldToRobotCentric(heading))
-        setControl(
+        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.toRobotRelative(heading))
+        io.setControl(
             ApplyFieldSpeeds().apply{
                 Speeds = speeds
                 DriveRequestType = SwerveModule.DriveRequestType.Velocity
@@ -461,7 +452,7 @@ abstract class SwerveDriveSubsystem(
      * @param speedsInVolts Speeds in volts
      */
     fun driveVoltage(speedsInVolts: ChassisSpeeds) {
-        setControl(
+        io.setControl(
             ApplyFieldSpeeds().apply {
                 Speeds = speedsInVolts
                 DriveRequestType = SwerveModule.DriveRequestType.OpenLoopVoltage
@@ -472,7 +463,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * Set the swerve drive modules to point inward in an "X" fashion.
      */
-    fun xPose() = setControl(SwerveDriveBrake())
+    fun xPose() = io.setControl(SwerveDriveBrake())
 
     /**
      * Applies a 0v output to the drivetrain.
@@ -483,7 +474,7 @@ abstract class SwerveDriveSubsystem(
      * Set all the drive and steer motors to brake mode.
      */
     fun brakeMode() {
-        modules.forEach {
+        io.modules.forEach {
             it.steerMotor.brakeMode()
             it.driveMotor.brakeMode()
         }
@@ -493,7 +484,7 @@ abstract class SwerveDriveSubsystem(
      * Set all the drive and steer motors to coast mode.
      */
     fun coastMode() {
-        modules.forEach {
+        io.modules.forEach {
             it.steerMotor.coastMode()
             it.driveMotor.coastMode()
         }
@@ -505,9 +496,9 @@ abstract class SwerveDriveSubsystem(
      * @see maxSpeed
      */
     fun getChassisSpeedsFromJoystick(): ChassisSpeeds = getJoystickPercentageSpeeds().apply {
-        vxMetersPerSecond *= maxSpeed.asMetersPerSecond
-        vyMetersPerSecond *= maxSpeed.asMetersPerSecond
-        omegaRadiansPerSecond *= maxAngularSpeed.asRadiansPerSecond
+        vx *= maxSpeed.asMetersPerSecond
+        vy *= maxSpeed.asMetersPerSecond
+        omega *= maxAngularSpeed.asRadiansPerSecond
     }
 
     // All of these driveAtAngle function variations exist to make syntax good when calling the function
@@ -524,7 +515,7 @@ abstract class SwerveDriveSubsystem(
     fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
         Logger.recordOutput("Drive/DriveAtAngle/Angle", angle)
         Logger.recordOutput("Drive/DriveAtAngle/Translation", translation)
-        setControl(
+        io.setControl(
             driveAtAngleRequest.apply {
                 VelocityX = translation.x
                 VelocityY = translation.y
@@ -542,7 +533,7 @@ abstract class SwerveDriveSubsystem(
         return run {
             //get chassis speeds and send it
             driveVelocity(getChassisSpeedsFromJoystick())
-        }
+        }.named("JoystickDrive")
     }
 
     /**
@@ -550,8 +541,8 @@ abstract class SwerveDriveSubsystem(
      */
     fun joystickOnlyTranslationDrive(): Command {
         return run {
-            driveVelocity(getChassisSpeedsFromJoystick().apply { omegaRadiansPerSecond = 0.0 })
-        }
+            driveVelocity(getChassisSpeedsFromJoystick().apply { omega = 0.0 })
+        }.named("JoystickOnlyTranslationDrive")
     }
 
 
@@ -575,40 +566,34 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command {
-        var distanceToPose: Double = Double.POSITIVE_INFINITY
-        var translationToPose = Translation2d()
-
-
-
-        return run {
-//            println("running drive to point error ${distanceToPose.meters.asInches}")
-            val pidController = if (DriverStation.isAutonomous()) autoDriveToPointController else teleopDriveToPointController
-            val velocityOutput = min(abs(pidController.calculate(distanceToPose, 0.0)), maxVelocity.asMetersPerSecond)
-            val wantedVelocity = translationToPose.normalize() * velocityOutput
-            driveAtAngle(wantedPose().rotation, wantedVelocity)
-        }.onlyRunWhileFalse {
-//            println("checking exit error ${distanceToPose.meters.asInches}")
-            translationToPose = wantedPose().translation.minus(poseSupplier().translation)
-            distanceToPose = translationToPose.norm
-
-            val distanceError = distanceToPose.meters
+    ): Command = use(this) {
+        println("running driveToPoint")
+        while (true) {
+            // Calculate pose error
+            val translationToPose = wantedPose().translation.minus(poseSupplier().translation)
+            val distanceError = translationToPose.norm.meters
             val headingError = (wantedPose().rotation - poseSupplier().rotation).measure.absoluteValue()
 
-            Logger.recordOutput("Drive/DriveToPoint/DistanceError", distanceError)
-            Logger.recordOutput("Drive/DriveToPoint/HeadingError", headingError)
+            // Log errors
+            Logger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
+            Logger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
             Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
 
-            val result = exitSupplier(distanceError, headingError)
-            if (result) {
+            if (exitSupplier(distanceError, headingError)) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
+                break
+            } else {
+                val pidController = if (DriverStation.isAutonomous()) autoDriveToPointController else teleopDriveToPointController
+                val velocityOutput = min(abs(pidController.calculate(distanceError.asMeters, 0.0)), maxVelocity.asMetersPerSecond)
+                val wantedVelocity = translationToPose.normalize() * velocityOutput
+                driveAtAngle(wantedPose().rotation, wantedVelocity)
             }
-            result
-        }.finallyRun {
-            stop()
-            Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
-        }.withName("DriveToPoint")
-    }
+            yield()
+        }
+
+        stop() // Stop driving
+        Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
+    }.named("DriveToPoint")
 
     fun driveToAutopilotPoint(
         wantedPose: Pose2d,
@@ -632,36 +617,40 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot = autoPilot,
-        earlyExit: (Pose2d, APTarget) -> Boolean = { robotPose, target -> autopilotSupplier.atTarget(robotPose, target) }
+        exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> autopilotSupplier.atTarget(robotPose, target) }
     ): Command = use(this) {
-        val entryAngle = entryAngleSupplier()
-        val targetPose = wantedPose()
-        val target: APTarget = if (entryAngle != null) {
-            APTarget(targetPose).withEntryAngle(entryAngle.asRotation2d)
-        } else {
-            APTarget(targetPose)
-        }
-        Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
         println("running driveToAutopilotPoint")
-
-        run {
-            val output = autopilotSupplier.calculate(poseSupplier(), speeds, target)
-            val velocity = Translation2d(output.vx.asMetersPerSecond, output.vy.asMetersPerSecond)
-            Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
-
-            driveAtAngle(output.targetAngle(), velocity)
-        }.onlyRunWhileFalse {
+        while (true) {
             val pose = poseSupplier()
-            val result = earlyExit(pose, target)
-            if (result) {
-                println("Stopping driveToAutopilotPoint error meters/rad: ${pose - wantedPose()}")
+            val targetPose = wantedPose()
+            val entryAngle = entryAngleSupplier()
+            val target = if (entryAngle != null) {
+                APTarget(targetPose).withEntryAngle(entryAngle.asRotation2d)
+            } else {
+                APTarget(targetPose)
             }
-            result
-        }.finallyRun {
-            stop()
-            Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
-        }.withName("DriveToAutopilotPoint")
-    }
+
+            // Exit or Continue
+            if (exitSupplier(pose, target)) {
+                println("Stopping driveToAutopilotPoint error meters/rad: ${pose - targetPose}")
+                break
+            } else {
+                // Calculate Output
+                val output = autopilotSupplier.calculate(pose, speeds, target)
+                val velocity = Translation2d(output.vx.asMetersPerSecond, output.vy.asMetersPerSecond)
+
+                driveAtAngle(output.targetAngle(), velocity)
+
+                Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
+                Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
+            }
+
+            yield()
+        }
+
+        stop()
+        Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
+    }.named("DriveToAutopilotPoint")
 
 
     /**
@@ -682,10 +671,10 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         lineTolerance: Distance = 0.5.inches,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command {
+    ): Command = use(this) {
         val lineAngle = (pointTwo - pointOne).angle
 
-        return run {
+        while (true) {
             val currentPose = poseSupplier()
             val linePoint = findClosestPointOnLine(pointOne, pointTwo, currentPose.translation)
             val translationToPose = linePoint.minus(currentPose.translation)
@@ -697,8 +686,8 @@ abstract class SwerveDriveSubsystem(
                 // Limit joystick speeds to be along the line
                 val modifiedTranslation = translation.rotateBy(-lineAngle)
                 val lineCentricTranslation = Translation2d(modifiedTranslation.x, 0.0).rotateBy(lineAngle)
-                vxMetersPerSecond = lineCentricTranslation.x
-                vyMetersPerSecond = lineCentricTranslation.y
+                vx = lineCentricTranslation.x
+                vy = lineCentricTranslation.y
             }
 
             Logger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
@@ -715,11 +704,12 @@ abstract class SwerveDriveSubsystem(
                 driveAtAngle(heading, wantedVelocity)
             }
 
-        }.finallyRun {
-            Logger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
-            Logger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
-            stop()
-        }.withName("JoystickDriveAlongLine")
+            yield()
+        }
+    }.named("JoystickDriveAlongLine") {
+        stop()
+        Logger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
+        Logger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
     }
 
 
@@ -741,28 +731,21 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command {
-        var closestPoseOnLine: Pose2d? = null
+    ) = use(this) {
+        println("running driveToLine")
+        val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
 
-        return sequenceCommand(
-            runOnce {
-                println("driveToPointOnLine")
+        if (exitSupplier == null) {
+            await(driveToPoint(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
+        } else {
+            await(driveToPoint(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
+        }
 
-                closestPoseOnLine =
-                    findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
-
-                Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
-                Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
-            },
-            Commands.either(
-                defer { driveToPoint(closestPoseOnLine!!, poseSupplier, maxVelocity = maxVelocity) },
-                defer { driveToPoint(closestPoseOnLine!!, poseSupplier, exitSupplier!!, maxVelocity) },
-                { exitSupplier == null })
-        ).finallyRun {
-            Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
-            Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
-        }.withName("DriveToLine")
-    }
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
+    }.named("DriveToLine")
 
     /**
      * Drives the robot along a path from Choreo. Uses the [pathXController], [pathYController], and [pathThetaController] to control the robot.
@@ -777,101 +760,92 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
         exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
-    ): Command {
+    ): Command = use("DriveAlongChoreoPath", this) {
+        println("Running DriveAlongChoreoPath")
+
         val totalTime = path.totalTime
-        var t = 0.0
-        val timer = Timer()
-        var firstLoop = true
         val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-        var error = Transform2d(Double.MAX_VALUE, Double.MAX_VALUE, Rotation2d(Double.MAX_VALUE))
+        val timer = Timer()
+        timer.start()
 
-        return run {
-            LoopLogger.record("DriveAlongPath start")
-            if (firstLoop) {
-                t = 0.0
-                timer.restart()
-                firstLoop = false
+        if (resetOdometry) {
+            pose = path.getInitialPose(flipChoreoPaths).get()
+            val pose = pose
+            println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
+        }
 
-                if (resetOdometry) {
-                    pose = path.getInitialPose(flipChoreoPaths).get()
-                    val pose = pose
-                    println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
-                }
-                println("Running DriveAlongChoreoPath")
+        Logger.recordOutput("Drive/Path/Name", path.name())
+        Logger.recordOutput("Drive/Path/TotalTime", totalTime)
 
-                Logger.recordOutput("Drive/Path/Name", path.name())
-                Logger.recordOutput("Drive/Path/TotalTime", totalTime)
-            }
-            LoopLogger.record("DriveAlongPath reset odom")
-//            println("Inside driveAlongPathLoop ${timer.get()}")
-
-            t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving faster.
+        while (true) {
+            val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
             LoopLogger.record("DriveAlongPath time")
+            val percentComplete = t / totalTime
             val currentPose = poseSupplier()
             LoopLogger.record("DriveAlongPath poseSupplier")
             val sample = path.sampleAt(t, flipChoreoPaths).get()
             LoopLogger.record("DriveAlongPath sampleAt")
             val wantedPose = sample.pose
-            val wantedSpeeds = sample.chassisSpeeds
-            val moduleForcesX = sample.moduleForcesX()
-            val moduleForcesY = sample.moduleForcesY()
-            error = wantedPose - currentPose
+            val error = wantedPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
 
-            // Add heading and xy error
-            wantedSpeeds.apply {
-                vxMetersPerSecond += pathXController.calculate(currentPose.x, wantedPose.x)
-                vyMetersPerSecond += pathYController.calculate(currentPose.y, wantedPose.y)
-                omegaRadiansPerSecond += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
-            }
-            LoopLogger.record("DriveAlongPath pid")
-            setControl(
-                applyFieldSpeedsRequest
-                    .withSpeeds(wantedSpeeds)
-                    .withWheelForceFeedforwardsX(moduleForcesX)
-                    .withWheelForceFeedforwardsY(moduleForcesY)
-            )
-            LoopLogger.record("DriveAlongPath setControl")
-
-            Logger.recordOutput("Drive/Path/Time", t)
-            Logger.recordOutput("Drive/Path/Pose", wantedPose)
-            Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-            Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
-            Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay).metersPerSecondPerSecond)
-//            Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
-//            Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
-//            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
-            LoopLogger.record("DriveAlongPath logger")
-        }.onlyRunWhileFalse {
-            val percentComplete = t / totalTime
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
-            exitSupplier(percentComplete, error)
-        }.finallyRun {
-            val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
-            // Are we stopping?
-            if (finalSample != null) {
-//                println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
-                setControl(
-                    ApplyFieldSpeeds().apply {
-                        Speeds = finalSample.chassisSpeeds
-                        DriveRequestType = SwerveModule.DriveRequestType.Velocity
-                    }
-                )
+
+            // Exit Path?
+            if (exitSupplier(percentComplete, error)) {
+                println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
+                break
             } else {
-                // Tell drivetrain to apply no output
-                stop()
+                val wantedSpeeds = sample.chassisSpeeds
+                val moduleForcesX = sample.moduleForcesX()
+                val moduleForcesY = sample.moduleForcesY()
+
+                // Add heading and xy error
+                wantedSpeeds.apply {
+                    vx += pathXController.calculate(currentPose.x, wantedPose.x)
+                    vy += pathYController.calculate(currentPose.y, wantedPose.y)
+                    omega += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
+                }
+                LoopLogger.record("DriveAlongPath pid")
+                io.setControl(
+                    applyFieldSpeedsRequest
+                        .withSpeeds(wantedSpeeds)
+                        .withWheelForceFeedforwardsX(moduleForcesX)
+                        .withWheelForceFeedforwardsY(moduleForcesY)
+                )
+                LoopLogger.record("DriveAlongPath setControl")
+
+                Logger.recordOutput("Drive/Path/Time", t)
+                Logger.recordOutput("Drive/Path/Pose", wantedPose)
+                Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+                Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+                Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
+//                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
+//                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
+//                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
+                LoopLogger.record("DriveAlongPath logger")
             }
 
+            yield()
+        }
 
-            println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
-            // Publish empty data to show that the path is done
-            Logger.recordOutput("Drive/Path/Pose", Pose2d())
-            // Stop and reset timer so command can run again
-            firstLoop = true
-            t = 0.0
-            timer.stop()
-            timer.reset()
-        }.withName("DriveAlongChoreoPath")
+        val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
+        // Are we stopping?
+        if (finalSample != null) {
+//            println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
+            io.setControl(
+                ApplyFieldSpeeds().apply {
+                    Speeds = finalSample.chassisSpeeds
+                    DriveRequestType = SwerveModule.DriveRequestType.Velocity
+                }
+            )
+        } else {
+            // Tell drivetrain to apply no output
+            stop()
+        }
+
+        // Publish empty data to show that the path is done
+        Logger.recordOutput("Drive/Path/Pose", Pose2d())
     }
 
     // OTHER
@@ -906,93 +880,93 @@ abstract class SwerveDriveSubsystem(
     // SysID Routines
 
     /** Used to find drive motor PID and SVA constants. */
-    private val translationSysIdRoutine = SysIdRoutine(
-        SysIdRoutine.Config(
-            null,
-            7.0.volts,
-            2.0.seconds
-        ) { state: SysIdRoutineLog.State ->
-            SignalLogger.writeString("SysIdTranslation_State", state.toString())
-            Logger.recordOutput("SysIdTranslation_State", state.toString())
-          },
-        Mechanism({ output: Voltage ->
-            modules.forEachIndexed { i, m ->
-                Logger.recordOutput("SysID/Translation/motor${i}Position", m.driveMotor.position.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-                Logger.recordOutput("SysID/Translation/motor${i}Velocity", m.driveMotor.velocity.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-                Logger.recordOutput("SysID/Translation/motor${i}Volts Applied", m.driveMotor.motorVoltage.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-            }
-            setControl(SysIdSwerveTranslation().withVolts(output))
-        }, null, this)
-    )
-    /** Used to find [driveAtAnglePIDController] PID values. */
-    private val rotationSysIdRoutine = SysIdRoutine(
-        SysIdRoutine.Config(
-            Units.Volts.of(Math.PI / 6).per(Units.Second),
-            Math.PI.volts,
-            5.0.seconds
-        ) { state: SysIdRoutineLog.State ->
-            SignalLogger.writeString("SysIdRotation_State", state.toString())
-            Logger.recordOutput("SysIdRotation_State", state.toString())
-          },
-        Mechanism({ output: Voltage ->
-            /* output is actually radians per second, but SysId only supports "volts" */
-            setControl(SysIdSwerveRotation().withRotationalRate(output.asVolts))
-            /* also log the requested output for SysId */
-            // Adding randomness because values need to constantly be updating for sysid to pick up new samples
-            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
-            Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
-            Logger.recordOutput("SysID/Rotation/yaw", gyro.yaw.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-            Logger.recordOutput("SysID/Rotation/yawRate", gyro.angularVelocityZWorld.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-        }, null, this)
-    )
-    /** Used to find steer motor PID and SVA constants. */
-    private val steerSysIdRoutine = SysIdRoutine(
-        SysIdRoutine.Config(
-            null,
-            7.0.volts,
-            null
-        ) { state: SysIdRoutineLog.State ->
-            SignalLogger.writeString("SysIdSteer_State", state.toString())
-            Logger.recordOutput("SysIdSteer_State", state.toString())
-          },
-        Mechanism({ volts: Voltage? -> setControl(SysIdSwerveSteerGains().withVolts(volts)) }, null, this)
-    )
-
-    // SysID Commands
-
-    fun sysIDTranslationDynamic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction).beforeWait(1.0)
-    fun sysIDTranslationQuasistatic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-    fun sysIDRotationDynamic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction).beforeWait(1.0)
-    fun sysIDRotationQuasistatic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-    fun sysIDSteerDynamic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction).beforeWait(1.0)
-    fun sysIDSteerQuasistatic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-
-    // Full SysID test commands
-    fun sysIDTranslationAll() = sequenceCommand(
-        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kForward),
-        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kReverse),
-        sysIDTranslationDynamic(SysIdRoutine.Direction.kForward),
-        sysIDTranslationDynamic(SysIdRoutine.Direction.kReverse)
-    )
-    fun sysIDRotationAll() = sequenceCommand(
-        sysIDRotationQuasistatic(SysIdRoutine.Direction.kForward),
-        sysIDRotationQuasistatic(SysIdRoutine.Direction.kReverse),
-        sysIDRotationDynamic(SysIdRoutine.Direction.kForward),
-        sysIDRotationDynamic(SysIdRoutine.Direction.kReverse),
-    )
-    fun sysIDSteerAll() = sequenceCommand(
-        sysIDSteerQuasistatic(SysIdRoutine.Direction.kForward),
-        sysIDSteerQuasistatic(SysIdRoutine.Direction.kReverse),
-        sysIDSteerDynamic(SysIdRoutine.Direction.kForward),
-        sysIDSteerDynamic(SysIdRoutine.Direction.kReverse),
-    )
+//    private val translationSysIdRoutine = SysIdRoutine(
+//        SysIdRoutine.Config(
+//            null,
+//            7.0.volts,
+//            2.0.seconds
+//        ) { state: SysIdRoutineLog.State ->
+//            SignalLogger.writeString("SysIdTranslation_State", state.toString())
+//            Logger.recordOutput("SysIdTranslation_State", state.toString())
+//          },
+//        Mechanism({ output: Voltage ->
+//            modules.forEachIndexed { i, m ->
+//                Logger.recordOutput("SysID/Translation/motor${i}Position", m.driveMotor.position.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+//                Logger.recordOutput("SysID/Translation/motor${i}Velocity", m.driveMotor.velocity.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+//                Logger.recordOutput("SysID/Translation/motor${i}Volts Applied", m.driveMotor.motorVoltage.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+//            }
+//            setControl(SysIdSwerveTranslation().withVolts(output))
+//        }, null, this)
+//    )
+//    /** Used to find [driveAtAnglePIDController] PID values. */
+//    private val rotationSysIdRoutine = SysIdRoutine(
+//        SysIdRoutine.Config(
+//            Units.Volts.of(Math.PI / 6).per(Units.Second),
+//            Math.PI.volts,
+//            5.0.seconds
+//        ) { state: SysIdRoutineLog.State ->
+//            SignalLogger.writeString("SysIdRotation_State", state.toString())
+//            Logger.recordOutput("SysIdRotation_State", state.toString())
+//          },
+//        Mechanism({ output: Voltage ->
+//            /* output is actually radians per second, but SysId only supports "volts" */
+//            setControl(SysIdSwerveRotation().withRotationalRate(output.asVolts))
+//            /* also log the requested output for SysId */
+//            // Adding randomness because values need to constantly be updating for sysid to pick up new samples
+//            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+//            Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+//            Logger.recordOutput("SysID/Rotation/yaw", gyro.yaw.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+//            Logger.recordOutput("SysID/Rotation/yawRate", gyro.angularVelocityZWorld.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+//        }, null, this)
+//    )
+//    /** Used to find steer motor PID and SVA constants. */
+//    private val steerSysIdRoutine = SysIdRoutine(
+//        SysIdRoutine.Config(
+//            null,
+//            7.0.volts,
+//            null
+//        ) { state: SysIdRoutineLog.State ->
+//            SignalLogger.writeString("SysIdSteer_State", state.toString())
+//            Logger.recordOutput("SysIdSteer_State", state.toString())
+//          },
+//        Mechanism({ volts: Voltage? -> setControl(SysIdSwerveSteerGains().withVolts(volts)) }, null, this)
+//    )
+//
+//    // SysID Commands
+//
+//    fun sysIDTranslationDynamic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction).beforeWait(1.0)
+//    fun sysIDTranslationQuasistatic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
+//    fun sysIDRotationDynamic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction).beforeWait(1.0)
+//    fun sysIDRotationQuasistatic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
+//    fun sysIDSteerDynamic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction).beforeWait(1.0)
+//    fun sysIDSteerQuasistatic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction).beforeWait(1.0)
+//
+//    // Full SysID test commands
+//    fun sysIDTranslationAll() = sequenceCommand(
+//        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kForward),
+//        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kReverse),
+//        sysIDTranslationDynamic(SysIdRoutine.Direction.kForward),
+//        sysIDTranslationDynamic(SysIdRoutine.Direction.kReverse)
+//    )
+//    fun sysIDRotationAll() = sequenceCommand(
+//        sysIDRotationQuasistatic(SysIdRoutine.Direction.kForward),
+//        sysIDRotationQuasistatic(SysIdRoutine.Direction.kReverse),
+//        sysIDRotationDynamic(SysIdRoutine.Direction.kForward),
+//        sysIDRotationDynamic(SysIdRoutine.Direction.kReverse),
+//    )
+//    fun sysIDSteerAll() = sequenceCommand(
+//        sysIDSteerQuasistatic(SysIdRoutine.Direction.kForward),
+//        sysIDSteerQuasistatic(SysIdRoutine.Direction.kReverse),
+//        sysIDSteerDynamic(SysIdRoutine.Direction.kForward),
+//        sysIDSteerDynamic(SysIdRoutine.Direction.kReverse),
+//    )
 
     // SIM
 
     /** Must be called periodically during sim for swerve sim to work */
-    override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
+    fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
-            super.updateSimState(dtSeconds, supplyVoltage)
+            io.updateSimState(dtSeconds, supplyVoltage)
         } else {
             DriverStation.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
@@ -1000,7 +974,7 @@ abstract class SwerveDriveSubsystem(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun simulationPeriodic() {
+    fun simulationPeriodic() {
         LoopLogger.record("b4 Drive Sim piodic")
         GlobalScope.launch {
             updateSimState(0.02, 12.0)

@@ -36,7 +36,7 @@ abstract class Autonomi {
     var selectedAuto: AutoCommand? = null
         private set
     /** The currently selected auto command */
-    val autonomousCommand: Command? get() = if (!demoMode) selectedAuto?.command else ({ println("DEMO MODE: Not running auto, no killing kids today.") }).toCommand()
+    val autonomousCommand: Command? get() = if (!demoMode) selectedAuto?.command else Command.noRequirements().executing{ println("DEMO MODE: Not running auto, no killing kids today.") }.named("DemoModeAuto")
     /** The currently selected test command */
     val testCommand: Command? get() = testChooser.get()
 

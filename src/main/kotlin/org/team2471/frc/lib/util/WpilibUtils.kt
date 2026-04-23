@@ -9,10 +9,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.units.measure.Angle
 
-inline val ChassisSpeeds.translation: Translation2d get() = Translation2d(this.vxMetersPerSecond, this.vyMetersPerSecond)
-fun ChassisSpeeds.fieldToRobotCentric(heading: Rotation2d): ChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(this, heading)
-fun ChassisSpeeds.robotToFieldCentric(heading: Rotation2d): ChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(this, heading)
-fun ChassisSpeeds.toTransform2d(deltaSeconds: Double): Transform2d = Transform2d(this.translation, Rotation2d(this.omegaRadiansPerSecond)) * deltaSeconds
+inline val ChassisSpeeds.translation: Translation2d get() = Translation2d(this.vx, this.vy)
+fun ChassisSpeeds.toTransform2d(deltaSeconds: Double): Transform2d = Transform2d(this.translation, Rotation2d(this.omega)) * deltaSeconds
 fun SwerveDriveKinematics.toChassisSpeedsK(speeds: Array<SwerveModuleState>): ChassisSpeeds {
     return this.toChassisSpeeds(*speeds) //Intellij sometimes thinks this is an error. which is lame...
 }

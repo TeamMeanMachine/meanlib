@@ -262,8 +262,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             val pixelSigma: Double = max(
                 100.0,
                 5.0
-                        + 10.0 * hypot(interpolatedChassisSpeeds.vxMetersPerSecond, interpolatedChassisSpeeds.vyMetersPerSecond)
-                        + 20.0 * abs(interpolatedChassisSpeeds.omegaRadiansPerSecond)
+                        + 10.0 * hypot(interpolatedChassisSpeeds.vx, interpolatedChassisSpeeds.vy)
+                        + 20.0 * abs(interpolatedChassisSpeeds.omega)
             )
             existingMeasurement.setVisionUncertainty(pixelSigma)
 

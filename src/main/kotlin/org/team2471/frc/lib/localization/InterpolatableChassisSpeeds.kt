@@ -4,10 +4,10 @@ import edu.wpi.first.math.interpolation.Interpolatable
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 
 class InterpolatableChassisSpeeds(
-    vxMetersPerSecond: Double,
-    vyMetersPerSecond: Double,
-    omegaRadiansPerSecond: Double
-): ChassisSpeeds(vxMetersPerSecond, vyMetersPerSecond, omegaRadiansPerSecond),
+    vx: Double,
+    vy: Double,
+    omega: Double
+): ChassisSpeeds(vx, vy, omega),
     Interpolatable<InterpolatableChassisSpeeds> {
 
     override fun interpolate(endValue: InterpolatableChassisSpeeds, t: Double): InterpolatableChassisSpeeds {
@@ -18,16 +18,16 @@ class InterpolatableChassisSpeeds(
             return endValue
         }
         return InterpolatableChassisSpeeds(
-            (1.0 - t) * vxMetersPerSecond + t * endValue.vxMetersPerSecond,
-            (1.0 - t) * vyMetersPerSecond + t * endValue.vyMetersPerSecond,
-            (1.0 - t) * omegaRadiansPerSecond + t * endValue.omegaRadiansPerSecond
+            (1.0 - t) * vx + t * endValue.vx,
+            (1.0 - t) * vy + t * endValue.vy,
+            (1.0 - t) * omega + t * endValue.omega
         )
     }
 
     companion object {
         fun fromChassisSpeeds(cs: ChassisSpeeds): InterpolatableChassisSpeeds {
             return InterpolatableChassisSpeeds(
-                cs.vxMetersPerSecond, cs.vyMetersPerSecond, cs.omegaRadiansPerSecond
+                cs.vx, cs.vy, cs.omega
             )
         }
     }

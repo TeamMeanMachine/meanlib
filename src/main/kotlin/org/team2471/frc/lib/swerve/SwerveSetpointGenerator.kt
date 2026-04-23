@@ -201,7 +201,7 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
             needToSteer = false
             for (i in modules.indices) {
                 desiredModuleState[i].angle = prevSetpoint.moduleStates[i].angle
-                desiredModuleState[i].speedMetersPerSecond = 0.0
+                desiredModuleState[i].speed = 0.0
             }
         }
 
@@ -214,16 +214,16 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
         val desiredHeading: Array<Rotation2d?> = arrayOfNulls(modules.size)
         var allModulesShouldFlip = true
         for (i in modules.indices) {
-            prevVx[i] = (prevSetpoint.moduleStates[i].angle.cos * prevSetpoint.moduleStates[i].speedMetersPerSecond)
-            prevVy[i] = (prevSetpoint.moduleStates[i].angle.sin * prevSetpoint.moduleStates[i].speedMetersPerSecond)
+            prevVx[i] = (prevSetpoint.moduleStates[i].angle.cos * prevSetpoint.moduleStates[i].speed)
+            prevVy[i] = (prevSetpoint.moduleStates[i].angle.sin * prevSetpoint.moduleStates[i].speed)
             prevHeading[i] = prevSetpoint.moduleStates[i].angle
-            if (prevSetpoint.moduleStates[i].speedMetersPerSecond < 0.0) {
+            if (prevSetpoint.moduleStates[i].speed < 0.0) {
                 prevHeading[i] = prevHeading[i]!!.rotateBy(Rotation2d.fromRadians(Math.PI))
             }
-            desiredVx[i] = desiredModuleState[i].angle.cos * desiredModuleState[i].speedMetersPerSecond
-            desiredVy[i] = desiredModuleState[i].angle.sin * desiredModuleState[i].speedMetersPerSecond
+            desiredVx[i] = desiredModuleState[i].angle.cos * desiredModuleState[i].speed
+            desiredVy[i] = desiredModuleState[i].angle.sin * desiredModuleState[i].speed
             desiredHeading[i] = desiredModuleState[i].angle
-            if (desiredModuleState[i].speedMetersPerSecond < 0.0) {
+            if (desiredModuleState[i].speed < 0.0) {
                 desiredHeading[i] = desiredHeading[i]!!.rotateBy(Rotation2d.fromRadians(Math.PI))
             }
             if (allModulesShouldFlip) {
@@ -247,10 +247,10 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
         // the goal state; then
         // find the amount we can move from start towards goal in this cycle such that no kinematic
         // limit is exceeded.
-        val dx: Double = desiredState.vxMetersPerSecond - prevSetpoint.chassisSpeeds.vxMetersPerSecond
-        val dy: Double = desiredState.vyMetersPerSecond - prevSetpoint.chassisSpeeds.vyMetersPerSecond
+        val dx: Double = desiredState.vx - prevSetpoint.chassisSpeeds.vx
+        val dy: Double = desiredState.vy - prevSetpoint.chassisSpeeds.vy
         val dtheta: Double =
-            desiredState.omegaRadiansPerSecond - prevSetpoint.chassisSpeeds.omegaRadiansPerSecond
+            desiredState.omega - prevSetpoint.chassisSpeeds.omega
 
         // 's' interpolates between start and goal. At 0, we are at prevState and at 1, we are at
         // desiredState.
@@ -272,11 +272,11 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
                 continue
             }
             overrideSteering.add(null)
-            if (epsilonEquals(prevSetpoint.moduleStates[i].speedMetersPerSecond, 0.0)) {
+            if (epsilonEquals(prevSetpoint.moduleStates[i].speed, 0.0)) {
                 // If module is stopped, we know that we will need to move straight to the final steering
                 // angle, so limit based
                 // purely on rotation in place.
-                if (epsilonEquals(desiredModuleState[i].speedMetersPerSecond, 0.0)) {
+                if (epsilonEquals(desiredModuleState[i].speed, 0.0)) {
                     // Goal angle doesn't matter. Just leave module at its current angle.
                     overrideSteering[i] = prevSetpoint.moduleStates[i].angle
                     continue
@@ -350,9 +350,9 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
         }
 
         val retSpeeds = ChassisSpeeds(
-            prevSetpoint.chassisSpeeds.vxMetersPerSecond + minS * dx,
-            prevSetpoint.chassisSpeeds.vyMetersPerSecond + minS * dy,
-            prevSetpoint.chassisSpeeds.omegaRadiansPerSecond + minS * dtheta
+            prevSetpoint.chassisSpeeds.vx + minS * dx,
+            prevSetpoint.chassisSpeeds.vy + minS * dy,
+            prevSetpoint.chassisSpeeds.omega + minS * dtheta
         )
         val retStates: Array<SwerveModuleState> = kinematics.toSwerveModuleStates(retSpeeds)
         for (i in modules.indices) {
@@ -360,14 +360,14 @@ class SwerveSetpointGenerator(val kinematics: SwerveDriveKinematics, val moduleL
             if (maybeOverride != null) {
                 val override: Rotation2d = maybeOverride
                 if (flipHeading(retStates[i].angle.unaryMinus().rotateBy(override))) {
-                    retStates[i].speedMetersPerSecond *= -1.0
+                    retStates[i].speed *= -1.0
                 }
                 retStates[i].angle = override
             }
             val deltaRotation: Rotation2d = prevSetpoint.moduleStates[i].angle.unaryMinus().rotateBy(retStates[i].angle)
             if (flipHeading(deltaRotation)) {
                 retStates[i].angle = retStates[i].angle.rotateBy(Rotation2d.fromRadians(Math.PI))
-                retStates[i].speedMetersPerSecond *= -1.0
+                retStates[i].speed *= -1.0
             }
         }
         return SwerveSetpoint(retSpeeds, retStates)

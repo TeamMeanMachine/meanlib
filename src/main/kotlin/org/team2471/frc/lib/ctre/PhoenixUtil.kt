@@ -114,12 +114,12 @@ class ApplyModuleStatesVoltage(vararg val moduleStates: SwerveModuleState? = arr
             val wantedState = moduleStates.getOrNull(i) ?: SwerveModuleState(0.0, m!!.currentState.angle)
             when (m!!.steerClosedLoopOutputType) {
                 SwerveModuleConstants.ClosedLoopOutputType.Voltage -> m.apply(
-                    m_driveRequest.withOutput(wantedState.speedMetersPerSecond),
+                    m_driveRequest.withOutput(wantedState.speed),
                     m_steerRequest_Voltage.withPosition(wantedState.angle.measure)
                 )
 
                 SwerveModuleConstants.ClosedLoopOutputType.TorqueCurrentFOC -> m.apply(
-                    m_driveRequest.withOutput(wantedState.speedMetersPerSecond),
+                    m_driveRequest.withOutput(wantedState.speed),
                     m_steerRequest_TorqueCurrent.withPosition(wantedState.angle.measure)
                 )
             }

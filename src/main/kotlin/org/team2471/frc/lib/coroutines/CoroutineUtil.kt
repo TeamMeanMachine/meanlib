@@ -5,19 +5,7 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
-
-class PeriodicScope @PublishedApi internal constructor(val period: Double) {
-    @PublishedApi
-    internal var isDone = false
-
-    fun stop() {
-        isDone = true
-    }
-}
-
-
-
-
+import org.team2471.frc.lib.control.commands.PeriodicScope
 
 
 /**
@@ -32,12 +20,12 @@ class PeriodicScope @PublishedApi internal constructor(val period: Double) {
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend inline fun periodic(
+suspend inline fun periodiccc(
     period: Double = 0.02,
     watchOverrun: Boolean = false,
     crossinline body: PeriodicScope.() -> Unit
 ) {
-    val scope = PeriodicScope(period)
+    val scope = PeriodicScope()
 
     val watchdog = if (watchOverrun) {
         Watchdog(period) { DriverStation.reportWarning("Periodic loop overrun", true) }
