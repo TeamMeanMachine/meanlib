@@ -4,7 +4,6 @@ import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
-import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.hardware.CANcoder
@@ -34,8 +33,6 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Preferences
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog
-import gg.questnav.questnav.protos.generated.Commands
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -75,8 +72,8 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
-import org.team2471.frc.lib.control.commands.named
-import org.team2471.frc.lib.control.commands.use
+import org.team2471.frc.lib.commands.named
+import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.util.isReal

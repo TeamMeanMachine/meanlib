@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.control.commands
+package org.team2471.frc.lib.commands
 
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
@@ -19,12 +19,35 @@ class PeriodicScope {
     }
 }
 
+
+// Command Composers
 fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): Command = Command.requiring(setOf(*mechanisms)).executing(body).named(name)
 fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit, onCancel: () -> Unit): Command = Command.requiring(setOf(*mechanisms)).executing(body).whenCanceled(onCancel).named(name)
 fun use(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage = Command.requiring(setOf(*mechanisms)).executing(body)
 fun (Coroutine.() -> Unit).use(name: String, vararg mechanisms: Mechanism, onCancel: () -> Unit = {}) = use(name, *mechanisms, body = this, onCancel = onCancel)
 
+/**
+ * Finishes composing a command by naming it. Also, can apply an [onCancel] action.
+ * The [onCancel] action will not run if the command completes naturally.
+ *
+ * @param name the name of the command.
+ * @param onCancel the action to perform when the command is canceled.
+ * @return composed command with name and optional onCancel action.
+ * @see NeedsNameBuilderStage.named
+ * @see NeedsNameBuilderStage.whenCanceled
+ */
 fun NeedsNameBuilderStage.named(name: String, onCancel: () -> Unit = {}): Command = whenCanceled(onCancel).named(name)
+
+/**
+ * Modifies existing command to have an [onCancel] action.
+ * The [onCancel] action will not run if the command completes naturally.
+ *
+ * @param onCancel the action to perform when the command is canceled.
+ * @return the modified command.
+ * @see NeedsNameBuilderStage.whenCanceled
+ */
+fun Command.onCanceled(onCancel: () -> Unit): Command = Command.requiring(this.requirements()).executing(this::run).whenCanceled(onCancel).named("${this.name()}WithOnCancel")
+
 
 inline fun Coroutine.periodic(
     period: Double = 0.02,
@@ -82,6 +105,8 @@ fun Coroutine.parallel(
 ) {
     parallel(*blocks.mapIndexed { index, coroutine -> use("unnamedParallel$index") { coroutine() }}.toTypedArray())
 }
+
+
 
 //fun test2Command() = use("test2Command") { println("in test2 command") }
 //

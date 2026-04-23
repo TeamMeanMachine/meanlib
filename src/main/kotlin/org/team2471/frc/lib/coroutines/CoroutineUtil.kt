@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
-import org.team2471.frc.lib.control.commands.PeriodicScope
+import org.team2471.frc.lib.commands.PeriodicScope
 
 
 /**
