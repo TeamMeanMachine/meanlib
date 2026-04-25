@@ -26,8 +26,8 @@ object LoopLogger {
         val period = now - prevTime
         val sinceReset = now - startTime
 
-        Logger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
-        Logger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
+//        Logger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
+//        Logger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
         return Pair(period, sinceReset)
     }
 

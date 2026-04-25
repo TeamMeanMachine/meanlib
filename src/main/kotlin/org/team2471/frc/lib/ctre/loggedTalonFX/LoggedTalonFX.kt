@@ -31,7 +31,7 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
 
 
     init {
-        talonFXSim.setSupplyVoltage(12.0.volts)
+        talonFXSim.setSupplyVoltage(12.0)
     }
 
     /**
@@ -84,14 +84,14 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
 
     override fun simPeriodic() {
         if (motorSim != null) {
-            val talonFXVoltage = talonFXSim.motorVoltage
-
-            motorSim!!.inputVoltage = talonFXVoltage
-            motorSim!!.update(0.02)
-
-            talonFXSim.setRawRotorPosition(motorSim!!.angularPosition)
-            talonFXSim.setRotorVelocity(motorSim!!.angularVelocity)
-            talonFXSim.setRotorAcceleration(motorSim!!.angularAcceleration)
+//            val talonFXVoltage = talonFXSim.motorVoltage
+//
+//            motorSim!!.inputVoltage = talonFXVoltage
+//            motorSim!!.update(0.02)
+//
+//            talonFXSim.setRawRotorPosition(motorSim!!.angularPosition)
+//            talonFXSim.setRotorVelocity(motorSim!!.angularVelocity)
+//            talonFXSim.setRotorAcceleration(motorSim!!.angularAcceleration)
         }
     }
 }

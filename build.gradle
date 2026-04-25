@@ -2,9 +2,9 @@ import groovy.json.JsonSlurper
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-2"
-    id "org.jetbrains.kotlin.jvm" version "2.2.0"
-    id "org.jetbrains.kotlin.kapt" version "2.2.0"
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
+    id "org.jetbrains.kotlin.jvm" version "2.3.21"
+//    id "org.jetbrains.kotlin.kapt" version "2.3.21"
     id "idea"
     id "maven-publish"
     id "java-library"
@@ -21,21 +21,23 @@ gradle.afterProject { proj ->
     }
 }
 
-wpi.maven.useLocal = true
-wpi.maven.useDevelopment = false
+wpi.maven.useLocal = false
+wpi.maven.useDevelopment = true
 wpi.versions.wpilibVersion = '2027.0.0-alpha-3'
-
+wpi.versions.wpimathVersion = '2027.0.0-alpha-3'
+wpi.versions.glassVersion = '2027.0.0-alpha-3'
+wpi.versions.sysIdVersion = '2027.0.0-alpha-3'
+wpi.versions.dataLogToolVersion = '2027.0.0-alpha-3'
+wpi.versions.outlineViewerVersion = '2027.0.0-alpha-3'
 
 group = "org.team2471.lib"
-//version = "2026"
 
 repositories {
     mavenCentral()
     maven {
-        name = "wpilib"
-        url = uri("${System.getProperty('user.home')}/repository/org/")
+        name = "WPILib Development"
+        url = uri("https://frcmaven.wpi.edu/artifactory/development-2027/")
     }
-    mavenLocal()
     maven { url "https://frcmaven.wpi.edu/artifactory/release/" }
     maven { url "https://frcmaven.wpi.edu/ui/native/development-2027/" }
     maven { url "https://plugins.gradle.org/m2/" }
@@ -48,7 +50,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(24)
+    jvmToolchain(21)
 }
 
 // Automatically download library documentation from libraries
@@ -64,6 +66,12 @@ dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
+//    systemcoreDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
+//    systemcoreDebug wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
+
+//    systemcoreRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
+//    systemcoreRelease wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
+
     nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
     nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
     simulationDebug wpi.sim.enableDebug()
@@ -71,6 +79,9 @@ dependencies {
     nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
@@ -82,7 +93,7 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     def akitFile = file("$projectDir/vendordeps/AdvantageKit.json")
-    kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
+//    kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
 }
 
 tasks.test {
@@ -99,7 +110,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        jvmTarget = "24"
+        jvmTarget = "21"
     }
 }
 
@@ -128,6 +139,13 @@ tasks.register("printVendordeps") {
             }
         }
     }
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += [
+            "--add-opens=java.base/jdk.internal.vm=ALL-UNNAMED",
+            "--enable-native-access=ALL-UNNAMED"
+    ]
 }
 
 

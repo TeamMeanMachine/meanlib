@@ -361,7 +361,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * This is responsible for providing disconnect warnings, and more good things.
      */
-    fun periodic() {
+    open fun periodic() {
         // Disabled actions
         if (isDisabledSupplier()) {
             // Set module setpoints to their current position.

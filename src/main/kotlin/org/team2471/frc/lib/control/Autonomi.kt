@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.Filesystem
 import edu.wpi.first.wpilibj.RobotController
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
@@ -22,9 +23,9 @@ abstract class Autonomi {
     val paths: MutableMap<String, Trajectory<SwerveSample>> = findChoreoPaths()
 
     /** Chooser for selecting autonomous commands */
-    abstract val autoChooser: LoggedDashboardChooser<AutoCommand?>
+    abstract val autoChooser: SendableChooser<AutoCommand>
     /** Chooser for selecting test commands */
-    abstract val testChooser: LoggedDashboardChooser<Command?>
+    abstract val testChooser: SendableChooser<Command>
 
     /** Set the drive pose to the starting pose of the selected auto. Abstract so it can change per robot */
     abstract val drivePoseSetter: (Pose2d) -> Unit
@@ -38,7 +39,7 @@ abstract class Autonomi {
     /** The currently selected auto command */
     val autonomousCommand: Command? get() = if (!demoMode) selectedAuto?.command else Command.noRequirements().executing{ println("DEMO MODE: Not running auto, no killing kids today.") }.named("DemoModeAuto")
     /** The currently selected test command */
-    val testCommand: Command? get() = testChooser.get()
+    val testCommand: Command? get() = testChooser.selected
 
     init {
         // Read all the paths on init
@@ -48,10 +49,10 @@ abstract class Autonomi {
     /** Refreshes the selectedAuto var if the chooser has changed. Call this during disabled periodic to save on auto init time.  */
     fun updateSelectedAuto(continuouslySetPosition: Boolean = false) {
         val startTime = RobotController.getMeasureFPGATime()
-        val newAuto = autoChooser.get()
+        val newAuto = autoChooser.selected
         if (selectedAuto != newAuto) {
-            selectedAuto = autoChooser.get()
-            println("selected auto changed ${autoChooser.sendableChooser.selected}")
+            selectedAuto = autoChooser.selected
+            println("selected auto changed ${autoChooser.selected}")
             println("Auto is ${autonomousCommand?.name()}")
             setDrivePositionToAutoStartPose()
             readAutoPaths()
@@ -99,11 +100,11 @@ abstract class Autonomi {
             Filesystem.getDeployDirectory().toPath().resolve("choreo").listDirectoryEntries("*.traj").forEach {
                 try {
                     val name = it.name.removeSuffix(".traj")
-                    val traj = Choreo.loadTrajectory(name).getOrNull()
-                    if (traj != null) {
-                        @Suppress("UNCHECKED_CAST")
-                        map[name] = traj as Trajectory<SwerveSample>
-                    }
+//                    val traj = Choreo.loadTrajectory(name).getOrNull()
+//                    if (traj != null) {
+//                        @Suppress("UNCHECKED_CAST")
+//                        map[name] = traj as Trajectory<SwerveSample>
+//                    }
                 } catch (e: Exception) {
                     println("failed to load path at $it")
                     println(e)
