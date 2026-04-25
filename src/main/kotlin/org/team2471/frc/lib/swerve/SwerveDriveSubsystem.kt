@@ -71,8 +71,10 @@ import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
+import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
@@ -92,7 +94,7 @@ import kotlin.math.min
 abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-): Mechanism("Drive") {
+): MechanismBase("Drive") {
 
     val io = SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
         { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
@@ -361,7 +363,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * This is responsible for providing disconnect warnings, and more good things.
      */
-    open fun periodic() {
+    override fun periodic() {
         // Disabled actions
         if (isDisabledSupplier()) {
             // Set module setpoints to their current position.
@@ -526,11 +528,10 @@ abstract class SwerveDriveSubsystem(
     /**
      * Drives the robot using the joystick. [getChassisSpeedsFromJoystick]
      */
-    fun joystickDrive(): Command {
-        return run {
-            //get chassis speeds and send it
+    fun joystickDrive(): Command = use("JoystickDrive", this) {
+        periodic {
             driveVelocity(getChassisSpeedsFromJoystick())
-        }.named("JoystickDrive")
+        }
     }
 
     /**

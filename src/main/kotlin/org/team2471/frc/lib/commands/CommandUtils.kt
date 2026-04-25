@@ -131,16 +131,19 @@ inline fun Coroutine.periodicTimeout(
     period: Double = 0.02,
     watchOverrunName: String? = null,
     crossinline body: PeriodicScope.() -> Unit
-) {
+): Boolean {
     val timer = Timer()
+    var timedOut = false
     timer.start()
     periodic(period, watchOverrunName) {
         if (timer.get() > timeout) {
+            timedOut = true
             stop()
         } else {
             body()
         }
     }
+    return timedOut
 }
 
 fun Coroutine.parallel(
