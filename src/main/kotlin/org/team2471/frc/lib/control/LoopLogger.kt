@@ -2,6 +2,7 @@ package org.team2471.frc.lib.control
 
 import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.MeanLogger
 
 /**
  * Publishes loop times to NetworkTables.
@@ -26,8 +27,8 @@ object LoopLogger {
         val period = now - prevTime
         val sinceReset = now - startTime
 
-//        Logger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
-//        Logger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
+        MeanLogger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
+        MeanLogger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
         return Pair(period, sinceReset)
     }
 

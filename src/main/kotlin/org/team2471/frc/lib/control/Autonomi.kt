@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.Filesystem
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
+import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.util.demoMode
@@ -37,7 +38,7 @@ abstract class Autonomi {
     var selectedAuto: AutoCommand? = null
         private set
     /** The currently selected auto command */
-    val autonomousCommand: Command? get() = if (!demoMode) selectedAuto?.command else Command.noRequirements().executing{ println("DEMO MODE: Not running auto, no killing kids today.") }.named("DemoModeAuto")
+    val autonomousCommand: Command? get() = if (!demoMode) selectedAuto?.command else use("DemoModeAuto") { println("DEMO MODE: Not running auto, no killing kids today.") }
     /** The currently selected test command */
     val testCommand: Command? get() = testChooser.selected
 

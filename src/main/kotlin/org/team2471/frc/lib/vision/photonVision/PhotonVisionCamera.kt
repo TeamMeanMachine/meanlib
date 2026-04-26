@@ -16,6 +16,7 @@ import org.team2471.frc.lib.vision.QuixVisionSim
 import org.ejml.simple.SimpleMatrix
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.MeanLogger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
@@ -141,7 +142,7 @@ class PhotonVisionCamera(
             }
 
             val endTimestamp = Timer.getFPGATimestamp()
-            Logger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
+            MeanLogger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,

@@ -20,7 +20,7 @@ import org.team2471.frc.lib.commands.PeriodicScope
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend inline fun periodiccc(
+suspend inline fun periodic(
     period: Double = 0.02,
     watchOverrun: Boolean = false,
     crossinline body: PeriodicScope.() -> Unit

@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.Follower
 import com.ctre.phoenix6.hardware.TalonFXS
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
+import com.ctre.phoenix6.signals.MotorAlignmentValue
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
@@ -27,9 +28,9 @@ import edu.wpi.first.wpilibj.DriverStation
  * @see Follower
  * @see MotorAlignmentValue
  */
-fun TalonFXS.addFollower(followerID: Int, motorAlignment: Boolean = false) {
+fun TalonFXS.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) {
     try {
-        val follower = TalonFXS(followerID, CANBus(network))
+        val follower = TalonFXS(followerID, network)
         val masterConfig = TalonFXSConfiguration()
         this.configurator.refresh(masterConfig)
         follower.configurator.apply(masterConfig)
@@ -51,7 +52,7 @@ fun TalonFXS.addFollower(followerID: Int, motorAlignment: Boolean = false) {
  * @see Follower
  * @see MotorAlignmentValue
  */
-fun TalonFXS.addFollower(follower: TalonFXS, motorAlignment: Boolean = false) = this.addFollower(follower.deviceID, motorAlignment)
+fun TalonFXS.addFollower(follower: TalonFXS, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) = this.addFollower(follower.deviceID, motorAlignment)
 
 /**
  * Set the supply current limits.

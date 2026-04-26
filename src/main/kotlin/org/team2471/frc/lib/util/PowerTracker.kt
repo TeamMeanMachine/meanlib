@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.util
 
 import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.MeanLogger
 import org.team2471.frc.lib.units.amps
 
 class PowerTracker {
@@ -27,10 +28,10 @@ class PowerTracker {
 
     fun logData() {
         motors.forEach {
-//            Logger.recordOutput("PowerTracker/${it.name} Current Draw", it.current)
-//            Logger.recordOutput("PowerTracker/${it.name} Total Charge", it.totalCharge)
+            MeanLogger.recordOutput("PowerTracker/${it.name} Current Draw", it.current)
+            MeanLogger.recordOutput("PowerTracker/${it.name} Total Charge", it.totalCharge)
         }
-//        Logger.recordOutput("PowerTracker/Robot Total Charge", totalCharge)
+        MeanLogger.recordOutput("PowerTracker/Robot Total Charge", totalCharge)
     }
 }
 

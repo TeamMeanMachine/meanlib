@@ -14,6 +14,7 @@ import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.MeanLogger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
@@ -122,7 +123,7 @@ class LimelightCamera(
             }
 
             val endTimestamp = Timer.getFPGATimestamp()
-            Logger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
+            MeanLogger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
 
             return PipelineVisionPacket(
                 hasTargets,

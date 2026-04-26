@@ -71,6 +71,7 @@ import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.MeanLogger
 import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
@@ -291,7 +292,8 @@ abstract class SwerveDriveSubsystem(
             SmartDashboard.setPersistent("DemoSpeed")
         }
 
-        runRepeatedly(::periodic)
+        // Register the telemetry loop function to be called during the odometry thread.
+        io.registerTelemetry(::telemetryLoop)
 
     }
 
@@ -357,7 +359,7 @@ abstract class SwerveDriveSubsystem(
 
         prevTime = currTime
         //This errors only in replay
-        if (!isReplay) Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
+        if (!isReplay) MeanLogger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
     }
 
     /**
@@ -437,7 +439,7 @@ abstract class SwerveDriveSubsystem(
      * @param speeds Speeds in meters/sec
      */
     fun driveVelocity(speeds: ChassisSpeeds) {
-        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.toRobotRelative(heading))
+        MeanLogger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.toRobotRelative(heading))
         io.setControl(
             ApplyFieldSpeeds().apply{
                 Speeds = speeds
@@ -512,8 +514,8 @@ abstract class SwerveDriveSubsystem(
      * Uses the [driveAtAnglePIDController] to drive the robot with a field-centric angle and translation.
      */
     fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
-        Logger.recordOutput("Drive/DriveAtAngle/Angle", angle)
-        Logger.recordOutput("Drive/DriveAtAngle/Translation", translation)
+        MeanLogger.recordOutput("Drive/DriveAtAngle/Angle", angle)
+        MeanLogger.recordOutput("Drive/DriveAtAngle/Translation", translation)
         io.setControl(
             driveAtAngleRequest.apply {
                 VelocityX = translation.x
@@ -573,9 +575,9 @@ abstract class SwerveDriveSubsystem(
             val headingError = (wantedPose().rotation - poseSupplier().rotation).measure.absoluteValue()
 
             // Log errors
-            Logger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
-            Logger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
-            Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
+            MeanLogger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
+            MeanLogger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
+            MeanLogger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
 
             if (exitSupplier(distanceError, headingError)) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
@@ -590,7 +592,7 @@ abstract class SwerveDriveSubsystem(
         }
 
         stop() // Stop driving
-        Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
+        MeanLogger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
     }.named("DriveToPoint")
 
     fun driveToAutopilotPoint(
@@ -639,15 +641,15 @@ abstract class SwerveDriveSubsystem(
 
                 driveAtAngle(output.targetAngle(), velocity)
 
-                Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
-                Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
+                MeanLogger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
+                MeanLogger.recordOutput("Drive/AutoPilot/Target", targetPose)
             }
 
             yield()
         }
 
         stop()
-        Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
+        MeanLogger.recordOutput("Drive/AutoPilot/Target", Pose2d())
     }.named("DriveToAutopilotPoint")
 
 
@@ -688,9 +690,9 @@ abstract class SwerveDriveSubsystem(
                 vy = lineCentricTranslation.y
             }
 
-            Logger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
-            Logger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
-            Logger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
+            MeanLogger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
+            MeanLogger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
+            MeanLogger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
 
 
             if (heading == null) {
@@ -706,8 +708,8 @@ abstract class SwerveDriveSubsystem(
         }
     }.named("JoystickDriveAlongLine") {
         stop()
-        Logger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
-        Logger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
+        MeanLogger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
+        MeanLogger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
     }
 
 
@@ -732,8 +734,8 @@ abstract class SwerveDriveSubsystem(
     ) = use(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
-        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
-        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
+        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
+        MeanLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
 
         if (exitSupplier == null) {
             await(driveToPoint(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
@@ -741,8 +743,8 @@ abstract class SwerveDriveSubsystem(
             await(driveToPoint(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
         }
 
-        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
-        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
+        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
+        MeanLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
     }.named("DriveToLine")
 
     /**
@@ -772,8 +774,8 @@ abstract class SwerveDriveSubsystem(
             println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
         }
 
-        Logger.recordOutput("Drive/Path/Name", path.name())
-        Logger.recordOutput("Drive/Path/TotalTime", totalTime)
+        MeanLogger.recordOutput("Drive/Path/Name", path.name())
+        MeanLogger.recordOutput("Drive/Path/TotalTime", totalTime)
 
         while (true) {
             val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
@@ -787,7 +789,7 @@ abstract class SwerveDriveSubsystem(
             val error = wantedPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
 
-            Logger.recordOutput("Drive/Path/Done %", percentComplete)
+            MeanLogger.recordOutput("Drive/Path/Done %", percentComplete)
 
             // Exit Path?
             if (exitSupplier(percentComplete, error)) {
@@ -813,11 +815,11 @@ abstract class SwerveDriveSubsystem(
                 )
                 LoopLogger.record("DriveAlongPath setControl")
 
-                Logger.recordOutput("Drive/Path/Time", t)
-                Logger.recordOutput("Drive/Path/Pose", wantedPose)
-                Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-                Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
-                Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
+                MeanLogger.recordOutput("Drive/Path/Time", t)
+                MeanLogger.recordOutput("Drive/Path/Pose", wantedPose)
+                MeanLogger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+                MeanLogger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+                MeanLogger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
 //                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
 //                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
 //                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
@@ -843,7 +845,7 @@ abstract class SwerveDriveSubsystem(
         }
 
         // Publish empty data to show that the path is done
-        Logger.recordOutput("Drive/Path/Pose", Pose2d())
+        MeanLogger.recordOutput("Drive/Path/Pose", Pose2d())
     }
 
     // OTHER
@@ -971,13 +973,17 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
+    var lastTime = 0.0
+
     @OptIn(DelicateCoroutinesApi::class)
-    fun simulationPeriodic() {
+    override fun simulationPeriodic() {
         LoopLogger.record("b4 Drive Sim piodic")
-        GlobalScope.launch {
-            updateSimState(0.02, 12.0)
-            QuixVisionSim.updatePose(pose)
-        }
+        val currentTime = Timer.getFPGATimestamp()
+        updateSimState(currentTime - lastTime, 12.0)
+//        GlobalScope.launch {
+//            QuixVisionSim.updatePose(pose)
+//        }
+        lastTime = currentTime
         LoopLogger.record("Drive Sim piodic")
     }
 }
