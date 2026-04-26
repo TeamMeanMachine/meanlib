@@ -49,7 +49,7 @@ fun use(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuil
  * @see NeedsNameBuilderStage.named
  */
 fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit, onCancel: () -> Unit): Command =
-    use(*mechanisms, body = body).named(name, onCancel)
+    use(*mechanisms, body = body).named(name, onCancel = onCancel)
 /**
  * Composes a [Command] with an action using provided [Mechanism]s
  *
@@ -85,7 +85,8 @@ fun (Coroutine.() -> Unit).use(name: String, vararg mechanisms: Mechanism, onCan
  * @see NeedsNameBuilderStage.named
  * @see NeedsNameBuilderStage.whenCanceled
  */
-fun NeedsNameBuilderStage.named(name: String, onCancel: () -> Unit = {}): Command = whenCanceled(onCancel).named(name)
+fun NeedsNameBuilderStage.named(name: String, priority: Int? = null, onCancel: () -> Unit = {}): Command =
+    (if (priority != null) withPriority(priority) else this).whenCanceled(onCancel).named(name)
 
 /**
  * Modifies an existing commands' [onCancel] action.
@@ -99,7 +100,7 @@ fun Command.modifyOnCancel(onCancel: () -> Unit): Command = Command.requiring(th
 
 
 inline fun Coroutine.periodic(
-    period: Double = 0.02,
+    period: Double = 0.0,
     watchOverrunName: String? = null,
     crossinline body: PeriodicScope.() -> Unit
 ) {
