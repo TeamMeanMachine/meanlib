@@ -151,12 +151,12 @@ public class MeanLogger {
                 } catch (ClassNotFoundException e) {
                 }
             }
-            if (!isValid) {
-                DriverStation.reportError(
-                        "The main robot class must inherit from LoggedRobot when using AdvantageKit. For more details, check the AdvantageKit installation documentation: https://docs.advantagekit.org/getting-started/installation\n\n*** EXITING DUE TO INVALID ADVANTAGEKIT INSTALLATION, SEE ABOVE. ***",
-                        false);
-                System.exit(1);
-            }
+//            if (!isValid) {
+//                DriverStation.reportError(
+//                        "The main robot class must inherit from LoggedRobot when using AdvantageKit. For more details, check the AdvantageKit installation documentation: https://docs.advantagekit.org/getting-started/installation\n\n*** EXITING DUE TO INVALID ADVANTAGEKIT INSTALLATION, SEE ABOVE. ***",
+//                        false);
+//                System.exit(1);
+//            }
 
             // Start console capture
             if (enableConsole) {

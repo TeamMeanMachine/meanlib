@@ -973,17 +973,13 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
-    var lastTime = 0.0
-
     @OptIn(DelicateCoroutinesApi::class)
     override fun simulationPeriodic() {
         LoopLogger.record("b4 Drive Sim piodic")
-        val currentTime = Timer.getFPGATimestamp()
-        updateSimState(currentTime - lastTime, 12.0)
+        updateSimState(0.02, 12.0)
 //        GlobalScope.launch {
 //            QuixVisionSim.updatePose(pose)
 //        }
-        lastTime = currentTime
         LoopLogger.record("Drive Sim piodic")
     }
 }
