@@ -1,10 +1,9 @@
 package org.team2471.frc.lib.commands
 
 import org.team2471.frc.lib.util.isSim
-import org.wpilib.commands3.Command
-import org.wpilib.commands3.Coroutine
-import org.wpilib.commands3.Mechanism
-import org.wpilib.commands3.Scheduler
+import org.wpilib.command3.Coroutine
+import org.wpilib.command3.Mechanism
+import org.wpilib.command3.Scheduler
 
 open class MechanismBase(name: String): Mechanism(name) {
     init {

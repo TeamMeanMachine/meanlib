@@ -1,17 +1,14 @@
 package org.team2471.frc.lib.localization
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Pose3d
-import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.Rotation3d
-import edu.wpi.first.math.geometry.Transform2d
-import edu.wpi.first.math.geometry.Transform3d
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.math.geometry.Translation3d
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer
-import edu.wpi.first.math.kinematics.ChassisSpeeds
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Timer
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.math.geometry.Pose3d
+import org.wpilib.math.geometry.Rotation2d
+import org.wpilib.math.geometry.Rotation3d
+import org.wpilib.math.geometry.Transform2d
+import org.wpilib.math.geometry.Transform3d
+import org.wpilib.math.geometry.Translation2d
+import org.wpilib.math.geometry.Translation3d
+import org.wpilib.math.interpolation.TimeInterpolatableBuffer
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.toTransform2d
@@ -19,9 +16,11 @@ import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
 import org.team2471.frc.lib.vision.QuixVisionSim
-import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
 import org.photonvision.targeting.PhotonTrackedTarget
+import org.wpilib.driverstation.DriverStation
+import org.wpilib.math.kinematics.ChassisVelocities
+import org.wpilib.system.Timer
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
@@ -59,7 +58,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     val visionOdometryBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(bufferHistorySeconds)
 
     /** Buffer of chassis speeds so we can get the interpolated chassis speed at the time of a vision measurement. */
-    private val chassisSpeedsBuffer = TimeInterpolatableBuffer.createBuffer<InterpolatableChassisSpeeds>(bufferHistorySeconds)
+    private val chassisSpeedsBuffer = TimeInterpolatableBuffer.createBuffer<ChassisVelocities>(bufferHistorySeconds)
 
 
     // ID of the current measurement. Used to sync between Robot and Particle Filter.
@@ -118,8 +117,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     val rawPose: Pose2d
         get() = latestRawEstimate.pose ?: Pose2d()
 
-    val latestChassisSpeeds: ChassisSpeeds
-        get() = chassisSpeedsBuffer.internalBuffer.lastEntry()?.value ?: ChassisSpeeds()
+    val latestChassisSpeeds: ChassisVelocities
+        get() = chassisSpeedsBuffer.internalBuffer.lastEntry()?.value ?: ChassisVelocities()
 
 
     fun resetPose(pose: Pose2d) {
@@ -156,7 +155,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
      * Uses the latest pose estimate over NetworkTables and replays the latest odometry on top of it.
      */
     fun updateWithLatestPoseEstimate() {
-        val startTimestamp = Timer.getFPGATimestamp()
+        val startTimestamp = Timer.getMonotonicTimestamp()
         networkTable.updateInputs()
         LoopLogger.record("After nt updateInputs")
 
@@ -167,7 +166,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
         // Only incorporate estimate if it is new.
         if (idToTimeMap.isEmpty() || estimate.id == lastUpdatedId || idToTimeMap[estimate.id] == null || estimate.pose == null) {
-            MeanLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getFPGATimestamp() - startTimestamp))
+            MeanLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
             MeanLogger.recordOutput("Localizer/visionCorrection (m)", 0.0)
             return
         }
@@ -189,18 +188,18 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val odometryPoseOffset = estimate.pose.minus(odometryAtEstimateTime)
         visionOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, visionEstimateTime)
 
-        MeanLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getFPGATimestamp() - startTimestamp))
+        MeanLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
 
         // Log magnitude of correction
         val postCorrectionPose = this.pose
         MeanLogger.recordOutput("Localizer/visionCorrection (m)", postCorrectionPose.minus(preCorrectionPose).translation.norm)
     }
 
-    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisSpeeds: ChassisSpeeds) {
+    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisVelocities: ChassisVelocities) {
         networkTable.publishCameras(cameras)
         LoopLogger.record("After nt publishCameras")
 
-        val startTimestamp = Timer.getFPGATimestamp()
+        val startTimestamp = Timer.getMonotonicTimestamp()
         val currentTime = Timer.getTimestamp()
 
         val odomMeasurementPose = odometryMeasurement.robotPose
@@ -219,7 +218,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
         lastOdometryUpdateTime = odometryTimestamp
 
-        chassisSpeedsBuffer.addSample(odometryTimestamp, InterpolatableChassisSpeeds.fromChassisSpeeds(chassisSpeeds))
+        chassisSpeedsBuffer.addSample(odometryTimestamp, chassisVelocities)
 
         timeToMeasurementMap[odometryTimestamp] =
             Measurement(currOdomPose) // Using odometry pose for the particle filter odometry reference
@@ -237,7 +236,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
             if (!vision.hasTargets) {
                 val array = arrayOfNulls<Translation3d>(0)
-                MeanLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array)
+//                MeanLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array) TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027
                 continue
             }
 
@@ -270,38 +269,38 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
             if (vision.targets != null) {
                 for (target in vision.targets) {
-                    if (tagsToTrack.contains(target.getFiducialId())) {
-                        // Use AprilTag corners.
-                        for (cornerID in target.getDetectedCorners().indices) {
-                            existingMeasurement.addVisionMeasurement(
-                                cameraID,
-                                target.getFiducialId(),
-                                cornerID,
-                                target.getDetectedCorners()[cornerID]
-                            )
-                        }
-                        if (target.getFiducialId() <= allTargets.size) {
-                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
-                            detectedTags.add(allTargets[target.getFiducialId() - 1].pose.translation)
-                        }
-                    }
+//                    if (tagsToTrack.contains(target.getFiducialId())) { TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
+//                        // Use AprilTag corners.
+//                        for (cornerID in target.getDetectedCorners().indices) {
+//                            existingMeasurement.addVisionMeasurement(
+//                                cameraID,
+//                                target.getFiducialId(),
+//                                cornerID,
+//                                target.getDetectedCorners()[cornerID]
+//                            )
+//                        }
+//                        if (target.getFiducialId() <= allTargets.size) {
+//                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
+//                            detectedTags.add(allTargets[target.getFiducialId() - 1].pose.translation)
+//                        }
+//                    }
                 }
             }
             val array = arrayOfNulls<Translation3d>(detectedTags.size)
             detectedTags.toArray<Translation3d>(array)
-            MeanLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array)
+//            MeanLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array) TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
         }
         LoopLogger.record("After camera for loop")
         publishImmutableEntries()
         LoopLogger.record("After pubImmutableEntries()")
-        val endTimestamp = Timer.getFPGATimestamp()
+        val endTimestamp = Timer.getMonotonicTimestamp()
         MeanLogger.recordOutput("Localizer/Update seconds", (endTimestamp - startTimestamp))
-        val singleStartTime = Timer.getFPGATimestamp()
+        val singleStartTime = Timer.getMonotonicTimestamp()
         if (doSingleTagCalculation) {
             computeSingleTagPose()
         }
         LoopLogger.record("After computeSingleTagPose()")
-        MeanLogger.recordOutput("Localizer/SingleTag calc time", Timer.getFPGATimestamp() - singleStartTime)
+        MeanLogger.recordOutput("Localizer/SingleTag calc time", Timer.getMonotonicTimestamp() - singleStartTime)
     }
 
     /** Handles NT publishing, ID finalization, and cleanup.  */
@@ -333,10 +332,6 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/c2bb0e79c466be33074577d51243258ec3d39f44/src/main/java/org/littletonrobotics/frc2025/RobotState.java#L194
     // TODO: This is semi-hardcoded for 2025
     private fun computeSingleTagPose() {
-        if (DriverStation.getAlliance().isEmpty) {
-            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
-            return
-        }
 
         val tagID = determineClosestTagID(this.pose)
 
@@ -351,70 +346,70 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             }
 
             if (measurement.targets != null) {
-                for (target in measurement.targets) {
-                    if (target.fiducialId != tagID) {
-                        continue
-                    }
-                    latestTimestamp = measurement.captureTimestamp
-                    latestTarget = target
-                    cam = camera
-                }
+//                for (target in measurement.targets) { TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
+//                    if (target.fiducialId != tagID) {
+//                        continue
+//                    }
+//                    latestTimestamp = measurement.captureTimestamp
+//                    latestTarget = target
+//                    cam = camera
+//                }
             }
         }
 
         if (latestTarget == null || cam == null) {
-            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+//            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>()) TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
             return
         }
         if (odometryPoseBuffer.internalBuffer.firstKey() > latestTimestamp) {
-            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+//            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>()) TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
 //            println("single tag result is too far in the past")
             return
         }
 
         // Compute single tag pose
-        val interpolatedPose = odometryPoseBuffer.getSample(latestTimestamp).get()
-        val interpolatedRotation = interpolatedPose.rotation
-        val distance = latestTarget.bestCameraToTarget.translation.norm
-        val robotToCam = cam.transform
-        val camToTagTranslation = Pose3d(Translation3d.kZero, Rotation3d(0.0, Math.toRadians(-latestTarget.getPitch()), Math.toRadians(-latestTarget.getYaw())))
-            .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.kZero)).translation
-            .rotateBy(Rotation3d(robotToCam.rotation.getX(), robotToCam.rotation.getY(), 0.0)).toTranslation2d()
-        if(camToTagTranslation.norm < 1e-6) {
-//            println("camToTagTranslation was equal to 0")
-//            println("distance: ${distance}")
-//            println("robotToCam: ${robotToCam.translation.norm}")
-
-            return
-        }
-        val camToTagRotation = interpolatedRotation.plus(robotToCam.rotation.toRotation2d().plus(camToTagTranslation.angle))
-
-        val tagPose2d = allTargets[latestTarget.fiducialId - 1].pose.toPose2d()
-        if (tagPose2d == null) {
-            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
-            return
-        }
-
-        val fieldToCameraTranslation = Pose2d(tagPose2d.translation, camToTagRotation.plus(Rotation2d.kPi))
-            .transformBy(Transform2d(camToTagTranslation.norm, 0.0, Rotation2d.kZero)).translation
-        val cameraPose = Pose3d.kZero.transformBy(robotToCam)
-        var robotPose = Pose2d(fieldToCameraTranslation, interpolatedRotation.plus(cameraPose.toPose2d().rotation))
-            .transformBy(Transform2d(cameraPose.toPose2d(), Pose2d.kZero))
-        // Use gyro angle at time for robot rotation
-        robotPose = Pose2d(robotPose.translation, interpolatedRotation)
-
-        MeanLogger.recordOutput("Swerve/SingleTagPoseRaw", robotPose)
-
-
-        val odometryAtEstimateTime = singleTagOdometryBuffer.getSample(latestTimestamp).getOrNull()
-        if (odometryAtEstimateTime == null) {
-            println("single tag odometryAtEstimateTime is null")
-            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
-            return
-        }
-        val odometryPoseOffset = robotPose.minus(odometryAtEstimateTime)
-        singleTagOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, latestTimestamp)
-        MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
+//        val interpolatedPose = odometryPoseBuffer.getSample(latestTimestamp).get() TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//        val interpolatedRotation = interpolatedPose.rotation
+//        val distance = latestTarget.bestCameraToTarget.translation.norm
+//        val robotToCam = cam.transform
+//        val camToTagTranslation = Pose3d(Translation3d.kZero, Rotation3d(0.0, Math.toRadians(-latestTarget.getPitch()), Math.toRadians(-latestTarget.getYaw())))
+//            .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.kZero)).translation
+//            .rotateBy(Rotation3d(robotToCam.rotation.getX(), robotToCam.rotation.getY(), 0.0)).toTranslation2d()
+//        if(camToTagTranslation.norm < 1e-6) {
+////            println("camToTagTranslation was equal to 0")
+////            println("distance: ${distance}")
+////            println("robotToCam: ${robotToCam.translation.norm}")
+//
+//            return
+//        }
+//        val camToTagRotation = interpolatedRotation.plus(robotToCam.rotation.toRotation2d().plus(camToTagTranslation.angle))
+//
+//        val tagPose2d = allTargets[latestTarget.fiducialId - 1].pose.toPose2d()
+//        if (tagPose2d == null) {
+//            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+//            return
+//        }
+//
+//        val fieldToCameraTranslation = Pose2d(tagPose2d.translation, camToTagRotation.plus(Rotation2d.kPi))
+//            .transformBy(Transform2d(camToTagTranslation.norm, 0.0, Rotation2d.kZero)).translation
+//        val cameraPose = Pose3d.kZero.transformBy(robotToCam)
+//        var robotPose = Pose2d(fieldToCameraTranslation, interpolatedRotation.plus(cameraPose.toPose2d().rotation))
+//            .transformBy(Transform2d(cameraPose.toPose2d(), Pose2d.kZero))
+//        // Use gyro angle at time for robot rotation
+//        robotPose = Pose2d(robotPose.translation, interpolatedRotation)
+//
+//        MeanLogger.recordOutput("Swerve/SingleTagPoseRaw", robotPose)
+//
+//
+//        val odometryAtEstimateTime = singleTagOdometryBuffer.getSample(latestTimestamp).getOrNull()
+//        if (odometryAtEstimateTime == null) {
+//            println("single tag odometryAtEstimateTime is null")
+//            MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+//            return
+//        }
+//        val odometryPoseOffset = robotPose.minus(odometryAtEstimateTime)
+//        singleTagOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, latestTimestamp)
+//        MeanLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
     }
 
     fun determineClosestTagID(robotPose: Pose2d): Int {

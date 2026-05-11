@@ -1,11 +1,11 @@
 package org.team2471.frc.lib.coroutines
 
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.Watchdog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import org.team2471.frc.lib.commands.PeriodicScope
+import org.wpilib.driverstation.DriverStationErrors
+import org.wpilib.system.Timer
+import org.wpilib.system.Watchdog
 
 
 /**
@@ -28,14 +28,14 @@ suspend inline fun periodic(
     val scope = PeriodicScope()
 
     val watchdog = if (watchOverrun) {
-        Watchdog(period) { DriverStation.reportWarning("Periodic loop overrun", true) }
+        Watchdog(period) { DriverStationErrors.reportWarning("Periodic loop overrun", true) }
     } else {
         null
     }
 
     while (true) {
         watchdog?.reset()
-        val dt = measureTimeFPGA {
+        val dt = measureTimeMonotonic {
             body(scope)
         }
         if (scope.isDone) break
@@ -51,10 +51,10 @@ suspend inline fun periodic(
 /**
  * Executes the given block and returns elapsed time in seconds.
  */
-inline fun measureTimeFPGA(body: () -> Unit): Double {
-    val start = Timer.getFPGATimestamp()
+inline fun measureTimeMonotonic(body: () -> Unit): Double {
+    val start = Timer.getMonotonicTimestamp()
     body()
-    return Timer.getFPGATimestamp() - start
+    return Timer.getMonotonicTimestamp() - start
 }
 
 /**

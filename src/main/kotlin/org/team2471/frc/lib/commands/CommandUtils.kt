@@ -1,15 +1,14 @@
 package org.team2471.frc.lib.commands
 
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.Watchdog
-import org.team2471.frc.lib.coroutines.measureTimeFPGA
+import org.team2471.frc.lib.coroutines.measureTimeMonotonic
 import org.team2471.frc.lib.units.seconds
-import org.wpilib.commands3.Command
-import org.wpilib.commands3.Coroutine
-import org.wpilib.commands3.Mechanism
-import org.wpilib.commands3.NeedsExecutionBuilderStage
-import org.wpilib.commands3.NeedsNameBuilderStage
+import org.wpilib.command3.Command
+import org.wpilib.command3.Coroutine
+import org.wpilib.command3.Mechanism
+import org.wpilib.command3.NeedsNameBuilderStage
+import org.wpilib.driverstation.DriverStationErrors
+import org.wpilib.system.Timer
+import org.wpilib.system.Watchdog
 
 class PeriodicScope {
     @PublishedApi
@@ -107,14 +106,14 @@ inline fun Coroutine.periodic(
     val scope = PeriodicScope()
 
     val watchdog = if (watchOverrunName != null) {
-        Watchdog(period) { DriverStation.reportWarning("Periodic loop $watchOverrunName overrun", true) }
+        Watchdog(period) { DriverStationErrors.reportWarning("Periodic loop $watchOverrunName overrun", true) }
     } else {
         null
     }
 
     while (true) {
         watchdog?.reset()
-        val dt = measureTimeFPGA {
+        val dt = measureTimeMonotonic {
             body(scope)
         }
         if (scope.isDone) break

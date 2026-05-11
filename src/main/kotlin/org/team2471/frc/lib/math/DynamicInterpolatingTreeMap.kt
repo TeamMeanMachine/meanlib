@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.math
 
-import edu.wpi.first.math.interpolation.Interpolator
-import edu.wpi.first.math.interpolation.InverseInterpolator
+import org.wpilib.math.interpolation.Interpolator
+import org.wpilib.math.interpolation.InverseInterpolator
 import java.util.Comparator
 import java.util.TreeMap
 

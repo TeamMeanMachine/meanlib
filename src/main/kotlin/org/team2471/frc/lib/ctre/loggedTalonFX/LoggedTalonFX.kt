@@ -3,14 +3,13 @@ package org.team2471.frc.lib.ctre.loggedTalonFX
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.NeutralModeValue
-import edu.wpi.first.math.system.plant.DCMotor
-import edu.wpi.first.math.system.plant.LinearSystemId
-import edu.wpi.first.wpilibj.simulation.DCMotorSim
 import org.team2471.frc.lib.util.isReal
-import org.team2471.frc.lib.units.volts
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.wpilib.math.system.DCMotor
+import org.wpilib.math.system.Models
+import org.wpilib.simulation.DCMotorSim
 
 /**
  * Wrapper for that [TalonFX] class that supports simulation when [configSim] is called.
@@ -42,7 +41,7 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
      */
     fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         this.motor = motor
-        motorSim = DCMotorSim(LinearSystemId.createDCMotorSystem(this.motor, jKgMetersSquared, 1.0), this.motor)
+        motorSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(motor, jKgMetersSquared, 1.0), this.motor )
         motorSim?.setState(0.0, 0.0)
 
         //Ensures this gets added to the MasterMotor list only once

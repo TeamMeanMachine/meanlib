@@ -1,8 +1,8 @@
 package org.team2471.frc.lib.localization
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Rotation2d
 import org.photonvision.targeting.TargetCorner
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.math.geometry.Rotation2d
 
 /**
  * The Measurement class represents a set of odometry and vision measurements. It includes the
@@ -99,8 +99,8 @@ class Measurement(private val pose: Pose2d) {
             data[kStaticDataLength + kVisionDataLength * i] = cameraIds[i].toDouble()
             data[kStaticDataLength + kVisionDataLength * i + 1] = targetIds[i].toDouble()
             data[kStaticDataLength + kVisionDataLength * i + 2] = fiducialCornerIds[i].toDouble()
-            data[kStaticDataLength + kVisionDataLength * i + 3] = corners[i].x
-            data[kStaticDataLength + kVisionDataLength * i + 4] = corners[i].y
+//            data[kStaticDataLength + kVisionDataLength * i + 3] = corners[i].x TODO: UNCOMMENT WHEN PHOTONVISION UPDATES TO 2027
+//            data[kStaticDataLength + kVisionDataLength * i + 4] = corners[i].y
         }
         return data
     }

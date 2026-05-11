@@ -1,10 +1,10 @@
 package org.team2471.frc.lib.vision
 
-import edu.wpi.first.apriltag.AprilTag
-import edu.wpi.first.math.geometry.Pose3d
-import edu.wpi.first.util.struct.Struct
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.inches
+import org.wpilib.math.geometry.Pose3d
+import org.wpilib.util.struct.Struct
+import org.wpilib.vision.apriltag.AprilTag
 import java.nio.ByteBuffer
 
 // An ID of -1 indicates this is an unlabeled fiducial (e.g. retroreflective tape)
@@ -60,7 +60,7 @@ class FiducialStruct : Struct<Fiducial> {
     override fun getTypeName(): String = "Fiducial"
 
     override fun getSize(): Int =
-        Pose3d.struct.size + Struct.kSizeInt32 * 2 + Struct.kSizeDouble
+        Pose3d.struct.size + Struct.INT32_SIZE * 2 + Struct.DOUBLE_SIZE
 
     override fun getSchema(): String =
         "int32 type;int32 id;Pose3d pose;double size;"

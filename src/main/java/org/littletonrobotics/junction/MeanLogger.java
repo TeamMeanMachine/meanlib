@@ -7,15 +7,6 @@
 
 package org.littletonrobotics.junction;
 
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Unit;
-import edu.wpi.first.util.WPISerializable;
-import edu.wpi.first.util.protobuf.Protobuf;
-import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.util.struct.StructSerializable;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +23,16 @@ import org.littletonrobotics.conduit.ConduitApi;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.framework.RobotBase;
+import org.wpilib.system.RobotController;
+import org.wpilib.system.Timer;
+import org.wpilib.units.Measure;
+import org.wpilib.units.Unit;
+import org.wpilib.util.WPISerializable;
+import org.wpilib.util.protobuf.Protobuf;
+import org.wpilib.util.struct.Struct;
+import org.wpilib.util.struct.StructSerializable;
 import us.hebi.quickbuf.ProtoMessage;
 
 /** Central class for recording and replaying log data. */
@@ -144,10 +145,10 @@ public class MeanLogger {
             for (var element : stackTrace) {
                 try {
                     Class<?> elementClass = Class.forName(element.getClassName());
-                    if (LoggedRobot.class.isAssignableFrom(elementClass)) {
+//                    if (LoggedRobot.class.isAssignableFrom(elementClass)) {
                         isValid = true;
                         break;
-                    }
+//                    }
                 } catch (ClassNotFoundException e) {
                 }
             }
@@ -205,7 +206,7 @@ public class MeanLogger {
                 try {
                     console.close();
                 } catch (Exception e) {
-                    DriverStation.reportError("[AdvantageKit] Failed to stop console capture.", true);
+                    DriverStationErrors.reportError("[AdvantageKit] Failed to stop console capture.", true);
                 }
             }
             if (replaySource != null) {
@@ -217,7 +218,7 @@ public class MeanLogger {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            RobotController.setTimeSource(RobotController::getFPGATime);
+            RobotController.setTimeSource(RobotController::getMonotonicTime);
         }
     }
 
@@ -229,10 +230,10 @@ public class MeanLogger {
         cycleCount++;
         if (running) {
             // Get next entry
-            long entryUpdateStart = RobotController.getFPGATime();
+            long entryUpdateStart = RobotController.getMonotonicTime();
             if (replaySource == null) {
                 synchronized (entry) {
-                    entry.setTimestamp(RobotController.getFPGATime());
+                    entry.setTimestamp(RobotController.getMonotonicTime());
                 }
             } else {
 //                if (!replaySource.updateTable(entry)) {
@@ -242,17 +243,17 @@ public class MeanLogger {
             }
 
             // Update Driver Station
-            long dsStart = RobotController.getFPGATime();
+            long dsStart = RobotController.getMonotonicTime();
             if (hasReplaySource()) {
 //                LoggedDriverStation.replayFromLog(entry.getSubtable("DriverStation"));
             }
 
             // Update dashboard inputs
-            long dashboardInputsStart = RobotController.getFPGATime();
+            long dashboardInputsStart = RobotController.getMonotonicTime();
             for (int i = 0; i < dashboardInputs.size(); i++) {
                 dashboardInputs.get(i).periodic();
             }
-            long dashboardInputsEnd = RobotController.getFPGATime();
+            long dashboardInputsEnd = RobotController.getMonotonicTime();
 
             // Record timing data
             recordOutput("Logger/EntryUpdateMS", (dsStart - entryUpdateStart) / 1000.0);
@@ -277,13 +278,13 @@ public class MeanLogger {
 //            conduit.captureData();
 
             // Update Driver Station
-            long dsStart = RobotController.getFPGATime();
+            long dsStart = RobotController.getMonotonicTime();
             if (!hasReplaySource()) {
 //                LoggedDriverStation.saveToLog(entry.getSubtable("DriverStation"));
             }
 
             // Save other conduit inputs
-            long conduitSaveStart = RobotController.getFPGATime();
+            long conduitSaveStart = RobotController.getMonotonicTime();
             if (!hasReplaySource()) {
 //                LoggedSystemStats.saveToLog(entry.getSubtable("SystemStats"));
                 LoggedPowerDistribution loggedPowerDistribution = LoggedPowerDistribution.getInstance();
@@ -314,23 +315,23 @@ public class MeanLogger {
             }
 
             // Update automatic outputs from user code
-            long autoLogStart = RobotController.getFPGATime();
+            long autoLogStart = RobotController.getMonotonicTime();
 //            AutoLogOutputManager.periodic();
-            long alertLogStart = RobotController.getFPGATime();
+            long alertLogStart = RobotController.getMonotonicTime();
 //            AlertLogger.periodic();
-            long radioLogStart = RobotController.getFPGATime();
+            long radioLogStart = RobotController.getMonotonicTime();
             if (!hasReplaySource()) {
 //                RadioLogger.periodic(
 //                        entry.getSubtable("RadioStatus"), entry.get("SystemStats/TeamNumber", -1));
             }
-            long consoleCaptureStart = RobotController.getFPGATime();
+            long consoleCaptureStart = RobotController.getMonotonicTime();
             if (enableConsole) {
                 String consoleData = console.getNewData();
                 if (!consoleData.isEmpty()) {
                     recordOutput("Console", consoleData.trim());
                 }
             }
-            long consoleCaptureEnd = RobotController.getFPGATime();
+            long consoleCaptureEnd = RobotController.getMonotonicTime();
 
             // Record timing data
 //            recordOutput("Logger/ConduitCaptureMS", (dsStart - conduitCaptureStart) / 1000.0);
@@ -358,7 +359,7 @@ public class MeanLogger {
                 receiverQueueFault = false;
             } catch (IllegalStateException exception) {
                 receiverQueueFault = true;
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "[AdvantageKit] Capacity of receiver queue exceeded, data will NOT be logged.", false);
             }
         }
@@ -382,7 +383,7 @@ public class MeanLogger {
     public static long getTimestamp() {
         synchronized (entry) {
             if (!running || entry == null) {
-                return RobotController.getFPGATime();
+                return RobotController.getMonotonicTime();
             } else {
                 return entry.getTimestamp();
             }

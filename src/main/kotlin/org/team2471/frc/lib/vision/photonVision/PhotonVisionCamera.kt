@@ -1,11 +1,5 @@
 package org.team2471.frc.lib.vision.photonVision
 
-import edu.wpi.first.math.Matrix
-import edu.wpi.first.math.geometry.Transform3d
-import edu.wpi.first.math.numbers.N1
-import edu.wpi.first.math.numbers.N3
-import edu.wpi.first.math.numbers.N8
-import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.vision.Fiducial
@@ -21,6 +15,12 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
+import org.wpilib.math.geometry.Transform3d
+import org.wpilib.math.linalg.Matrix
+import org.wpilib.math.numbers.N1
+import org.wpilib.math.numbers.N3
+import org.wpilib.math.numbers.N8
+import org.wpilib.system.Timer
 import java.util.Optional
 
 class PhotonVisionCamera(
@@ -51,7 +51,7 @@ class PhotonVisionCamera(
 
         override fun toLog(table: LogTable) {
             table.put("PipelineIndex", pipelineIndex)
-            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large
+//            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
             table.put("CameraMatrixIsPresent", cameraMatrix.isPresent)
             if (cameraMatrix.isPresent) table.put("CameraMatrixData", cameraMatrix.get().data)
             table.put("DistCoeffsIsPresent", distCoeffs.isPresent)
@@ -61,7 +61,7 @@ class PhotonVisionCamera(
         override fun fromLog(table: LogTable) {
             var allDataPop = true
             pipelineIndex = table.get("PipelineIndex", pipelineIndex)
-            latestResult = table.get("LatestResult", latestResult)
+//            latestResult = table.get("LatestResult", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
             cameraMatrix =
                 if (table.get("CameraMatrixIsPresent", false)) {
                     Optional.of<Matrix<N3, N3>>(
@@ -101,12 +101,12 @@ class PhotonVisionCamera(
         inputs.latestResult = camera.allUnreadResults.lastOrNull() ?: PhotonPipelineResult()
         // Only update these once, since they shouldn't be changing.
         if (inputs.cameraMatrix.isEmpty) {
-            val cameraMatrix = camera.cameraMatrix
-            if (cameraMatrix.isPresent) inputs.cameraMatrix = cameraMatrix
+//            val cameraMatrix = camera.cameraMatrix //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
+//            if (cameraMatrix.isPresent) inputs.cameraMatrix = cameraMatrix
         }
         if (inputs.distCoeffs.isEmpty) {
-            val distCoeffs = camera.distCoeffs
-            if (distCoeffs.isPresent) inputs.distCoeffs = distCoeffs
+//            val distCoeffs = camera.distCoeffs //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//            if (distCoeffs.isPresent) inputs.distCoeffs = distCoeffs
         }
         allDataPopulated = inputs.allDataPopulated
 //        Logger.processInputs(loggingName, inputs)
@@ -134,21 +134,21 @@ class PhotonVisionCamera(
 
     override val latestMeasurement: PipelineVisionPacket
         get() {
-            val startTimestamp = Timer.getFPGATimestamp()
+            val startTimestamp = Timer.getMonotonicTimestamp()
             val result = inputs.latestResult
-            val hasTargets = result.hasTargets()
+            val hasTargets = false//result.hasTargets() //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
             if (!hasTargets) {
                 return PipelineVisionPacket(false, null, null, -1.0)
             }
 
-            val endTimestamp = Timer.getFPGATimestamp()
+            val endTimestamp = Timer.getMonotonicTimestamp()
             MeanLogger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,
-                result.getBestTarget(),
-                result.getTargets(),
-                result.timestampSeconds - 0.03
+                null/*result.getBestTarget()*/, //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
+                null/*result.getTargets()*/, //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
+                0.0//result.timestampSeconds - 0.03 //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
             )
         }
 }

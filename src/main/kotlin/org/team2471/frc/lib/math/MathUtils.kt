@@ -1,10 +1,10 @@
 package org.team2471.frc.lib.math
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.geometry.Transform2d
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.math.geometry.Twist2d
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.math.geometry.Rotation2d
+import org.wpilib.math.geometry.Transform2d
+import org.wpilib.math.geometry.Translation2d
+import org.wpilib.math.geometry.Twist2d
 import kotlin.math.*
 
 @JvmName("squareOf")

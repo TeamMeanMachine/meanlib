@@ -11,7 +11,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
-import edu.wpi.first.wpilibj.DriverStation
+import org.wpilib.driverstation.DriverStationErrors
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -41,7 +41,7 @@ fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = M
         }
 
     } catch (e: Exception) {
-        DriverStation.reportError("Failed to add follower to $deviceID: ${e.message}", true)
+        DriverStationErrors.reportError("Failed to add follower to $deviceID: ${e.message}", true)
     }
 }
 
@@ -396,7 +396,7 @@ fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
     if (isSuccessful) {
         this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
     } else {
-        DriverStation.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
+        DriverStationErrors.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
         println("Failed to modify configuration for motor id ${this.deviceID}")
     }
 }

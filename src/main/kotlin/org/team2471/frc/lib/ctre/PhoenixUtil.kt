@@ -23,10 +23,10 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest
-import edu.wpi.first.math.kinematics.SwerveModuleState
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Timer
 import org.team2471.frc.lib.util.isSim
+import org.wpilib.driverstation.DriverStationErrors
+import org.wpilib.math.kinematics.SwerveModuleVelocity
+import org.wpilib.system.Timer
 import java.util.function.Supplier
 
 object PhoenixUtil {
@@ -50,7 +50,7 @@ object PhoenixUtil {
             val error = command.get()
             if (error.isOK || isSim) break
             if (i == maxAttempts - 1) {
-                DriverStation.reportError("tryUntilOk() reached max attempts of $maxAttempts and failed with error: ${error.description}", true)
+                DriverStationErrors.reportError("tryUntilOk() reached max attempts of $maxAttempts and failed with error: ${error.description}", true)
                 return false
             }
         }
@@ -67,7 +67,7 @@ object PhoenixUtil {
      * @see Utils.fpgaToCurrentTime
      */
     fun currentToFpgaTime(currentTimeSeconds: Double): Double {
-        return (Timer.getFPGATimestamp() - getCurrentTimeSeconds()) + currentTimeSeconds
+        return (Timer.getMonotonicTimestamp() - getCurrentTimeSeconds()) + currentTimeSeconds
     }
 }
 
@@ -76,16 +76,16 @@ object PhoenixUtil {
  *
  * If no value is passed in, the modules are set to their current angle with 0 speed
  */
-class ApplyModuleStates(vararg val moduleStates: SwerveModuleState? = arrayOf()): SwerveRequest {
+class ApplyModuleStates(vararg val moduleStates: SwerveModuleVelocity? = arrayOf()): SwerveRequest {
     override fun apply(
         parameters: SwerveControlParameters?,
         vararg modulesToApply: SwerveModule<*, *, *>
     ): StatusCode {
-        modulesToApply.forEachIndexed { index, module ->
-            val wantedState = moduleStates.getOrNull(index) ?: SwerveModuleState(0.0, module.currentState.angle)
-            module.apply(SwerveModule.ModuleRequest().withState(wantedState))
-        }
-
+//        modulesToApply.forEachIndexed { index, module -> //TODO: UNCOMMENT WHEN PHOENIX 6 2027 RELEASES
+//            val wantedState = moduleStates.getOrNull(index) ?: SwerveModuleState(0.0, module.currentState.angle)
+//            module.apply(SwerveModule.ModuleRequest().withState(wantedState))
+//        }
+//
         return StatusCode.OK
     }
 }
@@ -95,35 +95,35 @@ class ApplyModuleStates(vararg val moduleStates: SwerveModuleState? = arrayOf())
  *
  * If no value is passed in, the modules are set to their current angle with 0 volts
  */
-class ApplyModuleStatesVoltage(vararg val moduleStates: SwerveModuleState? = arrayOf()): SwerveRequest {
-
-    /** Local reference to a voltage request for the drive motors  */
-    private val m_driveRequest = VoltageOut(0.0)
-
-    /** Local reference to a position voltage request for the steer motors  */
-    private val m_steerRequest_Voltage = PositionVoltage(0.0)
-
-    /** Local reference to a position torque current request for the steer motors  */
-    private val m_steerRequest_TorqueCurrent = PositionTorqueCurrentFOC(0.0)
-
-    override fun apply(
-        parameters: SwerveControlParameters?,
-        vararg modulesToApply: SwerveModule<*, *, *>?
-    ): StatusCode {
-        modulesToApply.forEachIndexed { i, m ->
-            val wantedState = moduleStates.getOrNull(i) ?: SwerveModuleState(0.0, m!!.currentState.angle)
-            when (m!!.steerClosedLoopOutputType) {
-                SwerveModuleConstants.ClosedLoopOutputType.Voltage -> m.apply(
-                    m_driveRequest.withOutput(wantedState.speed),
-                    m_steerRequest_Voltage.withPosition(wantedState.angle.measure)
-                )
-
-                SwerveModuleConstants.ClosedLoopOutputType.TorqueCurrentFOC -> m.apply(
-                    m_driveRequest.withOutput(wantedState.speed),
-                    m_steerRequest_TorqueCurrent.withPosition(wantedState.angle.measure)
-                )
-            }
-        }
-        return StatusCode.OK
-    }
-}
+//class ApplyModuleStatesVoltage(vararg val moduleStates: SwerveModuleState? = arrayOf()): SwerveRequest { TODO: UNCOMMENT WHEN PHOENIX 6 2027 RELEASES
+//
+//    /** Local reference to a voltage request for the drive motors  */
+//    private val m_driveRequest = VoltageOut(0.0)
+//
+//    /** Local reference to a position voltage request for the steer motors  */
+//    private val m_steerRequest_Voltage = PositionVoltage(0.0)
+//
+//    /** Local reference to a position torque current request for the steer motors  */
+//    private val m_steerRequest_TorqueCurrent = PositionTorqueCurrentFOC(0.0)
+//
+//    override fun apply(
+//        parameters: SwerveControlParameters?,
+//        vararg modulesToApply: SwerveModule<*, *, *>?
+//    ): StatusCode {
+//        modulesToApply.forEachIndexed { i, m ->
+//            val wantedState = moduleStates.getOrNull(i) ?: SwerveModuleState(0.0, m!!.currentState.angle)
+//            when (m!!.steerClosedLoopOutputType) {
+//                SwerveModuleConstants.ClosedLoopOutputType.Voltage -> m.apply(
+//                    m_driveRequest.withOutput(wantedState.speed),
+//                    m_steerRequest_Voltage.withPosition(wantedState.angle.measure)
+//                )
+//
+//                SwerveModuleConstants.ClosedLoopOutputType.TorqueCurrentFOC -> m.apply(
+//                    m_driveRequest.withOutput(wantedState.speed),
+//                    m_steerRequest_TorqueCurrent.withPosition(wantedState.angle.measure)
+//                )
+//            }
+//        }
+//        return StatusCode.OK
+//    }
+//}

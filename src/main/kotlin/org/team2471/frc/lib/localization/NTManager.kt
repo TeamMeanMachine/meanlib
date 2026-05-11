@@ -1,10 +1,15 @@
 package org.team2471.frc.lib.localization
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.networktables.*
-import edu.wpi.first.util.struct.StructBuffer
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.QuixVisionCamera
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.networktables.DoubleArrayPublisher
+import org.wpilib.networktables.NetworkTable
+import org.wpilib.networktables.NetworkTableEvent
+import org.wpilib.networktables.NetworkTableInstance
+import org.wpilib.networktables.PubSubOption
+import org.wpilib.networktables.StructArrayPublisher
+import org.wpilib.util.struct.StructBuffer
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -63,17 +68,17 @@ class NTManager {
     init {
         val inst = NetworkTableInstance.getDefault()
         localizerTable = inst.getTable("localizer")
-        measurementsPub = localizerTable.getDoubleArrayTopic("measurements").publish(PubSubOption.sendAll(true))
+        measurementsPub = localizerTable.getDoubleArrayTopic("measurements").publish(PubSubOption.SEND_ALL)
         targetPub = localizerTable.getStructArrayTopic<Fiducial?>("targets", Fiducial.struct)
-            .publish(PubSubOption.sendAll(true))
+            .publish(PubSubOption.SEND_ALL)
         cameraInfosPublisher = localizerTable.getStructArrayTopic<CameraInfo?>("cameras", CameraInfo.struct)
-            .publish(PubSubOption.sendAll(true))
+            .publish(PubSubOption.SEND_ALL)
 
         // Setup listener for when the estimate is updated.
         val estimatesSub = localizerTable.getStructTopic("estimates", PoseEstimate.struct)
-            .subscribe(PoseEstimate(), PubSubOption.sendAll(true))
+            .subscribe(PoseEstimate(), PubSubOption.SEND_ALL)
         val poseEstimateStructBuffer = StructBuffer.create(PoseEstimate.struct)
-        inst.addListener(estimatesSub, EnumSet.of<NetworkTableEvent.Kind>(NetworkTableEvent.Kind.kValueAll)) { event: NetworkTableEvent ->
+        inst.addListener(estimatesSub, EnumSet.of<NetworkTableEvent.Kind>(NetworkTableEvent.Kind.VALUE_ALL)) { event: NetworkTableEvent ->
             latestPoseEstimateReference.set(poseEstimateStructBuffer.read(event.valueData.value.getRaw()))
         }
     }

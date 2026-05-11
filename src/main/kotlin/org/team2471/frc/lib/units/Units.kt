@@ -2,10 +2,10 @@
 
 package org.team2471.frc.lib.units
 
-import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.units.*
-import edu.wpi.first.units.Units.*
-import edu.wpi.first.units.measure.*
+import org.wpilib.math.geometry.Rotation2d
+import org.wpilib.units.*
+import org.wpilib.units.Units.*
+import org.wpilib.units.measure.*
 import kotlin.math.*
 
 //Unit Conversions

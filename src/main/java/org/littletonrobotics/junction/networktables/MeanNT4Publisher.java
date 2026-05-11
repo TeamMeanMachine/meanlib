@@ -7,11 +7,11 @@
 
 package org.littletonrobotics.junction.networktables;
 
-import edu.wpi.first.networktables.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.littletonrobotics.junction.MeanLogDataReceiver;
 import org.littletonrobotics.junction.MeanLogTable;
+import org.wpilib.networktables.*;
 
 /** Publishes log data using NT4. */
 public class MeanNT4Publisher implements MeanLogDataReceiver {
@@ -24,7 +24,7 @@ public class MeanNT4Publisher implements MeanLogDataReceiver {
     public MeanNT4Publisher() {
         akitTable = NetworkTableInstance.getDefault().getTable("/AdvantageKit");
         timestampPublisher =
-                akitTable.getIntegerTopic(timestampKey.substring(1)).publish(PubSubOption.sendAll(true));
+                akitTable.getIntegerTopic(timestampKey.substring(1)).publish(PubSubOption.SEND_ALL);
     }
 
     public void putTable(MeanLogTable table) {
@@ -50,7 +50,7 @@ public class MeanNT4Publisher implements MeanLogDataReceiver {
                 publisher =
                         akitTable
                                 .getTopic(key)
-                                .genericPublish(field.getValue().getNT4Type(), PubSubOption.sendAll(true));
+                                .genericPublish(field.getValue().getNT4Type(), PubSubOption.SEND_ALL);
                 publishers.put(key, publisher);
             }
 

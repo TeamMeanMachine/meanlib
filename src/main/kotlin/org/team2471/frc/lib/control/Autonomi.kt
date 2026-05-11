@@ -3,17 +3,18 @@ package org.team2471.frc.lib.control
 import choreo.Choreo
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.kinematics.ChassisSpeeds
-import edu.wpi.first.wpilibj.Filesystem
-import edu.wpi.first.wpilibj.RobotController
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
 import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.util.demoMode
-import org.wpilib.commands3.Command
+import org.wpilib.command3.Command
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.math.kinematics.ChassisVelocities
+import org.wpilib.smartdashboard.SendableChooser
+import org.wpilib.system.Filesystem
+import org.wpilib.system.RobotController
+import org.wpilib.system.Timer
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
@@ -49,7 +50,7 @@ abstract class Autonomi {
 
     /** Refreshes the selectedAuto var if the chooser has changed. Call this during disabled periodic to save on auto init time.  */
     fun updateSelectedAuto(continuouslySetPosition: Boolean = false) {
-        val startTime = RobotController.getMeasureFPGATime()
+        val startTime = RobotController.getMeasureMonotonicTime()
         val newAuto = autoChooser.selected
         if (selectedAuto != newAuto) {
             selectedAuto = autoChooser.selected
@@ -57,7 +58,7 @@ abstract class Autonomi {
             println("Auto is ${autonomousCommand?.name()}")
             setDrivePositionToAutoStartPose()
             readAutoPaths()
-            println("finished reading auto in ${(RobotController.getMeasureFPGATime() - startTime).asSeconds} seconds")
+            println("finished reading auto in ${(RobotController.getMeasureMonotonicTime() - startTime).asSeconds} seconds")
             warmupFunction()
         }
         autonomousCommand?.name()
@@ -77,21 +78,22 @@ abstract class Autonomi {
 
     /** Warm up the paths in the JVM by reading them (May speed up path execution time) */
     fun readAutoPaths() {
-        val startTime = RobotController.getMeasureFPGATime()
+        val startTime = RobotController.getMeasureMonotonicTime()
         val pathNameAndStartPose = mutableListOf<Pair<String, Pose2d>>()
-        val segments = mutableListOf<ChassisSpeeds?>()
+        val segments = mutableListOf<ChassisVelocities?>()
         paths.forEach {
-            pathNameAndStartPose.add(Pair(
-                it.value.name(),
-                it.value.sampleAt(0.0, true).get().pose
-            ))
-            val pathSegment = it.value.totalTime / 10.0
-            for (i in 0..10) {
-                segments.add(it.value.sampleAt(i * pathSegment, true).getOrNull()?.chassisSpeeds)
-            }
+//            pathNameAndStartPose.add(Pair(
+//                it.value.name(),
+//                it.value.sampleAt(0.0, true).get().pose
+//            ))
+//            val pathSegment = it.value.totalTime / 10.0
+//            for (i in 0..10) {
+//                segments.add(it.value.sampleAt(i * pathSegment, true).getOrNull()?.chassisSpeeds)
+//            }
+            //TODO: UNCOMMENT WHEN CHOREO UPDATES TO 2027
         }
         println("paths: ${pathNameAndStartPose.map { it.first }}")
-        println("reading ${paths.size} paths and ${segments.size} samples. Took ${(RobotController.getMeasureFPGATime() - startTime).asSeconds.round(4)} seconds.")
+        println("reading ${paths.size} paths and ${segments.size} samples. Took ${(RobotController.getMeasureMonotonicTime() - startTime).asSeconds.round(4)} seconds.")
     }
 
     /** Find all the paths in the choreo directory and return a list of them. */
@@ -106,6 +108,7 @@ abstract class Autonomi {
 //                        @Suppress("UNCHECKED_CAST")
 //                        map[name] = traj as Trajectory<SwerveSample>
 //                    }
+                    //TODO: UNCOMMENT WHEN CHOREO UPDATES TO 2027
                 } catch (e: Exception) {
                     println("failed to load path at $it")
                     println(e)

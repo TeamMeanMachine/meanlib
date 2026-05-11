@@ -7,15 +7,6 @@
 
 package org.littletonrobotics.junction;
 
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Unit;
-import edu.wpi.first.util.WPISerializable;
-import edu.wpi.first.util.protobuf.Protobuf;
-import edu.wpi.first.util.protobuf.ProtobufBuffer;
-import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.util.struct.StructBuffer;
-import edu.wpi.first.util.struct.StructSerializable;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
@@ -29,6 +20,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.units.Measure;
+import org.wpilib.units.Unit;
+import org.wpilib.util.WPISerializable;
+import org.wpilib.util.protobuf.Protobuf;
+import org.wpilib.util.protobuf.ProtobufBuffer;
+import org.wpilib.util.struct.Struct;
+import org.wpilib.util.struct.StructBuffer;
+import org.wpilib.util.struct.StructSerializable;
 import us.hebi.quickbuf.ProtoMessage;
 
 /** A table of logged data in allowable types. Can reference another higher level table. */
@@ -188,7 +188,7 @@ public class MeanLogTable {
             return true;
         }
         if (!currentValue.type.equals(type)) {
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "[AdvantageKit] Failed to write to field \""
                             + prefix
                             + key
@@ -201,7 +201,7 @@ public class MeanLogTable {
         }
         if (currentValue.customTypeStr != customTypeStr
                 && !currentValue.customTypeStr.equals(customTypeStr)) {
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "[AdvantageKit] Failed to write to field \""
                             + prefix
                             + key
@@ -559,7 +559,7 @@ public class MeanLogTable {
     public <T extends MeanLoggableInputs> void put(String key, T value) {
         if (value == null) return;
         if (this.depth > 100) {
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "[AdvantageKit] Detected recursive table structure when logging value to field \""
                             + prefix
                             + key
@@ -746,7 +746,7 @@ public class MeanLogTable {
             if (proto != null) {
                 put(key, proto, value);
             } else {
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "[AdvantageKit] Auto serialization is not supported for type "
                                 + value.getClass().getSimpleName(),
                         false);
@@ -770,7 +770,7 @@ public class MeanLogTable {
         if (struct != null) {
             put(key, struct, value);
         } else {
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "[AdvantageKit] Auto serialization is not supported for array type "
                             + value.getClass().getComponentType().getSimpleName(),
                     false);
@@ -795,7 +795,7 @@ public class MeanLogTable {
 
     private Struct<?> findRecordStructType(Class<?> classObj) {
         if (!structTypeCache.containsKey(classObj.getName())) {
-            structTypeCache.put(classObj.getName(), new RecordStruct(classObj));
+//            structTypeCache.put(classObj.getName(), new RecordStruct(classObj));
         }
         return structTypeCache.get(classObj.getName());
     }

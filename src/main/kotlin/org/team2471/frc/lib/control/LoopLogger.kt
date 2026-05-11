@@ -1,8 +1,8 @@
 package org.team2471.frc.lib.control
 
-import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
+import org.wpilib.system.Timer
 
 /**
  * Publishes loop times to NetworkTables.
@@ -12,17 +12,17 @@ import org.littletonrobotics.junction.MeanLogger
  */
 object LoopLogger {
     private val prevTimes = mutableMapOf<String, Double>()
-    private var startTime = Timer.getFPGATimestamp()
+    private var startTime = Timer.getMonotonicTimestamp()
     private val loopsAndIndex = mutableMapOf<String, Int>()
 
     fun reset() {
-        startTime = Timer.getFPGATimestamp()
+        startTime = Timer.getMonotonicTimestamp()
     }
 
     /** Log the period and the time of the named loop at the current moment.  */
     fun record(loopName: String): Pair<Double, Double> {
         val loopIndex: Int = loopsAndIndex.getOrPut(loopName) { loopsAndIndex.size }
-        val now = Timer.getFPGATimestamp()
+        val now = Timer.getMonotonicTimestamp()
         val prevTime = prevTimes.put(loopName, now) ?: now //put returns previous value
         val period = now - prevTime
         val sinceReset = now - startTime
@@ -35,9 +35,9 @@ object LoopLogger {
     /**
      * Executes the given block and returns elapsed time in seconds.
      */
-    inline fun measureTimeFPGA(body: () -> Unit): Double {
-        val start = Timer.getFPGATimestamp()
+    inline fun measureTimeMonotonic(body: () -> Unit): Double {
+        val start = Timer.getMonotonicTimestamp()
         body()
-        return Timer.getFPGATimestamp() - start
+        return Timer.getMonotonicTimestamp() - start
     }
 }

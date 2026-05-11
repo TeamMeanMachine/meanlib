@@ -1,16 +1,16 @@
 package org.team2471.frc.lib.vision.limelight
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.units.measure.Angle
-import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.units.asDegrees
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.units.milliseconds
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.math.geometry.Translation2d
+import org.wpilib.networktables.NetworkTableInstance
+import org.wpilib.system.Timer
+import org.wpilib.units.measure.Angle
 import kotlin.math.sqrt
 
 
@@ -91,7 +91,7 @@ class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val h
 
             inputs.aprilTagPoseEstimate = llPoseEstimate?.pose ?: Pose2d()
             inputs.aprilTagTimestamp =
-                Timer.getFPGATimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
+                Timer.getMonotonicTimestamp() - (llPoseEstimate?.latency?.milliseconds?.asSeconds ?: 0.0)
             inputs.rawFiducials = rawFiducials
 
             inputs.objectCorners = DoubleArray(8) { 0.0 }
@@ -238,7 +238,7 @@ interface VisionIO {
             table.put("Is Connected", isConnected)
             table.put("Mode", mode)
             table.put("Sees Tag", seesTag)
-            table.put("AprilTag Pose Estimate", aprilTagPoseEstimate)
+//            table.put("AprilTag Pose Estimate", aprilTagPoseEstimate) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
             table.put("AprilTag Timestamp", aprilTagTimestamp)
             table.put("RawFiducials", rawFiducials)
             table.put("Object Corners", objectCorners)
@@ -249,7 +249,7 @@ interface VisionIO {
             isConnected = table.get("Is Connected", isConnected)
             mode = table.get("Mode", mode)
             seesTag = table.get("Sees Tag", seesTag)
-            aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first()
+//            aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first() //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
             aprilTagTimestamp = table.get("AprilTag Timestamp", aprilTagTimestamp)
             rawFiducials = table.get("RawFiducials", rawFiducials)
             objectCorners = table.get("Object Corners", objectCorners)

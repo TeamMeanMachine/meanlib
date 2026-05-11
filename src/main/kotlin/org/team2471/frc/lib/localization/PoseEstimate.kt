@@ -1,7 +1,7 @@
 package org.team2471.frc.lib.localization
 
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.util.struct.Struct
+import org.wpilib.math.geometry.Pose2d
+import org.wpilib.util.struct.Struct
 import java.nio.ByteBuffer
 
 /**
@@ -36,7 +36,7 @@ class PoseEstimateStruct : Struct<PoseEstimate> {
 
     override fun getTypeName(): String = "PoseEstimate"
 
-    override fun getSize(): Int = Pose2d.struct.size + Struct.kSizeInt32 * 2
+    override fun getSize(): Int = Pose2d.struct.size + Struct.INT32_SIZE * 2
 
     override fun getSchema(): String = "int32 id;" + "Pose2d pose;" + "int32 hasVision;"
 

@@ -1,13 +1,13 @@
 package org.team2471.frc.lib.localization
 
-import edu.wpi.first.math.MatBuilder
-import edu.wpi.first.math.Matrix
-import edu.wpi.first.math.Nat
-import edu.wpi.first.math.geometry.Transform3d
-import edu.wpi.first.math.numbers.N1
-import edu.wpi.first.math.numbers.N3
-import edu.wpi.first.math.numbers.N8
-import edu.wpi.first.util.struct.Struct
+import org.wpilib.math.geometry.Transform3d
+import org.wpilib.math.linalg.MatBuilder
+import org.wpilib.math.linalg.Matrix
+import org.wpilib.math.numbers.N1
+import org.wpilib.math.numbers.N3
+import org.wpilib.math.numbers.N8
+import org.wpilib.math.util.Nat
+import org.wpilib.util.struct.Struct
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -86,7 +86,7 @@ class CameraInfoStruct : Struct<CameraInfo> {
 
     override fun getTypeName(): String = "CameraInfo"
 
-    override fun getSize(): Int = Transform3d.struct.size + Struct.kSizeInt32 * 2 + Struct.kSizeDouble * 17
+    override fun getSize(): Int = Transform3d.struct.size + Struct.INT32_SIZE * 2 + Struct.DOUBLE_SIZE * 17
 
     override fun getSchema(): String =
         ("Transform3d transform;"

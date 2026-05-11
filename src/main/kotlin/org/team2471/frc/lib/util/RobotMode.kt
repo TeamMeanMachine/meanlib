@@ -1,16 +1,19 @@
 package org.team2471.frc.lib.util
 
-import edu.wpi.first.hal.HALUtil
-import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.RuntimeType
+import org.wpilib.driverstation.Alliance
+import org.wpilib.driverstation.MatchState
+import org.wpilib.driverstation.RobotState
+import org.wpilib.hardware.hal.HALUtil
+import org.wpilib.networktables.NetworkTableInstance
+import org.wpilib.system.RuntimeType
+
 
 /** Stores basic robot information like Alliance color and isReal/Sim/Replay */
 
 val doReplay: Boolean = false
 val robotMode: RobotMode = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
-    RuntimeType.kRoboRIO2, RuntimeType.kRoboRIO -> RobotMode.REAL
-    RuntimeType.kSimulation -> if (doReplay) RobotMode.REPLAY else RobotMode.SIM
+    RuntimeType.SYSTEMCORE -> RobotMode.REAL
+    RuntimeType.SIMULATION -> if (doReplay) RobotMode.REPLAY else RobotMode.SIM
     else -> RobotMode.REAL
 }.also { println("robotMode = $it") }
 
@@ -27,10 +30,10 @@ enum class RobotMode {
 
 //Alliance bool
 val isRedAlliance: Boolean
-    get() = if (DriverStation.getAlliance().isEmpty) {
+    get() = if (MatchState.getAlliance().isEmpty) {
         prevIsRedAlliance ?: true // If no alliance, return the last known alliance or default to red
     } else {
-        (DriverStation.getAlliance().get() == DriverStation.Alliance.Red).also { prevIsRedAlliance = it }
+        (MatchState.getAlliance().get() == Alliance.RED).also { prevIsRedAlliance = it }
     }
 val isBlueAlliance: Boolean get() = !isRedAlliance
 private var prevIsRedAlliance: Boolean? = null

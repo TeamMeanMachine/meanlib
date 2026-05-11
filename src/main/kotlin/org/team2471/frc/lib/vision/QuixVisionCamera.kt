@@ -1,11 +1,11 @@
 package org.team2471.frc.lib.vision
 
-import edu.wpi.first.math.Matrix
-import edu.wpi.first.math.geometry.Transform3d
-import edu.wpi.first.math.numbers.N1
-import edu.wpi.first.math.numbers.N3
-import edu.wpi.first.math.numbers.N8
 import org.photonvision.simulation.PhotonCameraSim
+import org.wpilib.math.geometry.Transform3d
+import org.wpilib.math.linalg.Matrix
+import org.wpilib.math.numbers.N1
+import org.wpilib.math.numbers.N3
+import org.wpilib.math.numbers.N8
 import java.util.*
 
 interface QuixVisionCamera {
