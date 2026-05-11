@@ -2,7 +2,7 @@
   "fileName": "Phoenix6-25.90.0-alpha-3.json",
   "name": "CTRE-Phoenix (v6)",
   "version": "25.90.0-alpha-3",
-  "frcYear": "2027_alpha1",
+  "wpilibYear": "2027_alpha5",
   "uuid": "e995de00-2c64-4df5-8831-c1441420ff19",
   "mavenUrls": [
     "https://maven.ctr-electronics.com/release/"

@@ -2,9 +2,9 @@ import groovy.json.JsonSlurper
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6"
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
-//    id "org.jetbrains.kotlin.kapt" version "2.3.21"
+//    id "org.jetbrains.kotl in.kapt" version "2.3.21"
     id "idea"
     id "maven-publish"
     id "java-library"
@@ -20,15 +20,6 @@ gradle.afterProject { proj ->
         }
     }
 }
-
-wpi.maven.useLocal = false
-wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = '2027.0.0-alpha-3'
-wpi.versions.wpimathVersion = '2027.0.0-alpha-3'
-wpi.versions.glassVersion = '2027.0.0-alpha-3'
-wpi.versions.sysIdVersion = '2027.0.0-alpha-3'
-wpi.versions.dataLogToolVersion = '2027.0.0-alpha-3'
-wpi.versions.outlineViewerVersion = '2027.0.0-alpha-3'
 
 group = "org.team2471.lib"
 
@@ -50,7 +41,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 // Automatically download library documentation from libraries
@@ -110,7 +101,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "25"
     }
 }
 

@@ -3,7 +3,7 @@
   "uuid": "4e922d47-9954-4db5-929f-c708cc62e152",
   "fileName": "Autopilot.json",
   "version": "1.4.0",
-  "frcYear": "2027_alpha1",
+  "wpilibYear": "2027_alpha5",
   "jsonUrl": "https://therekrab.github.io/autopilot/vendordep.json",
   "mavenUrls": [ "https://jitpack.io" ],
   "javaDependencies": [
