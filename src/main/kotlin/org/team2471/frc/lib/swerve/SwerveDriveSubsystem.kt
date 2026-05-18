@@ -44,7 +44,7 @@ import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.use
-import org.team2471.frc.lib.commands.useNoName
+import org.team2471.frc.lib.commands.useUnnamed
 import org.team2471.frc.lib.units.inchesPerSecondPerSecond
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -127,44 +127,62 @@ abstract class SwerveDriveSubsystem(
      */
     abstract val isDisabledSupplier: () -> Boolean
 
+    /**
+     * Wheel odometry position of the robot. Use this for resetting position
+     *
+     * Abstract to allow for other pose sources (like cameras) to override the setter and to reset when this is set.
+     */
     @get:AutoLogOutput(key = "Drive/Pose")
-    abstract var pose: Pose2d // Abstract to allow for other pose sources (cameras) to also reset when this gets set.
+    abstract var pose: Pose2d
 
-    abstract var heading: Rotation2d // Abstract to allow for other heading sources to also reset when this gets set.
+    /**
+     * Odometry heading. Use this for resetting heading.
+     *
+     * Abstract to allow for other pose sources (like cameras) to override the setter and to reset when this is set.
+     */
+    abstract var heading: Rotation2d
 
     /** Stores information about the current state of the drivetrain */
     var savedState: SwerveDrivetrain.SwerveDriveState? = null//io.stateCopy //TODO: UNCOMMENT AND MAKE NOT NULL WHEN 2027 PHOENIX 6
         private set
 
-    val robotRelativeSpeeds: ChassisVelocities
+    /** Robot-centric velocity of drivetrain xy and heading. */
+    val robotRelativeChassisVelocity: ChassisVelocities
         get() = ChassisVelocities()// savedState.Speeds TODO: FIX IN 2027 PHOENIX 6
 
+    /** Field-centric velocity of drivetrain xy and heading. */
     @get:AutoLogOutput(key = "Drive/State/Speeds")
-    val speeds: ChassisVelocities
-        get() = robotRelativeSpeeds.toFieldRelative(pose.rotation)
+    val chassisVelocities: ChassisVelocities
+        get() = robotRelativeChassisVelocity.toFieldRelative(pose.rotation)
 
+    /** Field-centric drivetrain xy velocity. */
     @get:AutoLogOutput(key = "Drive/State/Velocity")
-    val velocity: Translation2d get() = speeds.translation
+    val velocity: Translation2d get() = chassisVelocities.translation
     private var prevVelocity = velocity
 
+    /** Field-centric drivetrain xy acceleration. */
     @get:AutoLogOutput(key = "Drive/State/Acceleration")
     var acceleration = Translation2d(0.0, 0.0)
         private set
 
+    /** Field-centric drivetrain xy jerk. */
     @get:AutoLogOutput(key = "Drive/State/Jerk")
     var jerk = Translation2d(0.0, 0.0)
         private set
 
     private var prevTime = -0.02
 
+    /** Stores the velocity and angle of each swerve module. */
     @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
     val moduleStates: Array<SwerveModuleVelocity>
         get() = arrayOf()//savedState.ModuleStates TODO: ADD IN 2027 PHOENIX 6
 
+    /** Stores the velocity and angle setpoints of each swerve module. */
     @get:AutoLogOutput(key = "Drive/State/Modules/ModuleTargets")
     val moduleTargets: Array<SwerveModuleVelocity>
         get() = arrayOf()//savedState.ModuleTargets TODO: ADD IN 2027 PHOENIX 6
 
+    /** Stores the distance and angle of each swerve module. */
     @get:AutoLogOutput(key = "Drive/State/Modules/ModulePositions")
     val modulePositions: Array<SwerveModulePosition>
         get() = arrayOf()//savedState.ModulePositions TODO: ADD IN 2027 PHOENIX 6
@@ -189,14 +207,17 @@ abstract class SwerveDriveSubsystem(
     val stateTimestamp: Double
         get() = savedState?.Timestamp ?: 0.0
 
+    /** Loop frequency of the odometry thread. */
     @get:AutoLogOutput(key = "Drive/State/OdometryPeriod")
     val odometryPeriod: Double
         get() = savedState?.OdometryPeriod ?: 0.0
 
+    /** Successful Data Acquisitions */
     @get:AutoLogOutput(key = "Drive/State/Daqs/SuccessfulDaqs")
     val successfulDaqs: Int
         get() = savedState?.SuccessfulDaqs ?: 0
 
+    /** Failed Data Acquisitions */
     @get:AutoLogOutput(key = "Drive/State/Daqs/FailedDaqs")
     val failedDaqs: Int
         get() = savedState?.FailedDaqs ?: 0
@@ -237,9 +258,10 @@ abstract class SwerveDriveSubsystem(
         get() = 0.0.inchesPerSecondPerSecond//(gyro.accelerationY.valueAsDouble - gyro.gravityVectorY.valueAsDouble).Gs //TODO: UNCOMMENT IN 2027 PHOENIX 6
 
 
-    /** Returns an array of module translations. */
+    /** Returns an array of module translations on the robot. */
     val moduleTranslations = moduleConstants.map { Translation2d(it.LocationX.meters, it.LocationY.meters) }.toTypedArray()
 
+    /** Radius of swerve drivetrain */
     val driveBaseRadius = moduleTranslations.maxOf { it.norm.meters }
 
     /** The maximum translational speed of drivetrain. */
@@ -248,19 +270,28 @@ abstract class SwerveDriveSubsystem(
     /** The maximum rotational speed of drivetrain. */
     val maxAngularSpeed: AngularVelocity = (maxSpeed.asMetersPerSecond / driveBaseRadius.asMeters).radiansPerSecond
 
+    /**
+     * Determines if the choreo paths should be flipped.
+     * Dependent on [choreoPathsStartOnRed].
+     *
+     * true = paths need to be flipped
+     * false = paths do not need to be flipped
+     * */
     @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
     val flipChoreoPaths
         get() = choreoPathsStartOnRed != isRedAlliance
 
+    /** Cached drive request. Used for path following and auto driving. */
     private val driveAtAngleRequest: FieldCentricFacingAngle? = null//FieldCentricFacingAngle() //TODO: UNCOMMENT IN 2027 PHOENIX 6
 
-
+    // ALERTS
     private val gyroDisconnectedAlert = Alert("Gyro Disconnected", Alert.Level.HIGH)
     private val driveDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Drive Motor Disconnected", Alert.Level.HIGH) }
     private val steerDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Steer Motor Disconnected", Alert.Level.HIGH) }
     private val encoderDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Encoder Disconnected", Alert.Level.HIGH) }
     private var moduleErrorIndex = 0
 
+    // OTHER
     var totalSteerCurrent = 0.0
     var totalDriveCurrent = 0.0
 
@@ -406,14 +437,17 @@ abstract class SwerveDriveSubsystem(
     }
 
     /**
-     * Set the module offsets to the current position of the module.
+     * Set the steering module offsets to the current position of the module. This "zeros" the steer motors.
+     *
+     * Usually each module bevel gear should face to the right (with perspective to robot) before running this.
      */
     fun setAngleOffsets(): Command = run {
+        println("setting angle offsets")
 //        val offsets = io.modules.map { it.encoder.setCANCoderAngle(0.0.degrees) } //TODO: UNCOMMENT WHEN 2027 PHOENIX 6
 //        offsets.forEachIndexed { i, offset ->
 //            Preferences.setDouble("Module $i Offset", offset.asDegrees)
 //        }
-    }.named("SetModuleOffsets")
+    }.named("SetAngleOffsets")
 
     // CONTROL METHODS
 
@@ -549,7 +583,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = useNoName(this) {
+    ): Command = useUnnamed(this) {
         println("running driveToPoint")
         while (true) {
             // Calculate pose error
@@ -601,7 +635,7 @@ abstract class SwerveDriveSubsystem(
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot? = autoPilot, // TODO: make not null
         exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target) TODO: UNCOMMENT IN 2027 AUTOPILOT*/ }
-    ): Command = useNoName(this) {
+    ): Command = useUnnamed(this) {
 //        println("running driveToAutopilotPoint") ////TODO: UNCOMMENT IN 2027 AUTOPILOT
 //        while (true) {
 //            val pose = poseSupplier()
@@ -654,7 +688,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         lineTolerance: Distance = 0.5.inches,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = useNoName(this) {
+    ): Command = useUnnamed(this) {
         val lineAngle = (pointTwo - pointOne).angle
 
         while (true) {
@@ -714,7 +748,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ) = useNoName(this) {
+    ) = useUnnamed(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
 //        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo)) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT

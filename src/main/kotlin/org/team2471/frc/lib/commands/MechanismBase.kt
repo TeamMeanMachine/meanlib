@@ -45,7 +45,7 @@ open class MechanismBase(name: String): Mechanism(name) {
      * @see Mechanism.setDefaultCommand
      */
     fun defaultCommand(body: Coroutine.() -> Unit): Command =
-        useNoName(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
+        useUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
 
 
     private fun hasOverride(methodName: String): Boolean {

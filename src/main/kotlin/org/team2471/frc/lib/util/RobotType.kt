@@ -2,7 +2,6 @@ package org.team2471.frc.lib.util
 
 import org.wpilib.driverstation.Alliance
 import org.wpilib.driverstation.MatchState
-import org.wpilib.driverstation.RobotState
 import org.wpilib.hardware.hal.HALUtil
 import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.RuntimeType
@@ -11,17 +10,17 @@ import org.wpilib.system.RuntimeType
 /** Stores basic robot information like Alliance color and isReal/Sim/Replay */
 
 val doReplay: Boolean = false
-val robotMode: RobotMode = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
-    RuntimeType.SYSTEMCORE -> RobotMode.REAL
-    RuntimeType.SIMULATION -> if (doReplay) RobotMode.REPLAY else RobotMode.SIM
-    else -> RobotMode.REAL
+val robotType: RobotType = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
+    RuntimeType.SYSTEMCORE -> RobotType.REAL
+    RuntimeType.SIMULATION -> if (doReplay) RobotType.REPLAY else RobotType.SIM
+    else -> RobotType.REAL
 }.also { println("robotMode = $it") }
 
-val isReal = robotMode == RobotMode.REAL
+val isReal = robotType == RobotType.REAL
 val isSim = !isReal
-val isReplay = robotMode == RobotMode.REPLAY
+val isReplay = robotType == RobotType.REPLAY
 
-enum class RobotMode {
+enum class RobotType {
     REAL,
     SIM,
     REPLAY
