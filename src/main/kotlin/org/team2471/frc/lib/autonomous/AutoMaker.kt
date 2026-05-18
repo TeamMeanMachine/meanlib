@@ -17,6 +17,7 @@ abstract class AutoMaker {
     val paths: MutableMap<String, Trajectory<SwerveSample>> = findChoreoPaths()
 
     abstract val autos: List<Autonomi>
+    abstract val tests: List<TestRoutine>
 
     /** Set the drive pose to the starting pose of the selected auto. Abstract so it can change per robot */
     abstract val drivePoseSetter: (Pose2d) -> Unit
@@ -35,6 +36,10 @@ abstract class AutoMaker {
             this.command,
             { readAutoPaths(); warmupFunction() },
             { this.startingPositionSupplier?.invoke()?.let { drivePoseSetter(it) } })
+    }
+
+    fun TestRoutine.toTestOpMode(): TestOpMode {
+        return TestOpMode(this.name, this.command) { this.initFunction.invoke() }
     }
 
     /** Warm up the paths in the JVM by reading them (May speed up path execution time) */

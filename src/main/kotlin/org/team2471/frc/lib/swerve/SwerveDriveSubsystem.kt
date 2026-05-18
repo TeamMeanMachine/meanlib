@@ -441,13 +441,13 @@ abstract class SwerveDriveSubsystem(
      *
      * Usually each module bevel gear should face to the right (with perspective to robot) before running this.
      */
-    fun setAngleOffsets(): Command = run {
+    fun setAngleOffsets() = use("SetAngleOffsets",this) {
         println("setting angle offsets")
 //        val offsets = io.modules.map { it.encoder.setCANCoderAngle(0.0.degrees) } //TODO: UNCOMMENT WHEN 2027 PHOENIX 6
 //        offsets.forEachIndexed { i, offset ->
 //            Preferences.setDouble("Module $i Offset", offset.asDegrees)
 //        }
-    }.named("SetAngleOffsets")
+    }
 
     // CONTROL METHODS
 
