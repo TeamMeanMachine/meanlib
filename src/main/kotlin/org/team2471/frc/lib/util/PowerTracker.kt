@@ -4,7 +4,7 @@ import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
 import org.team2471.frc.lib.units.amps
 
-class PowerTracker {
+object PowerTracker {
 
     private val motors: ArrayList<MotorTracker> = arrayListOf()
 

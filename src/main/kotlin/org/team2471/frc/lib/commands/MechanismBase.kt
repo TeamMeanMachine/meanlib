@@ -1,21 +1,55 @@
 package org.team2471.frc.lib.commands
 
 import org.team2471.frc.lib.util.isSim
+import org.wpilib.command3.Command
 import org.wpilib.command3.Coroutine
 import org.wpilib.command3.Mechanism
 import org.wpilib.command3.Scheduler
 
 open class MechanismBase(name: String): Mechanism(name) {
+
     init {
-        Scheduler.getDefault().addPeriodic(::periodic)
-        if (isSim) Scheduler.getDefault().addPeriodic(::simulationPeriodic)
-//        defaultCommand = use("$name[DEFAULT]", this) { default() }
-//        defaultCommand = use(this) { default() }/*.withPriority(Command.DEFAULT_PRIORITY - 1)*/.named("$name[DEFAULT]")
+        // Checks if periodic() and simulationPeriodic() have been overridden before adding them to the periodic scheduler,
+        // just to avoid having a bunch of empty periodic methods in the scheduler.
+        if (hasOverride("periodic")) {
+            Scheduler.getDefault().addPeriodic(this::periodic)
+        }
+
+        if (isSim && hasOverride("simulationPeriodic")) {
+            Scheduler.getDefault().addPeriodic(this::simulationPeriodic)
+        }
+
+        // If a default command has been specified, apply it to the mechanism.
+        default()?.let { defaultCommand = it }
     }
 
-    open fun Coroutine.default() { park() }
+    /** The default command for this mechanism. By default, it is [idle]   */
+    open fun default(): Command? = null
 
+    /**
+     * Function ran continuously every scheduler tick.
+     * @see Scheduler.addPeriodic
+     * */
     open fun periodic() {}
 
+    /**
+     * Function ran continuously every scheduler tick in only in simulation.
+     * @see Scheduler.addPeriodic
+     */
     open fun simulationPeriodic() {}
+
+    /**
+     * Shortcut utility function to create a default command.
+     *
+     * Sets the command name to be "[name] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
+     * @see Mechanism.setDefaultCommand
+     */
+    fun defaultCommand(body: Coroutine.() -> Unit): Command =
+        useNoName(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
+
+
+    private fun hasOverride(methodName: String): Boolean {
+        val method = javaClass.getMethod(methodName)
+        return method.declaringClass != MechanismBase::class.java
+    }
 }

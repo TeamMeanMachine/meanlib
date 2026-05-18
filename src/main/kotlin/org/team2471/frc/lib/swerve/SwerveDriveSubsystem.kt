@@ -2,11 +2,8 @@ package org.team2471.frc.lib.swerve
 
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
-import com.ctre.phoenix6.BaseStatusSignal
-import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.configs.TalonFXConfiguration
-import com.ctre.phoenix6.hardware.CANcoder
 import com.ctre.phoenix6.hardware.Pigeon2
 import com.ctre.phoenix6.swerve.SwerveDrivetrain
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants
@@ -19,14 +16,11 @@ import com.therekrab.autopilot.APProfile
 import com.therekrab.autopilot.APTarget
 import com.therekrab.autopilot.Autopilot
 import kotlinx.coroutines.DelicateCoroutinesApi
-import org.team2471.frc.lib.ctre.setCANCoderAngle
-import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.math.toPose2d
-import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.absoluteValue
 import org.team2471.frc.lib.units.asDegrees
 import org.team2471.frc.lib.units.asDegreesPerSecond
@@ -39,14 +33,10 @@ import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.centimeters
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.degreesPerSecond
-import org.team2471.frc.lib.units.feetPerSecondPerSecond
 import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
-import org.team2471.frc.lib.units.metersPerSecondPerSecond
-import org.team2471.frc.lib.units.perSecond
 import org.team2471.frc.lib.units.radiansPerSecond
-import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.MeanLogger
 import org.team2471.frc.lib.commands.MechanismBase
@@ -54,10 +44,7 @@ import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.use
-import org.team2471.frc.lib.ctre.ApplyModuleStates
-import org.team2471.frc.lib.units.asMetersPerSecondCubed
-import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
-import org.team2471.frc.lib.units.degreesPerSecondPerSecond
+import org.team2471.frc.lib.commands.useNoName
 import org.team2471.frc.lib.units.inchesPerSecondPerSecond
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -69,7 +56,6 @@ import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStation
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
-import org.wpilib.hardware.hal.ControlWord
 import org.wpilib.math.controller.PIDController
 import org.wpilib.math.geometry.Pose2d
 import org.wpilib.math.geometry.Rotation2d
@@ -81,17 +67,13 @@ import org.wpilib.math.kinematics.SwerveModuleVelocity
 import org.wpilib.smartdashboard.SmartDashboard
 import org.wpilib.system.Timer
 import org.wpilib.units.LinearAccelerationUnit
-import org.wpilib.units.LinearVelocityUnit
 import org.wpilib.units.measure.Angle
 import org.wpilib.units.measure.AngularVelocity
 import org.wpilib.units.measure.Distance
 import org.wpilib.units.measure.LinearAcceleration
 import org.wpilib.units.measure.LinearVelocity
 import org.wpilib.units.measure.Velocity
-import org.wpilib.util.Preferences
-import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
-import kotlin.math.hypot
 import kotlin.math.min
 
 abstract class SwerveDriveSubsystem(
@@ -567,7 +549,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = use(this) {
+    ): Command = useNoName(this) {
         println("running driveToPoint")
         while (true) {
             // Calculate pose error
@@ -619,7 +601,7 @@ abstract class SwerveDriveSubsystem(
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot? = autoPilot, // TODO: make not null
         exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target) TODO: UNCOMMENT IN 2027 AUTOPILOT*/ }
-    ): Command = use(this) {
+    ): Command = useNoName(this) {
 //        println("running driveToAutopilotPoint") ////TODO: UNCOMMENT IN 2027 AUTOPILOT
 //        while (true) {
 //            val pose = poseSupplier()
@@ -672,7 +654,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         lineTolerance: Distance = 0.5.inches,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = use(this) {
+    ): Command = useNoName(this) {
         val lineAngle = (pointTwo - pointOne).angle
 
         while (true) {
@@ -732,7 +714,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ) = use(this) {
+    ) = useNoName(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
 //        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo)) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT

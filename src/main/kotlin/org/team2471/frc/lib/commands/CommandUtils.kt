@@ -6,6 +6,7 @@ import org.wpilib.command3.Command
 import org.wpilib.command3.Coroutine
 import org.wpilib.command3.Mechanism
 import org.wpilib.command3.NeedsNameBuilderStage
+import org.wpilib.command3.Scheduler
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.system.Timer
 import org.wpilib.system.Watchdog
@@ -32,7 +33,7 @@ class PeriodicScope {
  * @see Command.requiring
  * @see NeedsExecutionBuilderStage.executing
  */
-fun use(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage =
+fun useNoName(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage =
     Command.requiring(setOf(*mechanisms)).executing(body)
 
 // Full Command Composers
@@ -47,8 +48,8 @@ fun use(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuil
  * @see NeedsExecutionBuilderStage.executing
  * @see NeedsNameBuilderStage.named
  */
-fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit, onCancel: () -> Unit): Command =
-    use(*mechanisms, body = body).named(name, onCancel = onCancel)
+fun use(name: String = object {}.javaClass.enclosingMethod.name, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit, onCancel: () -> Unit): Command =
+    useNoName(*mechanisms, body = body).named(name, onCancel = onCancel)
 /**
  * Composes a [Command] with an action using provided [Mechanism]s
  *
@@ -59,8 +60,8 @@ fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit, 
  * @see NeedsExecutionBuilderStage.executing
  * @see NeedsNameBuilderStage.named
  */
-fun use(name: String, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): Command =
-    use(*mechanisms, body = body).named(name)
+fun use(name: String = object {}.javaClass.enclosingMethod.name, vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): Command =
+    useNoName(*mechanisms, body = body).named(name)
 /**
  * Composes a [Command] with an action using provided [Mechanism]s from a [Coroutine] function
  *

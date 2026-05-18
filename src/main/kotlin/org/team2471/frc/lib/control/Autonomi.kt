@@ -1,23 +1,25 @@
 package org.team2471.frc.lib.control
 
-import choreo.Choreo
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser
 import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
 import org.team2471.frc.lib.util.demoMode
 import org.wpilib.command3.Command
+import org.wpilib.command3.Scheduler
+import org.wpilib.driverstation.DriverStation
+import org.wpilib.driverstation.internal.DriverStationBackend
+import org.wpilib.hardware.hal.OpModeOption
 import org.wpilib.math.geometry.Pose2d
 import org.wpilib.math.kinematics.ChassisVelocities
+import org.wpilib.opmode.OpMode
+import org.wpilib.opmode.PeriodicOpMode
 import org.wpilib.smartdashboard.SendableChooser
 import org.wpilib.system.Filesystem
 import org.wpilib.system.RobotController
-import org.wpilib.system.Timer
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
-import kotlin.jvm.optionals.getOrNull
 
 /** Manages robot driving paths and auto commands */
 abstract class Autonomi {
@@ -28,6 +30,8 @@ abstract class Autonomi {
     abstract val autoChooser: SendableChooser<AutoCommand>
     /** Chooser for selecting test commands */
     abstract val testChooser: SendableChooser<Command>
+
+    abstract val autos: List<AutoCommand>
 
     /** Set the drive pose to the starting pose of the selected auto. Abstract so it can change per robot */
     abstract val drivePoseSetter: (Pose2d) -> Unit
@@ -69,7 +73,7 @@ abstract class Autonomi {
 
     /** Set the drive pose to the starting pose of the selected auto. */
     fun setDrivePositionToAutoStartPose(hidePrint: Boolean = false) {
-        val startingPose = selectedAuto?.startingPoseSupplier?.invoke()
+        val startingPose = selectedAuto?.resetPosition?.invoke()
         if (startingPose != null) {
             if (!hidePrint) println("resetting drive pose to auto start pose")
             drivePoseSetter(startingPose) // Set robot pose
@@ -122,5 +126,34 @@ abstract class Autonomi {
     }
 
     /** Pair of an auto command and its starting pose */
-    class AutoCommand(val command: Command, val startingPoseSupplier: (() -> Pose2d)? = null)
+    class AutoCommand(val name: String, val command: Command, val resetPosition: (() -> Pose2d)? = null)
+
+    class AutoOpMode(val name: String, val autoCommand: Command, val resetPosition: (() -> Pose2d)? = null, warmupFunction: () -> Unit, val resetPositionLoop: () -> Unit): PeriodicOpMode() {
+
+        init {
+            println("inside $name auto init")
+//            Autonomous.warmupDriveAlongPath()
+            warmupFunction()
+            println("finished warmup")
+
+            addPeriodic({}, 0.1)
+        }
+
+        override fun disabledPeriodic() {
+            resetPositionLoop()
+        }
+
+        override fun start() {
+            println("starting $name auto")
+            Scheduler.getDefault().schedule(autoCommand)
+            println("Scheduled auto")
+        }
+
+        override fun end() {
+            println("ending $name auto")
+            Scheduler.getDefault().cancel(autoCommand)
+            println("Cancelled auto")
+        }
+    }
 }
+
