@@ -5,6 +5,7 @@ import org.wpilib.math.geometry.Rotation2d
 import org.wpilib.math.geometry.Transform2d
 import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.geometry.Twist2d
+import org.wpilib.math.util.MathUtil
 import kotlin.math.*
 
 @JvmName("squareOf")
@@ -30,6 +31,9 @@ fun Double.deadband(tolerance: Double): Double =
     } else {
         (this - tolerance.withSign(this)) / (1.0 - tolerance)
     }
+
+/** XY 2d deadband and normalization. Forces a maximum magnitude of 1. */
+fun Translation2d.applyDeadband(tolerance: Double): Translation2d = Translation2d(MathUtil.applyDeadband(this.toVector(), tolerance))
 
 /** Divide [Translation2d] by its magnitude, making it have a magnitude of 1 while preserving its angle. */
 fun Translation2d.normalize(): Translation2d {
