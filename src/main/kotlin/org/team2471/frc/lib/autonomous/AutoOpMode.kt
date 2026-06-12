@@ -5,7 +5,13 @@ import org.wpilib.command3.Scheduler
 import org.wpilib.opmode.PeriodicOpMode
 
 /**
- * Autonomous OpMode.
+ * Autonomous [org.wpilib.opmode.OpMode].
+ *
+ * When selected will call the [warmupFunction] provided by [Autonomi.warmupFunction]
+ *
+ * Then will periodically run the [disabledPeriodicFunction] until enabled
+ *
+ * Schedules [autoCommand] when enabled and runs it until its disabled or finished.
  */
 class AutoOpMode(val name: String, val autoCommand: Command, warmupFunction: () -> Unit, val disabledPeriodicFunction: () -> Unit): PeriodicOpMode() {
     val scheduler = Scheduler.getDefault()
