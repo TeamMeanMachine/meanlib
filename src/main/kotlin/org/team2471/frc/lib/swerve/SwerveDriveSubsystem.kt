@@ -11,10 +11,10 @@ import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest.*
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController
-import com.therekrab.autopilot.APConstraints
-import com.therekrab.autopilot.APProfile
-import com.therekrab.autopilot.APTarget
-import com.therekrab.autopilot.Autopilot
+//import com.therekrab.autopilot.APConstraints
+//import com.therekrab.autopilot.APProfile
+//import com.therekrab.autopilot.APTarget
+//import com.therekrab.autopilot.Autopilot
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
@@ -37,7 +37,7 @@ import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
-import org.littletonrobotics.junction.AutoLogOutput
+//import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.MeanLogger
 import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.control.LoopLogger
@@ -94,7 +94,7 @@ abstract class SwerveDriveSubsystem(
 
     /** Autopilot limits velocity, acceleration, and jerk when driving to a point. It can also respect an approach angle.
      * Better alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct and configure an instance. */
-    abstract val autoPilot: Autopilot? //TODO: MAKE NOT NULL
+//    abstract val autoPilot: Autopilot? //TODO: MAKE NOT NULL
 
     /** Path following x error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added x velocity m/s. */
     abstract val pathXController: PIDController //= PIDController(7.0, 0.0, 0.0)
@@ -117,7 +117,7 @@ abstract class SwerveDriveSubsystem(
      * False = all choreo paths are made on the blue side.
      * True = all choreo paths are made on the red side.
      */
-    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
+//TODO    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
     abstract val choreoPathsStartOnRed: Boolean
 
     /**
@@ -132,7 +132,7 @@ abstract class SwerveDriveSubsystem(
      *
      * Abstract to allow for other pose sources (like cameras) to override the setter and to reset when this is set.
      */
-    @get:AutoLogOutput(key = "Drive/Pose")
+//TODO    @get:AutoLogOutput(key = "Drive/Pose")
     abstract var pose: Pose2d
 
     /**
@@ -151,109 +151,109 @@ abstract class SwerveDriveSubsystem(
         get() = ChassisVelocities()// savedState.Speeds TODO: FIX IN 2027 PHOENIX 6
 
     /** Field-centric velocity of drivetrain xy and heading. */
-    @get:AutoLogOutput(key = "Drive/State/Speeds")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Speeds")
     val chassisVelocities: ChassisVelocities
         get() = robotRelativeChassisVelocity.toFieldRelative(pose.rotation)
 
     /** Field-centric drivetrain xy velocity. */
-    @get:AutoLogOutput(key = "Drive/State/Velocity")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: Translation2d get() = chassisVelocities.translation
     private var prevVelocity = velocity
 
     /** Field-centric drivetrain xy acceleration. */
-    @get:AutoLogOutput(key = "Drive/State/Acceleration")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Acceleration")
     var acceleration = Translation2d(0.0, 0.0)
         private set
 
     /** Field-centric drivetrain xy jerk. */
-    @get:AutoLogOutput(key = "Drive/State/Jerk")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Jerk")
     var jerk = Translation2d(0.0, 0.0)
         private set
 
     private var prevTime = -0.02
 
     /** Stores the velocity and angle of each swerve module. */
-    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
     val moduleStates: Array<SwerveModuleVelocity>
         get() = arrayOf()//savedState.ModuleStates TODO: ADD IN 2027 PHOENIX 6
 
     /** Stores the velocity and angle setpoints of each swerve module. */
-    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleTargets")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleTargets")
     val moduleTargets: Array<SwerveModuleVelocity>
         get() = arrayOf()//savedState.ModuleTargets TODO: ADD IN 2027 PHOENIX 6
 
     /** Stores the distance and angle of each swerve module. */
-    @get:AutoLogOutput(key = "Drive/State/Modules/ModulePositions")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModulePositions")
     val modulePositions: Array<SwerveModulePosition>
         get() = arrayOf()//savedState.ModulePositions TODO: ADD IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/State/RawHeading")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/RawHeading")
     val rawHeading: Rotation2d
         get() = Rotation2d()//savedState.RawHeading.wrap() TODO: ADD IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
     val gyroLatency get() = 0.0//gyro.yaw.timestamp.latency TODO: ADD IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
     val gyroVoltage get() = 0.0//gyro.supplyVoltage.valueAsDouble TODO: ADD IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
     val gyroBootIntoMotionFault get() = gyro.fault_BootIntoMotion.value
 
-    @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
     val gyroUnderVoltageFault get() = gyro.fault_Undervoltage.value
 
-    @get:AutoLogOutput(key = "Drive/State/Timestamp")
+    //TODO    @get:AutoLogOutput(key = "Drive/State/Timestamp")
     val stateTimestamp: Double
         get() = savedState?.Timestamp ?: 0.0
 
     /** Loop frequency of the odometry thread. */
-    @get:AutoLogOutput(key = "Drive/State/OdometryPeriod")
+//TODO    @get:AutoLogOutput(key = "Drive/State/OdometryPeriod")
     val odometryPeriod: Double
         get() = savedState?.OdometryPeriod ?: 0.0
 
     /** Successful Data Acquisitions */
-    @get:AutoLogOutput(key = "Drive/State/Daqs/SuccessfulDaqs")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Daqs/SuccessfulDaqs")
     val successfulDaqs: Int
         get() = savedState?.SuccessfulDaqs ?: 0
 
     /** Failed Data Acquisitions */
-    @get:AutoLogOutput(key = "Drive/State/Daqs/FailedDaqs")
+//TODO    @get:AutoLogOutput(key = "Drive/State/Daqs/FailedDaqs")
     val failedDaqs: Int
         get() = savedState?.FailedDaqs ?: 0
 
     private val gyro: Pigeon2
         get() = Pigeon2(1)//io.pigeon2 //TODO: UNCOMMENT WHEN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
     val gyroConnected: Boolean get() = gyro.isConnected
 
-    @get:AutoLogOutput(key = "Drive/Gyro/Yaw")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Yaw")
     val rawGyroYaw: Angle
         get() = 0.0.degrees//BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.yaw, gyro.angularVelocityZWorld).degrees.wrap()//TODO: UNCOMMENT IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/Gyro/Pitch")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Pitch")
     val gyroPitch: Angle
         get() = 0.0.degrees//BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.pitch, gyro.angularVelocityXWorld).degrees.wrap()//TODO: UNCOMMENT IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/Gyro/Roll")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Roll")
     val gyroRoll: Angle
         get() = 0.0.degrees//BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.roll, gyro.angularVelocityYWorld).degrees.wrap()//TODO: UNCOMMENT IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/Gyro/YawRate")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/YawRate")
     val gyroYawRate: AngularVelocity
         get() = 0.0.degreesPerSecond//gyro.angularVelocityZWorld.valueAsDouble.degreesPerSecond //TODO: UNCOMMENT IN 2027 PHOENIX 6
-    @get:AutoLogOutput(key = "Drive/Gyro/PitchRate")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/PitchRate")
     val gyroPitchRate: AngularVelocity
         get() = 0.0.degreesPerSecond//gyro.angularVelocityXWorld.valueAsDouble.degreesPerSecond //TODO: UNCOMMENT IN 2027 PHOENIX 6
-    @get:AutoLogOutput(key = "Drive/Gyro/RollRate")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/RollRate")
     val gyroRollRate: AngularVelocity
         get() = 0.0.degreesPerSecond//gyro.angularVelocityYWorld.valueAsDouble.degreesPerSecond //TODO: UNCOMMENT IN 2027 PHOENIX 6
 
-    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationX")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationX")
     val gyroAccelerationX: LinearAcceleration
         get() = 0.0.inchesPerSecondPerSecond//(gyro.accelerationX.valueAsDouble - gyro.gravityVectorX.valueAsDouble).Gs //TODO: UNCOMMENT IN 2027 PHOENIX 6
-    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationY")
+    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationY")
     val gyroAccelerationY: LinearAcceleration
         get() = 0.0.inchesPerSecondPerSecond//(gyro.accelerationY.valueAsDouble - gyro.gravityVectorY.valueAsDouble).Gs //TODO: UNCOMMENT IN 2027 PHOENIX 6
 
@@ -277,7 +277,7 @@ abstract class SwerveDriveSubsystem(
      * true = paths need to be flipped
      * false = paths do not need to be flipped
      * */
-    @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
+//TODO    @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
     val flipChoreoPaths
         get() = choreoPathsStartOnRed != isRedAlliance
 
@@ -616,8 +616,8 @@ abstract class SwerveDriveSubsystem(
         wantedPose: Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         entryAngleSupplier: () -> Angle? = { null },
-        autopilotSupplier: Autopilot? = autoPilot,
-        earlyExit: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target)//TODO: UNCOMMENT IN 2027 AUTOPILOT */  }
+//        autopilotSupplier: Autopilot? = autoPilot, TODO
+//        earlyExit: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target)//TODO: UNCOMMENT IN 2027 AUTOPILOT */  }
     ) {} //= driveToAutopilotPoint({ wantedPose }, poseSupplier, entryAngleSupplier, autopilotSupplier, earlyExit) //TODO: AP 2027
 
     /**
@@ -633,8 +633,8 @@ abstract class SwerveDriveSubsystem(
         wantedPose: () -> Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         entryAngleSupplier: () -> Angle? = { null },
-        autopilotSupplier: Autopilot? = autoPilot, // TODO: make not null
-        exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target) TODO: UNCOMMENT IN 2027 AUTOPILOT*/ }
+//        autopilotSupplier: Autopilot? = autoPilot, // TODO: make not null
+//        exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> true/*autopilotSupplier.atTarget(robotPose, target) TODO: UNCOMMENT IN 2027 AUTOPILOT*/ }
     ): Command = useUnnamed(this) {
 //        println("running driveToAutopilotPoint") ////TODO: UNCOMMENT IN 2027 AUTOPILOT
 //        while (true) {
@@ -888,7 +888,7 @@ abstract class SwerveDriveSubsystem(
         xyTolerance: Distance,
         thetaTolerance: Angle,
         beelineRadius: Distance = 8.0.centimeters
-    ): Autopilot? {
+    ): /*Autopilot*/Unit? { // TODO
 //        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondPerSecond, maxJerk.asMetersPerSecondCubed))
 //            .withErrorXY(xyTolerance).withErrorTheta(thetaTolerance).withBeelineRadius(beelineRadius) //TODO: UNCOMMENT IN 2027 AUTOPILOT
 //        )

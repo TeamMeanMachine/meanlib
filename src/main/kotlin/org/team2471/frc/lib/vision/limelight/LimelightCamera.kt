@@ -4,10 +4,10 @@ import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineConfig
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
-import org.littletonrobotics.junction.LogTable
-import org.littletonrobotics.junction.Logger
+//import org.littletonrobotics.junction.LogTable
+//import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
-import org.littletonrobotics.junction.inputs.LoggableInputs
+//import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
@@ -35,22 +35,23 @@ class LimelightCamera(
 
     private val loggingName: String = "Inputs/LimelightCamera [$cameraName]"
 
-    private val inputs = LimelightCameraInputs()
+//    private val inputs = LimelightCameraInputs() TODO
 
     // TODO: make work
     override val isConnected: Boolean = false
 
-    class LimelightCameraInputs : LoggableInputs {
-        var latestResult: PhotonPipelineResult = PhotonPipelineResult()
 
-        override fun toLog(table: LogTable) {
-//            table.put("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
-        }
-
-        override fun fromLog(table: LogTable) {
-//            latestResult = table.get("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
-        }
-    }
+//    class LimelightCameraInputs : LoggableInputs { TODO
+//        var latestResult: PhotonPipelineResult = PhotonPipelineResult()
+//
+//        override fun toLog(table: LogTable) {
+////            table.put("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//        }
+//
+//        override fun fromLog(table: LogTable) {
+////            latestResult = table.get("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//        }
+//    }
 
     override fun updateInputs() {
         val corners = NetworkTableInstance.getDefault().getTable(cameraName).getEntry("tcornxy").getDoubleArray(doubleArrayOf())
@@ -89,18 +90,18 @@ class LimelightCamera(
 
             val tl = LimelightHelpers.getLatency_Pipeline(cameraName) * 1000
             val cl = LimelightHelpers.getLatency_Capture(cameraName) * 1000
-            inputs.latestResult = PhotonPipelineResult(
-                0.0.toLong(),
-                (RobotController.getTime() - tl - cl).toLong(),
-                (RobotController.getTime()),
-                0.0.toLong(),
-                targets
-            )
+//            inputs.latestResult = PhotonPipelineResult(
+//                0.0.toLong(),
+//                (RobotController.getTime() - tl - cl).toLong(),
+//                (RobotController.getTime()),
+//                0.0.toLong(),
+//                targets
+//            ) TODO
         } else {
-            inputs.latestResult = PhotonPipelineResult()
+//            inputs.latestResult = PhotonPipelineResult() TODO
         }
 
-        Logger.processInputs(loggingName, inputs)
+//        Logger.processInputs(loggingName, inputs) TODO
     }
 
     override fun setPipelineIndex(index: Int) {}
@@ -116,7 +117,7 @@ class LimelightCamera(
     override val latestMeasurement: PipelineVisionPacket
         get() {
             val startTimestamp = Timer.getMonotonicTimestamp()
-            val result = inputs.latestResult
+//            val result = inputs.latestResult TODO
             val hasTargets = false//result.hasTargets() //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
             if (!hasTargets) {
                 return PipelineVisionPacket(false, null, null, -1.0)

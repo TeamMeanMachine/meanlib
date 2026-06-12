@@ -19,10 +19,10 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.conduit.ConduitApi;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
+//import org.littletonrobotics.conduit.ConduitApi;
+//import org.littletonrobotics.junction.inputs.LoggableInputs;
+//import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+//import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.framework.RobotBase;
 import org.wpilib.system.RobotController;
@@ -44,12 +44,12 @@ public class MeanLogger {
     private static MeanLogTable entry = new MeanLogTable(0);
     private static MeanLogTable outputTable;
     private static Map<String, String> metadata = new HashMap<>();
-    private static ConsoleSource console = null;
-    private static List<LoggedNetworkInput> dashboardInputs = new ArrayList<>();
+//    private static ConsoleSource console = null;
+//    private static List<LoggedNetworkInput> dashboardInputs = new ArrayList<>();
     private static Supplier<ByteBuffer[]> urclSupplier = null;
     private static boolean enableConsole = true;
 
-    private static LogReplaySource replaySource;
+//    private static LogReplaySource replaySource;
     private static final BlockingQueue<MeanLogTable> receiverQueue =
             new ArrayBlockingQueue<MeanLogTable>(receiverQueueCapcity);
     private static final MeanReceiverThread receiverThread = new MeanReceiverThread(receiverQueue);
@@ -63,11 +63,11 @@ public class MeanLogger {
      *
      * @param replaySource The supplier for incoming replay data.
      */
-    public static void setReplaySource(LogReplaySource replaySource) {
-        if (!running) {
-            MeanLogger.replaySource = replaySource;
-        }
-    }
+//    public static void setReplaySource(LogReplaySource replaySource) {
+//        if (!running) {
+//            MeanLogger.replaySource = replaySource;
+//        }
+//    }
 
     /**
      * Adds a new data receiver to process real or replayed data. This method only works during setup
@@ -87,9 +87,9 @@ public class MeanLogger {
      *
      * @param dashboardInput The input to register.
      */
-    public static void registerDashboardInput(LoggedNetworkInput dashboardInput) {
-        dashboardInputs.add(dashboardInput);
-    }
+//    public static void registerDashboardInput(LoggedNetworkInput dashboardInput) {
+//        dashboardInputs.add(dashboardInput);
+//    }
 
     /**
      * Registers a log supplier for <a
@@ -131,7 +131,7 @@ public class MeanLogger {
      * @return True if a replay source is being used, false otherwise.
      */
     public static boolean hasReplaySource() {
-        return replaySource != null;
+        return false;
     }
 
     /** Starts running the logging system, including any data receivers or the replay source. */
@@ -162,36 +162,36 @@ public class MeanLogger {
             // Start console capture
             if (enableConsole) {
                 if (RobotBase.isReal()) {
-                    console = new ConsoleSource.SystemCore();
+//                    console = new ConsoleSource.SystemCore();
                 } else {
-                    console = new ConsoleSource.Simulator();
+//                    console = new ConsoleSource.Simulator();
                 }
             }
 
             // Start replay source
-            if (replaySource != null) {
-                replaySource.start();
-            }
+//            if (replaySource != null) {
+//                replaySource.start();
+//            }
 
             // Create output table
-            if (replaySource == null) {
+//            if (replaySource == null) {
                 outputTable = entry.getSubtable("RealOutputs");
-            } else {
-                outputTable = entry.getSubtable("ReplayOutputs");
-            }
+//            } else {
+//                outputTable = entry.getSubtable("ReplayOutputs");
+//            }
 
             // Record metadata
-            MeanLogTable metadataTable =
-                    entry.getSubtable(replaySource == null ? "RealMetadata" : "ReplayMetadata");
-            for (Map.Entry<String, String> item : metadata.entrySet()) {
-                metadataTable.put(item.getKey(), item.getValue());
-            }
+//            MeanLogTable metadataTable =
+//                    entry.getSubtable(replaySource == null ? "RealMetadata" : "ReplayMetadata");
+//            for (Map.Entry<String, String> item : metadata.entrySet()) {
+//                metadataTable.put(item.getKey(), item.getValue());
+//            }
 
             // Start receiver thread
             receiverThread.start();
 
             // Update RobotController to AdvantageKit timestamp
-            RobotController.setTimeSource(Logger::getTimestamp);
+//            RobotController.setTimeSource(Logger::getTimestamp);
 
             // Start first periodic cycle
             periodicBeforeUser();
@@ -202,16 +202,16 @@ public class MeanLogger {
     public static void end() {
         if (running) {
             running = false;
-            if (console != null) {
-                try {
-                    console.close();
-                } catch (Exception e) {
-                    DriverStationErrors.reportError("[AdvantageKit] Failed to stop console capture.", true);
-                }
-            }
-            if (replaySource != null) {
-                replaySource.end();
-            }
+//            if (console != null) {
+//                try {
+//                    console.close();
+//                } catch (Exception e) {
+//                    DriverStationErrors.reportError("[AdvantageKit] Failed to stop console capture.", true);
+//                }
+//            }
+//            if (replaySource != null) {
+//                replaySource.end();
+//            }
             receiverThread.interrupt();
             try {
                 receiverThread.join();
@@ -231,16 +231,16 @@ public class MeanLogger {
         if (running) {
             // Get next entry
             long entryUpdateStart = RobotController.getMonotonicTime();
-            if (replaySource == null) {
-                synchronized (entry) {
-                    entry.setTimestamp(RobotController.getMonotonicTime());
-                }
-            } else {
+//            if (replaySource == null) {
+//                synchronized (entry) {
+//                    entry.setTimestamp(RobotController.getMonotonicTime());
+//                }
+//            } else {
 //                if (!replaySource.updateTable(entry)) {
 //                    end();
 //                    System.exit(0);
 //                }
-            }
+//            }
 
             // Update Driver Station
             long dsStart = RobotController.getMonotonicTime();
@@ -250,9 +250,9 @@ public class MeanLogger {
 
             // Update dashboard inputs
             long dashboardInputsStart = RobotController.getMonotonicTime();
-            for (int i = 0; i < dashboardInputs.size(); i++) {
-                dashboardInputs.get(i).periodic();
-            }
+//            for (int i = 0; i < dashboardInputs.size(); i++) {
+//                dashboardInputs.get(i).periodic();
+//            }
             long dashboardInputsEnd = RobotController.getMonotonicTime();
 
             // Record timing data
@@ -287,10 +287,10 @@ public class MeanLogger {
             long conduitSaveStart = RobotController.getMonotonicTime();
             if (!hasReplaySource()) {
 //                LoggedSystemStats.saveToLog(entry.getSubtable("SystemStats"));
-                LoggedPowerDistribution loggedPowerDistribution = LoggedPowerDistribution.getInstance();
-                if (loggedPowerDistribution != null) {
+//                LoggedPowerDistribution loggedPowerDistribution = LoggedPowerDistribution.getInstance();
+//                if (loggedPowerDistribution != null) {
 //                    loggedPowerDistribution.saveToLog(entry.getSubtable("PowerDistribution"));
-                }
+//                }
                 if (urclSupplier != null && RobotBase.isReal()) {
                     ByteBuffer[] buffers = urclSupplier.get();
                     if (buffers.length == 3) {
@@ -326,10 +326,10 @@ public class MeanLogger {
             }
             long consoleCaptureStart = RobotController.getMonotonicTime();
             if (enableConsole) {
-                String consoleData = console.getNewData();
-                if (!consoleData.isEmpty()) {
-                    recordOutput("Console", consoleData.trim());
-                }
+//                String consoleData = console.getNewData();
+//                if (!consoleData.isEmpty()) {
+//                    recordOutput("Console", consoleData.trim());
+//                }
             }
             long consoleCaptureEnd = RobotController.getMonotonicTime();
 
@@ -421,11 +421,11 @@ public class MeanLogger {
      */
     public static void processInputs(String key, MeanLoggableInputs inputs) {
         if (running) {
-            if (replaySource == null) {
+//            if (replaySource == null) {
                 inputs.toLog(entry.getSubtable(key));
-            } else {
-                inputs.fromLog(entry.getSubtable(key));
-            }
+//            } else {
+//                inputs.fromLog(entry.getSubtable(key));
+//            }
         }
     }
 
@@ -1219,9 +1219,9 @@ public class MeanLogger {
      *     "/ReplayOutputs"
      * @param value The value of the field.
      */
-    public static void recordOutput(String key, LoggedMechanism2d value) {
-        if (running) {
+//    public static void recordOutput(String key, LoggedMechanism2d value) {
+//        if (running) {
 //            value.logOutput(outputTable.getSubtable(key));
-        }
-    }
+//        }
+//    }
 }

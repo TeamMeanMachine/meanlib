@@ -8,10 +8,10 @@ import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.ejml.simple.SimpleMatrix
-import org.littletonrobotics.junction.LogTable
-import org.littletonrobotics.junction.Logger
+//import org.littletonrobotics.junction.LogTable
+//import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
-import org.littletonrobotics.junction.inputs.LoggableInputs
+//import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
@@ -34,59 +34,59 @@ class PhotonVisionCamera(
     private val loggingName: String = "Cameras/PhotonVisionCamera [$cameraName]"
     private val camera: PhotonCamera = if (isReal) PhotonCamera(cameraName) else cameraSim.camera
 
-    private val inputs = PhotonCameraInputs()
+//    private val inputs = PhotonCameraInputs() TODO
 
     override var allDataPopulated: Boolean = false
 
     override val isConnected: Boolean
         get() = camera.isConnected
 
-    class PhotonCameraInputs : LoggableInputs {
-        // TODO: Monitor performance and consider not logging the whole PhotonPipelineResult.
-        var pipelineIndex: Int = 0
-        var latestResult: PhotonPipelineResult = PhotonPipelineResult()
-        var cameraMatrix: Optional<Matrix<N3, N3>> = Optional.empty<Matrix<N3, N3>>()
-        var distCoeffs: Optional<Matrix<N8, N1>> = Optional.empty<Matrix<N8, N1>>()
-        var allDataPopulated: Boolean = false
-
-        override fun toLog(table: LogTable) {
-            table.put("PipelineIndex", pipelineIndex)
-//            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
-            table.put("CameraMatrixIsPresent", cameraMatrix.isPresent)
-            if (cameraMatrix.isPresent) table.put("CameraMatrixData", cameraMatrix.get().data)
-            table.put("DistCoeffsIsPresent", distCoeffs.isPresent)
-            if (distCoeffs.isPresent) table.put("DistCoeffsData", distCoeffs.get().data)
-        }
-
-        override fun fromLog(table: LogTable) {
-            var allDataPop = true
-            pipelineIndex = table.get("PipelineIndex", pipelineIndex)
-//            latestResult = table.get("LatestResult", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
-            cameraMatrix =
-                if (table.get("CameraMatrixIsPresent", false)) {
-                    Optional.of<Matrix<N3, N3>>(
-                        Matrix<N3, N3>(
-                            SimpleMatrix(3, 3, true, *table.get("CameraMatrixData", DoubleArray(9)))
-                        )
-                    )
-                } else {
-                    allDataPop = false
-                    Optional.empty<Matrix<N3, N3>>()
-                }
-            distCoeffs =
-                if (table.get("DistCoeffsIsPresent", false)) {
-                    Optional.of<Matrix<N8, N1>>(
-                        Matrix<N8, N1>(
-                            SimpleMatrix(8, 1, true, *table.get("DistCoeffsData", DoubleArray(8)))
-                        )
-                    )
-                } else {
-                    allDataPop = false
-                    Optional.empty<Matrix<N8, N1>>()
-                }
-            allDataPopulated = allDataPop
-        }
-    }
+//    class PhotonCameraInputs : LoggableInputs { TODO
+//        // TODO: Monitor performance and consider not logging the whole PhotonPipelineResult.
+//        var pipelineIndex: Int = 0
+//        var latestResult: PhotonPipelineResult = PhotonPipelineResult()
+//        var cameraMatrix: Optional<Matrix<N3, N3>> = Optional.empty<Matrix<N3, N3>>()
+//        var distCoeffs: Optional<Matrix<N8, N1>> = Optional.empty<Matrix<N8, N1>>()
+//        var allDataPopulated: Boolean = false
+//
+//        override fun toLog(table: LogTable) {
+//            table.put("PipelineIndex", pipelineIndex)
+////            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//            table.put("CameraMatrixIsPresent", cameraMatrix.isPresent)
+//            if (cameraMatrix.isPresent) table.put("CameraMatrixData", cameraMatrix.get().data)
+//            table.put("DistCoeffsIsPresent", distCoeffs.isPresent)
+//            if (distCoeffs.isPresent) table.put("DistCoeffsData", distCoeffs.get().data)
+//        }
+//
+//        override fun fromLog(table: LogTable) {
+//            var allDataPop = true
+//            pipelineIndex = table.get("PipelineIndex", pipelineIndex)
+////            latestResult = table.get("LatestResult", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+//            cameraMatrix =
+//                if (table.get("CameraMatrixIsPresent", false)) {
+//                    Optional.of<Matrix<N3, N3>>(
+//                        Matrix<N3, N3>(
+//                            SimpleMatrix(3, 3, true, *table.get("CameraMatrixData", DoubleArray(9)))
+//                        )
+//                    )
+//                } else {
+//                    allDataPop = false
+//                    Optional.empty<Matrix<N3, N3>>()
+//                }
+//            distCoeffs =
+//                if (table.get("DistCoeffsIsPresent", false)) {
+//                    Optional.of<Matrix<N8, N1>>(
+//                        Matrix<N8, N1>(
+//                            SimpleMatrix(8, 1, true, *table.get("DistCoeffsData", DoubleArray(8)))
+//                        )
+//                    )
+//                } else {
+//                    allDataPop = false
+//                    Optional.empty<Matrix<N8, N1>>()
+//                }
+//            allDataPopulated = allDataPop
+//        }
+//    }
 
     init {
         if (isSim) {
@@ -96,19 +96,19 @@ class PhotonVisionCamera(
     }
 
     override fun updateInputs() {
-        inputs.pipelineIndex = camera.pipelineIndex
+//        inputs.pipelineIndex = camera.pipelineIndex TODO
         // TODO: Handle all results, not just the latest.
-        inputs.latestResult = camera.allUnreadResults.lastOrNull() ?: PhotonPipelineResult()
+//        inputs.latestResult = camera.allUnreadResults.lastOrNull() ?: PhotonPipelineResult() TOOD
         // Only update these once, since they shouldn't be changing.
-        if (inputs.cameraMatrix.isEmpty) {
+//        if (inputs.cameraMatrix.isEmpty) { TODO
 //            val cameraMatrix = camera.cameraMatrix //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
 //            if (cameraMatrix.isPresent) inputs.cameraMatrix = cameraMatrix
-        }
-        if (inputs.distCoeffs.isEmpty) {
+//        }
+//        if (inputs.distCoeffs.isEmpty) { TODO
 //            val distCoeffs = camera.distCoeffs //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
 //            if (distCoeffs.isPresent) inputs.distCoeffs = distCoeffs
-        }
-        allDataPopulated = inputs.allDataPopulated
+//        }
+//        allDataPopulated = inputs.allDataPopulated TODO
 //        Logger.processInputs(loggingName, inputs)
     }
 
@@ -121,13 +121,13 @@ class PhotonVisionCamera(
     }
 
     override val pipelineConfig: PipelineConfig
-        get() = pipelineConfigs[inputs.pipelineIndex]
+        get() = pipelineConfigs[0]//pipelineConfigs[inputs.pipelineIndex] TODO
 
     override val cameraMatrix: Optional<Matrix<N3, N3>>
-        get() = inputs.cameraMatrix
+        get() = Optional.empty<Matrix<N3, N3>>()//inputs.cameraMatrix TODO
 
     override val distCoeffs: Optional<Matrix<N8, N1>>
-        get() = inputs.distCoeffs
+        get() = Optional.empty<Matrix<N8, N1>>()//inputs.distCoeffs TODO
 
     override val fiducialType: Fiducial.Type
         get() = pipelineConfig.fiducialType
@@ -135,7 +135,7 @@ class PhotonVisionCamera(
     override val latestMeasurement: PipelineVisionPacket
         get() {
             val startTimestamp = Timer.getMonotonicTimestamp()
-            val result = inputs.latestResult
+//            val result = inputs.latestResult TODO
             val hasTargets = false//result.hasTargets() //TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
             if (!hasTargets) {
                 return PipelineVisionPacket(false, null, null, -1.0)

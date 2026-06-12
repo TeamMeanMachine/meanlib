@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.control
 
-import org.littletonrobotics.junction.Logger
+//import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.MeanLogger
 import org.wpilib.system.Timer
 
