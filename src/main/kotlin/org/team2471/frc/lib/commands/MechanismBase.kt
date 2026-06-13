@@ -6,7 +6,9 @@ import org.wpilib.command3.Coroutine
 import org.wpilib.command3.Mechanism
 import org.wpilib.command3.Scheduler
 
-open class MechanismBase(name: String): Mechanism(name) {
+open class MechanismBase(val mechanismName: String): Mechanism {
+
+    override fun getName(): String = mechanismName
 
     init {
         // Checks if periodic() and simulationPeriodic() have been overridden before adding them to the periodic scheduler,
@@ -38,18 +40,21 @@ open class MechanismBase(name: String): Mechanism(name) {
      */
     open fun simulationPeriodic() {}
 
-    /**
-     * Shortcut utility function to create a default command.
-     *
-     * Sets the command name to be "[name] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
-     * @see Mechanism.setDefaultCommand
-     */
-    fun defaultCommand(body: Coroutine.() -> Unit): Command =
-        useUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
-
 
     private fun hasOverride(methodName: String): Boolean {
         val method = javaClass.getMethod(methodName)
         return method.declaringClass != MechanismBase::class.java
     }
+}
+
+/**
+ * Shortcut utility function to create a default command.
+ *
+ * Sets the command name to be "[name] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
+ * @see Mechanism.setDefaultCommand
+ */
+fun Mechanism.setDefaultCommand(body: Coroutine.() -> Unit): Command {
+    val createdDefault = useUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
+    defaultCommand = createdDefault
+    return createdDefault
 }

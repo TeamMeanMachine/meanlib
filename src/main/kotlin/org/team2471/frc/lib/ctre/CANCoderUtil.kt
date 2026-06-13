@@ -39,16 +39,16 @@ fun CANcoder.setMagnetSensorOffset(offset: Angle) {
  * This is probably a backing call
  */
 fun CANcoder.setCANCoderAngle(angle: Angle): Angle {
-//    val initialPosition = this.absolutePosition.valueAsDouble.rotations TODO: UNCOMMENT WHEN PHOENIX 6 2027 RELEASES
-//    val initialOffset = getMagnetSensorOffset()
-//    println("initial position $initialPosition initial offset $initialOffset")
-//
-//    val rawPosition = initialPosition - initialOffset
-//    val newOffset = (angle - rawPosition)
-//    println("rawPosition $rawPosition new offset $newOffset")
-//
-//    this.setMagnetSensorOffset(newOffset)
-    return 0.0.degrees//newOffset
+    val initialPosition = this.absolutePosition.valueAsDouble.rotations
+    val initialOffset = getMagnetSensorOffset()
+    println("initial position $initialPosition initial offset $initialOffset")
+
+    val rawPosition = initialPosition - initialOffset
+    val newOffset = (angle - rawPosition)
+    println("rawPosition $rawPosition new offset $newOffset")
+
+    this.setMagnetSensorOffset(newOffset)
+    return newOffset
 }
 
 fun CANcoderConfiguration.inverted(inverted: Boolean): CANcoderConfiguration {

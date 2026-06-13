@@ -19,13 +19,13 @@ class PipelineConfig(
 
     //used for sim only
     val simCameraProp: SimCameraProperties = SimCameraProperties().apply {
-//        setCalibration(resWidth, resHeight, 70.2.degrees.asRotation2d) //TODO: UNCOMMENT WHEN PHOTONVISION UPDATES TO 2027
+        setCalibration(resWidth, resHeight, 70.2.degrees.asRotation2d)
         setCalibError(0.001, 0.005) // Values from docs. Should change
         fps = 20.0
         avgLatencyMs = 20.0
         latencyStdDevMs = 3.0
     },
-    val camIntrinsics: Matrix<N3, N3>? = null /*simCameraProp.intrinsics*/, //TODO: UNCOMMENT AND MAKE NOT NULLABLE WHEN PHOTONVISION UPDATES TO 2027
+    val camIntrinsics: Matrix<N3, N3> = simCameraProp.intrinsics,
     // used for sim only
-    val distCoeffs: Matrix<N8, N1>? = null //simCameraProp.distCoeffs //TODO: UNCOMMENT AND MAKE NOT NULLABLE WHEN PHOTONVISION UPDATES TO 2027
+    val distCoeffs: Matrix<N8, N1> = simCameraProp.distCoeffs
 )

@@ -21,6 +21,10 @@ gradle.afterProject { proj ->
     }
 }
 
+wpi.maven.useLocal = false
+wpi.maven.useDevelopment = true
+wpi.versions.wpilibVersion = '2027.+'
+
 group = "org.team2471.lib"
 
 repositories {
@@ -50,16 +54,16 @@ dependencies {
 //    api wpi.java.vendor.jniDebug(wpi.platforms.desktop)
 //    api wpi.sim.enableDebug()
 
-    api wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
-    api wpi.java.vendor.jniRelease(wpi.platforms.desktop)
-    api wpi.sim.enableRelease()
+//    api wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
+//    api wpi.java.vendor.jniRelease(wpi.platforms.desktop)
+//    api wpi.sim.enableRelease()
 
     // SystemCore (robot hardware)
-    api wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
-    api wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
+//    api wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
+//    api wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
 
-    api wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
-    api wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
+//    api wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
+//    api wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"
     api "org.jetbrains.kotlin:kotlin-stdlib"
@@ -68,6 +72,9 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
     api 'com.fasterxml.jackson.core:jackson-core:2.17.0'
     api 'com.fasterxml.jackson.core:jackson-annotations:2.17.0'
+
+    def akitFile = file("$projectDir/vendordeps/AdvantageKit.json")
+    kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
 }
 
 tasks.test {

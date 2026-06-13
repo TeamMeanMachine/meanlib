@@ -19,6 +19,9 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController
 //import com.therekrab.autopilot.APTarget
 //import com.therekrab.autopilot.Autopilot
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.littletonrobotics.junction.AutoLogOutput
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -42,7 +45,6 @@ import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
 //import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.MeanLogger
-import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
@@ -60,7 +62,9 @@ import org.team2471.frc.lib.util.isRedAlliance
 import org.team2471.frc.lib.util.isReplay
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.translation
+import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
+import org.wpilib.command3.Mechanism
 import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStation
 import org.wpilib.driverstation.DriverStationErrors
@@ -89,15 +93,13 @@ import kotlin.math.min
 abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-): MechanismBase("Drive") {
-
-    val io = SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-        { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-        { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-        { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
-        driveConstants,
-        *moduleConstants
-    )
+): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
+    driveConstants,
+    *moduleConstants
+), Mechanism {
 
     /** Percentage of max speed to drive using the joysticks. */
     abstract fun getJoystickPercentageVelocity(): ChassisVelocities
@@ -127,7 +129,7 @@ abstract class SwerveDriveSubsystem(
      * False = all choreo paths are made on the blue side.
      * True = all choreo paths are made on the red side.
      */
-//TODO    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
+    @get:AutoLogOutput(key = "Drive/Path/ChoreoPathsStartOnRed")
     abstract val choreoPathsStartOnRed: Boolean
 
     /**
@@ -142,7 +144,7 @@ abstract class SwerveDriveSubsystem(
      *
      * Abstract to allow for other pose sources (like cameras) to override the setter and to reset when this is set.
      */
-//TODO    @get:AutoLogOutput(key = "Drive/Pose")
+    @get:AutoLogOutput(key = "Drive/Pose")
     abstract var pose: Pose2d
 
     /**
@@ -153,7 +155,7 @@ abstract class SwerveDriveSubsystem(
     abstract var heading: Rotation2d
 
     /** Stores information about the current state of the drivetrain */
-    var savedState: SwerveDrivetrain.SwerveDriveState = io.stateCopy
+    var savedState: SwerveDrivetrain.SwerveDriveState = stateCopy
         private set
 
     /** Robot-centric velocity of drivetrain xy and heading. */
@@ -161,109 +163,109 @@ abstract class SwerveDriveSubsystem(
         get() = savedState.Velocity
 
     /** Field-centric velocity of drivetrain xy and heading. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Speeds")
+    @get:AutoLogOutput(key = "Drive/State/Speeds")
     val chassisVelocities: ChassisVelocities
         get() = robotRelativeChassisVelocity.toFieldRelative(pose.rotation)
 
     /** Field-centric drivetrain xy velocity. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Velocity")
+    @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: Translation2d get() = chassisVelocities.translation
     private var prevVelocity = velocity
 
     /** Field-centric drivetrain xy acceleration. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Acceleration")
+    @get:AutoLogOutput(key = "Drive/State/Acceleration")
     var acceleration = Translation2d(0.0, 0.0)
         private set
 
     /** Field-centric drivetrain xy jerk. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Jerk")
+    @get:AutoLogOutput(key = "Drive/State/Jerk")
     var jerk = Translation2d(0.0, 0.0)
         private set
 
     private var prevTime = -0.02
 
     /** Stores the velocity and angle of each swerve module. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
+    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
     val moduleStates: Array<SwerveModuleVelocity>
         get() = savedState.ModuleVelocities
 
     /** Stores the velocity and angle setpoints of each swerve module. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleTargets")
+    @get:AutoLogOutput(key = "Drive/State/Modules/ModuleTargets")
     val moduleTargets: Array<SwerveModuleVelocity>
         get() = savedState.ModuleTargets
 
     /** Stores the distance and angle of each swerve module. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Modules/ModulePositions")
+    @get:AutoLogOutput(key = "Drive/State/Modules/ModulePositions")
     val modulePositions: Array<SwerveModulePosition>
         get() = savedState.ModulePositions
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/RawHeading")
+    @get:AutoLogOutput(key = "Drive/State/RawHeading")
     val rawHeading: Rotation2d
         get() = savedState.RawHeading.wrap()
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
+    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
     val gyroLatency get() = gyro.yaw.timestamp.latency
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
+        @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
     val gyroVoltage get() = gyro.supplyVoltage.valueAsDouble
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
+        @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
     val gyroBootIntoMotionFault get() = gyro.fault_BootIntoMotion.value
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
+        @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
     val gyroUnderVoltageFault get() = gyro.fault_Undervoltage.value
 
-    //TODO    @get:AutoLogOutput(key = "Drive/State/Timestamp")
+        @get:AutoLogOutput(key = "Drive/State/Timestamp")
     val stateTimestamp: Double
         get() = savedState.Timestamp
 
     /** Loop frequency of the odometry thread. */
-//TODO    @get:AutoLogOutput(key = "Drive/State/OdometryPeriod")
+    @get:AutoLogOutput(key = "Drive/State/OdometryPeriod")
     val odometryPeriod: Double
         get() = savedState.OdometryPeriod
 
     /** Successful Data Acquisitions */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Daqs/SuccessfulDaqs")
+    @get:AutoLogOutput(key = "Drive/State/Daqs/SuccessfulDaqs")
     val successfulDaqs: Int
         get() = savedState.SuccessfulDaqs
 
     /** Failed Data Acquisitions */
-//TODO    @get:AutoLogOutput(key = "Drive/State/Daqs/FailedDaqs")
+    @get:AutoLogOutput(key = "Drive/State/Daqs/FailedDaqs")
     val failedDaqs: Int
         get() = savedState.FailedDaqs
 
     private val gyro: Pigeon2
-        get() = io.pigeon2
+        get() = pigeon2
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
+    @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
     val gyroConnected: Boolean get() = gyro.isConnected
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Yaw")
+    @get:AutoLogOutput(key = "Drive/Gyro/Yaw")
     val rawGyroYaw: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.yaw, gyro.angularVelocityZWorld).degrees.wrap()
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Pitch")
+    @get:AutoLogOutput(key = "Drive/Gyro/Pitch")
     val gyroPitch: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.pitch, gyro.angularVelocityXWorld).degrees.wrap()
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/Roll")
+    @get:AutoLogOutput(key = "Drive/Gyro/Roll")
     val gyroRoll: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.roll, gyro.angularVelocityYWorld).degrees.wrap()
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/YawRate")
+    @get:AutoLogOutput(key = "Drive/Gyro/YawRate")
     val gyroYawRate: AngularVelocity
         get() = gyro.angularVelocityZWorld.valueAsDouble.degreesPerSecond
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/PitchRate")
+    @get:AutoLogOutput(key = "Drive/Gyro/PitchRate")
     val gyroPitchRate: AngularVelocity
         get() = gyro.angularVelocityXWorld.valueAsDouble.degreesPerSecond
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/RollRate")
+    @get:AutoLogOutput(key = "Drive/Gyro/RollRate")
     val gyroRollRate: AngularVelocity
         get() = gyro.angularVelocityYWorld.valueAsDouble.degreesPerSecond
 
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationX")
+    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationX")
     val gyroAccelerationX: LinearAcceleration
         get() = (gyro.accelerationX.valueAsDouble - gyro.gravityVectorX.valueAsDouble).Gs
-    //TODO    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationY")
+    @get:AutoLogOutput(key = "Drive/Gyro/AccelerationY")
     val gyroAccelerationY: LinearAcceleration
         get() = (gyro.accelerationY.valueAsDouble - gyro.gravityVectorY.valueAsDouble).Gs
 
@@ -287,7 +289,7 @@ abstract class SwerveDriveSubsystem(
      * true = paths need to be flipped
      * false = paths do not need to be flipped
      * */
-//TODO    @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
+    @get:AutoLogOutput(key = "Drive/Path/FlipChoreoPaths")
     val flipChoreoPaths
         get() = choreoPathsStartOnRed != isRedAlliance
 
@@ -303,8 +305,8 @@ abstract class SwerveDriveSubsystem(
 
     // OTHER
     // SUPPLY CURRENT STATUS SIGNALS
-    private val steerCurrentStatusSignals = io.modules.map { it.steerMotor.supplyCurrent }
-    private val driveCurrentStatusSignals = io.modules.map { it.driveMotor.supplyCurrent }
+    private val steerCurrentStatusSignals = modules.map { it.steerMotor.supplyCurrent }
+    private val driveCurrentStatusSignals = modules.map { it.driveMotor.supplyCurrent }
 
     // INITIALIZATION
 
@@ -318,8 +320,11 @@ abstract class SwerveDriveSubsystem(
         }
 
         // Register the telemetry loop function to be called during the odometry thread.
-        io.registerTelemetry(::telemetryLoop)
+        // This function runs every time new odometry data gets received (4ms-1ms)
+        registerTelemetry(::telemetryLoop)
 
+        // Add a periodic function, this function is called every scheduler loop (every robot code loop)
+        registeredScheduler.addPeriodic(::periodic)
     }
 
     /**
@@ -342,6 +347,7 @@ abstract class SwerveDriveSubsystem(
 
     /**
      * Loop that is called every 10 ms (or less) during the odometry thread.
+     * Updates [savedState] for up-to-date odometry information .
      */
     private fun telemetryLoop(state: SwerveDrivetrain.SwerveDriveState) {
         val currTime = Timer.getMonotonicTimestamp()
@@ -353,8 +359,8 @@ abstract class SwerveDriveSubsystem(
 
         // To have accurate acceleration, we grab directly from the drive motor.
         // Although during sim, the motor's acceleration doesn't get updated (as of 2025), so we manually calculate it from ∆velocity.
-        acceleration = io.kinematics.toChassisVelocities(*moduleStates.mapIndexed { i, m -> m.apply {
-            velocity = io.modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
+        acceleration = kinematics.toChassisVelocities(*moduleStates.mapIndexed { i, m -> m.apply {
+            velocity = modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
         } }.toTypedArray()).translation
 
         jerk = ((acceleration - prevAcceleration) / deltaTime)
@@ -364,11 +370,11 @@ abstract class SwerveDriveSubsystem(
         gyroDisconnectedAlert.set(!isGyroConnected)
 
         // Check if a part of any modules have been disconnected. Save on cycle time by only checking one module every loop.
-        val module = io.modules[moduleErrorIndex]
+        val module = modules[moduleErrorIndex]
         driveDisconnectAlerts[moduleErrorIndex].set(!module.driveMotor.isConnected)
         steerDisconnectAlerts[moduleErrorIndex].set(!module.steerMotor.isConnected)
         encoderDisconnectAlerts[moduleErrorIndex].set(!module.encoder.isConnected)
-        moduleErrorIndex = (moduleErrorIndex + 1) % io.modules.size
+        moduleErrorIndex = (moduleErrorIndex + 1) % modules.size
 
         // Calculate heading from swerve odometry when gyro is disconnected. evil. doesn't work good enough
 //        if (!isGyroConnected && isReal) {
@@ -383,14 +389,15 @@ abstract class SwerveDriveSubsystem(
 
     /**
      * This is responsible for providing disconnect warnings, and more good things.
+     * Designed to be run every robot loop cycle
      */
-    override fun periodic() {
+    open fun periodic() {
         // Disabled actions
         if (isDisabledSupplier()) {
             // Set module setpoints to their current position.
-            io.setControl(ApplyModuleStates())
+            setControl(ApplyModuleStates())
             if (isReal) {
-                io.modules.forEach {
+                modules.forEach {
                     if (it.steerMotor.isConnected && it.encoder.isConnected) {
                         // Set steer motor to encoder position if it is not already there.
                         val encoderPosition = it.encoder.position.value
@@ -417,22 +424,22 @@ abstract class SwerveDriveSubsystem(
      *
      *  Sometimes takes a long time when data acquisitions fail, this is why it's not a getter.
      */
-    fun updateSavedState(state: SwerveDrivetrain.SwerveDriveState = io.stateCopy) {
+    fun updateSavedState(state: SwerveDrivetrain.SwerveDriveState = stateCopy) {
         savedState = state
     }
 
-    fun resetTranslation(translation: Translation2d?) {
-        io.resetTranslation(translation)
+    override fun resetTranslation(translation: Translation2d?) {
+        super.resetTranslation(translation)
         updateSavedState() // Refresh state so we see an instant response.
     }
 
-    fun resetRotation(rotation: Rotation2d?) {
-        io.resetRotation(rotation)
+    override fun resetRotation(rotation: Rotation2d?) {
+        super.resetRotation(rotation)
         updateSavedState() // Refresh state so we see an instant response.
     }
 
-    fun resetPose(pose2d: Pose2d) {
-        resetTranslation(pose2d.translation)
+    override fun resetPose(pose2d: Pose2d) {
+        super.resetTranslation(pose2d.translation)
         heading = pose2d.rotation
     }
 
@@ -453,7 +460,7 @@ abstract class SwerveDriveSubsystem(
      */
     fun setAngleOffsets() = use("SetAngleOffsets",this) {
         println("setting angle offsets")
-        val offsets = io.modules.map { it.encoder.setCANCoderAngle(0.0.degrees) }
+        val offsets = modules.map { it.encoder.setCANCoderAngle(0.0.degrees) }
         offsets.forEachIndexed { i, offset ->
             Preferences.setDouble("Module $i Offset", offset.asDegrees)
         }
@@ -467,7 +474,7 @@ abstract class SwerveDriveSubsystem(
      */
     fun driveVelocity(velocity: ChassisVelocities) {
 //        MeanLogger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.toRobotRelative(heading)) TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-        io.setControl(
+        setControl(
             ApplyFieldVelocity().apply{
                 Velocity = velocity
                 DriveRequestType = SwerveModule.DriveRequestType.Velocity
@@ -480,7 +487,7 @@ abstract class SwerveDriveSubsystem(
      * @param velocityInVolts Speeds in volts
      */
     fun driveVoltage(velocityInVolts: ChassisVelocities) {
-        io.setControl(
+        setControl(
             ApplyFieldVelocity().apply {
                 Velocity = velocityInVolts
                 DriveRequestType = SwerveModule.DriveRequestType.OpenLoopVoltage
@@ -491,7 +498,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * Set the swerve drive modules to point inward in an "X" fashion.
      */
-    fun xPose() = io.setControl(SwerveDriveBrake())
+    fun xPose() = setControl(SwerveDriveBrake())
 
     /**
      * Applies a 0v output to the drivetrain.
@@ -502,7 +509,7 @@ abstract class SwerveDriveSubsystem(
      * Set all the drive and steer motors to brake mode.
      */
     fun brakeMode() {
-        io.modules.forEach {
+        modules.forEach {
             it.steerMotor.brakeMode()
             it.driveMotor.brakeMode()
         }
@@ -512,7 +519,7 @@ abstract class SwerveDriveSubsystem(
      * Set all the drive and steer motors to coast mode.
      */
     fun coastMode() {
-        io.modules.forEach {
+        modules.forEach {
             it.steerMotor.coastMode()
             it.driveMotor.coastMode()
         }
@@ -543,7 +550,7 @@ abstract class SwerveDriveSubsystem(
     fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
 //        MeanLogger.recordOutput("Drive/DriveAtAngle/Angle", angle) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
 //        MeanLogger.recordOutput("Drive/DriveAtAngle/Translation", translation)
-        io.setControl(
+        setControl(
             driveAtAngleRequest.apply {
                 VelocityX = translation.x
                 VelocityY = translation.y
@@ -558,7 +565,7 @@ abstract class SwerveDriveSubsystem(
      * Drives the robot using the joystick. [getChassisSpeedsFromJoystick]
      */
     fun joystickDrive(): Command = use("JoystickDrive", this) {
-        periodic {
+        this.periodic {
             driveVelocity(getChassisSpeedsFromJoystick())
         }
     }
@@ -992,9 +999,9 @@ abstract class SwerveDriveSubsystem(
     // SIM
 
     /** Must be called periodically during sim for swerve sim to work */
-    fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
+    override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
-            io.updateSimState(dtSeconds, supplyVoltage)
+            updateSimState(dtSeconds, supplyVoltage)
         } else {
             DriverStationErrors.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
@@ -1002,12 +1009,12 @@ abstract class SwerveDriveSubsystem(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun simulationPeriodic() {
+    fun simulationPeriodic() {
         LoopLogger.record("b4 Drive Sim piodic")
         updateSimState(0.02, 12.0)
-//        GlobalScope.launch {
-//            QuixVisionSim.updatePose(pose)
-//        }
+        GlobalScope.launch {
+            QuixVisionSim.updatePose(pose)
+        }
         LoopLogger.record("Drive Sim piodic")
     }
 }

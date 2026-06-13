@@ -1,48 +1,36 @@
 package org.team2471.frc.lib.control
 
-import org.team2471.frc.lib.util.isSim
-import org.wpilib.command3.Trigger
-import org.wpilib.command3.button.CommandGamepad
-import org.wpilib.command3.button.CommandNiDsXboxController
-import org.wpilib.driverstation.DriverStation
+import org.wpilib.command3.button.CommandXboxController
 import org.wpilib.driverstation.POVDirection
-
-/** Sometimes the sim GUI doesn't detect an Xbox controller as a gamepad and does not bind it as such. [simBeingDumb] attempts to rebind the joystick as if the "map gamepad" button was pressed. */
-class MeanCommandXboxController(port: Int, val simBeingDumb: Boolean = false): CommandGamepad(port) {
-    override fun getRightX(): Double {
-        if (simBeingDumb && isSim) {
-            return super.leftTriggerAxis
-        }
-        return super.getRightX()
-    }
-
-    override fun getLeftTriggerAxis(): Double {
-        if (simBeingDumb && isSim) {
-            return super.rightX
-        }
-        return super.leftTriggerAxis
-    }
-
-    fun y(): Trigger = this.northFace()
-    fun b(): Trigger = this.eastFace()
-    fun a(): Trigger = this.southFace()
-    fun x(): Trigger = this.westFace()
-}
+import org.wpilib.driverstation.XboxController
 
 /** Extension functions for raw button values. */
 
-inline val CommandGamepad.a: Boolean get() = this.hid.southFaceButton
-inline val CommandGamepad.b: Boolean get() = this.hid.eastFaceButton
-inline val CommandGamepad.x: Boolean get() = this.hid.westFaceButton
-inline val CommandGamepad.y: Boolean get() = this.hid.northFaceButton
+inline val CommandXboxController.aButton: Boolean get() = this.controller.aButton
+inline val CommandXboxController.bButton: Boolean get() = this.controller.bButton
+inline val CommandXboxController.xButton: Boolean get() = this.controller.xButton
+inline val CommandXboxController.yButton: Boolean get() = this.controller.yButton
 
-inline val CommandGamepad.rightBumper: Boolean get() = this.hid.rightBumperButton
-inline val CommandGamepad.leftBumper: Boolean get() = this.hid.leftBumperButton
+inline val CommandXboxController.rightBumperButton: Boolean get() = this.controller.rightBumperButton
+inline val CommandXboxController.leftBumperButton: Boolean get() = this.controller.leftBumperButton
 
-inline val CommandGamepad.start: Boolean get() = this.hid.startButton
-inline val CommandGamepad.back: Boolean get() = this.hid.backButton
+/** Value of the 'view' button (overlapping squares). Old Xbox controllers called this the 'start' button */
+inline val CommandXboxController.viewButton: Boolean get() = this.controller.viewButton
+/** Value of the 'menu' button (3 lines). Old Xbox controllers called this the 'back' button */
+inline val CommandXboxController.menuButton: Boolean get() = this.controller.menuButton
 
-inline val CommandGamepad.rightStickButton: Boolean get() = this.hid.rightStickButton
-inline val CommandGamepad.leftStickButton: Boolean get() = this.hid.leftStickButton
+inline val CommandXboxController.xboxButton: Boolean get() = this.controller.xboxButton
 
-inline val CommandGamepad.dPad: POVDirection get() = this.hid.pov
+/** Value of the [viewButton] button (overlapping squares), this is just a syntax rename for what we are used to. Old Xbox controllers called this the 'start' button */
+inline val CommandXboxController.startButton: Boolean get() = this.viewButton
+/** Value of the [menuButton] button (3 lines), this is just a syntax rename for what we are used to. Old Xbox controllers called this the 'back' button */
+inline val CommandXboxController.backButton: Boolean get() = this.menuButton
+
+inline val CommandXboxController.rightStickButton: Boolean get() = this.controller.rightStickButton
+inline val CommandXboxController.leftStickButton: Boolean get() = this.controller.leftStickButton
+
+/** Gets the value of the + pov button (dpad) on the controller. */
+inline val CommandXboxController.dpad: POVDirection get() = this.hid.hid.pov
+
+
+inline val CommandXboxController.isConnected: Boolean get() = this.controller.isConnected

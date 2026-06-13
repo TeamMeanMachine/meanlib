@@ -269,21 +269,21 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
             if (vision.targets != null) {
                 for (target in vision.targets) {
-//                    if (tagsToTrack.contains(target.getFiducialId())) { TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
-//                        // Use AprilTag corners.
-//                        for (cornerID in target.getDetectedCorners().indices) {
-//                            existingMeasurement.addVisionMeasurement(
-//                                cameraID,
-//                                target.getFiducialId(),
-//                                cornerID,
-//                                target.getDetectedCorners()[cornerID]
-//                            )
-//                        }
-//                        if (target.getFiducialId() <= allTargets.size) {
-//                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
-//                            detectedTags.add(allTargets[target.getFiducialId() - 1].pose.translation)
-//                        }
-//                    }
+                    if (tagsToTrack.contains(target.getFiducialId())) {
+                        // Use AprilTag corners.
+                        for (cornerID in target.getDetectedCorners().indices) {
+                            existingMeasurement.addVisionMeasurement(
+                                cameraID,
+                                target.getFiducialId(),
+                                cornerID,
+                                target.getDetectedCorners()[cornerID]
+                            )
+                        }
+                        if (target.getFiducialId() <= allTargets.size) {
+                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
+                            detectedTags.add(allTargets[target.getFiducialId() - 1].pose.translation)
+                        }
+                    }
                 }
             }
             val array = arrayOfNulls<Translation3d>(detectedTags.size)
@@ -346,14 +346,14 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             }
 
             if (measurement.targets != null) {
-//                for (target in measurement.targets) { TODO: UNCOMMENT WHEN PHOTONVISION 2027 RELEASES
-//                    if (target.fiducialId != tagID) {
-//                        continue
-//                    }
-//                    latestTimestamp = measurement.captureTimestamp
-//                    latestTarget = target
-//                    cam = camera
-//                }
+                for (target in measurement.targets) {
+                    if (target.fiducialId != tagID) {
+                        continue
+                    }
+                    latestTimestamp = measurement.captureTimestamp
+                    latestTarget = target
+                    cam = camera
+                }
             }
         }
 

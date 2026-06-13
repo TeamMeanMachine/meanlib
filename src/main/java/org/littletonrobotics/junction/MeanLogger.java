@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 //import org.littletonrobotics.junction.inputs.LoggableInputs;
 //import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 //import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
+import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.framework.RobotBase;
 import org.wpilib.system.RobotController;
@@ -44,8 +45,8 @@ public class MeanLogger {
     private static MeanLogTable entry = new MeanLogTable(0);
     private static MeanLogTable outputTable;
     private static Map<String, String> metadata = new HashMap<>();
-//    private static ConsoleSource console = null;
-//    private static List<LoggedNetworkInput> dashboardInputs = new ArrayList<>();
+    private static ConsoleSource console = null;
+    private static List<LoggedNetworkInput> dashboardInputs = new ArrayList<>();
     private static Supplier<ByteBuffer[]> urclSupplier = null;
     private static boolean enableConsole = true;
 
