@@ -46,9 +46,9 @@ dependencies {
     api wpi.java.vendor.java()
 
     // Desktop (simulation)
-    api wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
-    api wpi.java.vendor.jniDebug(wpi.platforms.desktop)
-    api wpi.sim.enableDebug()
+//    api wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
+//    api wpi.java.vendor.jniDebug(wpi.platforms.desktop)
+//    api wpi.sim.enableDebug()
 
     api wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
     api wpi.java.vendor.jniRelease(wpi.platforms.desktop)
