@@ -55,14 +55,14 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
     /**
      * A backing safe call to set the brake mode of the motor.
      * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
-     * @see setNeutralMode
+     * @see configNeutralMode
      * @see GlobalScope
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun brakeMode() {
         if (isReal) {
             GlobalScope.launch {
-                setNeutralMode(NeutralModeValue.Brake)
+                configNeutralMode(NeutralModeValue.Brake)
             }
         }
     }
@@ -70,14 +70,14 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
     /**
      * A backing safe call to set the coast mode of the motor.
      * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
-     * @see setNeutralMode
+     * @see configNeutralMode
      * @see GlobalScope
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun coastMode() {
         if (isReal) {
             GlobalScope.launch {
-                setNeutralMode(NeutralModeValue.Coast)
+                configNeutralMode(NeutralModeValue.Coast)
             }
         }
     }
