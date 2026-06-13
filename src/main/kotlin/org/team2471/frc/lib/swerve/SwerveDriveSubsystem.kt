@@ -85,6 +85,8 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.energy.BatteryLogger
+import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.util.fieldToRobotCentric
@@ -278,8 +280,9 @@ abstract class SwerveDriveSubsystem(
     private val encoderDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Encoder Disconnected", Alert.AlertType.kError) }
     private var moduleErrorIndex = 0
 
-    var totalSteerCurrent = 0.0
-    var totalDriveCurrent = 0.0
+    // SUPPLY CURRENT STATUS SIGNALS
+    private val steerCurrentStatusSignals = modules.map { it.steerMotor.supplyCurrent }
+    private val driveCurrentStatusSignals = modules.map { it.driveMotor.supplyCurrent }
 
     // INITIALIZATION
 
@@ -386,6 +389,11 @@ abstract class SwerveDriveSubsystem(
                 }
             }
         }
+
+        // Power logging
+        BaseStatusSignal.refreshAll(steerCurrentStatusSignals + driveCurrentStatusSignals) // Refresh supply current motor data
+        BatteryLogger.recordCurrent("Steer", steerCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
+        BatteryLogger.recordCurrent("Drive", driveCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
     }
 
     // STATE METHODS
