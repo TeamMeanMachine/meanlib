@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.units.*
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.units.measure.*
+import kotlin.div
 import kotlin.math.*
 
 //Unit Conversions
@@ -170,6 +171,15 @@ inline val Double.kilogramSquareMeters: MomentOfInertia get() = KilogramSquareMe
 
 inline val MomentOfInertia.asKilogramSquareMeters: Double get() = `in`(KilogramSquareMeters)
 
+// Energy
+
+inline val Energy.asJoules: Double get() = `in`(Joules)
+inline val Energy.asWattHours: Double get() = asJoules / 3600.0
+
+inline val Double.joules: Energy get() = Joules.of(this)
+inline val Double.wattHours: Energy get() = Joules.of(this * 3600.0)
+
+
 
 //Voltage
 inline val Double.volts: Voltage get() = Volts.of(this)
@@ -181,6 +191,14 @@ inline val Voltage.asVolts: Double get() = `in`(Volts)
 inline val Current.asAmps: Double get() = `in`(Amps)
 
 inline val Double.amps: Current get() = Amps.of(this)
+
+// Power
+inline val Power.asWatts: Double get() = `in`(Watts)
+inline val Power.asHorsepower: Double get() = `in`(Horsepower)
+
+inline val Double.watts: Power get() = Watts.of(this)
+inline val Double.horsepower: Power get() = Horsepower.of(this)
+
 
 //Temperature
 inline val Double.celsius: Temperature get() = Celsius.of(this)
