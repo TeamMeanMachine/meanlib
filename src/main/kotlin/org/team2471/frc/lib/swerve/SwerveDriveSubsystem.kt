@@ -89,6 +89,7 @@ import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
+import org.team2471.frc.lib.units.feet
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -773,12 +774,14 @@ abstract class SwerveDriveSubsystem(
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
      * @param resetOdometry Whether to reset the odometry to the start of the path. The default value is false.
      * @param exitSupplier A function that returns true if the command should abort. The default value ends when the path duration finishes.
+     * @param maxErrorDistance The maximum error before trying to correct it by backtracking the path.
      */
     fun driveAlongChoreoPath(
         path: Trajectory<SwerveSample>,
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
-        exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
+        exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 },
+        maxErrorDistance: Distance = 3.0.feet
     ): Command {
         val totalTime = path.totalTime
         var t = 0.0
@@ -786,6 +789,7 @@ abstract class SwerveDriveSubsystem(
         var firstLoop = true
         val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
         var error = Transform2d(Double.MAX_VALUE, Double.MAX_VALUE, Rotation2d(Double.MAX_VALUE))
+        var errorCorrection: Double = 0.0
 
         return run {
             LoopLogger.record("DriveAlongPath start")
@@ -807,7 +811,7 @@ abstract class SwerveDriveSubsystem(
             LoopLogger.record("DriveAlongPath reset odom")
 //            println("Inside driveAlongPathLoop ${timer.get()}")
 
-            t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving faster.
+            t = min(timer.get() + 0.02 - errorCorrection, totalTime) //added 0.02 to start moving faster.
             LoopLogger.record("DriveAlongPath time")
             val currentPose = poseSupplier()
             LoopLogger.record("DriveAlongPath poseSupplier")
@@ -819,6 +823,13 @@ abstract class SwerveDriveSubsystem(
             val moduleForcesY = sample.moduleForcesY()
             error = wantedPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
+
+            if (error.translation.norm > maxErrorDistance.asMeters && wantedSpeeds.translation.norm > 0.0) {
+                errorCorrection += error.translation.norm / sample.chassisSpeeds.translation.norm
+                if (errorCorrection > timer.get()) {
+                    errorCorrection = timer.get()
+                }
+            }
 
             // Add heading and xy error
             wantedSpeeds.apply {
