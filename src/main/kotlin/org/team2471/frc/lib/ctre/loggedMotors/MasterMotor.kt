@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre.loggedTalonFX
+package org.team2471.frc.lib.ctre.loggedMotors
 
 import org.team2471.frc.lib.util.isSim
 

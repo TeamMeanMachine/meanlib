@@ -1,7 +1,7 @@
-package org.team2471.frc.lib.ctre.loggedTalonFX
+package org.team2471.frc.lib.ctre.loggedMotors
 
 import com.ctre.phoenix6.CANBus
-import com.ctre.phoenix6.hardware.TalonFX
+import com.ctre.phoenix6.hardware.TalonFXS
 import com.ctre.phoenix6.signals.NeutralModeValue
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.math.system.plant.LinearSystemId
@@ -13,17 +13,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 /**
- * Wrapper for that [TalonFX] class that supports simulation when [configSim] is called.
+ * Wrapper for that [TalonFXS] class that supports simulation when [configSim] is called.
  * Also supports backing safe calls when calling [brakeMode] & [coastMode]
  *
  * @param id The CAN ID of the motor.
  * @param canBus The CAN bus to use. Defaults to roboRIO or if null.
  *
- * @see TalonFX
+ * @see TalonFXS
  * @see DCMotorSim
  */
-class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), LoggedMotor {
-    private val talonFXSim = this.simState
+class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), LoggedMotor {
+    private val talonFXSSim = this.simState
     private var motor: DCMotor? = null
     private var motorSim: DCMotorSim? = null
 
@@ -31,7 +31,7 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
 
 
     init {
-        talonFXSim.setSupplyVoltage(12.0.volts)
+        talonFXSSim.setSupplyVoltage(12.0.volts)
     }
 
     /**
@@ -84,14 +84,14 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
 
     override fun simPeriodic() {
         if (motorSim != null) {
-            val talonFXVoltage = talonFXSim.motorVoltage
+            val talonFXVoltage = talonFXSSim.motorVoltage
 
             motorSim!!.inputVoltage = talonFXVoltage
             motorSim!!.update(0.02)
 
-            talonFXSim.setRawRotorPosition(motorSim!!.angularPosition)
-            talonFXSim.setRotorVelocity(motorSim!!.angularVelocity)
-            talonFXSim.setRotorAcceleration(motorSim!!.angularAcceleration)
+            talonFXSSim.setRawRotorPosition(motorSim!!.angularPosition)
+            talonFXSSim.setRotorVelocity(motorSim!!.angularVelocity)
+            talonFXSSim.setRotorAcceleration(motorSim!!.angularAcceleration)
         }
     }
 }

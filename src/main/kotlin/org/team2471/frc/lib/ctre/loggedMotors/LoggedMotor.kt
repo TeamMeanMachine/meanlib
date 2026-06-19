@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre.loggedTalonFX
+package org.team2471.frc.lib.ctre.loggedMotors
 
 interface LoggedMotor {
     fun simPeriodic()
