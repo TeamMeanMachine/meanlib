@@ -1,4 +1,4 @@
-<img width="200px" align="right" src="https://team2471.org/wp-content/uploads/2017/08/tmm-logo_new-300x300.png">
+<img width="200px" align="right" src="Team_2471_Logo_Minimal.png">
 
 # Meanlib
 
