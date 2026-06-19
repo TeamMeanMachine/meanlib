@@ -51,7 +51,7 @@ import org.team2471.frc.lib.control.commands.sequenceCommand
 import org.team2471.frc.lib.control.commands.use
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.setCANCoderAngle
-import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
+import org.team2471.frc.lib.ctre.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
