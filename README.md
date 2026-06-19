@@ -8,7 +8,7 @@ Meanlib is a Kotlin FRC Robot utility library made by Team 2471 Mean Machine.
 
 ## Features
 
-- `SwerveDriveSubsystem` class. inherits from CTRE SwerveDrivetrain, includes more features and commands
+- **`SwerveDriveSubsystem` class. inherits from CTRE SwerveDrivetrain, includes more features and commands:**
     - Implements Choreo and Autopilot
     - Settable path PID controllers and Autopilot constants
     - Module and gyro disconnection Alerts
@@ -17,25 +17,30 @@ Meanlib is a Kotlin FRC Robot utility library made by Team 2471 Mean Machine.
         - `driveAlongChoreoPath`
         - `driveToLine` `joystickDriveAlongLine`
 
-- WPILIB units library extensions
-```kotlin
-1.5.degrees.asRotations; 2.2.feet + 3.0.inches; 1.0.degrees.asRotation2d
-```
-- Custom `PoseLocalizer`
-    - Interacts with offboard [ParticleFilter](https://github.com/TeamMeanMachine/ParticleFilter), a program that uses an SIR Particle Filter to combine camera measurements and odometry data
+
+- **WpiLib units library extensions:**
+  - Number → Unit: `1.0.inches`, `2.5.degrees` 
+  - Unit → Number: `Distance.asFeet`, `Angle.asDegrees` "as" keyword
+  - Supports all the same operations and functions as WpiLib units:
+
+
+- **`PoseLocalizer`:**
+    - Interacts with offboarded [ParticleFilter](https://github.com/TeamMeanMachine/ParticleFilter), a program that uses an SIR Particle Filter to combine camera measurements and odometry data
     - Sends vision measurements to ParticleFilter and latency-adjusts the poses it gets back.
     - Custom `PhotonVisionCamera` and `LimelightCamera` classes support simulation/replay
-    - Calculates 3 different poses:
+    - Calculates three different poses:
         - `pose`/`fusedPose` Pose2d from ParticleFilter (Global Positioning)
         - `singleTagPose` Simple trig position solver for the closest tag (Local Positioning)
         - `odometryPose` Only the swerve odometry
     - ParticleFilter and PoseLocalizer were originally made by Team 604 and modified by us.
-- Custom `BatteryLogger` logs power usage (in amp-hours and watt-hours) for each subsystem throughout matches
+
+
+- **`BatteryLogger`:** 
+  - logs power usage (in amp-hours and watt-hours) for each subsystem
 ```kotlin
-// Inside periodic:
 BatteryLogger.recordCurrent("Shooter Roller", shooterMotor.supplyCurrent.value * 2.0)
 ```
-- Custom `LoopLogger`
+- **`LoopLogger`:**
     - Logs `sinceReset` (time since `LoopLogger.reset()` was called) and,
     - `period` for loop periods
 
@@ -47,10 +52,12 @@ LoopLogger.record("Subsystem periodic")
 val isConnected = camera.isConnected
 LoopLogger.record("After camera check")
 ```
-- Many math kotlin/wpilib extention functions
+- **Assortment of Kotlin/WpiLib extension functions:**
     - Math: `Double.deadband()`, `Double.round()`, `Translation2d.normalize()`, etc.
     - Conversions: `Translation2d().toPose2d(heading)`, `ChassisSpeeds().fieldToRobotCentric(heading)`, etc.
-- CTRE device utility functions for simple configuration: (TalonFX, TalonFXS, CANcoder, Pigeon2)
+
+
+- **CTRE device configuration utility functions:** (TalonFX, TalonFXS, CANcoder, Pigeon2)
 ```kotlin
 val hoodMotor = TalonFX(0); val hoodMotorFollower = TalonFX(1)
 
@@ -70,19 +77,23 @@ hoodMotor.addFollower(hoodMotorFollower, MotorAlignmentValue.Opposed)
 
 hoodEncoder.setCANCoderAngle(0.0.degrees)
 ```
-- `LoggedTalonFX` and `LoggedTalonFXS`
+- **`LoggedTalonFX` and `LoggedTalonFXS`:**
     - Inherits from the normal TalonFX
-    - Includes a wpilib motor sim + motor sim configuration
+    - Includes WpiLib motor sim + motor sim configuration
     - Runs asynchronously via coroutine when calling `brakeMode())` and `coastMode()`, so they are no longer blocking.
     - Automatically logs motor data and supports replay (wip)
-- WPILIB Commands v2 extention functions/syntax shortcuts
+
+
+- **WpiLib Commands v2 extension functions/syntax shortcuts:**
     - `runOnceCommand`, `sequenceCommand`, etc. instead of `Command.runOnce`, `Command.sequenceCommand`
-- Custom Autonomous manager `Autonomi` class:
+
+
+- **Custom Autonomous manager `Autonomi` class:**
     - Automatically finds all Choreo paths, preloads them, and puts them in a keyed map
 ```kotlin
 override val autoChooser: LoggedDashboardChooser<AutoCommand?> =
     LoggedDashboardChooser<AutoCommand?>("Auto Chooser").apply {
-            addOption("8 Foot Straight", AutoCommand(eightFootStraight(), { robotStartPose2d }))
+            addOption("8 Foot Straight", AutoCommand(eightFootStraight()) { robotStartPose2d })
         }
 
 private fun eightFootStraight(): Command {
@@ -90,10 +101,10 @@ private fun eightFootStraight(): Command {
 }
 ```
 
-- [Kotlin Couroutines](https://github.com/Kotlin/kotlinx.coroutines):
-    - This is used in a lot of utilities and it is also exposed for use in robot code.
+- **[Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines):**
+    - This is used in a lot of utilities, and it is also exposed for use in robot code.
 ```kotlin
-// (Simple example) Launch a new thread
+// Launch a new thread
 GlobalScope.launch {
     // do async task
     periodic(0.02) { // loop at 50hz (0.02 seconds)
@@ -102,7 +113,7 @@ GlobalScope.launch {
     }
 }
 ```
-- Other:
+- **Other:**
     - `measureTimeFPGA {}` measures code segment execution time.
     - `PDVelocityController` Custom compounding PD controller for velocity control.
     - `NT4NonFMSPublisher` An AdvantageKit `LogDataReceiver` that only publishes to NetworkTables when an FMS isn't connected: `Logger.addDataReceiver(NT4NonFMSPublisher())`
@@ -120,7 +131,7 @@ Checkout the current year's branch:
 git checkout frc[CURRENT_YEAR] # ex: "git checkout frc2026"
 ```
 
-Add meanlib to your build.gradle dependencies:
+Add Meanlib to your build.gradle dependencies:
 ```groovy
 dependencies {
     implementation(project(":meanlib"))
@@ -128,7 +139,7 @@ dependencies {
 }
 ```
 
-Add meanlib to the jar task in your build.gradle:
+Add Meanlib to the jar task in your build.gradle:
 ```groovy
 jar {
     dependsOn(':meanlib:jar') // <- add me
@@ -140,7 +151,7 @@ jar {
 }
 ```
 
-Optional: Use meanlib's vendordeps (paste anywhere in build.gradle):
+Optional: Use meanlib vendordeps (paste anywhere in build.gradle):
 ```groovy
 // Tell the global WPILib provider to also load vendors from meanlib,
 wpi.vendor.loadFrom(project(":meanlib"))
