@@ -8,15 +8,6 @@ Meanlib is a Kotlin FRC Robot utility library made by Team 2471 Mean Machine.
 
 ## Features
 
-- **`SwerveDriveSubsystem` class. inherits from CTRE SwerveDrivetrain, includes more features and commands:**
-    - Implements Choreo and Autopilot
-    - Settable path PID controllers and Autopilot constants
-    - Module and gyro disconnection Alerts
-    - Commands:
-        - `driveToPoint` `driveToAutopilotPoint`
-        - `driveAlongChoreoPath`
-        - `driveToLine` `joystickDriveAlongLine`
-
 
 - **WpiLib units library extensions:**
   - Number → Unit: `1.0.inches`, `2.5.degrees` 
@@ -33,6 +24,50 @@ Meanlib is a Kotlin FRC Robot utility library made by Team 2471 Mean Machine.
         - `singleTagPose` Simple trig position solver for the closest tag (Local Positioning)
         - `odometryPose` Only the swerve odometry
     - ParticleFilter and PoseLocalizer were originally made by Team 604 and modified by us.
+
+
+- **CTRE device configuration utility functions:** (TalonFX, TalonFXS, CANcoder, Pigeon2)
+```kotlin
+val hoodMotor = TalonFX(0); val hoodMotorFollower = TalonFX(1); val hoodEncoder = CANcoder(2)
+
+hoodMotor.applyConfiguration {
+    currentLimits(25.0, 30.0, 1.0)
+    inverted(true)
+    brakeMode()
+
+    s(0.2, StaticFeedforwardSignValue.UseClosedLoopSign)
+    p(200.0)
+    d(0.0)
+
+    motionMagic(0.75, 5.0)
+    remoteCANCoder(hoodEncoder.deviceID, hoodSensorToMechanismRatio)
+}
+hoodMotor.addFollower(hoodMotorFollower, MotorAlignmentValue.Opposed)
+
+hoodEncoder.setCANCoderAngle(0.0.degrees)
+```
+
+- **`LoggedTalonFX` and `LoggedTalonFXS`:**
+    - Inherits from the normal TalonFX
+    - Includes WpiLib motor sim + motor sim configuration
+    - Runs asynchronously via coroutine when calling `brakeMode())` and `coastMode()`, so they are no longer blocking.
+    - Automatically logs motor data and supports replay (wip)
+
+
+- **`SwerveDriveSubsystem`:**
+    - Inherits from CTRE's SwerveDrivetrain, adds functionality
+    - Implements Choreo and Autopilot
+    - Settable path PID controllers and Autopilot constants
+    - Module and gyro disconnection Alerts
+    - Commands:
+        - `driveToPoint` `driveToAutopilotPoint`
+        - `driveAlongChoreoPath`
+        - `driveToLine` `joystickDriveAlongLine`
+
+
+- **Assortment of Kotlin/WpiLib extension functions:**
+    - Math: `Double.deadband()`, `Double.round()`, `Translation2d.normalize()`, etc.
+    - Conversions: `Translation2d().toPose2d(heading)`, `ChassisSpeeds().fieldToRobotCentric(heading)`, etc.
 
 
 - **`BatteryLogger`:** 
@@ -52,37 +87,6 @@ LoopLogger.record("Subsystem periodic")
 val isConnected = camera.isConnected
 LoopLogger.record("After camera check")
 ```
-- **Assortment of Kotlin/WpiLib extension functions:**
-    - Math: `Double.deadband()`, `Double.round()`, `Translation2d.normalize()`, etc.
-    - Conversions: `Translation2d().toPose2d(heading)`, `ChassisSpeeds().fieldToRobotCentric(heading)`, etc.
-
-
-- **CTRE device configuration utility functions:** (TalonFX, TalonFXS, CANcoder, Pigeon2)
-```kotlin
-val hoodMotor = TalonFX(0); val hoodMotorFollower = TalonFX(1)
-
-hoodMotor.applyConfiguration {
-    currentLimits(25.0, 30.0, 1.0)
-    inverted(true)
-    brakeMode()
-
-    s(0.2, StaticFeedforwardSignValue.UseClosedLoopSign)
-    p(200.0)
-    d(0.0)
-
-    motionMagic(0.75, 5.0)
-    remoteCANCoder(hoodEncoder.deviceID, hoodSensorToMechanismRatio)
-}
-hoodMotor.addFollower(hoodMotorFollower, MotorAlignmentValue.Opposed)
-
-hoodEncoder.setCANCoderAngle(0.0.degrees)
-```
-- **`LoggedTalonFX` and `LoggedTalonFXS`:**
-    - Inherits from the normal TalonFX
-    - Includes WpiLib motor sim + motor sim configuration
-    - Runs asynchronously via coroutine when calling `brakeMode())` and `coastMode()`, so they are no longer blocking.
-    - Automatically logs motor data and supports replay (wip)
-
 
 - **WpiLib Commands v2 extension functions/syntax shortcuts:**
     - `runOnceCommand`, `sequenceCommand`, etc. instead of `Command.runOnce`, `Command.sequenceCommand`
