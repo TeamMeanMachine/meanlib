@@ -42,8 +42,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.team2471.frc.lib.control.commands.beforeWait
 import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
@@ -86,9 +84,11 @@ import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.energy.BatteryLogger
+import org.team2471.frc.lib.swerve.simulation.MapleSimCTRESwerveDrivetrain
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
+import org.team2471.frc.lib.units.pounds
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -155,6 +155,9 @@ abstract class SwerveDriveSubsystem(
     abstract var pose: Pose2d // Abstract to allow for other pose sources (cameras) to also reset when this gets set.
 
     abstract var heading: Rotation2d // Abstract to allow for other heading sources to also reset when this gets set.
+
+    /** Use MapleSim to simulate the swerve or CTRE? */
+    abstract val useMapleSim: Boolean
 
     /** Stores information about the current state of the drivetrain */
     var savedState: SwerveDriveState = stateCopy
@@ -409,15 +412,18 @@ abstract class SwerveDriveSubsystem(
 
     override fun resetTranslation(translation: Translation2d?) {
         super.resetTranslation(translation)
+        if (isSim && useMapleSim) mapleSimDrivetrain.setSimulationWorldPose(Pose2d(translation, heading))
         updateSavedState() // Refresh state so we see an instant response.
     }
 
     override fun resetRotation(rotation: Rotation2d?) {
         super.resetRotation(rotation)
+        if (isSim && useMapleSim) mapleSimDrivetrain.setSimulationWorldPose(Pose2d(pose.translation, rotation))
         updateSavedState() // Refresh state so we see an instant response.
     }
 
     override fun resetPose(pose2d: Pose2d) {
+        // Intentionally not calling super.resetPose(). This allows for the custom setters on heading and pose to trigger.
         resetTranslation(pose2d.translation)
         heading = pose2d.rotation
     }
@@ -990,11 +996,16 @@ abstract class SwerveDriveSubsystem(
     )
 
     // SIM
+    val mapleSimDrivetrain = MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
 
     /** Must be called periodically during sim for swerve sim to work */
     override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
-            super.updateSimState(dtSeconds, supplyVoltage)
+            if (useMapleSim) {
+                mapleSimDrivetrain.updateCTRE(dtSeconds, supplyVoltage.volts, *modules)
+            } else {
+                super.updateSimState(dtSeconds, supplyVoltage)
+            }
         } else {
             DriverStation.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
@@ -1004,8 +1015,11 @@ abstract class SwerveDriveSubsystem(
     @OptIn(DelicateCoroutinesApi::class)
     override fun simulationPeriodic() {
         LoopLogger.record("b4 Drive Sim piodic")
-        GlobalScope.launch {
-            updateSimState(0.02, 12.0)
+        updateSimState(0.02, 12.0)
+        if (useMapleSim) {
+            QuixVisionSim.updatePose(mapleSimDrivetrain.actualPoseInSimulationWorld)
+            Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain.actualPoseInSimulationWorld)
+        } else {
             QuixVisionSim.updatePose(pose)
         }
         LoopLogger.record("Drive Sim piodic")
