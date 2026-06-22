@@ -83,6 +83,8 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.ctre.brakeMode
+import org.team2471.frc.lib.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.swerve.simulation.MapleSimCTRESwerveDrivetrain
 import org.team2471.frc.lib.units.amps

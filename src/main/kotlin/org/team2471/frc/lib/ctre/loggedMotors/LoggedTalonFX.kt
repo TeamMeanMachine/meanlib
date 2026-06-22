@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.ctre.loggedMotors
 
+import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.NeutralModeValue
@@ -11,10 +12,14 @@ import org.team2471.frc.lib.units.volts
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.units.amps
+import org.team2471.frc.lib.units.newtonMeters
+import org.team2471.frc.lib.util.isReplay
+import org.team2471.frc.lib.util.isSim
 
 /**
- * Wrapper for that [TalonFX] class that supports simulation when [configSim] is called.
- * Also supports backing safe calls when calling [brakeMode] & [coastMode]
+ * Wrapper for [TalonFX] that supports replay and simulation when [configSim] is called.
  *
  * @param id The CAN ID of the motor.
  * @param canBus The CAN bus to use. Defaults to roboRIO or if null.
@@ -23,75 +28,57 @@ import kotlinx.coroutines.launch
  * @see DCMotorSim
  */
 class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), LoggedMotor {
-    private val talonFXSim = this.simState
     private var motor: DCMotor? = null
-    private var motorSim: DCMotorSim? = null
+    private var motorPhysicsSim: DCMotorSim? = null
 
-    private var addedToMaster = false
+    val loggedInputs = MotorInputsAutoLogged()
 
+    private val positionStatusSignal = position
+    private val velocityStatusSignal = velocity
+    private val accelerationStatusSignal = acceleration
+    private val supplyVoltageStatusSignal = supplyVoltage
+    private val loggingStatusSignals = listOf(positionStatusSignal, velocityStatusSignal, accelerationStatusSignal, supplyVoltageStatusSignal)
 
     init {
-        talonFXSim.setSupplyVoltage(12.0.volts)
+        MasterMotor.addMotor(this)
     }
 
-    /**
-     * Configure the simulation to have accurate values.
-     * @param motor The type of [DCMotor] motor to sim.
-     * @param jKgMetersSquared The moment of inertia of the motor.
-     * @see DCMotor
-     */
-    fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
-        this.motor = motor
-        motorSim = DCMotorSim(LinearSystemId.createDCMotorSystem(this.motor, jKgMetersSquared, 1.0), this.motor)
-        motorSim?.setState(0.0, 0.0)
-
-        //Ensures this gets added to the MasterMotor list only once
-        if (!addedToMaster) {
-            addedToMaster = true
-            MasterMotor.addMotor(this)
-        }
-    }
-
-    /**
-     * A backing safe call to set the brake mode of the motor.
-     * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
-     * @see setNeutralMode
-     * @see GlobalScope
-     */
-    @OptIn(DelicateCoroutinesApi::class)
-    fun brakeMode() {
-        if (isReal) {
-            GlobalScope.launch {
-                setNeutralMode(NeutralModeValue.Brake)
+    override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
+        if (isSim) {
+            this.motor = motor
+            motorPhysicsSim = DCMotorSim(LinearSystemId.createDCMotorSystem(this.motor, jKgMetersSquared, 1.0), this.motor).apply {
+                setState(0.0, 0.0)
             }
         }
     }
 
-    /**
-     * A backing safe call to set the coast mode of the motor.
-     * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
-     * @see setNeutralMode
-     * @see GlobalScope
-     */
-    @OptIn(DelicateCoroutinesApi::class)
-    fun coastMode() {
-        if (isReal) {
-            GlobalScope.launch {
-                setNeutralMode(NeutralModeValue.Coast)
+    override fun periodic() {
+        if (isReplay) {
+            // Apply replayed motor values
+            simState.setRawRotorPosition(loggedInputs.angularPosition)
+            simState.setRotorVelocity(loggedInputs.angularVelocity)
+            simState.setRotorAcceleration(loggedInputs.angularAcceleration)
+            simState.setSupplyVoltage(loggedInputs.supplyVoltage)
+        } else {
+            // If in simulation, simulate the motor values
+            if (motorPhysicsSim != null) {
+                // Update motor sim
+                motorPhysicsSim!!.inputVoltage = simState.motorVoltage
+                motorPhysicsSim!!.update(0.02)
+                // Apply to talonFXSim
+                simState.setRawRotorPosition(motorPhysicsSim!!.angularPosition)
+                simState.setRotorVelocity(motorPhysicsSim!!.angularVelocity)
+                simState.setRotorAcceleration(motorPhysicsSim!!.angularAcceleration)
+                simState.setSupplyVoltage(12.0.volts) // We have no battery sim
             }
+
+            // Log motor outputs
+            BaseStatusSignal.refreshAll(loggingStatusSignals)
+            loggedInputs.angularPosition = positionStatusSignal.value
+            loggedInputs.angularVelocity = velocityStatusSignal.value
+            loggedInputs.angularAcceleration = accelerationStatusSignal.value
+            loggedInputs.supplyVoltage = supplyVoltageStatusSignal.value
         }
-    }
-
-    override fun simPeriodic() {
-        if (motorSim != null) {
-            val talonFXVoltage = talonFXSim.motorVoltage
-
-            motorSim!!.inputVoltage = talonFXVoltage
-            motorSim!!.update(0.02)
-
-            talonFXSim.setRawRotorPosition(motorSim!!.angularPosition)
-            talonFXSim.setRotorVelocity(motorSim!!.angularVelocity)
-            talonFXSim.setRotorAcceleration(motorSim!!.angularAcceleration)
-        }
+        Logger.processInputs("Motors/TalonFX $deviceID ${network.name}", loggedInputs)
     }
 }

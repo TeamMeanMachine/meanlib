@@ -3,6 +3,7 @@ package org.team2471.frc.lib.ctre
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXSConfiguration
 import com.ctre.phoenix6.controls.Follower
+import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.hardware.TalonFXS
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
@@ -12,6 +13,10 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import edu.wpi.first.wpilibj.DriverStation
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.team2471.frc.lib.util.isReal
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -357,4 +362,39 @@ fun TalonFXS.modifyConfiguration(overrides: TalonFXSConfiguration.() -> Unit) {
     val oldConfiguration = TalonFXSConfiguration()
     this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
     this.configurator.apply(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
+}
+
+
+/**
+ * A backing safe call to set the brake mode of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Preferably do not put this in a loop.
+ * @see setNeutralMode
+ * @see GlobalScope
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun TalonFXS.brakeMode() {
+    if (isReal) {
+        val talon = this
+        GlobalScope.launch {
+            talon.setNeutralMode(NeutralModeValue.Brake)
+        }
+    }
+}
+
+/**
+ * A backing safe call to set the coast mode of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Preferably do not put this in a loop.
+ * @see setNeutralMode
+ * @see GlobalScope
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun TalonFXS.coastMode() {
+    if (isReal) {
+        val talon = this
+        GlobalScope.launch {
+            talon.setNeutralMode(NeutralModeValue.Coast)
+        }
+    }
 }

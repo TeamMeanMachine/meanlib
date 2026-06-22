@@ -51,7 +51,7 @@ hoodEncoder.setCANCoderAngle(0.0.degrees)
     - Inherits from the normal TalonFX
     - Includes WpiLib motor sim + motor sim configuration
     - Runs asynchronously via coroutine when calling `brakeMode())` and `coastMode()`, so they are no longer blocking.
-    - Automatically logs motor data and supports replay (wip)
+    - Automatically logs motor data and supports replay
 
 
 - **`SwerveDriveSubsystem`:**
@@ -139,7 +139,7 @@ Add Meanlib to your build.gradle dependencies:
 ```groovy
 dependencies {
     implementation(project(":meanlib"))
-    ..
+    ...
 }
 ```
 

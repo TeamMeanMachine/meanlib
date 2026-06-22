@@ -1,17 +1,19 @@
 package org.team2471.frc.lib.ctre.loggedMotors
 
-import org.team2471.frc.lib.util.isSim
-
 object MasterMotor {
     private val motors = mutableListOf<LoggedMotor>()
 
-    fun simPeriodic() {
-        if (isSim) {
-            motors.forEach {
-                it.simPeriodic()
-            }
+    /** Logs and simulates all [LoggedMotor] objects. */
+    fun periodic() {
+        motors.forEach {
+            it.periodic()
         }
     }
 
-    fun addMotor(motor: LoggedMotor) = motors.add(motor)
+    fun addMotor(motor: LoggedMotor) {
+        //Ensures this gets added to the MasterMotor list only once
+        if (!motors.contains(motor)) {
+            motors.add(motor)
+        }
+    }
 }
