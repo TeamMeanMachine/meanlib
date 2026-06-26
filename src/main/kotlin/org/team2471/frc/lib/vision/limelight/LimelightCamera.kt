@@ -6,11 +6,7 @@ import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineConfig
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
-//import org.littletonrobotics.junction.LogTable
-//import org.littletonrobotics.junction.Logger
-import org.littletonrobotics.junction.MeanLogger
 import org.littletonrobotics.junction.inputs.LoggableInputs
-//import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
@@ -48,11 +44,11 @@ class LimelightCamera(
         var latestResult: PhotonPipelineResult = PhotonPipelineResult()
 
         override fun toLog(table: LogTable) {
-//            table.put("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            table.put("Latest Result", latestResult)
         }
 
         override fun fromLog(table: LogTable) {
-//            latestResult = table.get("Latest Result", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            latestResult = table.get("Latest Result", latestResult)
         }
     }
 
@@ -127,7 +123,7 @@ class LimelightCamera(
             }
 
             val endTimestamp = Timer.getMonotonicTimestamp()
-            MeanLogger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
+            Logger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
 
             return PipelineVisionPacket(
                 hasTargets,

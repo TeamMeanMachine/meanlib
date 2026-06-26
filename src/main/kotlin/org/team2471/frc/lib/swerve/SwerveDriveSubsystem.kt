@@ -22,6 +22,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.AutoLogOutput
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -43,8 +44,7 @@ import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
-//import org.littletonrobotics.junction.AutoLogOutput
-import org.littletonrobotics.junction.MeanLogger
+import org.team2471.frc.lib.commands.PeriodicMechanism
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
@@ -384,7 +384,7 @@ abstract class SwerveDriveSubsystem(
 
         prevTime = currTime
         //This errors only in replay
-        if (!isReplay) MeanLogger.recordOutput("Drive/State/TelemetryLoop", Timer.getMonotonicTimestamp() - currTime)
+        if (!isReplay) Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getMonotonicTimestamp() - currTime)
     }
 
     /**
@@ -473,7 +473,7 @@ abstract class SwerveDriveSubsystem(
      * @param velocity Speeds in meters/sec
      */
     fun driveVelocity(velocity: ChassisVelocities) {
-//        MeanLogger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.toRobotRelative(heading)) TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
+        Logger.recordOutput("Drive/Wanted ChassisSpeeds", velocity.toRobotRelative(heading))
         setControl(
             ApplyFieldVelocity().apply{
                 Velocity = velocity
@@ -548,8 +548,8 @@ abstract class SwerveDriveSubsystem(
      * Uses the [driveAtAnglePIDController] to drive the robot with a field-centric angle and translation.
      */
     fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
-//        MeanLogger.recordOutput("Drive/DriveAtAngle/Angle", angle) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-//        MeanLogger.recordOutput("Drive/DriveAtAngle/Translation", translation)
+        Logger.recordOutput("Drive/DriveAtAngle/Angle", angle)
+        Logger.recordOutput("Drive/DriveAtAngle/Translation", translation)
         setControl(
             driveAtAngleRequest.apply {
                 VelocityX = translation.x
@@ -609,9 +609,9 @@ abstract class SwerveDriveSubsystem(
             val headingError = (wantedPose().rotation - poseSupplier().rotation).measure.absoluteValue()
 
             // Log errors
-            MeanLogger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
-            MeanLogger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
-//            MeanLogger.recordOutput("Drive/DriveToPoint/Point", wantedPose()) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
+            Logger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
+            Logger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
+            Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
 
             if (exitSupplier(distanceError, headingError)) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
@@ -626,7 +626,7 @@ abstract class SwerveDriveSubsystem(
         }
 
         stop() // Stop driving
-//        MeanLogger.recordOutput("Drive/DriveToPoint/Point", Pose2d()) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
+        Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
     }.named("DriveToPoint")
 
     fun driveToAutopilotPoint(
@@ -675,15 +675,15 @@ abstract class SwerveDriveSubsystem(
 //
 //                driveAtAngle(output.targetAngle(), velocity)
 //
-//                MeanLogger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
-//                MeanLogger.recordOutput("Drive/AutoPilot/Target", targetPose)
+//                Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
+//                Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
 //            }
 //
 //            yield()
 //        }
 
         stop()
-//        MeanLogger.recordOutput("Drive/AutoPilot/Target", Pose2d())  //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
+        Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
     }.named("DriveToAutopilotPoint")
 
 
@@ -724,9 +724,9 @@ abstract class SwerveDriveSubsystem(
                 vy = lineCentricTranslation.y
             }
 
-//            MeanLogger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo)) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-//            MeanLogger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
-//            MeanLogger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
+            Logger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
+            Logger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
+            Logger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
 
 
             if (heading == null) {
@@ -742,8 +742,8 @@ abstract class SwerveDriveSubsystem(
         }
     }.named("JoystickDriveAlongLine") {
         stop()
-//        MeanLogger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>()) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-//        MeanLogger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
+        Logger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
+        Logger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
     }
 
 
@@ -768,8 +768,8 @@ abstract class SwerveDriveSubsystem(
     ) = useUnnamed(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
-//        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo)) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-//        MeanLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
 
         if (exitSupplier == null) {
             await(driveToPoint(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
@@ -777,8 +777,8 @@ abstract class SwerveDriveSubsystem(
             await(driveToPoint(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
         }
 
-//        MeanLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>()) //TODO: UNCOMMENT IN 2027 ADVANTAGEKIT
-//        MeanLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
     }.named("DriveToLine")
 
     /**
@@ -795,7 +795,7 @@ abstract class SwerveDriveSubsystem(
         resetOdometry: Boolean = false,
         exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
     ): Command = use("DriveAlongChoreoPath", this) {
-//        println("Running DriveAlongChoreoPath") //TODO: UNCOMMENT IN 2027 CHOREO AND ADVANTAGEKIT
+//        println("Running DriveAlongChoreoPath") //TODO: UNCOMMENT IN 2027 CHOREO
 //
 //        val totalTime = path.totalTime
 //        val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
@@ -808,8 +808,8 @@ abstract class SwerveDriveSubsystem(
 //            println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
 //        }
 //
-//        MeanLogger.recordOutput("Drive/Path/Name", path.name())
-//        MeanLogger.recordOutput("Drive/Path/TotalTime", totalTime)
+//        Logger.recordOutput("Drive/Path/Name", path.name())
+//        Logger.recordOutput("Drive/Path/TotalTime", totalTime)
 //
 //        while (true) {
 //            val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
@@ -823,7 +823,7 @@ abstract class SwerveDriveSubsystem(
 //            val error = wantedPose - currentPose
 //            LoopLogger.record("DriveAlongPath pathInfo")
 //
-//            MeanLogger.recordOutput("Drive/Path/Done %", percentComplete)
+//            Logger.recordOutput("Drive/Path/Done %", percentComplete)
 //
 //            // Exit Path?
 //            if (exitSupplier(percentComplete, error)) {
@@ -849,11 +849,11 @@ abstract class SwerveDriveSubsystem(
 //                )
 //                LoopLogger.record("DriveAlongPath setControl")
 //
-//                MeanLogger.recordOutput("Drive/Path/Time", t)
-//                MeanLogger.recordOutput("Drive/Path/Pose", wantedPose)
-//                MeanLogger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-//                MeanLogger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
-//                MeanLogger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
+//                Logger.recordOutput("Drive/Path/Time", t)
+//                Logger.recordOutput("Drive/Path/Pose", wantedPose)
+//                Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+//                Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+//                Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
 ////                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
 ////                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
 ////                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
@@ -879,7 +879,7 @@ abstract class SwerveDriveSubsystem(
 //        }
 //
 //        // Publish empty data to show that the path is done
-//        MeanLogger.recordOutput("Drive/Path/Pose", Pose2d())
+//        Logger.recordOutput("Drive/Path/Pose", Pose2d())
     }
 
     // OTHER

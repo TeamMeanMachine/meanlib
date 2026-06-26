@@ -10,11 +10,7 @@ import org.team2471.frc.lib.vision.QuixVisionSim
 import org.ejml.simple.SimpleMatrix
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
-//import org.littletonrobotics.junction.LogTable
-//import org.littletonrobotics.junction.Logger
-import org.littletonrobotics.junction.MeanLogger
 import org.littletonrobotics.junction.inputs.LoggableInputs
-//import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
@@ -54,7 +50,7 @@ class PhotonVisionCamera(
 
         override fun toLog(table: LogTable) {
             table.put("PipelineIndex", pipelineIndex)
-//            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            table.put("LatestResult", latestResult)  // Commented out bc loop cycles where large
             table.put("CameraMatrixIsPresent", cameraMatrix.isPresent)
             if (cameraMatrix.isPresent) table.put("CameraMatrixData", cameraMatrix.get().data)
             table.put("DistCoeffsIsPresent", distCoeffs.isPresent)
@@ -64,7 +60,7 @@ class PhotonVisionCamera(
         override fun fromLog(table: LogTable) {
             var allDataPop = true
             pipelineIndex = table.get("PipelineIndex", pipelineIndex)
-//            latestResult = table.get("LatestResult", latestResult) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            latestResult = table.get("LatestResult", latestResult)
             cameraMatrix =
                 if (table.get("CameraMatrixIsPresent", false)) {
                     Optional.of<Matrix<N3, N3>>(
@@ -145,7 +141,7 @@ class PhotonVisionCamera(
             }
 
             val endTimestamp = Timer.getMonotonicTimestamp()
-            MeanLogger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
+            Logger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,

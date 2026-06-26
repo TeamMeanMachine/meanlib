@@ -241,7 +241,7 @@ interface VisionIO {
             table.put("Is Connected", isConnected)
             table.put("Mode", mode)
             table.put("Sees Tag", seesTag)
-//            table.put("AprilTag Pose Estimate", aprilTagPoseEstimate) //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            table.put("AprilTag Pose Estimate", aprilTagPoseEstimate)
             table.put("AprilTag Timestamp", aprilTagTimestamp)
             table.put("RawFiducials", rawFiducials)
             table.put("Object Corners", objectCorners)
@@ -252,7 +252,7 @@ interface VisionIO {
             isConnected = table.get("Is Connected", isConnected)
             mode = table.get("Mode", mode)
             seesTag = table.get("Sees Tag", seesTag)
-//            aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first() //TODO: UNCOMMENT WHEN ADVANTAGEKIT 2027 RELEASES
+            aprilTagPoseEstimate = table.get("AprilTag Pose Estimate", aprilTagPoseEstimate).first()
             aprilTagTimestamp = table.get("AprilTag Timestamp", aprilTagTimestamp)
             rawFiducials = table.get("RawFiducials", rawFiducials)
             objectCorners = table.get("Object Corners", objectCorners)
