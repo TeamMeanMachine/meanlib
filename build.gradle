@@ -2,11 +2,10 @@ import groovy.json.JsonSlurper
 
 plugins {
     id "java"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6"
+    id "idea"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6-kilk"
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
     id "org.jetbrains.kotlin.kapt" version "2.3.21"
-    id "idea"
-    id "maven-publish"
     id "java-library"
 }
 // Disable all simulation and deploy tasks since meanlib is a library
@@ -21,27 +20,20 @@ gradle.afterProject { proj ->
     }
 }
 
-wpi.maven.useLocal = false
-wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = '2027.0.0-alpha-6-98-g9ea17c1d5'//'2027.+'
-
-group = "org.team2471.lib"
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 kotlin {
     jvmToolchain(25)
 }
 
-// Automatically download library documentation from libraries
-idea {
-    module {
-        downloadJavadoc = true
-        downloadSources = true
-    }
-}
+wpi.maven.useLocal = false
+wpi.maven.useDevelopment = true
+wpi.versions.wpilibVersion = '2027.0.0-alpha-6-98-g9ea17c1d5'//'2027.+'
+
+group = "org.team2471.lib"
 
 dependencies {
     // using 'api' so other projects inherit the same libraries
@@ -61,18 +53,23 @@ dependencies {
     kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
 }
 
-tasks.test {
+test {
     useJUnitPlatform()
-    systemProperty "junit.jupiter.extensions.autodetection.enabled", "true"
-    testLogging {
-        events "passed", "skipped", "failed"
+    systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+}
+
+wpi.java.configureTestTasks(tasks.test)
+// Prevent GradleRIO from trying to configure executable tasks
+wpi.java.configureExecutableTasks(null)
+
+// Automatically download documentation from libraries
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += "-XDstringConcat=inline"
 }
-
-wpi.java.configureTestTasks(tasks.test)
-// Prevent GradleRIO from trying to configure executable tasks
-wpi.java.configureExecutableTasks(null)
