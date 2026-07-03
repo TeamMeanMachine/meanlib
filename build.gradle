@@ -45,25 +45,9 @@ idea {
 
 dependencies {
     // using 'api' so other projects inherit the same libraries
-    api wpi.java.deps.wpilibAnnotations()
+    kapt wpi.java.deps.wpilibAnnotations()
     api wpi.java.deps.wpilib()
     api wpi.java.vendor.java()
-
-    // Desktop (simulation)
-//    api wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
-//    api wpi.java.vendor.jniDebug(wpi.platforms.desktop)
-//    api wpi.sim.enableDebug()
-
-//    api wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
-//    api wpi.java.vendor.jniRelease(wpi.platforms.desktop)
-//    api wpi.sim.enableRelease()
-
-    // SystemCore (robot hardware)
-//    api wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
-//    api wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
-
-//    api wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
-//    api wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"
     api "org.jetbrains.kotlin:kotlin-stdlib"
