@@ -40,26 +40,15 @@ idea {
 }
 
 dependencies {
-    annotationProcessor wpi.java.deps.wpilibAnnotations()
+    kapt wpi.java.deps.wpilibAnnotations()
     api wpi.java.deps.wpilib()
     api wpi.java.vendor.java()
-
-    nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
-    nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
-    simulationDebug wpi.sim.enableDebug()
-
-    nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
-    nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
-    simulationRelease wpi.sim.enableRelease()
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
     api "org.jetbrains.kotlin:kotlin-stdlib"
     api "org.jetbrains.kotlin:kotlin-reflect"
 
     api "org.apache.commons:commons-math3:3.6.1"
-
-    testImplementation "org.junit.jupiter:junit-jupiter:5.10.1"
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     def akitFile = file("$projectDir/vendordeps/AdvantageKit.json")
     kapt "org.littletonrobotics.akit:akit-autolog:${new JsonSlurper().parseText(akitFile.text).version}"
