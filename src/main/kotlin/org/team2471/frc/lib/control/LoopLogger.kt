@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.control
 
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.system.Timer
 
 /**
@@ -17,7 +18,7 @@ object LoopLogger {
     private val duplicateLoopMaps = mutableMapOf<String, Int>()
 
     fun reset() {
-        Logger.recordOutput("LoopLogger/LoopCount", loopsMap.size)
+        SimpleLogger.recordOutput("LoopLogger/LoopCount", loopsMap.size)
         resetTime = Timer.getMonotonicTimestamp()
     }
 
@@ -32,12 +33,12 @@ object LoopLogger {
         if (prevTime > resetTime - 1e-10) { // Subtraction to prevent a same-frame timer resolution bug
             val endLoopIndex = duplicateLoopMaps.getOrPut("$loopName (end)") { loopsMap.size + duplicateLoopMaps.size}
             // Log end of loop sinceReset and the duration since the begging of the loopName pair
-            Logger.recordOutput("LoopLogger/LoopDuration/$loopIndex $loopName", period) // Using period val to not redo math, this value isn't really the period of the loop
-            Logger.recordOutput("LoopLogger/SinceReset/$endLoopIndex $loopName (end)", sinceReset)
+            SimpleLogger.recordOutput("LoopLogger/LoopDuration/$loopIndex $loopName", period) // Using period val to not redo math, this value isn't really the period of the loop
+            SimpleLogger.recordOutput("LoopLogger/SinceReset/$endLoopIndex $loopName (end)", sinceReset)
         } else {
             // Log beginning of the loop
-            Logger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
-            Logger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
+            SimpleLogger.recordOutput("LoopLogger/Period/$loopIndex $loopName", period)
+            SimpleLogger.recordOutput("LoopLogger/SinceReset/$loopIndex $loopName", sinceReset)
         }
 
 

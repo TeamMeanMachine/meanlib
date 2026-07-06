@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
+import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.linalg.Matrix
 import org.wpilib.math.numbers.N1
@@ -141,7 +142,7 @@ class PhotonVisionCamera(
             }
 
             val endTimestamp = Timer.getMonotonicTimestamp()
-            Logger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
+            SimpleLogger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,
