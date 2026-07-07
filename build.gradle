@@ -31,7 +31,7 @@ kotlin {
 
 wpi.maven.useLocal = false
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = '2027.+'
+wpi.versions.wpilibVersion = '2027.0.0-alpha-6-98-g9ea17c1d5'//'2027.+'
 
 group = "org.team2471.lib"
 

@@ -14,11 +14,11 @@ open class MechanismBase(val mechanismName: String): Mechanism {
         // Checks if periodic() and simulationPeriodic() have been overridden before adding them to the periodic scheduler,
         // just to avoid having a bunch of empty periodic methods in the scheduler.
         if (hasOverride("periodic")) {
-            Scheduler.getDefault().addPeriodic(this::periodic)
+            MasterMechanism.callbacksToBeAdded.add(this::periodic)
         }
 
         if (isSim && hasOverride("simulationPeriodic")) {
-            Scheduler.getDefault().addPeriodic(this::simulationPeriodic)
+            MasterMechanism.callbacksToBeAdded.add(this::simulationPeriodic)
         }
 
         // If a default command has been specified, apply it to the mechanism.
@@ -50,7 +50,7 @@ open class MechanismBase(val mechanismName: String): Mechanism {
 /**
  * Shortcut utility function to create a default command.
  *
- * Sets the command name to be "[name] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
+ * Sets the command name to be "[Mechanism.getName] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
  * @see Mechanism.setDefaultCommand
  */
 fun Mechanism.setDefaultCommand(body: Coroutine.() -> Unit): Command {

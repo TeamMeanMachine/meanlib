@@ -23,6 +23,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.AutoLogOutput
+import org.team2471.frc.lib.commands.MasterMechanism
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -350,9 +351,11 @@ abstract class SwerveDriveSubsystem(
         registerTelemetry(::telemetryLoop)
 
         // Add a periodic function, this function is called every scheduler loop (every robot code loop)
-        registeredScheduler.addPeriodic(::periodic)
+        MasterMechanism.callbacksToBeAdded.add(::periodic)
+//        registeredScheduler.addPeriodic(::periodic)
 
-        if (isSim) registeredScheduler.addPeriodic(::simulationPeriodic)
+//        if (isSim) registeredScheduler.addPeriodic(::simulationPeriodic)
+        if (isSim) MasterMechanism.callbacksToBeAdded.add(::simulationPeriodic)
     }
 
     /**
