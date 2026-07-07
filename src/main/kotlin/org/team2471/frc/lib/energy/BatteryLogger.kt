@@ -16,6 +16,14 @@ import org.team2471.frc.lib.units.watts
 object BatteryLogger {
     val batteryVoltage: Voltage get() = RobotController.getMeasureBatteryVoltage()
 
+    var totalPowerReport = PowerReport()
+    val totalCurrent
+        get() = totalPowerReport.current.asAmps
+
+    var drivePowerReport = PowerReport()
+    val driveCurrent
+        get() = drivePowerReport.current.asAmps
+
     val mechanismPowerReports = mutableMapOf<String, PowerReport>()
 
     fun recordCurrent(mechanismName: String, current: Current) {
@@ -41,11 +49,13 @@ object BatteryLogger {
             Logger.recordOutput("Battery/${m}/Power", report.power)
             Logger.recordOutput("Battery/${m}/AmpHours", report.ampHours)
             Logger.recordOutput("Battery/${m}/WattHours", report.wattHours)
+            if (m == "Drive") drivePowerReport = report
         }
         Logger.recordOutput("Battery/Total/Current", totalPowerReport.current)
         Logger.recordOutput("Battery/Total/Power", totalPowerReport.power)
         Logger.recordOutput("Battery/Total/AmpHours", totalPowerReport.ampHours)
         Logger.recordOutput("Battery/Total/WattHours", totalPowerReport.wattHours)
+        this.totalPowerReport = totalPowerReport
     }
 
 
