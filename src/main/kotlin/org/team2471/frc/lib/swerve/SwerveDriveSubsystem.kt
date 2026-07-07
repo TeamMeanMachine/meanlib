@@ -11,7 +11,7 @@ import com.ctre.phoenix6.hardware.CANcoder
 import com.ctre.phoenix6.hardware.Pigeon2
 import com.ctre.phoenix6.swerve.SwerveDrivetrain
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants
-import com.ctre.phoenix6.swerve.SwerveModule
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest.*
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController
@@ -60,6 +60,7 @@ import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
+import org.team2471.frc.lib.units.seconds
 import org.team2471.frc.lib.units.wrap
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -80,8 +81,6 @@ import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.math.kinematics.SwerveModulePosition
 import org.wpilib.math.kinematics.SwerveModuleVelocity
-import org.wpilib.smartdashboard.SmartDashboard
-import org.wpilib.system.RobotController
 import org.wpilib.system.Timer
 import org.wpilib.units.LinearAccelerationUnit
 import org.wpilib.units.measure.Angle
@@ -89,7 +88,9 @@ import org.wpilib.units.measure.AngularVelocity
 import org.wpilib.units.measure.Distance
 import org.wpilib.units.measure.LinearAcceleration
 import org.wpilib.units.measure.LinearVelocity
+import org.wpilib.units.measure.Time
 import org.wpilib.units.measure.Velocity
+import org.wpilib.units.measure.Voltage
 import org.wpilib.util.Preferences
 import kotlin.math.abs
 import kotlin.math.min
@@ -184,7 +185,6 @@ abstract class SwerveDriveSubsystem(
     /** Field-centric drivetrain xy velocity. */
     @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: Translation2d get() = chassisVelocities.translation
-    private var prevVelocity = velocity
 
     /** Field-centric drivetrain xy acceleration. */
     @get:AutoLogOutput(key = "Drive/State/Acceleration")
@@ -213,21 +213,10 @@ abstract class SwerveDriveSubsystem(
     val modulePositions: Array<SwerveModulePosition>
         get() = savedState.ModulePositions
 
+    /** The raw heading of the robot, unaffected by vision updates and odometry resets. Not Wrapped */
     @get:AutoLogOutput(key = "Drive/State/RawHeading")
     val rawHeading: Rotation2d
-        get() = savedState.RawHeading.wrap()
-
-    @get:AutoLogOutput(key = "Drive/State/gyroLatency")
-    val gyroLatency get() = gyro.yaw.timestamp.latency
-
-        @get:AutoLogOutput(key = "Drive/State/gyroVoltage")
-    val gyroVoltage get() = gyro.supplyVoltage.valueAsDouble
-
-        @get:AutoLogOutput(key = "Drive/State/gyro fault_BootIntoMotion")
-    val gyroBootIntoMotionFault get() = gyro.fault_BootIntoMotion.value
-
-        @get:AutoLogOutput(key = "Drive/State/gyro fault_Undervoltage")
-    val gyroUnderVoltageFault get() = gyro.fault_Undervoltage.value
+        get() = savedState.RawHeading
 
         @get:AutoLogOutput(key = "Drive/State/Timestamp")
     val stateTimestamp: Double
@@ -252,18 +241,19 @@ abstract class SwerveDriveSubsystem(
         get() = pigeon2
 
     @get:AutoLogOutput(key = "Drive/Gyro/isConnected")
-    val gyroConnected: Boolean get() = gyro.isConnected
+    val gyroConnected: Boolean
+        get() = gyro.isConnected
 
     @get:AutoLogOutput(key = "Drive/Gyro/Yaw")
     val rawGyroYaw: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.yaw, gyro.angularVelocityZWorld).degrees.wrap()
 
     @get:AutoLogOutput(key = "Drive/Gyro/Pitch")
-    val gyroPitch: Angle
+    val rawGyroPitch: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.pitch, gyro.angularVelocityXWorld).degrees.wrap()
 
     @get:AutoLogOutput(key = "Drive/Gyro/Roll")
-    val gyroRoll: Angle
+    val rawGyroRoll: Angle
         get() = BaseStatusSignal.getLatencyCompensatedValueAsDouble(gyro.roll, gyro.angularVelocityYWorld).degrees.wrap()
 
     @get:AutoLogOutput(key = "Drive/Gyro/YawRate")
@@ -282,6 +272,22 @@ abstract class SwerveDriveSubsystem(
     @get:AutoLogOutput(key = "Drive/Gyro/AccelerationY")
     val gyroAccelerationY: LinearAcceleration
         get() = (gyro.accelerationY.valueAsDouble - gyro.gravityVectorY.valueAsDouble).Gs
+
+    @get:AutoLogOutput(key = "Drive/Gyro/yawLatency")
+    val gyroLatency: Time
+        get() = gyro.yaw.timestamp.latency.seconds
+
+    @get:AutoLogOutput(key = "Drive/Gyro/supplyVoltage")
+    val gyroVoltage: Voltage
+        get() = gyro.supplyVoltage.value
+
+    @get:AutoLogOutput(key = "Drive/Gyro/fault_BootIntoMotion")
+    val gyroBootIntoMotionFault: Boolean
+        get() = gyro.fault_BootIntoMotion.value
+
+    @get:AutoLogOutput(key = "Drive/Gyro/fault_Undervoltage")
+    val gyroUnderVoltageFault: Boolean
+        get() = gyro.fault_Undervoltage.value
 
 
     /** Returns an array of module translations on the robot. */
@@ -318,36 +324,32 @@ abstract class SwerveDriveSubsystem(
 
     // SWERVE REQUESTS
 
-    // Swerve request for driving using voltage (open loop)
+    /** Swerve request for driving using voltage out. XY𝞱-"power" (open loop) */
     private val fieldCentricVoltsDriveRequest = ApplyFieldVelocity()
-        .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage)
-    // Swerve request for driving using velocity PID (closed loop)
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+    /** Swerve request for driving using velocity PID. XY𝞱-velocity (closed loop)  */
     private val fieldCentricVelocityDriveRequest = ApplyFieldVelocity()
-        .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-    // Swerve request for driving using path following and auto driving (closed loop)
+        .withDriveRequestType(DriveRequestType.Velocity)
+    /** Swerve request for driving with velocity and PID-ing heading. XY-velocity 𝞱-position */
     private val driveAtAngleRequest = FieldCentricFacingAngle()
-        .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+        .withDriveRequestType(DriveRequestType.Velocity)
 
 
     // Module STATUS SIGNALS
     private val steerCurrentStatusSignals = modules.map { it.steerMotor.supplyCurrent }.toTypedArray() // Current
     private val driveCurrentStatusSignals = modules.map { it.driveMotor.supplyCurrent }.toTypedArray()
 
-    private val statusSignalsToRefreshPeriodic = StatusSignalCollection(*steerCurrentStatusSignals, *driveCurrentStatusSignals)
+    /** Refresh these status signals every periodic loop */
+    private val statusSignalsToRefreshPeriodically = StatusSignalCollection(*steerCurrentStatusSignals, *driveCurrentStatusSignals)
 
     // INITIALIZATION
 
     init {
-        println("drivetrain max speed is ${maxSpeed.asFeetPerSecond.round(2)} f/s and ${maxAngularSpeed.asDegreesPerSecond.round(2)} deg/s")
-
-        if (!SmartDashboard.containsKey("DemoSpeed")) {
-            println("DemoSpeed does not exist, setting it to 1.0")
-            SmartDashboard.getEntry("DemoSpeed").setDouble(1.0)
-            SmartDashboard.setPersistent("DemoSpeed")
-        }
+        println("SwerveDriveSubsystem Initialization")
+        println("maxSpeed: ${maxSpeed.asFeetPerSecond.round(2)} f/s and maxAngularSpeed: ${maxAngularSpeed.asDegreesPerSecond.round(2)} deg/s")
 
         // Register the telemetry loop function to be called during the odometry thread.
-        // This function runs every time new odometry data gets received (4ms-1ms)
+        // This function runs every time new swerve odometry data gets received. Every 4ms-1ms (depending on CAN bus speed)
         registerTelemetry(::telemetryLoop)
 
         // Add a periodic function, this function is called every scheduler loop (every robot code loop)
@@ -425,7 +427,7 @@ abstract class SwerveDriveSubsystem(
      * Designed to be run every robot loop cycle
      */
     override fun periodic() {
-        statusSignalsToRefreshPeriodic.refreshAll() // Refresh Motor/Module data
+        statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor/Module data
 
 
         // Disabled actions
@@ -527,9 +529,9 @@ abstract class SwerveDriveSubsystem(
         setControl(
             fieldCentricVoltsDriveRequest
                 .withVelocity(ChassisVelocities(
-                    velocityInVolts.vx ,
-                    velocityInVolts.vy,
-                    velocityInVolts.omega,
+                    velocityInVolts.vx / 12.0 * maxSpeed.asMetersPerSecond ,
+                    velocityInVolts.vy / 12.0 * maxSpeed.asMetersPerSecond,
+                    velocityInVolts.omega / 12.0 * maxAngularSpeed.asRadiansPerSecond,
                 ))
                 .withCenterOfRotation(centerOfRotation)
         )
@@ -1055,7 +1057,7 @@ abstract class SwerveDriveSubsystem(
     /** Must be called periodically during sim for swerve sim to work */
     override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
-            updateSimState(dtSeconds, supplyVoltage)
+            super.updateSimState(dtSeconds, supplyVoltage)
         } else {
             DriverStationErrors.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
