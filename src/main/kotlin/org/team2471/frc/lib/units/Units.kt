@@ -5,6 +5,7 @@ package org.team2471.frc.lib.units
 import org.wpilib.math.geometry.Rotation2d
 import org.wpilib.units.*
 import org.wpilib.units.Units.*
+import org.wpilib.units.Unit
 import org.wpilib.units.measure.*
 import kotlin.math.*
 
@@ -243,13 +244,13 @@ fun Measure<AngleUnit>.unWrap(nearByAngle: Angle): Angle = nearByAngle + (this -
 fun Rotation2d.wrap() = measure.wrap().asRotation2d
 fun Rotation2d.unWrap(nearByAngle: Angle) = measure.unWrap(nearByAngle).asRotation2d
 
-fun Measure<AngleUnit>.absoluteValue() = asDegrees.absoluteValue.degrees
-fun Rotation2d.absoluteValue() = degrees.absoluteValue.degrees.asRotation2d
-fun Measure<DistanceUnit>.absoluteValue() = asFeet.absoluteValue.feet
-fun Measure<AngularVelocityUnit>.absoluteValue() = asDegreesPerSecond.absoluteValue.degreesPerSecond
-fun Measure<LinearVelocityUnit>.absoluteValue() = asFeetPerSecond.absoluteValue.feetPerSecond
-fun Measure<AngularAccelerationUnit>.absoluteValue() = asDegreesPerSecondPerSecond.absoluteValue.degreesPerSecondPerSecond
-fun Measure<LinearAccelerationUnit>.absoluteValue() = asFeetPerSecondPerSecond.absoluteValue.feetPerSecondPerSecond
+fun Rotation2d.absoluteValue(): Rotation2d = Rotation2d.fromRadians(radians.absoluteValue)
+fun Angle.absoluteValue(): Angle = if (magnitude() < 0.0) -this else this
+fun Distance.absoluteValue(): Distance = if (magnitude() < 0.0) -this else this
+fun AngularVelocity.absoluteValue(): AngularVelocity = if (magnitude() < 0.0) -this else this
+fun LinearVelocity.absoluteValue(): LinearVelocity = if (magnitude() < 0.0) -this else this
+fun AngularAcceleration.absoluteValue(): AngularAcceleration = if (magnitude() < 0.0) -this else this
+fun LinearAcceleration.absoluteValue(): LinearAcceleration = if (magnitude() < 0.0) -this else this
 
 //String
 @JvmName("angleToReadableString")

@@ -174,10 +174,10 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     }
 
     fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisVelocities: ChassisVelocities) {
+        LoopLogger.record("PoseLocalizer.update()")
         networkTable.publishCameras(cameras)
-        LoopLogger.record("After nt publishCameras")
+        LoopLogger.record("NT publishCameras()")
 
-        val startTimestamp = Timer.getMonotonicTimestamp()
         val currentTime = Timer.getTimestamp()
 
         val odomMeasurementPose = odometryMeasurement.robotPose
@@ -201,7 +201,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         timeToMeasurementMap[odometryTimestamp] =
             Measurement(currOdomPose) // Using odometry pose for the particle filter odometry reference
 
-        LoopLogger.record("After adding odom samples")
+        LoopLogger.record("Added odom samples")
 
         for (cameraID in visionPackets.indices) {
             val detectedTags = ArrayList<Translation3d>()
@@ -268,15 +268,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         }
         LoopLogger.record("After camera for loop")
         publishImmutableEntries()
-        LoopLogger.record("After pubImmutableEntries()")
-        val endTimestamp = Timer.getMonotonicTimestamp()
-        SimpleLogger.recordOutput("Localizer/Update seconds", (endTimestamp - startTimestamp))
-        val singleStartTime = Timer.getMonotonicTimestamp()
+        LoopLogger.record("pubImmutableEntries()")
         if (doSingleTagCalculation) {
             computeSingleTagPose()
         }
-        LoopLogger.record("After computeSingleTagPose()")
-        SimpleLogger.recordOutput("Localizer/SingleTag calc time", Timer.getMonotonicTimestamp() - singleStartTime)
+        LoopLogger.record("PoseLocalizer.update()")
     }
 
     /** Handles NT publishing, ID finalization, and cleanup.  */
@@ -284,7 +280,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val currentTime = Timer.getTimestamp()
 
         // Times are in ascending order.
-        val times = ArrayList(timeToMeasurementMap.keys)
+        val times = timeToMeasurementMap.keys
         for (time in times) {
             // Entries within |kMutableTimeBuffer| of the current time are not considered final.
             // Once we reach this point we are done.
@@ -307,6 +303,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     // Based on
     // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/c2bb0e79c466be33074577d51243258ec3d39f44/src/main/java/org/littletonrobotics/frc2025/RobotState.java#L194
     private fun computeSingleTagPose() {
+        LoopLogger.record("computeSingleTagPose()")
 
         val tagID = determineClosestTagID(this.pose)
 
@@ -350,11 +347,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val camToTagTranslation = Pose3d(Translation3d.kZero, Rotation3d(0.0, Math.toRadians(-latestTarget.getPitch()), Math.toRadians(-latestTarget.getYaw())))
             .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.kZero)).translation
             .rotateBy(Rotation3d(robotToCam.rotation.getX(), robotToCam.rotation.getY(), 0.0)).toTranslation2d()
-        if(camToTagTranslation.norm < 1e-6) {
+
+        if (camToTagTranslation.norm < 1e-6) {
 //            println("camToTagTranslation was equal to 0")
 //            println("distance: ${distance}")
 //            println("robotToCam: ${robotToCam.translation.norm}")
-
             return
         }
         val camToTagRotation = interpolatedRotation.plus(robotToCam.rotation.toRotation2d().plus(camToTagTranslation.angle))
@@ -383,8 +380,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             return
         }
         val odometryPoseOffset = robotPose.minus(odometryAtEstimateTime)
+        // Update single tag buffer
         singleTagOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, latestTimestamp)
+
         SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
+        LoopLogger.record("computeSingleTagPose()")
     }
 
     fun determineClosestTagID(robotPose: Pose2d): Int {
@@ -456,14 +456,6 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     fun NavigableMap<Double, Pose2d>.offsetFutureSamplesBy(offset: Transform2d, timestamp: Double) {
         // Exit early if the offset is zero
         if (offset.translation.x == 0.0 && offset.translation.y == 0.0 && offset.rotation.radians == 0.0) return
-
-        // I think using a tailMap is faster
-        tailMap(timestamp, true).replaceAll { _, pose -> pose.plus(offset) }
-
-//        var higherKey = ceilingKey(timestamp)
-//        while (higherKey != null) {
-//            this[higherKey] = this[higherKey]!!.plus(offset)
-//            higherKey = this.higherKey(higherKey)
-//        }
+        this.tailMap(timestamp, true).replaceAll { _, pose -> pose.plus(offset) }
     }
 }

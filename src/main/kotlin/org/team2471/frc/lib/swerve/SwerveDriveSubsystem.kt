@@ -23,7 +23,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.AutoLogOutput
-import org.team2471.frc.lib.commands.MasterMechanism
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -45,7 +44,6 @@ import org.team2471.frc.lib.units.inches
 import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
-import org.team2471.frc.lib.commands.PeriodicMechanism
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
@@ -53,6 +51,7 @@ import org.team2471.frc.lib.commands.use
 import org.team2471.frc.lib.commands.useUnnamed
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
+import org.team2471.frc.lib.ctre.refreshAll
 import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.logging.SimpleLogger
@@ -69,6 +68,8 @@ import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
+import org.wpilib.command3.Mechanism
+import org.wpilib.command3.Scheduler
 import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStation
 import org.wpilib.driverstation.DriverStationErrors
@@ -109,7 +110,7 @@ abstract class SwerveDriveSubsystem(
     { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
     driveConstants,
     *moduleConstants
-), PeriodicMechanism {
+), Mechanism {
 
     /** Percentage of max speed to drive using the joysticks. */
     abstract fun getJoystickPercentageSpeed(): ChassisVelocities
@@ -339,6 +340,8 @@ abstract class SwerveDriveSubsystem(
     private val steerCurrentStatusSignals = modules.map { it.steerMotor.supplyCurrent }.toTypedArray() // Current
     private val driveCurrentStatusSignals = modules.map { it.driveMotor.supplyCurrent }.toTypedArray()
 
+    private val driveAccelerationStatusSignals = modules.map { it.driveMotor.acceleration }.toTypedArray()
+
     /** Refresh these status signals every periodic loop */
     private val statusSignalsToRefreshPeriodically = StatusSignalCollection(*steerCurrentStatusSignals, *driveCurrentStatusSignals)
 
@@ -353,11 +356,9 @@ abstract class SwerveDriveSubsystem(
         registerTelemetry(::telemetryLoop)
 
         // Add a periodic function, this function is called every scheduler loop (every robot code loop)
-        MasterMechanism.callbacksToBeAdded.add(::periodic)
-//        registeredScheduler.addPeriodic(::periodic)
+        Scheduler.getDefault().addPeriodic(::periodic)
 
-//        if (isSim) registeredScheduler.addPeriodic(::simulationPeriodic)
-        if (isSim) MasterMechanism.callbacksToBeAdded.add(::simulationPeriodic)
+        if (isSim) Scheduler.getDefault().addPeriodic(::simulationPeriodic)
     }
 
     /**
@@ -388,16 +389,16 @@ abstract class SwerveDriveSubsystem(
         val prevAcceleration = acceleration
         val deltaTime = currTime - prevTime
 
+        // Refresh drive motor acceleration data
+        driveAccelerationStatusSignals.refreshAll()
         // To have accurate acceleration, we grab directly from the drive motor.
-        // Although during sim, the motor's acceleration doesn't get updated (as of 2025), so we manually calculate it from ∆velocity.
         acceleration = kinematics.toChassisVelocities(*moduleStates.mapIndexed { i, m -> m.apply {
-            velocity = modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
+            velocity = driveAccelerationStatusSignals[i].valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
         } }.toTypedArray()).translation
 
         jerk = ((acceleration - prevAcceleration) / deltaTime)
 
         val isGyroConnected = gyroConnected
-
         gyroDisconnectedAlert.set(!isGyroConnected)
 
         // Check if a part of any modules have been disconnected. Save on cycle time by only checking one module every loop.
@@ -407,15 +408,11 @@ abstract class SwerveDriveSubsystem(
         encoderDisconnectAlerts[moduleErrorIndex].set(!module.encoder.isConnected)
         moduleErrorIndex = (moduleErrorIndex + 1) % modules.size
 
-        // Calculate heading from swerve odometry when gyro is disconnected. evil. doesn't work good enough
+        // Calculate heading from swerve odometry when gyro is disconnected. evil. this isn't reliable enough. Do lots of testing, disconnecting and recconecting gyro
 //        if (!isGyroConnected && isReal) {
 //            val deltaYaw = kinematics.toChassisSpeeds(*moduleStates).omegaRadiansPerSecond * deltaTime
 //            resetRotation(heading + deltaYaw.radians.asRotation2d)
 //        }
-
-        SimpleLogger.recordOutput("Motor/Drive1/Power", modules.first().driveMotor.motorVoltage.valueAsDouble)
-        SimpleLogger.recordOutput("Drive/Position", pose)
-
 
         prevTime = currTime
         //This errors only in replay
@@ -426,9 +423,8 @@ abstract class SwerveDriveSubsystem(
      * This is responsible for providing disconnect warnings, and more good things.
      * Designed to be run every robot loop cycle
      */
-    override fun periodic() {
-        statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor/Module data
-
+    open fun periodic() {
+        statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
 
         // Disabled actions
         if (isDisabledSupplier()) {
@@ -463,7 +459,7 @@ abstract class SwerveDriveSubsystem(
      *
      *  Sometimes takes a long time when data acquisitions fail, this is why it's not a getter.
      */
-    fun updateSavedState(state: SwerveDrivetrain.SwerveDriveState = stateCopy) {
+    fun updateSavedState(state: SwerveDriveState = stateCopy) {
         savedState = state
     }
 
@@ -1066,11 +1062,9 @@ abstract class SwerveDriveSubsystem(
 
     @OptIn(DelicateCoroutinesApi::class)
     fun simulationPeriodic() {
-        LoopLogger.record("b4 Drive Sim piodic")
+        LoopLogger.record("Drive simPeriodic")
         updateSimState(0.02, 12.0)
-        GlobalScope.launch {
-            QuixVisionSim.updatePose(pose)
-        }
-        LoopLogger.record("Drive Sim piodic")
+        QuixVisionSim.updatePose(pose)
+        LoopLogger.record("Drive simPeriodic")
     }
 }
