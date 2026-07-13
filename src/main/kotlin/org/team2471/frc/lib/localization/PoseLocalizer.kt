@@ -12,7 +12,6 @@ import org.wpilib.math.geometry.Translation3d
 import org.wpilib.math.interpolation.TimeInterpolatableBuffer
 import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.util.isSim
-import org.team2471.frc.lib.util.toTransform2d
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
@@ -81,27 +80,6 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     private val kMutableTimeBuffer = 0.05 // seconds
 
     private var lastOdometryUpdateTime = 0.0
-
-    val interpolatedOdometryPose: Pose2d
-        get() {
-            val odomPose = odometryPose
-            val transform = (latestChassisSpeeds).toTransform2d(Timer.getTimestamp() - lastOdometryUpdateTime)
-
-            return Pose2d(odomPose.translation.plus(transform.translation), odomPose.rotation.plus(transform.rotation))
-        }
-    val interpolatedPose: Pose2d
-        get() {
-            val pose = pose
-            val transform = (latestChassisSpeeds).toTransform2d(Timer.getTimestamp() - lastOdometryUpdateTime)
-            return Pose2d(pose.translation.plus(transform.translation), pose.rotation.plus(transform.rotation))
-        }
-
-    val singleTagInterpolatedPose: Pose2d
-        get() {
-            val pose = singleTagPose
-            val transform = (latestChassisSpeeds).toTransform2d(Timer.getTimestamp() - lastOdometryUpdateTime)
-            return Pose2d(pose.translation.plus(transform.translation), pose.rotation.plus(transform.rotation))
-        }
 
     /** Only Swerve odometry */
     val odometryPose: Pose2d
