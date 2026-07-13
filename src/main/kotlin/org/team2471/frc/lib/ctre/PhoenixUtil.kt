@@ -13,6 +13,8 @@
 package org.team2471.frc.lib.ctre
 
 import com.ctre.phoenix6.StatusCode
+import com.ctre.phoenix6.StatusSignal
+import com.ctre.phoenix6.StatusSignalCollection
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.controls.VoltageOut
@@ -54,6 +56,25 @@ object PhoenixUtil {
         return true
     }
 }
+
+/**
+ * Wraps the collection into a [StatusSignalCollection] and calls [StatusSignalCollection.refreshAll]
+ *
+ * Non-blocking refresh on all the status signals in the collection. This is a performance improvement over separately calling refresh() on each signal.
+ *
+ * @see StatusSignalCollection.refreshAll
+ */
+fun <S: StatusSignal<*>> Collection<S>.refreshAll() = StatusSignalCollection(this).refreshAll()
+
+/**
+ * Wraps the array into a [StatusSignalCollection] and calls [StatusSignalCollection.refreshAll]
+ *
+ * Non-blocking refresh on all the status signals in the array. This is a performance improvement over separately calling refresh() on each signal.
+ *
+ * @see StatusSignalCollection.refreshAll
+ */
+fun <S: StatusSignal<*>> Array<S>.refreshAll() = StatusSignalCollection(*this).refreshAll()
+
 
 /**
  * Swerve request to set the individual module states.

@@ -5,6 +5,7 @@ import org.wpilib.driverstation.MatchState
 import org.wpilib.hardware.hal.HALUtil
 import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.RuntimeType
+import kotlin.jvm.optionals.getOrNull
 
 
 /** Stores basic robot information like Alliance color and isReal/Sim/Replay */
@@ -29,13 +30,11 @@ enum class RobotType {
 
 //Alliance bool
 val isRedAlliance: Boolean
-    get() = if (MatchState.getAlliance().isEmpty) {
-        prevIsRedAlliance ?: true // If no alliance, return the last known alliance or default to red
-    } else {
-        (MatchState.getAlliance().get() == Alliance.RED).also { prevIsRedAlliance = it }
-    }
+    // Get the current alliance. If null, use the previous value. The previous value is initially set to RED as the fallback.
+    get() = (MatchState.getAlliance().getOrNull() ?: prevAlliance).also { prevAlliance = it } == Alliance.RED
+
 val isBlueAlliance: Boolean get() = !isRedAlliance
-private var prevIsRedAlliance: Boolean? = null
+private var prevAlliance: Alliance = Alliance.RED
 
 //Demo mode
 private val demoSpeedTopic = NetworkTableInstance.getDefault().getDoubleTopic("DemoSpeed")

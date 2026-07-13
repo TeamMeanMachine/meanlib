@@ -14,11 +14,11 @@ open class MechanismBase(val mechanismName: String): Mechanism {
         // Checks if periodic() and simulationPeriodic() have been overridden before adding them to the periodic scheduler,
         // just to avoid having a bunch of empty periodic methods in the scheduler.
         if (hasOverride("periodic")) {
-            MasterMechanism.callbacksToBeAdded.add(this::periodic)
+            Scheduler.getDefault().addPeriodic(this::periodic)
         }
 
         if (isSim && hasOverride("simulationPeriodic")) {
-            MasterMechanism.callbacksToBeAdded.add(this::simulationPeriodic)
+            Scheduler.getDefault().addPeriodic(this::simulationPeriodic)
         }
 
         // If a default command has been specified, apply it to the mechanism.
