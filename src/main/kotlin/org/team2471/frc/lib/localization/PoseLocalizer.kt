@@ -10,7 +10,7 @@ import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.geometry.Translation3d
 import org.wpilib.math.interpolation.TimeInterpolatableBuffer
-import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.logging.LoopLogger
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.toTransform2d
 import org.team2471.frc.lib.vision.Fiducial

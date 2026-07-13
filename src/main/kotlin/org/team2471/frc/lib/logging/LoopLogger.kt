@@ -1,7 +1,5 @@
-package org.team2471.frc.lib.control
+package org.team2471.frc.lib.logging
 
-import org.littletonrobotics.junction.Logger
-import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.system.Timer
 
 /**

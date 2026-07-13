@@ -46,7 +46,7 @@ import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
 import org.team2471.frc.lib.commands.PeriodicMechanism
-import org.team2471.frc.lib.control.LoopLogger
+import org.team2471.frc.lib.logging.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.use
@@ -1066,11 +1066,11 @@ abstract class SwerveDriveSubsystem(
 
     @OptIn(DelicateCoroutinesApi::class)
     fun simulationPeriodic() {
-        LoopLogger.record("b4 Drive Sim piodic")
+        LoopLogger.record("Drive Sim periodic")
         updateSimState(0.02, 12.0)
         GlobalScope.launch {
             QuixVisionSim.updatePose(pose)
         }
-        LoopLogger.record("Drive Sim piodic")
+        LoopLogger.record("Drive Sim periodic")
     }
 }
