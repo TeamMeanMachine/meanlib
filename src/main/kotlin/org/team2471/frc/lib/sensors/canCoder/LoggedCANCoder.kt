@@ -1,9 +1,6 @@
 package org.team2471.frc.lib.sensors.canCoder
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
@@ -24,14 +21,14 @@ class LoggedCANCoder(val id: Int, name: String, simRotationSupplier: () -> Angle
 
     init {
         io.updateInputs(inputs)
-        MeanLogger.processInputs("Sensors", inputs)
+//        SimpleLogger.processInputs("Sensors", inputs)
         MasterCANCoder.addCANCoder(this)
     }
 
     fun periodicLoop() {
         if (doUpdate) {
             io.updateInputs(inputs)
-            MeanLogger.processInputs("Sensors", inputs)
+//            SimpleLogger.processInputs("Sensors", inputs)
         }
     }
 

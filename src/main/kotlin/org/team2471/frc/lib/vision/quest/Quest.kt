@@ -7,8 +7,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
-import org.team2471.frc.lib.math.Vector2
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.math.Vector2L
 import org.team2471.frc.lib.math.asMeters
 import org.team2471.frc.lib.math.toTranslation2d
@@ -54,10 +53,10 @@ class Quest(
             io.setHeading(0.0.degrees)
             periodic {
                 io.updateInputs(inputs)
-                MeanLogger.processInputs("", inputs)
+//                SimpleLogger.processInputs("", inputs)
 
 
-                MeanLogger.recordOutput("Quest/Pose", pose)
+                SimpleLogger.recordOutput("Quest/Pose", pose)
                 posePublisher.set(pose)
                 isConnectedEntry.setBoolean(inputs.isConnected)
             }

@@ -7,10 +7,7 @@ import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
-import org.team2471.frc.lib.math.Vector2L
-import org.team2471.frc.lib.math.asMeters
-import org.team2471.frc.lib.math.toTranslation2d
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.motion.following.SwerveDrive
 import org.team2471.frc.lib.units.*
 
@@ -132,10 +129,10 @@ class QuestIOReal(val robotToQuest: Transform2d): QuestIO {
             rotation
         )
 
-        MeanLogger.recordOutput("Quest/VeryRawQuestPose", Pose2d(Translation2d(rawPos[2].toDouble(), -rawPos[0].toDouble()), Rotation2d(-rawRotation[1].degrees.asWPIUnit)))
-        MeanLogger.recordOutput("Quest/RawQuestPose", pose)
+        SimpleLogger.recordOutput("Quest/VeryRawQuestPose", Pose2d(Translation2d(rawPos[2].toDouble(), -rawPos[0].toDouble()), Rotation2d(-rawRotation[1].degrees.asWPIUnit)))
+        SimpleLogger.recordOutput("Quest/RawQuestPose", pose)
         inputs.pose = Pose2d(-(pose.translation.plus(offset.translation).rotateBy(offset.rotation)), pose.rotation.rotateBy(offset.rotation))
-        MeanLogger.recordOutput("Quest/AfterOffsetPose", inputs.pose)
+        SimpleLogger.recordOutput("Quest/AfterOffsetPose", inputs.pose)
 
     }
 }

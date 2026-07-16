@@ -2,10 +2,7 @@ package org.team2471.frc.lib.actuators
 
 import edu.wpi.first.math.system.plant.DCMotor
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.math.DoubleRange
 import org.team2471.frc.lib.sensors.canCoder.LoggedCANCoder
 import org.team2471.frc.lib.units.*
@@ -79,7 +76,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
 
     init {
         io.updateInputs(inputs)
-        MeanLogger.processInputs("Motors", inputs)
+//        SimpleLogger.processInputs("Motors", inputs)
         MasterMotor.addMotor(this)
     }
 
@@ -87,7 +84,7 @@ class MotorController(deviceId: MotorControllerID, vararg followerIds: MotorCont
         if (doUpdate) {
             io.updateInputs(inputs)
             followers.forEach { it.first.updateInputs(MotorControllerIO.MotorControllerIOInputs(it.second)) }
-            MeanLogger.processInputs("Motors", inputs)
+//            SimpleLogger.processInputs("Motors", inputs)
         }
     }
 

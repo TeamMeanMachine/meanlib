@@ -1,12 +1,9 @@
 package org.team2471.frc.lib.sensors.analogInput
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
 import edu.wpi.first.wpilibj.AnalogInput
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 
 
 /**
@@ -32,6 +29,6 @@ class LoggedAnalogInput(id: Int, name: String, simTicksSupplier: () -> Int = {0}
 
     fun periodicLoop() {
         io.updateInputs(inputs)
-        MeanLogger.processInputs("Sensors", inputs)
+//        SimpleLogger.processInputs("Sensors", inputs)
     }
 }

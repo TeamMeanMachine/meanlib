@@ -45,7 +45,7 @@ internal object KAlertLogger {
     fun periodic() {
         if (groups == null) return
         for (group in groups!!.keys) {
-            MeanLogger.recordOutput("$group/.type", "Alerts")
+            SimpleLogger.recordOutput("$group/.type", "Alerts")
 
             // Create NetworkTables subscribers
             if (!errorSubscribers.containsKey(group)) {
@@ -65,15 +65,15 @@ internal object KAlertLogger {
             }
 
             // Get values
-            MeanLogger.recordOutput(
+            SimpleLogger.recordOutput(
                 "$group/errors", errorSubscribers[group]!!
                     .get()
             )
-            MeanLogger.recordOutput(
+            SimpleLogger.recordOutput(
                 "$group/warnings", warningSubscribers[group]!!
                     .get()
             )
-            MeanLogger.recordOutput(
+            SimpleLogger.recordOutput(
                 "$group/infos", infoSubscribers[group]!!
                     .get()
             )

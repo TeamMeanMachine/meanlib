@@ -21,9 +21,9 @@ buildscript {
 var doReplay = false
 
 group = "org.team2471.lib"
-version = "2025"
-var wpiLibVersion =  "2025.2.1"
-var advantageKitVersion = "4.1.2"
+version = "2026"
+var wpiLibVersion =  "2026.2.1"
+var advantageKitVersion = "26.0.2"
 repositories {
     mavenCentral()
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/release/") }
@@ -33,6 +33,8 @@ repositories {
     maven { setUrl("https://maven.photonvision.org/repository/internal")}
     maven { setUrl("https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release/")}
     maven { setUrl("https://lib.choreo.autos/dep")}
+    maven { setUrl("https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/")}
+    maven { setUrl("https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release/")}
     maven { setUrl("https://shenzhen-robotics-alliance.github.io/maple-sim/vendordep/repos/releases")}
 }
 
@@ -51,11 +53,11 @@ dependencies {
     implementation("edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpiunits:wpiunits-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpimath:wpimath-java:$wpiLibVersion")
-    implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
+//    implementation("edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion")
     implementation("edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
-    implementation("com.ctre.phoenix6:wpiapi-java:25.1.0")
-    implementation("com.revrobotics.frc:REVLib-java:2025.0.0")
+    implementation("com.ctre.phoenix6:wpiapi-java:26.3.0")
+    implementation("com.revrobotics.frc:REVLib-java:2026.0.5")
     implementation("edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpiLibVersion")
 
     // other
@@ -65,14 +67,14 @@ dependencies {
     implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     implementation("org.ejml:ejml-simple:0.41")
 
-    implementation("org.photonvision:photonlib-java:v2025.1.1")
-    implementation("org.photonvision:photontargeting-java:v2025.1.1")
+    implementation("org.photonvision:photonlib-java:v2026.3.4")
+    implementation("org.photonvision:photontargeting-java:v2026.3.4")
     implementation("com.fasterxml.jackson.core:jackson-core:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
 
-    implementation("org.ironmaple:maplesim-java:0.3.3")
-    implementation("choreo:ChoreoLib-java:2025.0.1")
+    implementation("org.ironmaple:maplesim-java:0.4.0-beta")
+    implementation("choreo:ChoreoLib-java:2026.0.3")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")

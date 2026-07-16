@@ -2,7 +2,7 @@ package org.team2471.frc.lib.vision
 
 import edu.wpi.first.math.geometry.Pose2d
 import org.photonvision.EstimatedRobotPose
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.units.*
 import org.team2471.frc.lib.util.length
 
@@ -58,11 +58,11 @@ data class CameraResult(
         val EmptyCameraResult = CameraResult(Pose2d(), 0.0, 0, 0.0, 0.0, CameraType.LIMELIGHT, true)
 
         fun recordOutput(key: String, value: CameraResult) {
-            MeanLogger.recordOutput("$key/Pose", value.pose)
-            MeanLogger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
-            MeanLogger.recordOutput("$key/Tag Number", value.numTags.toDouble())
-            MeanLogger.recordOutput("$key/Average Tag Area", value.avgTagDistM)
-            MeanLogger.recordOutput("$key/Ambiguity", value.ambiguity)
+            SimpleLogger.recordOutput("$key/Pose", value.pose)
+            SimpleLogger.recordOutput("$key/Timestamp (s)", value.timeStampSeconds)
+            SimpleLogger.recordOutput("$key/Tag Number", value.numTags.toDouble())
+            SimpleLogger.recordOutput("$key/Average Tag Area", value.avgTagDistM)
+            SimpleLogger.recordOutput("$key/Ambiguity", value.ambiguity)
         }
     }
 }

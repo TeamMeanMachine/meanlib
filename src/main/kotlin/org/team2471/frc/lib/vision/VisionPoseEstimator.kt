@@ -7,13 +7,9 @@ import edu.wpi.first.math.Nat
 import edu.wpi.first.math.StateSpaceUtil
 import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.estimator.ExtendedKalmanFilter
-import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N2
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.team2471.frc.lib.coroutines.periodic
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.meters
@@ -125,16 +121,16 @@ class VisionPoseEstimator(
         }
 
         odomHeartbeat++
-        MeanLogger.recordOutput("PoseEstimator/OdomHeartbeat", odomHeartbeat)
+        SimpleLogger.recordOutput("PoseEstimator/OdomHeartbeat", odomHeartbeat)
 
         if (odomOffsetHistory.isNotEmpty() && odomPosHistory.isNotEmpty()) {
-            MeanLogger.recordOutput(
+            SimpleLogger.recordOutput(
                 "PoseEstimator/DriveOffsetPos",
                 (odomOffsetHistory.lastEntry().value.let { odomPosHistory.lastEntry().value.plus(it) }).asMeters.toPose2d(
                     0.0
                 )
             )
-            MeanLogger.recordOutput("PoseEstimator/DrivePos", odomPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
+            SimpleLogger.recordOutput("PoseEstimator/DrivePos", odomPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
         }
     }
 
@@ -152,14 +148,14 @@ class VisionPoseEstimator(
             }
         }
         if (questPosHistory.isNotEmpty() && questOffsetHistory.isNotEmpty()) {
-            MeanLogger.recordOutput(
+            SimpleLogger.recordOutput(
                 "PoseEstimator/OffsetQuestPos",
                 (questOffsetHistory.lastEntry().value.let { questPosHistory.lastEntry().value.plus(it) }).asMeters.toPose2d(
                     0.0
                 )
             )
 
-            MeanLogger.recordOutput("PoseEstimator/QuestPos", questPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
+            SimpleLogger.recordOutput("PoseEstimator/QuestPos", questPosHistory.lastEntry().value.asMeters.toPose2d(0.0))
         }
     }
 

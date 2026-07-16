@@ -19,7 +19,7 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig
 import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.coroutines.suspendUntil
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.simulatedDrive
 import org.team2471.frc.lib.motion.following.SwerveDrive.Companion.useMapleSim
@@ -522,7 +522,7 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
             // heading error
             val robotHeading = heading
             val pathHeading = pathSample.pose.rotation.asAngle
-            MeanLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
+            SimpleLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
             val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
@@ -563,7 +563,7 @@ suspend fun SwerveDrive.driveAlongChoreoPath(
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
         }
         println("at the end of driveAlongChoreoPath")
-        MeanLogger.recordOutput("pathPose", Pose2d())
+        SimpleLogger.recordOutput("pathPose", Pose2d())
 
         // shut it down
         drive(Vector2(0.0, 0.0), 0.0, true)
@@ -653,7 +653,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
         // heading error
         val robotHeading = heading
         val pathHeading = pathSample.heading
-        MeanLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
+        SimpleLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
@@ -692,7 +692,7 @@ suspend fun SwerveDrive.driveAlongPathGeneric(
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
     println("at the end of driveAlongChoreoPath")
-    MeanLogger.recordOutput("pathPose", Pose2d())
+    SimpleLogger.recordOutput("pathPose", Pose2d())
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
@@ -774,7 +774,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
         // heading error
         val robotHeading = heading
         val pathHeading = pathSample.heading
-        MeanLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
+        SimpleLogger.recordOutput("pathPose", pathPosition.asMeters.toPose2d(pathHeading))
         val headingError = (robotHeading - pathHeading).wrap()
 //        println("Heading Error: $headingError. pathHeading: $pathHeading")
 
@@ -815,7 +815,7 @@ suspend fun SwerveDrive.driveAlongPathGenericWithVelocity(
 //        println("DT$dt Path Velocity = $pathVelocity Velocity = $velocity")
     }
     println("at the end of driveAlongChoreoPath")
-    MeanLogger.recordOutput("pathPose", Pose2d())
+    SimpleLogger.recordOutput("pathPose", Pose2d())
 
     // shut it down
     drive(Vector2(0.0, 0.0), 0.0, true)
@@ -988,9 +988,9 @@ suspend fun SwerveDrive.tuneDrivePositionController(controller: org.team2471.frc
             val pathPosition = Vector2(x, y)
             val positionError = pathPosition - position
 
-            MeanLogger.recordOutput("position", position.feet, heading)
-            MeanLogger.recordOutput("goalPosition", Pose2d(pathPosition.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
-            MeanLogger.recordOutput("positionError", Pose2d(positionError.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
+//            SimpleLogger.recordOutput("position", position.feet, heading)
+            SimpleLogger.recordOutput("goalPosition", Pose2d(pathPosition.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
+            SimpleLogger.recordOutput("positionError", Pose2d(positionError.feet.asMeters.toTranslation2d(), Rotation2d(turn.degrees.asRadians)))
 
             // position d
             val deltaPositionError = positionError - prevPositionError
@@ -1037,7 +1037,7 @@ suspend fun SwerveDrive.driveToPoint(
 
 
     GlobalScope.launch {
-        MeanLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: currHeading))
+        SimpleLogger.recordOutput("driveToPoint Point", point.asMeters.toPose2d(heading ?: currHeading))
     }
 
     var prevPositionError = Vector2L.Zeros
@@ -1083,7 +1083,7 @@ suspend fun SwerveDrive.driveToPoint(
 
         if (exitSupplier(t.get(), positionError, headingError)) {
             println("drive to point exit supplier return true. time: ${t.get()} error: $prevPositionError headingError: $headingError")
-            MeanLogger.recordOutput("driveToPoint Point", Pose2d())
+            SimpleLogger.recordOutput("driveToPoint Point", Pose2d())
             drive(Vector2(0.0, 0.0), 0.0)
             stop()
         }
@@ -1091,9 +1091,9 @@ suspend fun SwerveDrive.driveToPoint(
 }
 
 suspend fun SwerveDrive.driveToNearestPoint(points: List<Vector2L>, posSupplier: () -> Vector2L, exitSupplier: (Double, Vector2L, Angle?) -> Boolean, turnOverride: () -> Double? = {null},) {
-    MeanLogger.recordOutput("Goal Pos", poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
+    SimpleLogger.recordOutput("Goal Pos", poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet.asMeters.toPose2d(heading))
     this.driveToPoint(poseEstimator.latestPos.asFeet.getClosestPoint(*(points.map { it.asFeet }).toTypedArray()).feet/*, posSupplier = posSupplier*/, exitSupplier = exitSupplier, turnOverride = turnOverride)
-    MeanLogger.recordOutput("Goal Pos", Pose2d())
+    SimpleLogger.recordOutput("Goal Pos", Pose2d())
 }
 
 fun SwerveDrive.xPose() {

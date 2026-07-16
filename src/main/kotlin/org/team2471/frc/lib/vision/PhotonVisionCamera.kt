@@ -9,7 +9,7 @@ import edu.wpi.first.networktables.*
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.photonvision.targeting.PhotonPipelineResult
-import org.team2471.frc.lib.framework.internal.akitLoggers.MeanLogger
+import org.team2471.frc.lib.framework.internal.akitLoggers.SimpleLogger
 import org.team2471.frc.lib.vision.CameraIO.CameraIOInputs
 
 
@@ -73,7 +73,7 @@ class PhotonVisionCamera(
     ) {
         referencePose = currentPose
         updateInputs(inputs)
-        MeanLogger.processInputs("Cameras/", inputs)
+//        SimpleLogger.processInputs("Cameras/", inputs)
 
         if (inputs.isConnected) {
 
@@ -133,7 +133,7 @@ class PhotonVisionCamera(
                 }
                 if (unreadResults.isNotEmpty()) {
                     if (prevFirstResult != unreadResults.first()) {
-                        MeanLogger.recordOutput("Cameras/$name/Raw Corners",
+                        SimpleLogger.recordOutput("Cameras/$name/Raw Corners",
                             *estimatedRobotPoses.last().targetsUsed.map {
                                 it.getDetectedCorners().map { Translation2d(it.x, it.y) }
                             }.flatten().toTypedArray()
@@ -141,7 +141,7 @@ class PhotonVisionCamera(
                     }
                     prevFirstResult = unreadResults.first()
                 } else {
-                    MeanLogger.recordOutput("Cameras/$name/Raw Corners", *arrayOf<Translation2d>())
+                    SimpleLogger.recordOutput("Cameras/$name/Raw Corners", *arrayOf<Translation2d>())
                 }
             }
         } catch (_: Exception) {

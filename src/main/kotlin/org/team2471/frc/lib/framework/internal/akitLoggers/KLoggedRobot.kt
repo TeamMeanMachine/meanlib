@@ -73,7 +73,7 @@ open class MeanLoggedRobot protected constructor(period: Double = defaultPeriodS
         AutoLogOutputManager.addObject(this)
 
         // Save data from init cycle
-        MeanLogger.periodicAfterUser(initEnd, 0)
+//        SimpleLogger.periodicAfterUser(initEnd, 0)
 
         // Tell the DS that the robot is ready to be enabled
         println("********** Robot program startup complete **********")
@@ -91,7 +91,7 @@ open class MeanLoggedRobot protected constructor(period: Double = defaultPeriodS
                     NotifierJNI.updateNotifierAlarm(notifier, nextCycleUs)
                     if (NotifierJNI.waitForNotifierAlarm(notifier) == 0L) {
                         // Break the loop if the notifier was stopped
-                        MeanLogger.end()
+//                        SimpleLogger.end()
                         break
                     }
                 }
@@ -99,13 +99,13 @@ open class MeanLoggedRobot protected constructor(period: Double = defaultPeriodS
             }
 
             val periodicBeforeStart = RobotController.getFPGATime()
-            MeanLogger.periodicBeforeUser()
+//            SimpleLogger.periodicBeforeUser()
             val userCodeStart = RobotController.getFPGATime()
             loopFunc()
             val userCodeEnd = RobotController.getFPGATime()
 
             gcStatsCollector.update()
-            MeanLogger.periodicAfterUser(userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart)
+//            SimpleLogger.periodicAfterUser(userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart)
         }
     }
 
@@ -137,8 +137,8 @@ open class MeanLoggedRobot protected constructor(period: Double = defaultPeriodS
                 lastCounts[i] = gcCount
             }
 
-            MeanLogger.recordOutput("LoggedRobot/GCTimeMS", accumTime.toDouble())
-            MeanLogger.recordOutput("LoggedRobot/GCCounts", accumCounts.toDouble())
+            SimpleLogger.recordOutput("LoggedRobot/GCTimeMS", accumTime.toDouble())
+            SimpleLogger.recordOutput("LoggedRobot/GCCounts", accumCounts.toDouble())
         }
     }
 
