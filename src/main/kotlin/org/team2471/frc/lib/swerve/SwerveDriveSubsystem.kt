@@ -20,8 +20,6 @@ import com.therekrab.autopilot.APProfile
 import com.therekrab.autopilot.APTarget
 import com.therekrab.autopilot.Autopilot
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.AutoLogOutput
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
@@ -47,8 +45,8 @@ import org.team2471.frc.lib.units.radiansPerSecond
 import org.team2471.frc.lib.logging.LoopLogger
 import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
-import org.team2471.frc.lib.commands.use
-import org.team2471.frc.lib.commands.useUnnamed
+import org.team2471.frc.lib.commands.command
+import org.team2471.frc.lib.commands.commandUnnamed
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
 import org.team2471.frc.lib.ctre.refreshAll
@@ -71,7 +69,6 @@ import org.wpilib.command3.Command
 import org.wpilib.command3.Mechanism
 import org.wpilib.command3.Scheduler
 import org.wpilib.driverstation.Alert
-import org.wpilib.driverstation.DriverStation
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
 import org.wpilib.math.controller.PIDController
@@ -486,7 +483,7 @@ abstract class SwerveDriveSubsystem(
      *
      * Usually each module bevel gear should face to the right (with perspective to robot) before running this.
      */
-    fun setAngleOffsets() = use("SetAngleOffsets",this) {
+    fun setAngleOffsets() = command("SetAngleOffsets",this) {
         println("setting angle offsets")
         val offsets = modules.map { it.encoder.setCANCoderAngle(0.0.degrees) }
         offsets.forEachIndexed { i, offset ->
@@ -603,13 +600,13 @@ abstract class SwerveDriveSubsystem(
     /**
      * Drives the robot using the joystick. [getChassisVelocitiesFromJoystick]
      */
-    fun joystickVelocityDrive(): Command = use("joystickVelocityDrive", this) {
+    fun joystickVelocityDrive(): Command = command("joystickVelocityDrive", this) {
         this.periodic {
             if (!RobotState.isAutonomous()) driveVelocity(getChassisVelocitiesFromJoystick())
         }
     }
 
-    fun joystickPercentageDrive(): Command = use ("joystickPercentageDrive", this) {
+    fun joystickPercentageDrive(): Command = command ("joystickPercentageDrive", this) {
         periodic {
             if (!RobotState.isAutonomous()) drivePercentage(getJoystickPercentageSpeed())
         }
@@ -645,7 +642,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = useUnnamed(this) {
+    ): Command = commandUnnamed(this) {
         println("running driveToPoint")
         while (true) {
             // Calculate pose error
@@ -697,7 +694,7 @@ abstract class SwerveDriveSubsystem(
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot = autoPilot,
         exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> autopilotSupplier.atTarget(robotPose, target) }
-    ): Command = useUnnamed(this) {
+    ): Command = commandUnnamed(this) {
         println("running driveToAutopilotPoint")
         while (true) {
             val pose = poseSupplier()
@@ -750,7 +747,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         lineTolerance: Distance = 0.5.inches,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = useUnnamed(this) {
+    ): Command = commandUnnamed(this) {
         val lineAngle = (pointTwo - pointOne).angle
 
         while (true) {
@@ -810,7 +807,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ) = useUnnamed(this) {
+    ) = commandUnnamed(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
         SimpleLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
@@ -839,7 +836,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
         exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
-    ): Command = use("DriveAlongChoreoPath", this) {
+    ): Command = command("DriveAlongChoreoPath", this) {
 //        println("Running DriveAlongChoreoPath") //TODO: UNCOMMENT IN 2027 CHOREO
 //
 //        val totalTime = path.totalTime

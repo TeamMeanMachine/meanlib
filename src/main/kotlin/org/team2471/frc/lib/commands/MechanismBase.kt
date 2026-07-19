@@ -54,7 +54,7 @@ open class MechanismBase(val mechanismName: String): Mechanism {
  * @see Mechanism.setDefaultCommand
  */
 fun Mechanism.setDefaultCommand(body: Coroutine.() -> Unit): Command {
-    val createdDefault = useUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
+    val createdDefault = commandUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
     defaultCommand = createdDefault
     return createdDefault
 }

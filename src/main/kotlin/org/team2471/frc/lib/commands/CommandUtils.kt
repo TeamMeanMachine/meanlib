@@ -35,7 +35,7 @@ var unnamedCommandCount = 0
  * @see Command.requiring
  * @see NeedsExecutionBuilderStage.executing
  */
-fun useUnnamed(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage =
+fun commandUnnamed(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage =
     Command.requiring(setOf(*mechanisms)).executing(body)
 
 // Full Command Composers
@@ -51,8 +51,8 @@ fun useUnnamed(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsN
  * @see NeedsNameBuilderStage.named
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun use(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
-    useUnnamed(*mechanisms, body = body).named(name, onCancel = onCancel)
+inline fun command(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
+    commandUnnamed(*mechanisms, body = body).named(name, onCancel = onCancel)
 /**
  * Composes a [Command] with an action using provided [Mechanism]s
  *
@@ -64,8 +64,8 @@ inline fun use(name: String, vararg mechanisms: Mechanism, noinline body: Corout
  * @see NeedsNameBuilderStage.named
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun use(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
-    useUnnamed(*mechanisms, body = body).named(name)
+inline fun command(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
+    commandUnnamed(*mechanisms, body = body).named(name)
 
 /**
  * Composes a [Command] with an action using provided [Mechanism]s
@@ -78,8 +78,8 @@ inline fun use(name: String, vararg mechanisms: Mechanism, noinline body: Corout
  * @see NeedsNameBuilderStage.named
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun use(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
-    useUnnamed(*mechanisms, body = body).named(try {object {}.javaClass.enclosingMethod.name} catch (e: Exception) { "lambda unnamed $unnamedCommandCount".also { unnamedCommandCount++ } })
+inline fun command(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
+    commandUnnamed(*mechanisms, body = body).named(try {object {}.javaClass.enclosingMethod.name} catch (e: Exception) { "lambda unnamed $unnamedCommandCount".also { unnamedCommandCount++ } })
 
 /**
  * Composes a [Command] with a [body] using the provided [Mechanism]s
@@ -93,8 +93,8 @@ inline fun use(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit
  * @see NeedsNameBuilderStage.named
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun use(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
-    useUnnamed(*mechanisms, body = body).named(object {}.javaClass.enclosingMethod.name, onCancel = onCancel)
+inline fun command(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
+    commandUnnamed(*mechanisms, body = body).named(object {}.javaClass.enclosingMethod.name, onCancel = onCancel)
 
 /**
  * Finishes composing a command by naming it. Also, can apply an [onCancel] action.
@@ -191,5 +191,5 @@ fun Coroutine.parallel(
 fun Coroutine.parallel(
     vararg blocks: Coroutine.() -> Unit
 ) {
-    parallel(*blocks.mapIndexed { index, coroutine -> use("unnamedParallel$index") { coroutine() }}.toTypedArray())
+    parallel(*blocks.mapIndexed { index, coroutine -> command("unnamedParallel$index") { coroutine() }}.toTypedArray())
 }
