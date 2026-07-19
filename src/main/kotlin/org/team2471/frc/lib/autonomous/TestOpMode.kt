@@ -6,9 +6,9 @@ import org.wpilib.driverstation.RobotState
 import org.wpilib.opmode.OpMode
 
 /**
- * Test [OpMode].
+ * Utility/Test [OpMode].
  *
- * When selected will call the [initFunction]
+ * When selected will call the [initFunction] in the OpMode's scope.
  *
  * Schedules [testCommand] when enabled and runs it until its disabled or finished.
  */

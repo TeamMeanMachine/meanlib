@@ -14,7 +14,7 @@ import org.wpilib.opmode.OpMode
  *
  * Schedules [autoCommand] when enabled and runs it until its disabled or finished.
  */
-class AutoOpMode(name: String, autoCommand: Command, warmupFunction: () -> Unit, val disabledPeriodicFunction: () -> Unit): OpMode {
+class AutoOpMode(val name: String, autoCommand: Command, warmupFunction: () -> Unit, val disabledPeriodicFunction: () -> Unit): OpMode {
 
     init {
         println("$name auto created")

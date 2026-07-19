@@ -144,13 +144,6 @@ abstract class SwerveDriveSubsystem(
     abstract val choreoPathsStartOnRed: Boolean
 
     /**
-     * Supplier that provides if the robot is disabled.
-     *
-     * (Could have used [DriverStation.isDisabled], but I found that it would sometimes cause small occasional loop overruns when called periodically) - J 2026
-     */
-    abstract val isDisabledSupplier: () -> Boolean
-
-    /**
      * Wheel odometry position of the robot. Use this for resetting position
      *
      * Abstract to allow for other pose sources (like cameras) to override the setter and to reset when this is set.
@@ -427,7 +420,7 @@ abstract class SwerveDriveSubsystem(
         statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
 
         // Disabled actions
-        if (isDisabledSupplier()) {
+        if (RobotState.isDisabled()) {
             // Set module setpoints to their current position.
             if (!RobotState.isAutonomous()) {
                 setControl(ApplyModuleStates())
