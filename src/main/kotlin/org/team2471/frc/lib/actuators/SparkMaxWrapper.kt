@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.actuators
 
+import com.revrobotics.PersistMode
+import com.revrobotics.ResetMode
 import com.revrobotics.spark.*
 import com.revrobotics.spark.config.*
 
@@ -24,7 +26,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         this.inputs = inputs
     }
 
-    private val _motorController = SparkMax(deviceID, SparkLowLevel.MotorType.kBrushless ).apply { restoreFactoryDefaults() }
+    private val _motorController = SparkMax(deviceID, SparkLowLevel.MotorType.kBrushless)//.also { restoreFactoryDefaults() }
 
     val analogPosition: Double
         get() = _motorController.analog.position
@@ -34,6 +36,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     init {
         println("Creating Spark motor  ID: $deviceID")
+        restoreFactoryDefaults()
     }
 
     override fun follow(followerID: MotorControllerIO) {
@@ -107,7 +110,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0)
+        _motorController.closedLoopController.setSetpoint(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0)
     }
 
     override fun setVelocitySetpoint(velocity: Double, feedForward: Double) {
@@ -121,7 +124,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
         }
 
 //      set reference point of
-        _motorController.closedLoopController.setReference(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward)
+        _motorController.closedLoopController.setSetpoint(velocitySetPoint, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward)
     }
 
     override fun stop() {
@@ -130,22 +133,22 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun setPositionSetpoint(position: Double) {
         positionSetpoint = position
-        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0)
+        _motorController.closedLoopController.setSetpoint(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0)
     //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setPositionSetpoint(position: Double, feedForward: Double) {
         positionSetpoint = position
-        _motorController.closedLoopController.setReference(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, feedForward)
+        _motorController.closedLoopController.setSetpoint(positionSetpoint, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0, feedForward)
 //      println("positionSetpoint = $positionSetpoint position=${_motorController.getEncoder().position}")
     }
 
     override fun setMotionMagicSetpoint(position: Double) {
-        _motorController.closedLoopController.setReference(position, SparkBase.ControlType.kMAXMotionPositionControl)
+        _motorController.closedLoopController.setSetpoint(position, SparkBase.ControlType.kMAXMotionPositionControl)
     }
 
     override fun setMotionMagicSetpoint(position: Double, feedForward: Double) {
-        _motorController.closedLoopController.setReference(position, SparkBase.ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, feedForward)
+        _motorController.closedLoopController.setSetpoint(position, SparkBase.ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, feedForward)
     }
 
     override fun setMotionMagicExpoSetpoint(position: Double) {
@@ -167,12 +170,12 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     override fun getPValue(): Double = _motorController.configAccessor.closedLoop.p
     override fun getDValue() : Double = _motorController.configAccessor.closedLoop.d
     override fun getIValue(): Double = _motorController.configAccessor.closedLoop.i
-    override fun getFValue(): Double = _motorController.configAccessor.closedLoop.ff
+    override fun getFValue(): Double = _motorController.configAccessor.closedLoop.feedForward.getkS()
 
 
     override fun config_kF(f: Double, simF: Double?) {
         val c = _motorController.configAccessor.closedLoop
-        applyConfig(SparkMaxConfig().apply { closedLoop.pidf(c.p, c.i, c.d, f) })
+        applyConfig(SparkMaxConfig().apply { closedLoop.feedForward.kS(f) })
     }
 
     override fun config_kI(i: Double, simI: Double?) {
@@ -187,7 +190,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun restoreFactoryDefaults() {
-        _motorController.configure(SparkMaxConfig(), SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
+        _motorController.configure(SparkMaxConfig(), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
@@ -202,15 +205,15 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
         applyConfig(SparkMaxConfig().apply { closedLoop.maxMotion
-            .maxVelocity(cruisingVelocity)
+            .cruiseVelocity(cruisingVelocity)
             .maxAcceleration(acceleration)
-            .allowedClosedLoopError(0.0)
+            .allowedProfileError(0.0)
         })
     }
 
     override fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) { println("MM expo does not exist in SparkMax")}
 
     private fun applyConfig(newConfig: SparkBaseConfig) {
-        _motorController.configure(newConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
+        _motorController.configureAsync(newConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters)
     }
 }
