@@ -3,8 +3,8 @@ package org.team2471.frc.lib.ctre
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.hardware.CANcoder
 import com.ctre.phoenix6.signals.SensorDirectionValue
-import org.team2471.frc.lib.util.isReal
-import org.team2471.frc.lib.util.isSim
+import org.team2471.frc.lib.environment.isReal
+import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.units.asRotations
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.units.rotations

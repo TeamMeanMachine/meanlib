@@ -19,8 +19,10 @@ import com.therekrab.autopilot.APConstraints
 import com.therekrab.autopilot.APProfile
 import com.therekrab.autopilot.APTarget
 import com.therekrab.autopilot.Autopilot
-import kotlinx.coroutines.DelicateCoroutinesApi
 import org.littletonrobotics.junction.AutoLogOutput
+import org.team2471.frc.lib.commands.MechanismBase
+import org.team2471.frc.lib.commands.addPeriodic
+import org.team2471.frc.lib.commands.addSimulationPeriodic
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -47,27 +49,27 @@ import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.command
 import org.team2471.frc.lib.commands.commandUnnamed
+import org.team2471.frc.lib.commands.setDefaultCommandSafe
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
 import org.team2471.frc.lib.ctre.refreshAll
 import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.energy.BatteryLogger
+import org.team2471.frc.lib.environment.isReal
+import org.team2471.frc.lib.environment.isRedAlliance
+import org.team2471.frc.lib.environment.isReplay
+import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.logging.SimpleLogger
+import org.team2471.frc.lib.math.translation
 import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.units.seconds
 import org.team2471.frc.lib.units.wrap
-import org.team2471.frc.lib.util.isReal
-import org.team2471.frc.lib.util.isRedAlliance
-import org.team2471.frc.lib.util.isReplay
-import org.team2471.frc.lib.util.isSim
-import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.command3.Mechanism
-import org.wpilib.command3.Scheduler
 import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
@@ -337,6 +339,8 @@ abstract class SwerveDriveSubsystem(
 
     // INITIALIZATION
 
+    private var ranPostInit = false
+
     init {
         println("SwerveDriveSubsystem Initialization")
         println("maxSpeed: ${maxSpeed.asFeetPerSecond.round(2)} f/s and maxAngularSpeed: ${maxAngularSpeed.asDegreesPerSecond.round(2)} deg/s")
@@ -345,27 +349,73 @@ abstract class SwerveDriveSubsystem(
         // This function runs every time new swerve odometry data gets received. Every 4ms-1ms (depending on CAN bus speed)
         registerTelemetry(::telemetryLoop)
 
-        // Add a periodic function, this function is called every scheduler loop (every robot code loop)
-        Scheduler.getDefault().addPeriodic(::periodic)
+        // Sets the default command. If null, skip it
+        if (hasOverride("defaultCommand")) {
+            setDefaultCommandSafe(defaultCommand())
+        }
 
-        if (isSim) Scheduler.getDefault().addPeriodic(::simulationPeriodic)
+        /**
+         * This is responsible for providing disconnect warnings, and more good things.
+         * Designed to be run every robot loop cycle
+         */
+        addPeriodic {
+            LoopLogger.record("SwerveDriveSubsystem periodic")
+            statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
+
+            // Disabled actions
+            if (RobotState.isDisabled()) {
+                // Set module setpoints to their current position.
+                if (!RobotState.isAutonomous()) {
+                    setControl(ApplyModuleStates())
+                }
+                if (isReal) {
+                    modules.forEach {
+                        if (it.steerMotor.isConnected && it.encoder.isConnected) {
+                            // Set steer motor to encoder position if it is not already there.
+                            val encoderPosition = it.encoder.position.value
+                            if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
+                                println("steer motor position: ${it.steerMotor.position.value}")
+                                println("encoder position: ${it.encoder.position}")
+                                it.steerMotor.setPosition(encoderPosition)
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if (!ranPostInit) {
+                postInit()
+            }
+
+
+            // Power logging
+            BatteryLogger.recordCurrent("Steer", steerCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
+            BatteryLogger.recordCurrent("Drive", driveCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
+            LoopLogger.record("SwerveDriveSubsystem periodic")
+        }
+
+        // Only runs in simulation. Update vision and swerve drive sim
+        addSimulationPeriodic {
+            LoopLogger.record("Drive simPeriodic")
+            updateSimState(0.02, 12.0)
+            QuixVisionSim.updatePose(pose)
+            LoopLogger.record("Drive simPeriodic")
+        }
+
     }
 
-    /**
-     * MUST be called from the inherited drivetrain object's init. Otherwise, [driveAtAngle] will not work, and I think you want it to work.
-     *
-     * Code will crash if this function is called inside [SwerveDriveSubsystem]'s init
-     */
-    fun finalInitialization() {
-        driveAtAngleRequest.apply {
-            HeadingController = driveAtAnglePIDController.apply {
-                enableContinuousInput(-Math.PI, Math.PI)
-            }
-        }
+    // Post init actions. Only runs once.
+    // These actions aren't inside the standard init because they will crash the code by accessing abstract vars and applying them to method vars
+    private fun postInit() {
         pathThetaController.enableContinuousInput(-Math.PI, Math.PI)
+        driveAtAngleRequest.withHeadingPID(driveAtAnglePIDController.p, driveAtAnglePIDController.i, driveAtAnglePIDController.d)
+        ranPostInit = true
     }
 
     // LOOPS
+
+    open fun defaultCommand(): Command = idle()
 
     /**
      * Loop that is called every 10 ms (or less) during the odometry thread.
@@ -407,39 +457,6 @@ abstract class SwerveDriveSubsystem(
         prevTime = currTime
         //This errors only in replay
         if (!isReplay) SimpleLogger.recordOutput("Drive/State/TelemetryLoop", Timer.getMonotonicTimestamp() - currTime)
-    }
-
-    /**
-     * This is responsible for providing disconnect warnings, and more good things.
-     * Designed to be run every robot loop cycle
-     */
-    open fun periodic() {
-        statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
-
-        // Disabled actions
-        if (RobotState.isDisabled()) {
-            // Set module setpoints to their current position.
-            if (!RobotState.isAutonomous()) {
-                setControl(ApplyModuleStates())
-            }
-            if (isReal) {
-                modules.forEach {
-                    if (it.steerMotor.isConnected && it.encoder.isConnected) {
-                        // Set steer motor to encoder position if it is not already there.
-                        val encoderPosition = it.encoder.position.value
-                        if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
-                            println("steer motor position: ${it.steerMotor.position.value}")
-                            println("encoder position: ${it.encoder.position}")
-                            it.steerMotor.setPosition(encoderPosition)
-                        }
-                    }
-                }
-            }
-        }
-
-        // Power logging
-        BatteryLogger.recordCurrent("Steer", steerCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
-        BatteryLogger.recordCurrent("Drive", driveCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
     }
 
     // STATE METHODS
@@ -1050,11 +1067,10 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun simulationPeriodic() {
-        LoopLogger.record("Drive simPeriodic")
-        updateSimState(0.02, 12.0)
-        QuixVisionSim.updatePose(pose)
-        LoopLogger.record("Drive simPeriodic")
+    // OTHER
+
+    private fun hasOverride(methodName: String): Boolean {
+        val method = javaClass.getMethod(methodName)
+        return method.declaringClass != MechanismBase::class.java
     }
 }

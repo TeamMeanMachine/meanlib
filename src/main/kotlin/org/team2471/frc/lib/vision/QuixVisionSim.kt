@@ -1,10 +1,10 @@
 package org.team2471.frc.lib.vision
 
-import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.vision.photonVision.PhotonVisionCamera
 import org.photonvision.estimation.TargetModel
 import org.photonvision.simulation.VisionSystemSim
 import org.photonvision.simulation.VisionTargetSim
+import org.team2471.frc.lib.environment.isReal
 import org.wpilib.math.geometry.Pose2d
 import org.wpilib.smartdashboard.Field2d
 

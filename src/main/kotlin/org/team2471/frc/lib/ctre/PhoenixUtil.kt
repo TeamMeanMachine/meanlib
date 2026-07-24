@@ -23,7 +23,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest
-import org.team2471.frc.lib.util.isSim
+import org.team2471.frc.lib.environment.isSim
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.math.kinematics.SwerveModuleVelocity
 import java.util.function.Supplier

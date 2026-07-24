@@ -1,45 +1,29 @@
 package org.team2471.frc.lib.commands
 
-import org.team2471.frc.lib.util.isSim
+import org.team2471.frc.lib.environment.isSim
 import org.wpilib.command3.Command
-import org.wpilib.command3.Coroutine
 import org.wpilib.command3.Mechanism
-import org.wpilib.command3.Scheduler
+import org.wpilib.driverstation.DriverStationErrors
 
 open class MechanismBase(val mechanismName: String): Mechanism {
 
     override fun getName(): String = mechanismName
 
     init {
-        // Checks if periodic() and simulationPeriodic() have been overridden before adding them to the periodic scheduler,
-        // just to avoid having a bunch of empty periodic methods in the scheduler.
-        if (hasOverride("periodic")) {
-            Scheduler.getDefault().addPeriodic(this::periodic)
-        }
-
-        if (isSim && hasOverride("simulationPeriodic")) {
-            Scheduler.getDefault().addPeriodic(this::simulationPeriodic)
-        }
-
         // If a default command has been specified, apply it to the mechanism.
-        default()?.let { defaultCommand = it }
+        if (hasOverride("defaultCommand")) {
+            val defaultCommand = defaultCommand()
+            setDefaultCommandSafe(defaultCommand)
+        }
     }
 
-    /** The default command for this mechanism. By default, it is [idle]   */
-    open fun default(): Command? = null
-
-    /**
-     * Function ran continuously every scheduler tick.
-     * @see Scheduler.addPeriodic
-     * */
-    open fun periodic() {}
-
-    /**
-     * Function ran continuously every scheduler tick in only in simulation.
-     * @see Scheduler.addPeriodic
+    /** The default command for this mechanism. Runs when no running commands are actively requiring this mechanism.
+     *
+     * **The default command must require the mechanism it is a part of.**
+     *
+     * Internally, this sets the [Mechanism.setDefaultCommand] variable
      */
-    open fun simulationPeriodic() {}
-
+    open fun defaultCommand(): Command = idle()
 
     private fun hasOverride(methodName: String): Boolean {
         val method = javaClass.getMethod(methodName)
@@ -47,14 +31,25 @@ open class MechanismBase(val mechanismName: String): Mechanism {
     }
 }
 
+fun Mechanism.setDefaultCommandSafe(dCommand: Command) {
+    if (!dCommand.requires(this)) {
+        DriverStationErrors.reportError("Default command MUST require this mechanism [$name].", true)
+        throw IllegalArgumentException("Default command MUST require this mechanism [$name]. Did you put 'command(this) {}'? ")
+    }
+    val defaultCommandCopy = commandUnnamed(*dCommand.requirements().toTypedArray(), body = dCommand::run).named("$name Default", Command.LOWEST_PRIORITY, dCommand::onCancel)
+    defaultCommand = defaultCommandCopy
+}
+
 /**
- * Shortcut utility function to create a default command.
+ * Adds a periodic function to the scheduler.
+ * This function will run every robot loop cycle.
  *
- * Sets the command name to be "[Mechanism.getName] Default", require this mechanism, and have the [Command.LOWEST_PRIORITY]
- * @see Mechanism.setDefaultCommand
+ * For a custom period, different from the robot loop period, use [org.wpilib.framework.OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
  */
-fun Mechanism.setDefaultCommand(body: Coroutine.() -> Unit): Command {
-    val createdDefault = commandUnnamed(this, body = body).withPriority(Command.LOWEST_PRIORITY).named("$name Default")
-    defaultCommand = createdDefault
-    return createdDefault
+fun Mechanism.addPeriodic(body: () -> Unit) {
+    this.registeredScheduler.addPeriodic(body)
+}
+
+fun Mechanism.addSimulationPeriodic(body: () -> Unit) {
+    if (isSim) this.addPeriodic(body)
 }

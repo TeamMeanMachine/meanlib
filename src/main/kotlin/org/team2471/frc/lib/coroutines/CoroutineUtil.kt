@@ -20,7 +20,7 @@ import org.wpilib.system.Watchdog
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
-suspend inline fun periodic(
+suspend inline fun periodicSuspend(
     period: Double = 0.02,
     watchOverrun: Boolean = false,
     crossinline body: PeriodicScope.() -> Unit

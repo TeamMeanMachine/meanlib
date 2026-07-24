@@ -3,10 +3,10 @@ package org.team2471.frc.lib.ctre.loggedTalonFX
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.NeutralModeValue
-import org.team2471.frc.lib.util.isReal
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.team2471.frc.lib.environment.isReal
 import org.wpilib.math.system.DCMotor
 import org.wpilib.math.system.Models
 import org.wpilib.simulation.DCMotorSim

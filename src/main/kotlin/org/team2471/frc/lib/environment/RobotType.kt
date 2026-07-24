@@ -1,14 +1,8 @@
-package org.team2471.frc.lib.util
+package org.team2471.frc.lib.environment
 
-import org.wpilib.driverstation.Alliance
-import org.wpilib.driverstation.MatchState
 import org.wpilib.hardware.hal.HALUtil
 import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.RuntimeType
-import kotlin.jvm.optionals.getOrNull
-
-
-/** Stores basic robot information like Alliance color and isReal/Sim/Replay */
 
 val doReplay: Boolean = false
 val robotType: RobotType = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
@@ -28,15 +22,7 @@ enum class RobotType {
 }
 
 
-//Alliance bool
-val isRedAlliance: Boolean
-    // Get the current alliance. If null, use the previous value. The previous value is initially set to RED as the fallback.
-    get() = (MatchState.getAlliance().getOrNull() ?: prevAlliance).also { prevAlliance = it } == Alliance.RED
-
-val isBlueAlliance: Boolean get() = !isRedAlliance
-private var prevAlliance: Alliance = Alliance.RED
-
-//Demo mode
+/** Demo Mode */
 private val demoSpeedTopic = NetworkTableInstance.getDefault().getDoubleTopic("DemoSpeed")
 private val demoSpeedEntry = demoSpeedTopic.getEntry(1.0).apply {
     if (!exists()) {

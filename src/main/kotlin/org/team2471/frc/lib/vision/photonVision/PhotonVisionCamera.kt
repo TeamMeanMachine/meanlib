@@ -1,7 +1,5 @@
 package org.team2471.frc.lib.vision.photonVision
 
-import org.team2471.frc.lib.util.isReal
-import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineConfig
 import org.team2471.frc.lib.vision.PipelineVisionPacket
@@ -14,6 +12,8 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
+import org.team2471.frc.lib.environment.isReal
+import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.linalg.Matrix
