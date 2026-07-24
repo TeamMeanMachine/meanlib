@@ -159,7 +159,11 @@ abstract class SwerveDriveSubsystem(
     abstract var heading: Rotation2d // Abstract to allow for other heading sources to also reset when this gets set.
 
     /** Use MapleSim to simulate the swerve or CTRE? */
-    abstract val useMapleSim: Boolean
+    var useMapleSim: Boolean = false
+    set(value) {
+        field = value
+        mapleSimDrivetrain = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
+    }
 
     /** Stores information about the current state of the drivetrain */
     var savedState: SwerveDriveState = stateCopy
@@ -998,13 +1002,13 @@ abstract class SwerveDriveSubsystem(
     )
 
     // SIM
-    val mapleSimDrivetrain: MapleSimCTRESwerveDrivetrain? = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
+    var mapleSimDrivetrain: MapleSimCTRESwerveDrivetrain? = null//if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
 
     /** Must be called periodically during sim for swerve sim to work */
     override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
             if (mapleSimDrivetrain != null) {
-                mapleSimDrivetrain.updateCTRE(dtSeconds, supplyVoltage.volts, *modules)
+                mapleSimDrivetrain!!.updateCTRE(dtSeconds, supplyVoltage.volts, *modules)
             } else {
                 super.updateSimState(dtSeconds, supplyVoltage)
             }
@@ -1019,8 +1023,8 @@ abstract class SwerveDriveSubsystem(
         LoopLogger.record("b4 Drive Sim piodic")
         updateSimState(0.02, 12.0)
         if (mapleSimDrivetrain != null) {
-            QuixVisionSim.updatePose(mapleSimDrivetrain.actualPoseInSimulationWorld)
-            Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain.actualPoseInSimulationWorld)
+            QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
+            Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
         } else {
             QuixVisionSim.updatePose(pose)
         }
