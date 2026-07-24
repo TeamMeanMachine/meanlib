@@ -11,16 +11,26 @@ import org.wpilib.system.Watchdog
 /** Utility functions for [Coroutine]s. Which are used inside [Command] actions, and allow for muti-threading "like" features. Ex: yield() await() */
 // Different from [kotlinx.coroutines] which are also installed. (Those use the "suspend" keyword)
 
-
+/**
+ * Runs the provided [body] of code periodically per loop.
+ *
+ * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, or an exception is thrown.
+ * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
+ * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
+ *
+ * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
+ *
+ * If the [body] takes longer than the [period] to complete, a warning is printed. This can
+ * be disabled by setting the [watchOverrun] parameter to false.
+ */
 inline fun Coroutine.periodic(
-    period: Double = 0.0,
     watchOverrunName: String? = null,
     crossinline body: PeriodicScope.() -> Unit
 ) {
     val scope = PeriodicScope()
 
     val watchdog = if (watchOverrunName != null) {
-        Watchdog(period) { DriverStationErrors.reportWarning("Periodic loop $watchOverrunName overrun", true) }
+        Watchdog(0.01) { DriverStationErrors.reportWarning("Periodic loop $watchOverrunName overrun > 0.01", true) }
     } else {
         null
     }
@@ -31,25 +41,19 @@ inline fun Coroutine.periodic(
             body(scope)
         }
         if (scope.isDone) break
-        val remainder = period - dt
-        if (remainder <= 0.0 || period == 0.0) {
-            yield()
-        } else {
-            wait(remainder.seconds)
-        }
+        yield()
     }
 }
 
 inline fun Coroutine.periodicTimeout(
     timeout: Double,
-    period: Double = 0.0,
     watchOverrunName: String? = null,
     crossinline body: PeriodicScope.(Double) -> Unit
 ): Boolean {
     val timer = Timer()
     var timedOut = false
     timer.start()
-    periodic(period, watchOverrunName) {
+    periodic(watchOverrunName) {
         val t = timer.get()
         if (timer.get() > timeout) {
             timedOut = true
