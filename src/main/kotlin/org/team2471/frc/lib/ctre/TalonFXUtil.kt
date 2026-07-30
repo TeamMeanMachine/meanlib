@@ -16,6 +16,7 @@ import org.wpilib.driverstation.DriverStationErrors
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.team2471.frc.lib.environment.isReal
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -430,7 +431,7 @@ fun TalonFX.brakeMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {
-            talon.setNeutralMode(NeutralModeValue.Brake)
+            talon.configNeutralMode(NeutralModeValue.Brake)
         }
     }
 }
@@ -447,7 +448,7 @@ fun TalonFX.coastMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {
-            talon.setNeutralMode(NeutralModeValue.Coast)
+            talon.configNeutralMode(NeutralModeValue.Coast)
         }
     }
 }

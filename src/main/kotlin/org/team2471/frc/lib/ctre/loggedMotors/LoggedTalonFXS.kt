@@ -3,18 +3,13 @@ package org.team2471.frc.lib.ctre.loggedMotors
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.TalonFXS
-import com.ctre.phoenix6.signals.NeutralModeValue
-import edu.wpi.first.math.system.plant.DCMotor
-import edu.wpi.first.math.system.plant.LinearSystemId
-import edu.wpi.first.wpilibj.simulation.DCMotorSim
-import org.team2471.frc.lib.util.isReal
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.environment.isReplay
+import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.units.volts
-import org.team2471.frc.lib.util.isReplay
-import org.team2471.frc.lib.util.isSim
+import org.wpilib.math.system.DCMotor
+import org.wpilib.math.system.Models
+import org.wpilib.simulation.DCMotorSim
 
 /**
  * Wrapper for [TalonFXS] that supports replay and simulation when [configSim] is called.
@@ -44,7 +39,7 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
     override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
         if (isSim) {
             this.motor = motor
-            motorPhysicsSim = DCMotorSim(LinearSystemId.createDCMotorSystem(this.motor, jKgMetersSquared, 1.0), this.motor).apply {
+            motorPhysicsSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(this.motor, jKgMetersSquared, 1.0), this.motor).apply {
                 setState(0.0, 0.0)
             }
         }

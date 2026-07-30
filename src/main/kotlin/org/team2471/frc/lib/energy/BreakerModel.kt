@@ -6,9 +6,8 @@
 // the root directory of this project.
 package org.team2471.frc.lib.energy
 
-import edu.wpi.first.math.MathUtil
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap
 import org.littletonrobotics.junction.Logger
+import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.max
@@ -26,7 +25,7 @@ class BreakerModel internal constructor(niceness: Double) {
     var damageState = 0.0
 
     init {
-        tripThreshold = 1.0 - MathUtil.clamp(niceness, 0.0, 1.0)
+        tripThreshold = 1.0 - niceness.coerceIn(0.0, 1.0)
     }
 
     fun calculateMaxCurrent(budgetPeriodSecs: Double): Double {
@@ -60,7 +59,7 @@ class BreakerModel internal constructor(niceness: Double) {
             damageState *= exp(-dt / TAU_COOL)
             cooling = true
         }
-        damageState = MathUtil.clamp(damageState, 0.0, 1.0)
+        damageState = damageState.coerceIn(0.0, 1.0)
 
         Logger.recordOutput("BreakerModel/Cooling", cooling)
         Logger.recordOutput("BreakerModel/DamageState", damageState)

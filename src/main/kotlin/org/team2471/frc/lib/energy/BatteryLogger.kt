@@ -1,12 +1,5 @@
 package org.team2471.frc.lib.energy
 
-import edu.wpi.first.units.measure.Current
-import edu.wpi.first.units.measure.Energy
-import edu.wpi.first.units.measure.Power
-import edu.wpi.first.units.measure.Voltage
-import edu.wpi.first.wpilibj.RobotController
-import edu.wpi.first.wpilibj.Timer
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.logging.SimpleLogger
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asAmps

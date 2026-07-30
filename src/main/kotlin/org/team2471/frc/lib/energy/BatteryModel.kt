@@ -6,8 +6,8 @@
 // the root directory of this project.
 package org.team2471.frc.lib.energy
 
-import edu.wpi.first.math.MathUtil
 import org.littletonrobotics.junction.Logger
+import org.wpilib.math.util.MathUtil
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.pow
@@ -36,7 +36,7 @@ class BatteryModel {
 
     fun setInitialVoltage(initialVoltage: Double, initialCurrent: Double) {
         val estimatedOcv = initialVoltage + initialCurrent * (R0_BASE + RP_BASE)
-        soc = MathUtil.clamp(calculateSoc(estimatedOcv), 0.0, 1.0)
+        soc = calculateSoc(estimatedOcv).coerceIn(0.0, 1.0)
         vP = initialCurrent * getRp(soc)
         pVP = Q_VP
     }
@@ -60,7 +60,7 @@ class BatteryModel {
             val peukert = PEUKERT_BASE + PEUKERT_SOC_SCALE * (1.0 - soc)
             effectiveAmps = current * (current / I_NOMINAL).pow(peukert - 1.0)
         } else effectiveAmps = current
-        soc = MathUtil.clamp(soc - effectiveAmps * dt / CAPACITY_AS, 0.0, 1.0)
+        soc = (soc - effectiveAmps * dt / CAPACITY_AS).coerceIn(0.0, 1.0)
 
         // Update polarization voltage
         val rp = getRp(soc)
@@ -130,7 +130,7 @@ class BatteryModel {
 
         private fun calculateOcv(soc: Double): Double {
             var soc = soc
-            soc = MathUtil.clamp(soc, 0.0, 1.0)
+            soc = soc.coerceIn(0.0, 1.0)
             for (i in 0..<OCV_SOC_KNOTS.size - 1) {
                 if (soc <= OCV_SOC_KNOTS[i + 1]) {
                     val t = (soc - OCV_SOC_KNOTS[i]) / (OCV_SOC_KNOTS[i + 1] - OCV_SOC_KNOTS[i])
@@ -142,7 +142,7 @@ class BatteryModel {
 
         private fun calculateSoc(ocv: Double): Double {
             var ocv = ocv
-            ocv = MathUtil.clamp(ocv, OCV_VOLTS[0], OCV_VOLTS[OCV_VOLTS.size - 1])
+            ocv = ocv.coerceIn(OCV_VOLTS[0], OCV_VOLTS[OCV_VOLTS.size - 1])
             for (i in 0..<OCV_VOLTS.size - 1) {
                 if (ocv <= OCV_VOLTS[i + 1]) {
                     val t = (ocv - OCV_VOLTS[i]) / (OCV_VOLTS[i + 1] - OCV_VOLTS[i])

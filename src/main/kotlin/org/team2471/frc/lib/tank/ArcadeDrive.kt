@@ -1,10 +1,10 @@
 package org.team2471.frc.lib.motion.following
 
-import edu.wpi.first.units.measure.AngularVelocity
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import org.team2471.frc.lib.environment.demoSpeed
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.units.*
-import org.team2471.frc.lib.util.demoSpeed
+import org.wpilib.smartdashboard.SmartDashboard
+import org.wpilib.units.measure.AngularVelocity
 import kotlin.math.abs
 
 interface ArcadeDrive {

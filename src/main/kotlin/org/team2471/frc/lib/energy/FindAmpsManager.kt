@@ -6,16 +6,15 @@
 // the root directory of this project.
 package org.team2471.frc.lib.energy
 
-import edu.wpi.first.math.MathUtil
-import edu.wpi.first.math.filter.Debouncer
-import edu.wpi.first.math.filter.Debouncer.DebounceType
-import edu.wpi.first.wpilibj.Alert
-import edu.wpi.first.wpilibj.Alert.AlertType
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.RobotController
 import org.littletonrobotics.junction.AutoLog
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.CurrentLimits
+import org.wpilib.driverstation.Alert
+import org.wpilib.driverstation.DriverStation
+import org.wpilib.driverstation.RobotState
+import org.wpilib.math.filter.Debouncer
+import org.wpilib.math.util.MathUtil
+import org.wpilib.system.RobotController
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -36,11 +35,11 @@ object FindAmpsManager {
 
     // Time we can run max budget before trip
     private const val breakerDangerHorizonSecs = 3.0
-    private val budgetWarning = Alert("Battery is low, robot performance may be degraded.", AlertType.kInfo)
-    private val budgetWarningDebouncer = Debouncer(0.5, DebounceType.kBoth)
-    private val brownoutWarning = Alert("Brownout detected, drive performance may be degraded.", AlertType.kWarning)
-    private val breakerDamageWarning = Alert("Breaker damage is high, please stop using the robot.", AlertType.kWarning)
-    private val breakerDamageWarningDebouncer = Debouncer(0.5, DebounceType.kBoth)
+    private val budgetWarning = Alert("Battery is low, robot performance may be degraded.", Alert.Level.LOW)
+    private val budgetWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
+    private val brownoutWarning = Alert("Brownout detected, drive performance may be degraded.", Alert.Level.MEDIUM)
+    private val breakerDamageWarning = Alert("Breaker damage is high, please stop using the robot.", Alert.Level.MEDIUM)
+    private val breakerDamageWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
 
 
     // MARK: - Members
@@ -50,7 +49,7 @@ object FindAmpsManager {
 
     private var budget = 0.0
     private var driveBudget = 0.0
-    private val brownoutDebouncer = Debouncer(2.0, DebounceType.kFalling)
+    private val brownoutDebouncer = Debouncer(2.0, Debouncer.DebounceType.kFalling)
 
     init {
 
@@ -68,7 +67,7 @@ object FindAmpsManager {
 
     fun periodic() {
         inputs.batteryVoltage = RobotController.getBatteryVoltage()
-        inputs.rioCurrent = RobotController.getInputCurrent()
+        inputs.rioCurrent = 0.0//RobotController.getInputCurrent()
         inputs.brownedOut = RobotController.isBrownedOut()
         Logger.processInputs("EnergyLogger", inputs)
     }
@@ -118,8 +117,8 @@ object FindAmpsManager {
     val driveLimit: Double
         /** Get the current limits for a subsystem.  */
         get() {
-            var driveLimit = floor(MathUtil.clamp(driveBudget / 4.0, 5.0, 50.0) / 0.5) * 0.5
-            if (DriverStation.isAutonomous()) {
+            var driveLimit = floor((driveBudget / 4.0).coerceIn(5.0, 50.0) / 0.5) * 0.5
+            if (RobotState.isAutonomous()) {
                 driveLimit = 50.0
             }
             Logger.recordOutput("FinanceDepartment/DriveLimit", driveLimit)

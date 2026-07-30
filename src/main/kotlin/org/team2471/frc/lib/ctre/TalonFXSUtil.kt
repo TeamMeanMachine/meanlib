@@ -14,11 +14,10 @@ import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import org.wpilib.driverstation.DriverStationErrors
-import edu.wpi.first.wpilibj.DriverStation
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.team2471.frc.lib.util.isReal
+import org.team2471.frc.lib.environment.isReal
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -379,7 +378,7 @@ fun TalonFXS.brakeMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {
-            talon.setNeutralMode(NeutralModeValue.Brake)
+            talon.configNeutralMode(NeutralModeValue.Brake)
         }
     }
 }
@@ -396,7 +395,7 @@ fun TalonFXS.coastMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {
-            talon.setNeutralMode(NeutralModeValue.Coast)
+            talon.configNeutralMode(NeutralModeValue.Coast)
         }
     }
 }

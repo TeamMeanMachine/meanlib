@@ -52,7 +52,6 @@ import org.team2471.frc.lib.commands.command
 import org.team2471.frc.lib.commands.commandUnnamed
 import org.team2471.frc.lib.commands.setDefaultCommandSafe
 import org.team2471.frc.lib.ctre.ApplyModuleStates
-import org.team2471.frc.lib.ctre.loggedTalonFX.LoggedTalonFX
 import org.team2471.frc.lib.ctre.refreshAll
 import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.environment.isReal
@@ -70,11 +69,13 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.ctre.brakeMode
 import org.team2471.frc.lib.ctre.coastMode
+import org.team2471.frc.lib.ctre.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.units.pounds
+import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.command3.Mechanism
@@ -174,7 +175,14 @@ abstract class SwerveDriveSubsystem(
     var useMapleSim: Boolean = false
     set(value) {
         field = value
-        mapleSimDrivetrain = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
+//        mapleSimDrivetrain = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain( TODO MAPLESIM
+//            150.0.pounds,
+//            34.25.inches,
+//            34.25.inches,
+//            pose,
+//            pigeon2.simState,
+//            *moduleConstants
+//        )
     }
 
     /** Stores information about the current state of the drivetrain */
@@ -414,12 +422,12 @@ abstract class SwerveDriveSubsystem(
         addSimulationPeriodic {
             LoopLogger.record("Drive Sim piodic")
             updateSimState(0.01, 12.0)
-            if (mapleSimDrivetrain != null) {
-                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
-                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
-            } else {
+//            if (mapleSimDrivetrain != null) { TODO MAPLESIM (whole if statement)
+//                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
+//                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
+//            } else {
                 QuixVisionSim.updatePose(pose)
-            }
+//            }
             LoopLogger.record("Drive Sim piodic")
         }
 
@@ -492,13 +500,13 @@ abstract class SwerveDriveSubsystem(
 
     override fun resetTranslation(translation: Translation2d?) {
         super.resetTranslation(translation)
-        mapleSimDrivetrain?.setSimulationWorldPose(Pose2d(translation, heading))
+//        mapleSimDrivetrain?.setSimulationWorldPose(Pose2d(translation, heading)) TODO MAPLESIM
         updateSavedState() // Refresh state so we see an instant response.
     }
 
     override fun resetRotation(rotation: Rotation2d?) {
         super.resetRotation(rotation)
-        mapleSimDrivetrain?.setSimulationWorldPose(Pose2d(pose.translation, rotation))
+//        mapleSimDrivetrain?.setSimulationWorldPose(Pose2d(pose.translation, rotation)) TODO MAPLESIM
         updateSavedState() // Refresh state so we see an instant response.
     }
 
@@ -1079,16 +1087,16 @@ abstract class SwerveDriveSubsystem(
 //    )
 
     // SIM
-    var mapleSimDrivetrain: MapleSimCTRESwerveDrivetrain? = null//if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants)
+//    var mapleSimDrivetrain: MapleSimCTRESwerveDrivetrain? = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants) TODO MAPLESIM
 
     /** Must be called periodically during sim for swerve sim to work */
     override fun updateSimState(dtSeconds: Double, supplyVoltage: Double) {
         if (isSim) {
-            if (mapleSimDrivetrain != null) {
-                mapleSimDrivetrain!!.updateCTRE(dtSeconds, supplyVoltage.volts, *modules)
-            } else {
+//            if (mapleSimDrivetrain != null) { TODO MAPLESIM (whole if statement)
+//                mapleSimDrivetrain!!.updateCTRE(dtSeconds, supplyVoltage.volts, *modules)
+//            } else {
                 super.updateSimState(dtSeconds, supplyVoltage)
-            }
+//            }
         } else {
             DriverStationErrors.reportError("DriveIOCTRE.updateSim() called while robot is real", true)
             throw Error("DriveIOCTRE.updateSim() called while robot is real")
