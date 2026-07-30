@@ -4,6 +4,7 @@ import org.team2471.frc.lib.environment.isSim
 import org.wpilib.command3.Command
 import org.wpilib.command3.Mechanism
 import org.wpilib.driverstation.DriverStationErrors
+import org.wpilib.framework.OpModeRobot
 
 open class MechanismBase(val mechanismName: String): Mechanism {
 
@@ -44,12 +45,18 @@ fun Mechanism.setDefaultCommandSafe(dCommand: Command) {
  * Adds a periodic function to the scheduler.
  * This function will run every robot loop cycle.
  *
- * For a custom period, different from the robot loop period, use [org.wpilib.framework.OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
+ * For a custom period, different from the robot loop period, use [OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
  */
 fun Mechanism.addPeriodic(body: () -> Unit) {
     this.registeredScheduler.addPeriodic(body)
 }
 
+/**
+ * Adds a periodic function to the scheduler only if the robot is in simulation.
+ * This function will run every robot loop cycle.
+ *
+ * For a custom period, different from the robot loop period, use [OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
+ */
 fun Mechanism.addSimulationPeriodic(body: () -> Unit) {
     if (isSim) this.addPeriodic(body)
 }
