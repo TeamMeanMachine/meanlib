@@ -258,7 +258,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
                             )
                         }
                         if (target.getFiducialId() <= allTargets.size) {
-                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
+//                            detectedTags.add(Pose3d(this.pose).transformBy(cameras[cameraID].transform).translation)
                             detectedTags.add(allTargets[target.getFiducialId() - 1].pose.translation)
                         }
                     }

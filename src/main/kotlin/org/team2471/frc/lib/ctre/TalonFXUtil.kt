@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.Follower
 import com.ctre.phoenix6.hardware.TalonFX
+import com.ctre.phoenix6.hardware.core.CoreTalonFX
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.MotorAlignmentValue
 import com.ctre.phoenix6.signals.GravityTypeValue
@@ -12,6 +13,9 @@ import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import org.wpilib.driverstation.DriverStationErrors
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -371,13 +375,13 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
 }
 
 /**
- * Applies a factory default configuration to the [TalonFX].
+ * Applies a factory default configuration to the [CoreTalonFX].
  *
  * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
  *
  * @see modifyConfiguration
  */
-fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
+fun CoreTalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
     // Create a factory default configuration, apply modifications, then apply to the motor.
     this.configurator.apply(TalonFXConfiguration().apply { modifications() })
 }
@@ -389,7 +393,7 @@ fun TalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = 
  *
  * @see applyConfiguration
  */
-fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
+fun CoreTalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
     // Get the current motor configuration, apply modifications, then apply to the motor.
     val oldConfiguration = TalonFXConfiguration()
     val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
@@ -402,13 +406,48 @@ fun TalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
 }
 
 /**
- * Applies a [TalonFXConfiguration] to the [TalonFX] motor.
+ * Applies a [TalonFXConfiguration] to the [CoreTalonFX] motor.
  *
  * Wrapper function just to simplify code.
  *
  * @see TalonFX.getConfigurator
  * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
  */
-fun TalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
+fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
     this.configurator.apply(configuration)
+}
+
+
+/**
+ * A backing safe call to set the brake mode of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Preferably do not put this in a loop.
+ * @see setNeutralMode
+ * @see GlobalScope
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun TalonFX.brakeMode() {
+    if (isReal) {
+        val talon = this
+        GlobalScope.launch {
+            talon.setNeutralMode(NeutralModeValue.Brake)
+        }
+    }
+}
+
+/**
+ * A backing safe call to set the coast mode of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Preferably do not put this in a loop.
+ * @see setNeutralMode
+ * @see GlobalScope
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun TalonFX.coastMode() {
+    if (isReal) {
+        val talon = this
+        GlobalScope.launch {
+            talon.setNeutralMode(NeutralModeValue.Coast)
+        }
+    }
 }

@@ -7,11 +7,11 @@ import kotlin.math.sin
 class MotionKey {
     @Transient
     private val CLAMPTOLERANCE = 0.005
-    private var m_timeAndValue: BooleanPair = BooleanPair(0.0, 0.0)
-    private var m_prevAngleAndMagnitude: BooleanPair = BooleanPair(0.0, 1.0)
-    private var m_nextAngleAndMagnitude: BooleanPair = BooleanPair(0.0, 1.0)
-    private var m_prevTangent: BooleanPair = BooleanPair(0.0, 0.0)
-    private var m_nextTangent: BooleanPair = BooleanPair(0.0, 0.0)
+    private var m_timeAndValue: DoublePair = DoublePair(0.0, 0.0)
+    private var m_prevAngleAndMagnitude: DoublePair = DoublePair(0.0, 1.0)
+    private var m_nextAngleAndMagnitude: DoublePair = DoublePair(0.0, 1.0)
+    private var m_prevTangent: DoublePair = DoublePair(0.0, 0.0)
+    private var m_nextTangent: DoublePair = DoublePair(0.0, 0.0)
     var prevSlopeMethod: SlopeMethod = SlopeMethod.SLOPE_SMOOTH
     var nextSlopeMethod: SlopeMethod = SlopeMethod.SLOPE_SMOOTH
     private var m_markBeginOrEndKeysToZeroSlope: Boolean = true
@@ -101,14 +101,14 @@ class MotionKey {
         m_bCoefficientsDirty = bCoefficientsDirty
     }
 
-    var timeAndValue: BooleanPair
+    var timeAndValue: DoublePair
         get() = m_timeAndValue
         set(m_timeAndValue) {
             this.m_timeAndValue = m_timeAndValue
             onPositionChanged()
         }
 
-    var prevAngleAndMagnitude: BooleanPair
+    var prevAngleAndMagnitude: DoublePair
         get() = m_prevAngleAndMagnitude
         set(m_prevAngleAndMagnitude) {
             m_markBeginOrEndKeysToZeroSlope = false
@@ -118,7 +118,7 @@ class MotionKey {
             onPositionChanged()
         }
 
-    var nextAngleAndMagnitude: BooleanPair
+    var nextAngleAndMagnitude: DoublePair
         get() = m_nextAngleAndMagnitude
         set(m_nextAngleAndMagnitude) {
             m_markBeginOrEndKeysToZeroSlope = false
@@ -128,7 +128,7 @@ class MotionKey {
             onPositionChanged()
         }
 
-    var prevTangent: BooleanPair
+    var prevTangent: DoublePair
         get() {
             if (areTangentsDirty()) calculateTangents()
 
@@ -138,7 +138,7 @@ class MotionKey {
             this.m_prevTangent = m_PrevTangent
         }
 
-    var nextTangent: BooleanPair
+    var nextTangent: DoublePair
         get() {
             if (areTangentsDirty()) calculateTangents()
 
@@ -282,7 +282,7 @@ class MotionKey {
                 if (prevKey!!.nextSlopeMethod == SlopeMethod.SLOPE_PLATEAU) fPrevTangentValue =
                     prevKey!!.value // This way we don't get an infinite recursion
                 else {
-                    val vPrevPos = BooleanPair(prevKey!!.time, prevKey!!.value)
+                    val vPrevPos = DoublePair(prevKey!!.time, prevKey!!.value)
                     val vPrevTangent = prevKey!!.nextTangent.times(1.0 / 3.0).plus(vPrevPos)
                     fPrevTangentValue = vPrevTangent.y
                 }
@@ -291,7 +291,7 @@ class MotionKey {
                 if (nextKey!!.prevSlopeMethod == SlopeMethod.SLOPE_PLATEAU) fNextTangentValue =
                     nextKey!!.value // This way we don't get an infinite recursion
                 else {
-                    val vNextPos = BooleanPair(nextKey!!.time, nextKey!!.value)
+                    val vNextPos = DoublePair(nextKey!!.time, nextKey!!.value)
                     val vNextTangent = vNextPos.minus(nextKey!!.prevTangent.times(1.0 / 3.0))
                     fNextTangentValue = vNextTangent.y
                 }

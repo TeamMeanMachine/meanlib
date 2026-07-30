@@ -148,7 +148,7 @@ class PhotonVisionCamera(
                 hasTargets,
                 result.getBestTarget(),
                 result.getTargets(),
-                result.timestampSeconds - 0.03
+                result.timestampSeconds
             )
         }
 }

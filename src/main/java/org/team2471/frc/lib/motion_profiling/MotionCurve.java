@@ -297,7 +297,7 @@ public class MotionCurve {
     public MotionKey storeValueSlopeAndMagnitude(double time, double value, double slope, double magnitude) {
         MotionKey motionKey = createMotionKey(time);
         motionKey.setValue(value);
-        BooleanPair angleAndMagnitude = new BooleanPair(Math.atan(slope), magnitude);
+        DoublePair angleAndMagnitude = new DoublePair(Math.atan(slope), magnitude);
         motionKey.setNextAngleAndMagnitude(angleAndMagnitude);
         motionKey.setPrevAngleAndMagnitude(angleAndMagnitude);
         motionKey.setMarkBeginOrEndKeysToZeroSlope(false);
@@ -314,7 +314,7 @@ public class MotionCurve {
                 case EXTRAPOLATION_CONSTANT:
                     return getTailKey().getValue();
                 case EXTRAPOLATION_LINEAR: {
-                    BooleanPair v2Slope = getTailKey().getPrevTangent();
+                    DoublePair v2Slope = getTailKey().getPrevTangent();
                     return getTailKey().getValue() + (v2Slope.getY() / v2Slope.getX()) * (time - getTailKey().getTime());
                 }
                 case EXTRAPOLATION_CYCLE: {
@@ -367,7 +367,7 @@ public class MotionCurve {
                 case EXTRAPOLATION_CONSTANT:
                     return getHeadKey().getValue();
                 case EXTRAPOLATION_LINEAR: {
-                    BooleanPair v2Slope = getHeadKey().getNextTangent();
+                    DoublePair v2Slope = getHeadKey().getNextTangent();
                     return getHeadKey().getValue() + (v2Slope.getY() / v2Slope.getX()) * (time - getHeadKey().getTime());
                 }
                 case EXTRAPOLATION_CYCLE: {
@@ -545,11 +545,11 @@ public class MotionCurve {
                 if (nextKey == null)
                     return m_lastDerivative;
                 if (key.getTime() == time) {
-                    BooleanPair tangent = key.getNextTangent();
+                    DoublePair tangent = key.getNextTangent();
                     m_lastDerivative = tangent.getY() / tangent.getX();
                     break;
                 } else if (nextKey.getTime() == time) {
-                    BooleanPair tangent = nextKey.getPrevTangent();
+                    DoublePair tangent = nextKey.getPrevTangent();
                     m_lastDerivative = tangent.getY() / tangent.getX();
                     break;
                 } else if (nextKey.getTime() > time) {
@@ -563,11 +563,11 @@ public class MotionCurve {
                 if (nextKey == null)
                     return m_lastDerivative;
                 if (key.getTime() == time) {
-                    BooleanPair tangent = key.getNextTangent();
+                    DoublePair tangent = key.getNextTangent();
                     m_lastDerivative = tangent.getY() / tangent.getX();
                     break;
                 } else if (nextKey.getTime() == time) {
-                    BooleanPair tangent = nextKey.getPrevTangent();
+                    DoublePair tangent = nextKey.getPrevTangent();
                     m_lastDerivative = tangent.getY() / tangent.getX();
                     break;
                 } else if (key.getTime() < time) {

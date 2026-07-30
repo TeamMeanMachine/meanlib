@@ -1,5 +1,12 @@
 package org.team2471.frc.lib.energy
 
+import edu.wpi.first.units.measure.Current
+import edu.wpi.first.units.measure.Energy
+import edu.wpi.first.units.measure.Power
+import edu.wpi.first.units.measure.Voltage
+import edu.wpi.first.wpilibj.RobotController
+import edu.wpi.first.wpilibj.Timer
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.logging.SimpleLogger
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asAmps
@@ -15,6 +22,14 @@ import org.wpilib.units.measure.Voltage
 
 object BatteryLogger {
     val batteryVoltage: Voltage get() = RobotController.getMeasureBatteryVoltage()
+
+    var totalPowerReport = PowerReport()
+    val totalCurrent
+        get() = totalPowerReport.current.asAmps
+
+    var drivePowerReport = PowerReport()
+    val driveCurrent
+        get() = drivePowerReport.current.asAmps
 
     val mechanismPowerReports = mutableMapOf<String, PowerReport>()
 

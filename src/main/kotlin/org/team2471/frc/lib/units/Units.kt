@@ -7,6 +7,7 @@ import org.wpilib.units.*
 import org.wpilib.units.Units.*
 import org.wpilib.units.Unit
 import org.wpilib.units.measure.*
+import kotlin.div
 import kotlin.math.*
 
 //Unit Conversions
