@@ -1,12 +1,15 @@
 package org.team2471.frc.lib.commands
 
-import org.team2471.frc.lib.environment.isSim
 import org.wpilib.command3.Command
 import org.wpilib.command3.Mechanism
 import org.wpilib.driverstation.DriverStationErrors
-import org.wpilib.framework.OpModeRobot
 
-open class MechanismBase(val mechanismName: String): Mechanism {
+/**
+ * A [PeriodicMechanism] with a default command.
+ *
+ * Adds an overwritable [defaultCommand] which can be easily used to set a defualt command.
+ */
+open class MechanismBase(val mechanismName: String): PeriodicMechanism {
 
     override fun getName(): String = mechanismName
 
@@ -30,33 +33,18 @@ open class MechanismBase(val mechanismName: String): Mechanism {
         val method = javaClass.getMethod(methodName)
         return method.declaringClass != MechanismBase::class.java
     }
-}
 
-fun Mechanism.setDefaultCommandSafe(dCommand: Command) {
-    if (!dCommand.requires(this)) {
-        DriverStationErrors.reportError("Default command MUST require this mechanism [$name].", true)
-        throw IllegalArgumentException("Default command MUST require this mechanism [$name]. Did you put 'command(this) {}'? ")
+    companion object {
+        /**
+         * Function that sets the default command of the mechanism and names it to "[Mechanism Name] Default".
+         */
+        fun Mechanism.setDefaultCommandSafe(dCommand: Command) {
+            if (!dCommand.requires(this)) {
+                DriverStationErrors.reportError("Default command MUST require this mechanism [$name].", true)
+                throw IllegalArgumentException("Default command MUST require this mechanism [$name]. Did you put 'command(this) {}'? ")
+            }
+            val defaultCommandCopy = commandUnnamed(*dCommand.requirements().toTypedArray(), body = dCommand::run).named("$name Default", Command.LOWEST_PRIORITY, dCommand::onCancel)
+            defaultCommand = defaultCommandCopy
+        }
     }
-    val defaultCommandCopy = commandUnnamed(*dCommand.requirements().toTypedArray(), body = dCommand::run).named("$name Default", Command.LOWEST_PRIORITY, dCommand::onCancel)
-    defaultCommand = defaultCommandCopy
-}
-
-/**
- * Adds a periodic function to the scheduler.
- * This function will run every robot loop cycle.
- *
- * For a custom period, different from the robot loop period, use [OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
- */
-fun Mechanism.addPeriodic(body: () -> Unit) {
-    this.registeredScheduler.addPeriodic(body)
-}
-
-/**
- * Adds a periodic function to the scheduler only if the robot is in simulation.
- * This function will run every robot loop cycle.
- *
- * For a custom period, different from the robot loop period, use [OpModeRobot.addPeriodic]. Or Kotlinx Coroutines.
- */
-fun Mechanism.addSimulationPeriodic(body: () -> Unit) {
-    if (isSim) this.addPeriodic(body)
 }

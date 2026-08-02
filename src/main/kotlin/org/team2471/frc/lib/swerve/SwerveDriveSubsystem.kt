@@ -21,8 +21,7 @@ import com.therekrab.autopilot.APTarget
 import com.therekrab.autopilot.Autopilot
 import org.littletonrobotics.junction.AutoLogOutput
 import org.team2471.frc.lib.commands.MechanismBase
-import org.team2471.frc.lib.commands.addPeriodic
-import org.team2471.frc.lib.commands.addSimulationPeriodic
+import org.team2471.frc.lib.commands.MechanismBase.Companion.setDefaultCommandSafe
 import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
@@ -50,10 +49,8 @@ import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.command
 import org.team2471.frc.lib.commands.commandUnnamed
-import org.team2471.frc.lib.commands.setDefaultCommandSafe
 import org.team2471.frc.lib.ctre.ApplyModuleStates
 import org.team2471.frc.lib.ctre.refreshAll
-import org.team2471.frc.lib.ctre.setCANCoderAngle
 import org.team2471.frc.lib.environment.isReal
 import org.team2471.frc.lib.environment.isRedAlliance
 import org.team2471.frc.lib.environment.isReplay
@@ -66,19 +63,13 @@ import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.units.seconds
 import org.team2471.frc.lib.units.wrap
-import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.commands.PeriodicMechanism
 import org.team2471.frc.lib.ctre.brakeMode
 import org.team2471.frc.lib.ctre.coastMode
 import org.team2471.frc.lib.ctre.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.energy.BatteryLogger
-import org.team2471.frc.lib.units.amps
-import org.team2471.frc.lib.units.asMetersPerSecondCubed
-import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
-import org.team2471.frc.lib.units.pounds
-import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
-import org.wpilib.command3.Mechanism
 import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
@@ -107,18 +98,20 @@ import kotlin.math.min
 /**
  * Mechanism to interface with the CTRE [SwerveDrivetrain]
  *
- * Implements abstract members to be overridden on a per-robot basis.
+ * Has abstract members to be overridden on a per-robot basis.
+ *
+ * Implements [PeriodicMechanism], a more low-level version of [MechanismBase]. But has the same functionality of both.
  */
 abstract class SwerveDriveSubsystem(
     driveConstants: SwerveDrivetrainConstants,
     vararg val moduleConstants: SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
 ): SwerveDrivetrain<LoggedTalonFX, LoggedTalonFX, CANcoder>(
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) },
-    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) },
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) }, // Drive
+    { deviceId: Int, canbus: CANBus -> LoggedTalonFX(deviceId, canbus) }, // Steer
+    { deviceId: Int, canbus: CANBus -> CANcoder(deviceId, canbus) }, // Encoder
     driveConstants,
     *moduleConstants
-), Mechanism {
+), PeriodicMechanism {
 
     /** Percentage of max speed to drive using the joysticks. */
     abstract fun getJoystickPercentageSpeed(): ChassisVelocities
@@ -372,65 +365,10 @@ abstract class SwerveDriveSubsystem(
         // This function runs every time new swerve odometry data gets received. Every 4ms-1ms (depending on CAN bus speed)
         registerTelemetry(::telemetryLoop)
 
-        // Sets the default command. If null, skip it
+        // Sets the default command. If null, skip it. Duplicate code from MechanismBase
         if (hasOverride("defaultCommand")) {
             setDefaultCommandSafe(defaultCommand())
         }
-
-        /**
-         * This is responsible for providing disconnect warnings, and more good things.
-         * Designed to be run every robot loop cycle
-         */
-        addPeriodic {
-            LoopLogger.record("SwerveDriveSubsystem periodic")
-            statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
-
-            // Disabled actions
-            if (RobotState.isDisabled()) {
-                // Set module setpoints to their current position.
-                if (!RobotState.isAutonomous()) {
-                    setControl(ApplyModuleStates())
-                }
-                if (isReal) {
-                    modules.forEach {
-                        if (it.steerMotor.isConnected && it.encoder.isConnected) {
-                            // Set steer motor to encoder position if it is not already there.
-                            val encoderPosition = it.encoder.position.value
-                            if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
-                                println("steer motor position: ${it.steerMotor.position.value}")
-                                println("encoder position: ${it.encoder.position}")
-                                it.steerMotor.setPosition(encoderPosition)
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            if (!ranPostInit) {
-                postInit()
-            }
-
-
-            // Power logging
-            BatteryLogger.recordCurrent("Steer", steerCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
-            BatteryLogger.recordCurrent("Drive", driveCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
-            LoopLogger.record("SwerveDriveSubsystem periodic")
-        }
-
-        // Only runs in simulation. Update vision and swerve drive sim
-        addSimulationPeriodic {
-            LoopLogger.record("Drive Sim piodic")
-            updateSimState(0.01, 12.0)
-//            if (mapleSimDrivetrain != null) { TODO MAPLESIM (whole if statement)
-//                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
-//                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
-//            } else {
-                QuixVisionSim.updatePose(pose)
-//            }
-            LoopLogger.record("Drive Sim piodic")
-        }
-
     }
 
     // Post init actions. Only runs once.
@@ -442,6 +380,41 @@ abstract class SwerveDriveSubsystem(
     }
 
     // LOOPS
+
+    override fun periodic() {
+        LoopLogger.record("SwerveDriveSubsystem periodic")
+        statusSignalsToRefreshPeriodically.refreshAll() // Refresh Motor current data
+
+        if (!ranPostInit) {
+            postInit()
+        }
+
+        // Disabled actions
+        if (RobotState.isDisabled()) {
+            // Set module setpoints to their current position.
+            if (!RobotState.isAutonomous()) {
+                setControl(ApplyModuleStates())
+            }
+            if (isReal) {
+                modules.forEach {
+                    if (it.steerMotor.isConnected && it.encoder.isConnected) {
+                        // Set steer motor to encoder position if it is not already there.
+                        val encoderPosition = it.encoder.position.value
+                        if ((it.steerMotor.position.value - encoderPosition).wrap().absoluteValue() > 0.5.degrees ) {
+                            println("steer motor position: ${it.steerMotor.position.value}")
+                            println("encoder position: ${it.encoder.position}")
+                            it.steerMotor.setPosition(encoderPosition)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Power logging
+        BatteryLogger.recordCurrent("Steer", steerCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
+        BatteryLogger.recordCurrent("Drive", driveCurrentStatusSignals.sumOf { it.valueAsDouble }.amps)
+        LoopLogger.record("SwerveDriveSubsystem periodic")
+    }
 
     open fun defaultCommand(): Command = idle()
 
@@ -1103,9 +1076,21 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
+    override fun simulationPeriodic() {
+        LoopLogger.record("Drive Sim piodic")
+        updateSimState(0.01, 12.0)
+//            if (mapleSimDrivetrain != null) { TODO MAPLESIM (whole if statement)
+//                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
+//                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
+//            } else {
+        QuixVisionSim.updatePose(pose)
+//            }
+        LoopLogger.record("Drive Sim piodic")
+    }
+
     // OTHER
 
-    private fun hasOverride(methodName: String): Boolean {
+    private fun hasOverride(methodName: String): Boolean { // Duplicate of function in MechansimBase
         val method = javaClass.getMethod(methodName)
         return method.declaringClass != MechanismBase::class.java
     }
