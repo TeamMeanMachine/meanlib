@@ -15,10 +15,7 @@ open class MechanismBase(val mechanismName: String): PeriodicMechanism {
 
     init {
         // If a default command has been specified, apply it to the mechanism.
-        if (hasOverride("defaultCommand")) {
-            val defaultCommand = defaultCommand()
-            setDefaultCommandSafe(defaultCommand)
-        }
+        if (hasOverride("defaultCommand")) setDefaultCommandSafe(defaultCommand())
     }
 
     /** The default command for this mechanism. Runs when no running commands are actively requiring this mechanism.
@@ -37,6 +34,8 @@ open class MechanismBase(val mechanismName: String): PeriodicMechanism {
     companion object {
         /**
          * Function that sets the default command of the mechanism and names it to "[Mechanism Name] Default".
+         *
+         * Throws if the default command does not require the mechanism.
          */
         fun Mechanism.setDefaultCommandSafe(dCommand: Command) {
             if (!dCommand.requires(this)) {

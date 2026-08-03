@@ -166,17 +166,17 @@ abstract class SwerveDriveSubsystem(
 
     /** Use MapleSim to simulate the swerve or CTRE? */
     var useMapleSim: Boolean = false
-    set(value) {
-        field = value
-//        mapleSimDrivetrain = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain( TODO MAPLESIM
-//            150.0.pounds,
-//            34.25.inches,
-//            34.25.inches,
-//            pose,
-//            pigeon2.simState,
-//            *moduleConstants
-//        )
-    }
+        set(value) {
+            field = value
+    //        mapleSimDrivetrain = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain( TODO MAPLESIM
+    //            150.0.pounds,
+    //            34.25.inches,
+    //            34.25.inches,
+    //            pose,
+    //            pigeon2.simState,
+    //            *moduleConstants
+    //        )
+        }
 
     /** Stores information about the current state of the drivetrain */
     var savedState: SwerveDriveState = stateCopy
@@ -420,7 +420,7 @@ abstract class SwerveDriveSubsystem(
 
     /**
      * Loop that is called every 10 ms (or less) during the odometry thread.
-     * Updates [savedState] for up-to-date odometry information .
+     * Updates [savedState] for up-to-date odometry information.
      */
     private fun telemetryLoop(state: SwerveDriveState) {
         val currTime = Timer.getMonotonicTimestamp()
@@ -449,14 +449,14 @@ abstract class SwerveDriveSubsystem(
         encoderDisconnectAlerts[moduleErrorIndex].set(!module.encoder.isConnected)
         moduleErrorIndex = (moduleErrorIndex + 1) % modules.size
 
-        // Calculate heading from swerve odometry when gyro is disconnected. evil. this isn't reliable enough. Do lots of testing, disconnecting and recconecting gyro
+        // Calculate heading from swerve odometry when gyro is disconnected. evil. this isn't reliable enough. Do lots of testing, disconnecting and reconnecting gyro
 //        if (!isGyroConnected && isReal) {
 //            val deltaYaw = kinematics.toChassisSpeeds(*moduleStates).omegaRadiansPerSecond * deltaTime
 //            resetRotation(heading + deltaYaw.radians.asRotation2d)
 //        }
 
         prevTime = currTime
-        //This errors only in replay
+        // This errors in replay
         if (!isReplay) SimpleLogger.recordOutput("Drive/State/TelemetryLoop", Timer.getMonotonicTimestamp() - currTime)
     }
 
@@ -494,9 +494,9 @@ abstract class SwerveDriveSubsystem(
      */
     fun zeroGyro() {
         val wantedAngle = (if (isRedAlliance) 180.0.degrees else 0.0.degrees).asRotation2d
-        println("zero gyro isRedAlliance  ${isRedAlliance} zeroing to ${wantedAngle.degrees} degrees")
+        println("zero gyro isRedAlliance  $isRedAlliance zeroing to ${wantedAngle.degrees} degrees")
         heading = wantedAngle
-        println("heading: ${heading}")
+        println("heading: $heading")
     }
 
     /**
@@ -828,7 +828,7 @@ abstract class SwerveDriveSubsystem(
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ) = commandUnnamed(this) {
+    ): Command = commandUnnamed(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
         SimpleLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
@@ -956,7 +956,7 @@ abstract class SwerveDriveSubsystem(
      * @param maxJerk The maximum jerk Autopilot will allow. meters/sec^3
      * @param xyTolerance The xy translation tolerance for the robot to be at the target position, effects [Autopilot.atTarget]. Meters
      * @param thetaTolerance The theta rotation tolerance for the robot to be at the target position, effects [Autopilot.atTarget]. Radians
-     * @param beelineRadius The beeline radius is a distance where, under that range, an entry angle is no longer respected. Default value 8 cm
+     * @param beelineRadius The beeline radius is a distance where, under that range, an entry angle is no longer respected. Default value is 8 cm
      *
      * @see Autopilot
      * @see APConstraints
@@ -1077,7 +1077,7 @@ abstract class SwerveDriveSubsystem(
     }
 
     override fun simulationPeriodic() {
-        LoopLogger.record("Drive Sim piodic")
+        LoopLogger.record("Drive Sim periodic")
         updateSimState(0.01, 12.0)
 //            if (mapleSimDrivetrain != null) { TODO MAPLESIM (whole if statement)
 //                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
@@ -1085,12 +1085,12 @@ abstract class SwerveDriveSubsystem(
 //            } else {
         QuixVisionSim.updatePose(pose)
 //            }
-        LoopLogger.record("Drive Sim piodic")
+        LoopLogger.record("Drive Sim periodic")
     }
 
     // OTHER
 
-    private fun hasOverride(methodName: String): Boolean { // Duplicate of function in MechansimBase
+    private fun hasOverride(methodName: String): Boolean { // Duplicate of function in MechanismBase
         val method = javaClass.getMethod(methodName)
         return method.declaringClass != MechanismBase::class.java
     }

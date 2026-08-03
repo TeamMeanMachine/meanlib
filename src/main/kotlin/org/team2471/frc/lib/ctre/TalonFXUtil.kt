@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.ctre
 
-import com.ctre.phoenix6.CANBus
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.Follower
@@ -154,7 +154,7 @@ fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorS
 /**
  * The ratio of sensor rotations to the mechanism's output, where a ratio greater than 1 is a reduction.
  *
- * This is equivalent to the mechanism's gear ratio if the sensor is located on the input of a gearbox. If sensor is on the output of a gearbox, then this is typically set to 1.
+ * This is equivalent to the mechanism's gear ratio if the sensor is located on the input of a gearbox. If the sensor is on the output of a gearbox, then this is typically set to 1.
  *
  * @param sensorToMechanismRatio The ratio of sensor rotations to the mechanism's output. Defaults to 1.
  *
@@ -423,7 +423,7 @@ fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
  * A backing safe call to set the brake mode of the motor.
  * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
  * Preferably do not put this in a loop.
- * @see setNeutralMode
+ * @see configNeutralMode
  * @see GlobalScope
  */
 @OptIn(DelicateCoroutinesApi::class)
@@ -440,7 +440,7 @@ fun TalonFX.brakeMode() {
  * A backing safe call to set the coast mode of the motor.
  * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
  * Preferably do not put this in a loop.
- * @see setNeutralMode
+ * @see configNeutralMode
  * @see GlobalScope
  */
 @OptIn(DelicateCoroutinesApi::class)
@@ -450,5 +450,37 @@ fun TalonFX.coastMode() {
         GlobalScope.launch {
             talon.configNeutralMode(NeutralModeValue.Coast)
         }
+    }
+}
+
+/**
+ * Gets the current configuration of the motor and modifies the current limits specified.
+ * This function is backing, so it will wait for (>100 ms) to apply the change.
+ * @see modifyCurrentLimitsAsync for non-backing call
+ * @see CurrentLimitsConfigs
+ */
+fun CoreTalonFX.modifyCurrentLimits(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
+    val currentLimitConfigs = CurrentLimitsConfigs()
+    this.configurator.refresh(currentLimitConfigs)
+    currentLimitConfigs.SupplyCurrentLimit = peakCurrentLimit ?: currentLimitConfigs.SupplyCurrentLimit
+    currentLimitConfigs.SupplyCurrentLowerLimit = continuousLimit ?: currentLimitConfigs.SupplyCurrentLowerLimit
+    currentLimitConfigs.SupplyCurrentLowerTime = peakCurrentDuration ?: currentLimitConfigs.SupplyCurrentLowerTime
+    currentLimitConfigs.SupplyCurrentLimitEnable = true
+    this.configurator.apply(currentLimitConfigs)
+}
+
+/**
+ * A backing safe call to set the current limits of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ *
+ * Preferably do not put this in a loop, this launches a new thread.
+ * @see modifyCurrentLimits
+ * @see GlobalScope
+ * @see CurrentLimitsConfigs
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun CoreTalonFX.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
+    GlobalScope.launch {
+        modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)
     }
 }
