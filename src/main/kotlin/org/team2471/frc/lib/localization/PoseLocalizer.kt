@@ -332,7 +332,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/c2bb0e79c466be33074577d51243258ec3d39f44/src/main/java/org/littletonrobotics/frc2025/RobotState.java#L194
     // TODO: This is semi-hardcoded for 2025
     private fun computeSingleTagPose() {
-        if (DriverStation.getAlliance().isEmpty) {
+        if (singleTagTagsToTrack.isEmpty()) {
             Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
             return
         }
