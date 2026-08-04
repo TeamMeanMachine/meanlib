@@ -343,9 +343,12 @@ abstract class SwerveDriveSubsystem(
         // To have accurate acceleration, we grab directly from the drive motor.
         // Although during sim, the motor's acceleration doesn't get updated (as of 2025), so we manually calculate it from ∆velocity.
         if (isReal) {
-            acceleration = kinematics.toChassisSpeeds(*moduleStates.mapIndexed { i, m -> m.apply {
-                speedMetersPerSecond = modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
-            } }.toTypedArray()).translation.metersPerSecondPerSecond
+            acceleration = kinematics.toChassisSpeeds(*moduleStates.mapIndexed { i, m -> 
+                SwerveModuleState(
+                    modules[i].driveMotor.acceleration.valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius,
+                    m.angle
+                )
+            }.toTypedArray()).translation.metersPerSecondPerSecond
         } else {
             val currVelocity = velocity
             acceleration = ((currVelocity - prevVelocity) / deltaTime).perSecond
@@ -807,7 +810,7 @@ abstract class SwerveDriveSubsystem(
                 firstLoop = false
 
                 if (resetOdometry) {
-                    pose = path.getInitialPose(flipChoreoPaths).get()
+                    pose = path.getInitialPose(flipChoreoPaths).orElseThrow()
                     val pose = pose
                     println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
                 }
