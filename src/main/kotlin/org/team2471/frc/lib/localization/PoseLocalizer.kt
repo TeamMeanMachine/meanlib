@@ -16,6 +16,8 @@ import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.photonvision.targeting.PhotonTrackedTarget
+import org.team2471.frc.lib.logging.LoopLogger
+import org.wpilib.math.kinematics.ChassisVelocities
 import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.math.kinematics.ChassisVelocities
@@ -173,7 +175,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         SimpleLogger.recordOutput("Localizer/visionCorrection (m)", postCorrectionPose.minus(preCorrectionPose).translation.norm)
     }
 
-    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisVelocities: ChassisVelocities) {
+    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisVelocities: ChassisVelocities, wheelSlipFactor: Double = 0.0) {
         LoopLogger.record("PoseLocalizer.update()")
         networkTable.publishCameras(cameras)
         LoopLogger.record("NT publishCameras()")
@@ -243,7 +245,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
                         + 10.0 * hypot(interpolatedChassisSpeeds.vx, interpolatedChassisSpeeds.vy)
                         + 20.0 * abs(interpolatedChassisSpeeds.omega)
             )
-            existingMeasurement.setVisionUncertainty(pixelSigma)
+            existingMeasurement.setVisionUncertainty(pixelSigma * (1.0 - wheelSlipFactor))
 
             if (vision.targets != null) {
                 for (target in vision.targets) {
@@ -304,6 +306,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
     // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/c2bb0e79c466be33074577d51243258ec3d39f44/src/main/java/org/littletonrobotics/frc2025/RobotState.java#L194
     private fun computeSingleTagPose() {
         LoopLogger.record("computeSingleTagPose()")
+
+        if (singleTagTagsToTrack.isEmpty()) {
+            Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+            return
+        }
 
         val tagID = determineClosestTagID(this.pose)
 
