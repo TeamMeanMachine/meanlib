@@ -195,7 +195,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         Logger.recordOutput("Localizer/visionCorrection (m)", postCorrectionPose.minus(preCorrectionPose).translation.norm)
     }
 
-    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisSpeeds: ChassisSpeeds) {
+    fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisSpeeds: ChassisSpeeds, wheelSlipFactor: Double = 0.0) {
         networkTable.publishCameras(cameras)
         LoopLogger.record("After nt publishCameras")
 
@@ -265,7 +265,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
                         + 10.0 * hypot(interpolatedChassisSpeeds.vxMetersPerSecond, interpolatedChassisSpeeds.vyMetersPerSecond)
                         + 20.0 * abs(interpolatedChassisSpeeds.omegaRadiansPerSecond)
             )
-            existingMeasurement.setVisionUncertainty(pixelSigma)
+            existingMeasurement.setVisionUncertainty(pixelSigma * (1.0 - wheelSlipFactor))
 
             if (vision.targets != null) {
                 for (target in vision.targets) {
