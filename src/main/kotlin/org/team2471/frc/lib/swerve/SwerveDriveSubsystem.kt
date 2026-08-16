@@ -515,7 +515,7 @@ abstract class SwerveDriveSubsystem(
     // CONTROL METHODS
 
     /**
-     * Runs the drive at the desired velocity. Field centric
+     * Runs the drive at the desired velocity. Velocity control, Field-centric.
      * @param velocity Speeds in meters/sec
      */
     fun driveVelocity(velocity: ChassisVelocities) {
@@ -529,27 +529,29 @@ abstract class SwerveDriveSubsystem(
     }
 
     /**
-     * Runs the drive at the desired voltage. Field centric
-     * @param velocityInVolts Speeds in volts
+     * Runs the drive at the desired percentage. Open loop voltage control, Field-centric.
+     * @param speedsInPercentage Speeds in percentage of max speed
      */
-    fun driveVoltage(velocityInVolts: ChassisVelocities) { // TODO Volts units wrong. Fix
+    fun drivePercentage(speedsInPercentage: ChassisSpeeds) {
+        val speeds = ChassisVelocities(
+            speedsInPercentage.vx * maxSpeed.asMetersPerSecond ,
+            speedsInPercentage.vy * maxSpeed.asMetersPerSecond,
+            speedsInPercentage.omega * maxAngularSpeed.asRadiansPerSecond,
+        )
+        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.fieldToRobotCentric(heading))
         setControl(
             fieldCentricVoltsDriveRequest
-                .withVelocity(ChassisVelocities(
-                    velocityInVolts.vx / 12.0 * maxSpeed.asMetersPerSecond ,
-                    velocityInVolts.vy / 12.0 * maxSpeed.asMetersPerSecond,
-                    velocityInVolts.omega / 12.0 * maxAngularSpeed.asRadiansPerSecond,
-                ))
+                .withVelocity(speeds)
                 .withCenterOfRotation(centerOfRotation)
         )
     }
 
     /**
-     * Runs the drive at the desired percentage. Field centric
-     * @param velocityInPercentage Speeds in percentage of full power
+     * Runs the drive at the desired voltage. Open loop voltage control, Field-centric.
+     * @param speedsInVolts Speeds in volts
      */
-    fun drivePercentage(velocityInPercentage: ChassisVelocities) {
-        driveVoltage(velocityInPercentage * 12.0)
+    fun driveVoltage(speedsInVolts: ChassisVelocities) {
+        drivePercentage(speedsInVolts / 12.0)
     }
 
     /**
@@ -560,7 +562,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * Applies a 0v output to the drivetrain.
      */
-    fun stop() = driveVoltage(ChassisVelocities())
+    fun stop() = drivePercentage(ChassisSpeeds())
 
     /**
      * Set all the drive and steer motors to brake mode.
@@ -655,7 +657,7 @@ abstract class SwerveDriveSubsystem(
      *
      * @param wantedPose The pose to drive to
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
-     * @param exitSupplier A function that returns true if the command should abort. The default value ends when the robot is within 0.75 meters of the target.
+     * @param exitSupplier A function that returns true if the command should abort. The default value ends when the robot is within 0.75 inches of the target.
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      */
     fun driveToPoint(
