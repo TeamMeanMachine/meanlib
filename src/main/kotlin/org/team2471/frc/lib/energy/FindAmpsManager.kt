@@ -8,13 +8,10 @@ package org.team2471.frc.lib.energy
 
 import org.littletonrobotics.junction.AutoLog
 import org.littletonrobotics.junction.Logger
-import org.team2471.frc.lib.control.CurrentLimits
-import org.wpilib.driverstation.Alert
-import org.wpilib.driverstation.DriverStation
 import org.wpilib.driverstation.RobotState
 import org.wpilib.math.filter.Debouncer
-import org.wpilib.math.util.MathUtil
 import org.wpilib.system.RobotController
+import org.wpilib.util.Alert
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -35,10 +32,10 @@ object FindAmpsManager {
 
     // Time we can run max budget before trip
     private const val breakerDangerHorizonSecs = 3.0
-    private val budgetWarning = Alert("Battery is low, robot performance may be degraded.", Alert.Level.LOW)
+    private val budgetWarning = Alert("budgetWarning", "Battery is low, robot performance may be degraded.", Alert.Level.LOW)
     private val budgetWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
-    private val brownoutWarning = Alert("Brownout detected, drive performance may be degraded.", Alert.Level.MEDIUM)
-    private val breakerDamageWarning = Alert("Breaker damage is high, please stop using the robot.", Alert.Level.MEDIUM)
+    private val brownoutWarning = Alert("brownoutWarning", "Brownout detected, drive performance may be degraded.", Alert.Level.MEDIUM)
+    private val breakerDamageWarning = Alert("breakerDamageWarning", "Breaker damage is high, please stop using the robot.", Alert.Level.MEDIUM)
     private val breakerDamageWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
 
 

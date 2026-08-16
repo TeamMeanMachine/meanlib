@@ -10,7 +10,6 @@ import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.geometry.Translation3d
 import org.wpilib.math.interpolation.TimeInterpolatableBuffer
-import org.team2471.frc.lib.logging.LoopLogger
 import org.team2471.frc.lib.vision.Fiducial
 import org.team2471.frc.lib.vision.PipelineVisionPacket
 import org.team2471.frc.lib.vision.QuixVisionCamera
@@ -20,7 +19,6 @@ import org.team2471.frc.lib.logging.LoopLogger
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.team2471.frc.lib.environment.isSim
 import org.team2471.frc.lib.logging.SimpleLogger
-import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.system.Timer
 import java.util.ArrayList
 import java.util.HashMap
@@ -282,8 +280,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val currentTime = Timer.getTimestamp()
 
         // Times are in ascending order.
-        val times = timeToMeasurementMap.keys
-        for (time in times) {
+        val iterator = timeToMeasurementMap.entries.iterator()
+        while (iterator.hasNext()) { // Iterator loop
+            val entry = iterator.next()
+            val time = entry.key
+
             // Entries within |kMutableTimeBuffer| of the current time are not considered final.
             // Once we reach this point we are done.
             if (currentTime - time < kMutableTimeBuffer) {
@@ -292,9 +293,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
             // Entries older than |kMutableTimeBuffer| are considered immutable.
             // Assign them an ID and publish them.
-            val measurement: Measurement = timeToMeasurementMap[time]!!
-            networkTable.publishMeasurement(measurement, currentId)
-            timeToMeasurementMap.remove(time)
+            networkTable.publishMeasurement(entry.value, currentId)
+            iterator.remove()
 
             idToTimeMap[currentId] = time
             currentId += 1
@@ -361,7 +361,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 //            println("robotToCam: ${robotToCam.translation.norm}")
             return
         }
-        val camToTagRotation = interpolatedRotation.plus(robotToCam.rotation.toRotation2d().plus(camToTagTranslation.angle))
+        val camToTagRotation = interpolatedRotation.plus(robotToCam.rotation.toRotation2d().plus(camToTagTranslation.angle.get()))
 
         val tagPose2d = allTargets[latestTarget.fiducialId - 1].pose.toPose2d()
         if (tagPose2d == null) {

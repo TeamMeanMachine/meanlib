@@ -101,7 +101,7 @@ fun windRelativeAngles(angle1: Double, angle2: Double): Double {
  * Finds the closest point along a line defined by [linePointOne] and [linePointTwo] to the provided [referencePoint]
  */
 fun findClosestPointOnLine(linePointOne: Translation2d, linePointTwo: Translation2d, referencePoint: Translation2d): Translation2d {
-    val lineAngle = (linePointTwo - linePointOne).angle
+    val lineAngle = (linePointTwo - linePointOne).angle.get()
     val rotatedReferencePoint = referencePoint.rotateBy(-lineAngle)
     val rotatedPointOne = linePointOne.rotateBy(-lineAngle)
     val rotatedPointTwo = linePointTwo.rotateBy(-lineAngle)
@@ -139,7 +139,7 @@ fun Double.epsonEquals(other: Double) = epsilonEquals(this, other)
 
 
 fun Translation2d.angleTo(other: Translation2d): Angle {
-    return (other - this).angle.measure
+    return (other - this).angle.get().measure
 }
 
 inline val ChassisVelocities.translation: Translation2d get() = Translation2d(this.vx, this.vy)

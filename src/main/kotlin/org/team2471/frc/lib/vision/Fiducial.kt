@@ -4,7 +4,7 @@ import org.team2471.frc.lib.units.asMeters
 import org.team2471.frc.lib.units.inches
 import org.wpilib.math.geometry.Pose3d
 import org.wpilib.util.struct.Struct
-import org.wpilib.vision.apriltag.AprilTag
+import org.wpilib.fields.FieldTag
 import java.nio.ByteBuffer
 
 // An ID of -1 indicates this is an unlabeled fiducial (e.g. retroreflective tape)
@@ -40,12 +40,12 @@ class Fiducial(val type: Type, val id: Int, val pose: Pose3d, val size: Double) 
 
         private val aprilTagSize = 6.5.inches.asMeters // m
 
-        fun constructFiducialList(aprilTags: List<AprilTag>): Array<Fiducial>  {
+        fun constructFiducialList(aprilTags: List<FieldTag>): Array<Fiducial>  {
             return Array(aprilTags.size) {
                 val tag = aprilTags[it]
                 Fiducial(
                     Type.APRILTAG,
-                    tag.ID,
+                    tag.id,
                     tag.pose,
                     aprilTagSize
                 )

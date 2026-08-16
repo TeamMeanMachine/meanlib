@@ -70,7 +70,6 @@ import org.team2471.frc.lib.ctre.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
-import org.wpilib.driverstation.Alert
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
 import org.wpilib.math.controller.PIDController
@@ -91,6 +90,7 @@ import org.wpilib.units.measure.LinearVelocity
 import org.wpilib.units.measure.Time
 import org.wpilib.units.measure.Velocity
 import org.wpilib.units.measure.Voltage
+import org.wpilib.util.Alert
 import org.wpilib.util.Preferences
 import kotlin.math.abs
 import kotlin.math.min
@@ -323,10 +323,10 @@ abstract class SwerveDriveSubsystem(
         get() = choreoPathsStartOnRed != isRedAlliance
 
     // ALERTS
-    private val gyroDisconnectedAlert = Alert("Gyro Disconnected", Alert.Level.HIGH)
-    private val driveDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Drive Motor Disconnected", Alert.Level.HIGH) }
-    private val steerDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Steer Motor Disconnected", Alert.Level.HIGH) }
-    private val encoderDisconnectAlerts = Array(moduleConstants.size) { Alert("Module $it Encoder Disconnected", Alert.Level.HIGH) }
+    private val gyroDisconnectedAlert = Alert("gyroDisconnectedAlert", "Gyro Disconnected", Alert.Level.HIGH)
+    private val driveDisconnectAlerts = Array(moduleConstants.size) { Alert("driveDisconnect module $it", "Module $it Drive Motor Disconnected", Alert.Level.HIGH) }
+    private val steerDisconnectAlerts = Array(moduleConstants.size) { Alert("steerDisconnect module $it", "Module $it Steer Motor Disconnected", Alert.Level.HIGH) }
+    private val encoderDisconnectAlerts = Array(moduleConstants.size) { Alert("encoderDisconnect module $it", "Module $it Encoder Disconnected", Alert.Level.HIGH) }
     private var moduleErrorIndex = 0
 
     // OTHER
@@ -532,13 +532,13 @@ abstract class SwerveDriveSubsystem(
      * Runs the drive at the desired percentage. Open loop voltage control, Field-centric.
      * @param speedsInPercentage Speeds in percentage of max speed
      */
-    fun drivePercentage(speedsInPercentage: ChassisSpeeds) {
+    fun drivePercentage(speedsInPercentage: ChassisVelocities) {
         val speeds = ChassisVelocities(
             speedsInPercentage.vx * maxSpeed.asMetersPerSecond ,
             speedsInPercentage.vy * maxSpeed.asMetersPerSecond,
             speedsInPercentage.omega * maxAngularSpeed.asRadiansPerSecond,
         )
-        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.fieldToRobotCentric(heading))
+//        Logger.recordOutput("Drive/Wanted ChassisSpeeds", speeds.fieldToRobotCentric(heading))
         setControl(
             fieldCentricVoltsDriveRequest
                 .withVelocity(speeds)
@@ -562,7 +562,7 @@ abstract class SwerveDriveSubsystem(
     /**
      * Applies a 0v output to the drivetrain.
      */
-    fun stop() = drivePercentage(ChassisSpeeds())
+    fun stop() = drivePercentage(ChassisVelocities())
 
     /**
      * Set all the drive and steer motors to brake mode.
@@ -771,7 +771,7 @@ abstract class SwerveDriveSubsystem(
         lineTolerance: Distance = 0.5.inches,
         maxVelocity: LinearVelocity = maxSpeed
     ): Command = commandUnnamed(this) {
-        val lineAngle = (pointTwo - pointOne).angle
+        val lineAngle = (pointTwo - pointOne).angle.get()
 
         while (true) {
             val currentPose = poseSupplier()
