@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.autonomous
+package org.team2471.frc.lib.autonomous.auto
 
 import org.wpilib.command3.Command
 import org.wpilib.command3.Trigger
@@ -8,7 +8,7 @@ import org.wpilib.opmode.OpMode
 /**
  * Autonomous [OpMode].
  *
- * When selected will call the [warmupFunction] provided by [Autonomi.warmupFunction]
+ * When selected will call the [warmupFunction] provided by [org.team2471.frc.lib.autonomous.Autonomi.warmupFunction]
  *
  * Then will periodically run the [disabledPeriodicFunction] until enabled
  *

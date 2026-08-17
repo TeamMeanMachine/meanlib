@@ -2,9 +2,14 @@ package org.team2471.frc.lib.autonomous
 
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
+import org.team2471.frc.lib.autonomous.auto.AutoOpMode
+import org.team2471.frc.lib.autonomous.auto.AutoOpModeSupplier
+import org.team2471.frc.lib.autonomous.auto.AutoRoutine
+import org.team2471.frc.lib.autonomous.test.TestOpMode
+import org.team2471.frc.lib.autonomous.test.TestOpModeSupplier
+import org.team2471.frc.lib.autonomous.test.TestRoutine
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.asSeconds
-import org.wpilib.command3.Command
 import org.wpilib.math.geometry.Pose2d
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.system.Filesystem
@@ -81,50 +86,33 @@ abstract class Autonomi {
         }
     }
 
-    // AUTONOMOUS
-
-    /**
-     * A class to store an autonomous command and data to be built into an [AutoOpMode].
-     *
-     * @param name The name of the auto
-     * @param command The command to run when the [AutoOpMode] runs
-     * @param startingPositionSupplier Start position of the robot. Continuously sets the starting position of the robot.
-     * @param disabledPeriodicFunction A function that runs periodically when the auto is disabled. Useful for pre-setting things like swerve/motor setpoints.
-     */
-    data class AutoRoutine(val name: String, val command: Command, val startingPositionSupplier: (() -> Pose2d)? = null, val disabledPeriodicFunction: (() -> Unit)? = null)
-
-    // This is not in the AutoRoutine class due to its usage of Autonomi methods warmupFuncation(), readAutoPaths(), and drivePoseSetter().
-    /** Converts an [AutoRoutine] to an [AutoOpMode]. Uses the [drivePoseSetter] and [warmupFunction] from Autonomi to set up the [AutoOpMode]. */
-    fun AutoRoutine.toAutoOpMode(): AutoOpMode {
-        return AutoOpMode(
-            this.name,
-            this.command,
-            { readAutoPaths(); warmupFunction() },
-            { this.startingPositionSupplier?.invoke()?.let { drivePoseSetter(it) }; this.disabledPeriodicFunction?.invoke() })
+    /** Converts an [AutoRoutine] to a [AutoOpModeSupplier]. Uses the [drivePoseSetter] and [warmupFunction] from Autonomi to set up the [org.team2471.frc.lib.autonomous.auto.AutoOpMode]. */
+    fun createOpModeSupplier(autoRoutine: AutoRoutine): AutoOpModeSupplier =
+        AutoOpModeSupplier(
+            autoRoutine.name
+        ) {
+            AutoOpMode(
+                autoRoutine.name,
+                autoRoutine.command,
+                { this.readAutoPaths(); this.warmupFunction() },
+                { autoRoutine.startingPositionSupplier?.invoke()?.let { drivePoseSetter(it) }; autoRoutine.disabledPeriodicFunction?.invoke() }
+        )
     }
 
-    /** Maps a list of [TestRoutine]s to a list of [TestOpMode]s. For clean syntax*/
-    fun List<AutoRoutine>.toAutoOpModes(): List<AutoOpMode> = map { it.toAutoOpMode() }
+    /** Convert a [TestRoutine] to a function that returns a [org.team2471.frc.lib.autonomous.test.TestOpMode]. */
+    fun createOpModeSupplier(testRoutine: TestRoutine): TestOpModeSupplier =
+        TestOpModeSupplier(
+            testRoutine.name
+        ) {
+            TestOpMode(
+                testRoutine.name,
+                testRoutine.command,
+                testRoutine.initFunction
+            )
+        }
 
-    // TEST/UTILITY
-
-    /**
-     * A class to store a test command to be built into a test OpMode.
-     *
-     * @param name The name of the test
-     * @param command The command to run when the test OpMode runs
-     * @param initFunction A function that runs when the test is selected. ALLOWS FOR SCOPING: Useful for overriding buttons or Mechanism defaults that only persist while the test is selected.
-     *
-     * @example TestRoutine("TestDrive", specialJoystickCommand(), { driveSubsystem.defaultCommand = Command.idle()})
-     */
-    data class TestRoutine(val name: String, val command: Command, val initFunction: () -> Unit = {})
-
-    // Not inside the TestRoutine to be similar to AutoRoutine, not due to any coding limitation.
-    /** Convert a [TestRoutine] to a [TestOpMode]. */
-    fun TestRoutine.toTestOpMode(): TestOpMode {
-        return TestOpMode(this.name, this.command) { this.initFunction.invoke() }
-    }
-
-    /** Maps a list of [TestRoutine]s to a list of [TestOpMode]s. for clean syntax*/
-    fun List<TestRoutine>.toTestOpModes(): List<TestOpMode> = map { it.toTestOpMode() }
+    /** Maps a list of [AutoRoutine]s to a list of [AutoOpModeSupplier]. For clean syntax*/
+    fun List<AutoRoutine>.toAutoOpModeSuppliers(): List<AutoOpModeSupplier> = map { createOpModeSupplier(it) }
+    /** Maps a list of [TestRoutine]s to a list of functions that return a [TestOpMode]. for clean syntax*/
+    fun List<TestRoutine>.toTestOpModeSuppliers(): List<TestOpModeSupplier> = map { createOpModeSupplier(it) }
 }

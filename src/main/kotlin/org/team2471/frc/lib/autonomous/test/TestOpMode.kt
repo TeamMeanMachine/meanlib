@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.autonomous
+package org.team2471.frc.lib.autonomous.test
 
 import org.wpilib.command3.Command
 import org.wpilib.command3.Trigger
