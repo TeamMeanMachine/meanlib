@@ -60,7 +60,7 @@ import org.team2471.frc.lib.math.translation
 import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
-import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
+import org.team2471.frc.lib.units.asMetersPerSecondSquared
 import org.team2471.frc.lib.units.seconds
 import org.team2471.frc.lib.units.wrap
 import org.team2471.frc.lib.commands.PeriodicMechanism
@@ -972,7 +972,7 @@ abstract class SwerveDriveSubsystem(
         thetaTolerance: Angle,
         beelineRadius: Distance = 8.0.centimeters
     ): Autopilot {
-        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondPerSecond, maxJerk.asMetersPerSecondCubed))
+        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondSquared, maxJerk.asMetersPerSecondCubed))
             .withErrorXY(xyTolerance).withErrorTheta(thetaTolerance).withBeelineRadius(beelineRadius)
         )
     }
