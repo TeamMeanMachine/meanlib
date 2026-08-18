@@ -1,6 +1,7 @@
 package org.team2471.frc.lib.actuators
 
 import com.revrobotics.PersistMode
+import com.revrobotics.REVLibError
 import com.revrobotics.ResetMode
 import com.revrobotics.spark.*
 import com.revrobotics.spark.config.*
@@ -214,6 +215,18 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     override fun motionMagicExpo(acceleration: Double, cruisingVelocityPower: Double) { println("MM expo does not exist in SparkMax")}
 
     private fun applyConfig(newConfig: SparkBaseConfig) {
-        _motorController.configureAsync(newConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters)
+        val maxTries = 5
+        for (i in 1..maxTries) {
+            val error = _motorController.configureAsync(
+                newConfig,
+                ResetMode.kNoResetSafeParameters,
+                PersistMode.kNoPersistParameters
+            )
+            if (error == REVLibError.kOk) {
+                break
+            } else if (i == maxTries) {
+                println("Failed to configure SparkMax")
+            }
+        }
     }
 }
