@@ -29,6 +29,8 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     private val _motorController = SparkMax(deviceID, SparkLowLevel.MotorType.kBrushless)//.also { restoreFactoryDefaults() }
 
+    private val motorConfig = SparkMaxConfig()
+
     val analogPosition: Double
         get() = _motorController.analog.position
 
@@ -41,7 +43,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun follow(followerID: MotorControllerIO) {
-        applyConfig(SparkMaxConfig().follow((followerID as SparkMaxWrapper)._motorController))
+        (motorConfig.follow((followerID as SparkMaxWrapper)._motorController))
     }
 
     override fun getClosedLoopError(): Double {
@@ -60,15 +62,15 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun closedLoopRamp(secondsToFull: Double) {
-        applyConfig(SparkMaxConfig().closedLoopRampRate(secondsToFull))
+        (motorConfig.closedLoopRampRate(secondsToFull))
     }
 
     override fun coastMode() {
-        applyConfig(SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kCoast))
+        (motorConfig.idleMode(SparkBaseConfig.IdleMode.kCoast))
     }
 
     override fun setInverted(invert: Boolean) {
-        applyConfig(SparkMaxConfig().inverted(invert))
+        (motorConfig.inverted(invert))
     }
 
     override fun getInverted(): Boolean {
@@ -84,7 +86,7 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun openLoopRamp(secondsToFull: Double) {
-        applyConfig(SparkMaxConfig().openLoopRampRate(secondsToFull))
+        (motorConfig.openLoopRampRate(secondsToFull))
     }
 
 
@@ -161,11 +163,11 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
     }
 
     override fun config_kP(p: Double, simP: Double?) {
-        applyConfig(SparkMaxConfig().apply { closedLoop.p(p * 1024.0) })
+        (motorConfig.apply { closedLoop.p(p * 1024.0) })
     }
 
     override fun config_kD(d: Double, simD: Double?) {
-        applyConfig(SparkMaxConfig().apply { closedLoop.d(d * 1024.0) })
+        (motorConfig.apply { closedLoop.d(d * 1024.0) })
     }
 
     override fun getPValue(): Double = _motorController.configAccessor.closedLoop.p
@@ -176,36 +178,36 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
 
     override fun config_kF(f: Double, simF: Double?) {
         val c = _motorController.configAccessor.closedLoop
-        applyConfig(SparkMaxConfig().apply { closedLoop.feedForward.kS(f) })
+        (motorConfig.apply { closedLoop.feedForward.kS(f) })
     }
 
     override fun config_kI(i: Double, simI: Double?) {
-        applyConfig(SparkMaxConfig().apply { closedLoop.i(i * 1024.0) })
+        (motorConfig.apply { closedLoop.i(i * 1024.0) })
     }
 
     override val current: Double
         get() = inputs.current
 
     override fun brakeMode() {
-        applyConfig(SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kBrake))
+        (motorConfig.idleMode(SparkBaseConfig.IdleMode.kBrake))
     }
 
     override fun restoreFactoryDefaults() {
-        _motorController.configure(SparkMaxConfig(), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        _motorController.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
 
     override fun currentLimit(continuousLimit: Int, peakLimit: Int, peakDuration: Double) {
         if (peakDuration == 0.0) {
-            applyConfig(SparkMaxConfig().apply { smartCurrentLimit(continuousLimit, peakLimit) })
+            (motorConfig.apply { smartCurrentLimit(continuousLimit, peakLimit) })
         } else {
-            applyConfig(SparkMaxConfig().apply { smartCurrentLimit(peakLimit) })
+            (motorConfig.apply { smartCurrentLimit(peakLimit) })
 
         }
 
     }
 
     override fun motionMagic(acceleration: Double, cruisingVelocity: Double) {
-        applyConfig(SparkMaxConfig().apply { closedLoop.maxMotion
+        (motorConfig.apply { closedLoop.maxMotion
             .cruiseVelocity(cruisingVelocity)
             .maxAcceleration(acceleration)
             .allowedProfileError(0.0)
@@ -228,5 +230,9 @@ class SparkMaxWrapper (deviceID: Int) : MotorControllerIO {
                 println("Failed to configure SparkMax")
             }
         }
+    }
+
+    override fun applyConfig() {
+        applyConfig(motorConfig)
     }
 }
