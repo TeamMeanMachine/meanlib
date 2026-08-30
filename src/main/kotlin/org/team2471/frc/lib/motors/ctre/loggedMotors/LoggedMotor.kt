@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre.loggedMotors
+package org.team2471.frc.lib.motors.ctre.loggedMotors
 
 import edu.wpi.first.math.system.plant.DCMotor
 

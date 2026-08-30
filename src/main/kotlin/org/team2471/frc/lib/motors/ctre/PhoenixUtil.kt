@@ -10,7 +10,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-package org.team2471.frc.lib.ctre
+package org.team2471.frc.lib.motors.ctre
 
 import com.ctre.phoenix6.StatusCode
 import com.ctre.phoenix6.Utils
@@ -58,10 +58,10 @@ object PhoenixUtil {
     }
 
     /**
-     * Converts a timestamp from the [Utils.getCurrentTimeSeconds] timebase
+     * Converts a timestamp from the [getCurrentTimeSeconds] timebase
      * to the FPGA timebase reported by [Timer.getFPGATimestamp].
      *
-     * @param currentTimeSeconds The timestamp in [Utils.getCurrentTimeSeconds] seconds
+     * @param currentTimeSeconds The timestamp in [getCurrentTimeSeconds] seconds
      * @return The equivalent [Timer.getFPGATimestamp] timestamp in seconds
      *
      * @see Utils.fpgaToCurrentTime

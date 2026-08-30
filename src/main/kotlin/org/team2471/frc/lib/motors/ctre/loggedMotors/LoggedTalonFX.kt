@@ -1,31 +1,27 @@
-package org.team2471.frc.lib.ctre.loggedMotors
+package org.team2471.frc.lib.motors.ctre.loggedMotors
 
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
-import com.ctre.phoenix6.hardware.TalonFXS
-import com.ctre.phoenix6.signals.NeutralModeValue
+import com.ctre.phoenix6.hardware.TalonFX
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.math.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj.simulation.DCMotorSim
-import org.team2471.frc.lib.util.isReal
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.units.volts
+import org.littletonrobotics.junction.Logger
+import org.team2471.frc.lib.ctre.loggedMotors.MotorInputsAutoLogged
 import org.team2471.frc.lib.util.isReplay
 import org.team2471.frc.lib.util.isSim
 
 /**
- * Wrapper for [TalonFXS] that supports replay and simulation when [configSim] is called.
+ * Wrapper for [TalonFX] that supports replay and simulation when [configSim] is called.
  *
  * @param id The CAN ID of the motor.
  * @param canBus The CAN bus to use. Defaults to roboRIO or if null.
  *
- * @see TalonFXS
+ * @see TalonFX
  * @see DCMotorSim
  */
-class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), LoggedMotor {
+class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), LoggedMotor {
     private var motor: DCMotor? = null
     private var motorPhysicsSim: DCMotorSim? = null
 
@@ -77,6 +73,6 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
             loggedInputs.angularAcceleration = accelerationStatusSignal.value
             loggedInputs.supplyVoltage = supplyVoltageStatusSignal.value
         }
-        Logger.processInputs("Motors/TalonFXS $deviceID ${network.name}", loggedInputs)
+        Logger.processInputs("Motors/TalonFX $deviceID ${network.name}", loggedInputs)
     }
 }

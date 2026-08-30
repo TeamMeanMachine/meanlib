@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre
+package org.team2471.frc.lib.motors.ctre
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXConfiguration
@@ -138,7 +138,7 @@ fun TalonFXConfiguration.fusedCANCoder(encoderID: Int, motorToSensorRatio: Doubl
  * @param sensorToMechanismRatio number of sensor rotations for 1 mechanism rotation.
  *
  * @see FeedbackSensorSourceValue
- * @see TalonFXConfiguration.Feedback
+ * @see Feedback
  */
 fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorSource: FeedbackSensorSourceValue, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration {
     this.Feedback.apply {
@@ -157,7 +157,7 @@ fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorS
  *
  * @param sensorToMechanismRatio The ratio of sensor rotations to the mechanism's output. Defaults to 1.
  *
- * @see TalonFXConfiguration.Feedback
+ * @see Feedback
  */
 fun TalonFXConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double): TalonFXConfiguration {
     this.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
@@ -168,7 +168,7 @@ fun TalonFXConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double):
  *
  * @param rotorToSensorRatio The ratio of motor rotor rotations to feedback sensor rotations. Defaults to 1.
  *
- * @see TalonFXConfiguration.Feedback
+ * @see Feedback
  */
 fun TalonFXConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFXConfiguration {
     this.Feedback.RotorToSensorRatio = rotorToSensorRatio
@@ -180,7 +180,7 @@ fun TalonFXConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFX
  *
  * @param continuousWrap Whether to wrap the position error. Defaults to false
  *
- * @see TalonFXConfiguration.ClosedLoopGeneral
+ * @see ClosedLoopGeneral
  */
 fun TalonFXConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): TalonFXConfiguration {
     this.ClosedLoopGeneral.ContinuousWrap = continuousWrap
@@ -237,7 +237,7 @@ fun TalonFXConfiguration.coastMode(): TalonFXConfiguration {
 /**
  * Set the proportional gain.
  *
- * @see TalonFXConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXConfiguration {
     when (slotNumber) {
@@ -251,7 +251,7 @@ fun TalonFXConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXConfiguration
 /**
  * Set the derivative gain.
  *
- * @see TalonFXConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXConfiguration {
     when (slotNumber) {
@@ -265,7 +265,7 @@ fun TalonFXConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXConfiguration
 /**
  * Set the integral gain.
  *
- * @see TalonFXConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXConfiguration.i(i: Double, slotNumber: Int = 0): TalonFXConfiguration {
     when (slotNumber) {
@@ -294,7 +294,7 @@ fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSi
 /**
  * Set the velocity feedforward gain.
  *
- * @see TalonFXConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXConfiguration {
     when (slotNumber) {
@@ -308,7 +308,7 @@ fun TalonFXConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXConfiguration
 /**
  * Set the acceleration feedforward gain.
  *
- * @see TalonFXConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXConfiguration.a(a: Double, slotNumber: Int = 0): TalonFXConfiguration {
     when (slotNumber) {
@@ -346,7 +346,7 @@ fun TalonFXConfiguration.g(g: Double, gravityType: GravityTypeValue, slotNumber:
 /**
  * Configure the motion magic cruise velocity, acceleration, and optional jerk.
  *
- * @see TalonFXConfiguration.MotionMagic
+ * @see MotionMagic
  */
 fun TalonFXConfiguration.motionMagic(cruiseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXConfiguration {
     this.MotionMagic.apply {
@@ -360,7 +360,7 @@ fun TalonFXConfiguration.motionMagic(cruiseVelocity: Double, acceleration: Doubl
 /**
  * Configure the motion magic expo configs.
  *
- * @see TalonFXConfiguration.MotionMagic
+ * @see MotionMagic
  * @see MotionMagicConfigs.MotionMagicExpo_kV
  * @see MotionMagicConfigs.MotionMagicExpo_kA
  * @see MotionMagicConfigs.MotionMagicCruiseVelocity
@@ -410,7 +410,7 @@ fun CoreTalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) 
  *
  * Wrapper function just to simplify code.
  *
- * @see TalonFX.getConfigurator
+ * @see getConfigurator
  * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
  */
 fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {

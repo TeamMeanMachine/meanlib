@@ -1,9 +1,8 @@
-package org.team2471.frc.lib.ctre
+package org.team2471.frc.lib.motors.ctre
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXSConfiguration
 import com.ctre.phoenix6.controls.Follower
-import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.hardware.TalonFXS
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
@@ -175,7 +174,7 @@ fun TalonFXSConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonF
  *
  * @param continuousWrap Whether to wrap the position error. Defaults to false
  *
- * @see TalonFXSConfiguration.ClosedLoopGeneral
+ * @see ClosedLoopGeneral
  */
 fun TalonFXSConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): TalonFXSConfiguration {
     this.ClosedLoopGeneral.ContinuousWrap = continuousWrap
@@ -232,7 +231,7 @@ fun TalonFXSConfiguration.coastMode(): TalonFXSConfiguration {
 /**
  * Set the proportional gain.
  *
- * @see TalonFXSConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXSConfiguration.p(p: Double): TalonFXSConfiguration {
     this.Slot0.kP = p
@@ -242,7 +241,7 @@ fun TalonFXSConfiguration.p(p: Double): TalonFXSConfiguration {
 /**
  * Set the derivative gain.
  *
- * @see TalonFXSConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXSConfiguration.d(d: Double): TalonFXSConfiguration {
     this.Slot0.kD = d
@@ -252,7 +251,7 @@ fun TalonFXSConfiguration.d(d: Double): TalonFXSConfiguration {
 /**
  * Set the integral gain.
  *
- * @see TalonFXSConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXSConfiguration.i(i: Double): TalonFXSConfiguration {
     this.Slot0.kI = i
@@ -276,7 +275,7 @@ fun TalonFXSConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardS
 /**
  * Set the velocity feedforward gain.
  *
- * @see TalonFXSConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXSConfiguration.v(v: Double): TalonFXSConfiguration {
     this.Slot0.kV = v
@@ -286,7 +285,7 @@ fun TalonFXSConfiguration.v(v: Double): TalonFXSConfiguration {
 /**
  * Set the acceleration feedforward gain.
  *
- * @see TalonFXSConfiguration.Slot0
+ * @see Slot0
  */
 fun TalonFXSConfiguration.a(a: Double): TalonFXSConfiguration {
     this.Slot0.kA = a
@@ -310,7 +309,7 @@ fun TalonFXSConfiguration.g(g: Double, gravityType: GravityTypeValue): TalonFXSC
 /**
  * Configure the motion magic cruse velocity, acceleration, and optional jerk.
  *
- * @see TalonFXSConfiguration.MotionMagic
+ * @see MotionMagic
  */
 fun TalonFXSConfiguration.motionMagic(cruseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXSConfiguration {
     this.MotionMagic.apply {
@@ -324,7 +323,7 @@ fun TalonFXSConfiguration.motionMagic(cruseVelocity: Double, acceleration: Doubl
 /**
  * Configure the motion magic expo configs.
  *
- * @see TalonFXSConfiguration.MotionMagic
+ * @see MotionMagic
  * @see MotionMagicConfigs.MotionMagicExpo_kV
  * @see MotionMagicConfigs.MotionMagicExpo_kA
  * @see MotionMagicConfigs.MotionMagicCruiseVelocity
