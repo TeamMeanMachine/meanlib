@@ -47,9 +47,9 @@ import org.team2471.frc.lib.control.commands.finallyRun
 import org.team2471.frc.lib.control.commands.onlyRunWhileFalse
 import org.team2471.frc.lib.control.commands.sequenceCommand
 import org.team2471.frc.lib.control.commands.use
-import org.team2471.frc.lib.motors.ctre.ApplyModuleStates
-import org.team2471.frc.lib.motors.ctre.setCANCoderAngle
-import org.team2471.frc.lib.motors.ctre.loggedMotors.LoggedTalonFX
+import org.team2471.frc.lib.hardware.ctre.ApplyModuleStates
+import org.team2471.frc.lib.hardware.ctre.setCANCoderAngle
+import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -83,8 +83,8 @@ import org.team2471.frc.lib.units.wrap
 import org.littletonrobotics.junction.AutoLogOutput
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.control.LoopLogger
-import org.team2471.frc.lib.motors.ctre.brakeMode
-import org.team2471.frc.lib.motors.ctre.coastMode
+import org.team2471.frc.lib.hardware.ctre.brakeMode
+import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.swerve.simulation.MapleSimCTRESwerveDrivetrain
 import org.team2471.frc.lib.units.amps

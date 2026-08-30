@@ -1,10 +1,10 @@
-package org.team2471.frc.lib.motors.ctre
+package org.team2471.frc.lib.hardware.ctre
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs
-import com.ctre.phoenix6.configs.TalonFXConfiguration
+import com.ctre.phoenix6.configs.TalonFXSConfiguration
 import com.ctre.phoenix6.controls.Follower
-import com.ctre.phoenix6.hardware.TalonFX
-import com.ctre.phoenix6.hardware.core.CoreTalonFX
+import com.ctre.phoenix6.hardware.TalonFXS
+import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
@@ -23,27 +23,21 @@ import org.team2471.frc.lib.util.isReal
  * MUST call this function AFTER configuring the master motor.
  * If the master motor's configuration changes after this function is called, the follower configuration will NOT update to match the master motor.
  *
- * (If you need to change both configurations, create another [TalonFX] object for the follower and apply configuration to both)
+ * (If you need to change both configurations, create another [TalonFXS] object for the follower and apply configuration to both)
  *
- * @param followerID The CAN ID of a [TalonFX] follower motor.
+ * @param followerID The CAN ID of a [TalonFXS] follower motor.
  * @param motorAlignment Relationship between this motor and the master motor direction.
  *
  * @see Follower
  * @see MotorAlignmentValue
  */
-fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) {
+fun TalonFXS.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) {
     try {
-        val follower = TalonFX(followerID, network)
-        val masterConfig = TalonFXConfiguration()
-        val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(masterConfig) } // Get motor configuration parameters
-        if (isSuccessful) {
-            follower.configurator.apply(masterConfig)
-            follower.setControl(Follower(deviceID, motorAlignment))
-        } else {
-            println("Failed to add follower, could not refresh config for id ${this.deviceID}")
-            throw Exception("Failed to add follower, could not refresh config for id ${this.deviceID}")
-        }
-
+        val follower = TalonFXS(followerID, network)
+        val masterConfig = TalonFXSConfiguration()
+        this.configurator.refresh(masterConfig)
+        follower.configurator.apply(masterConfig)
+        follower.setControl(Follower(deviceID, motorAlignment))
     } catch (e: Exception) {
         DriverStation.reportError("Failed to add follower to $deviceID: ${e.message}", true)
     }
@@ -61,7 +55,7 @@ fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = M
  * @see Follower
  * @see MotorAlignmentValue
  */
-fun TalonFX.addFollower(follower: TalonFX, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) = this.addFollower(follower.deviceID, motorAlignment)
+fun TalonFXS.addFollower(follower: TalonFXS, motorAlignment: MotorAlignmentValue = MotorAlignmentValue.Aligned) = this.addFollower(follower.deviceID, motorAlignment)
 
 /**
  * Set the supply current limits.
@@ -69,7 +63,7 @@ fun TalonFX.addFollower(follower: TalonFX, motorAlignment: MotorAlignmentValue =
  * @param peakLimit the maximum possible current the motor can draw.
  * @param peakDuration amount of seconds the motor limits to [peakLimit], then it will limit to [continuousLimit]
  */
-fun TalonFXConfiguration.currentLimits(continuousLimit: Double, peakLimit: Double, peakDuration: Double): TalonFXConfiguration {
+fun TalonFXSConfiguration.currentLimits(continuousLimit: Double, peakLimit: Double, peakDuration: Double): TalonFXSConfiguration {
     this.CurrentLimits.apply {
         SupplyCurrentLimit = peakLimit
         SupplyCurrentLowerLimit = continuousLimit
@@ -83,7 +77,7 @@ fun TalonFXConfiguration.currentLimits(continuousLimit: Double, peakLimit: Doubl
  * Set the stator current limits.
  * @param peakLimit the maximum possible current the motor can draw.
  */
-fun TalonFXConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXConfiguration {
+fun TalonFXSConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXSConfiguration {
     this.CurrentLimits.apply {
         StatorCurrentLimit = peakLimit
         StatorCurrentLimitEnable = true
@@ -105,8 +99,8 @@ fun TalonFXConfiguration.statorCurrentLimit(peakLimit: Double): TalonFXConfigura
  *
  * @author Justin likes "Remote" modes better than "Fused." Test both but start with RemoteCANCoder.
  */
-fun TalonFXConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration =
-    alternateFeedbackSensor(encoderID, FeedbackSensorSourceValue.RemoteCANcoder, motorToSensorRatio, sensorToMechanismRatio)
+fun TalonFXSConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXSConfiguration =
+    alternateFeedbackSensor(encoderID, ExternalFeedbackSensorSourceValue.RemoteCANcoder, motorToSensorRatio, sensorToMechanismRatio)
 
 /**
  * Motor will fuse its position and velocity with another CANcoder. Slow speed will use CANcoder, fast speed will use motor rotor.
@@ -123,8 +117,8 @@ fun TalonFXConfiguration.remoteCANCoder(encoderID: Int, motorToSensorRatio: Doub
  *
  * @author Justin likes "Remote" modes better than "Fused." Test both but start with RemoteCANCoder.
  */
-fun TalonFXConfiguration.fusedCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration =
-    alternateFeedbackSensor(encoderID, FeedbackSensorSourceValue.FusedCANcoder, motorToSensorRatio, sensorToMechanismRatio)
+fun TalonFXSConfiguration.fusedCANCoder(encoderID: Int, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXSConfiguration =
+    alternateFeedbackSensor(encoderID, ExternalFeedbackSensorSourceValue.FusedCANcoder, motorToSensorRatio, sensorToMechanismRatio)
 
 /**
  * Sets the configs that affect the feedback sensor of this motor. Aka: What it will think its own position/velocity is.
@@ -138,11 +132,11 @@ fun TalonFXConfiguration.fusedCANCoder(encoderID: Int, motorToSensorRatio: Doubl
  * @param sensorToMechanismRatio number of sensor rotations for 1 mechanism rotation.
  *
  * @see FeedbackSensorSourceValue
- * @see Feedback
+ * @see TalonFXSConfiguration.Feedback
  */
-fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorSource: FeedbackSensorSourceValue, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXConfiguration {
-    this.Feedback.apply {
-        FeedbackSensorSource = feedbackSensorSource
+fun TalonFXSConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorSource: ExternalFeedbackSensorSourceValue, motorToSensorRatio: Double, sensorToMechanismRatio: Double = 1.0): TalonFXSConfiguration {
+    this.ExternalFeedback.apply {
+        ExternalFeedbackSensorSource = feedbackSensorSource
         FeedbackRemoteSensorID = encoderID
         RotorToSensorRatio = motorToSensorRatio
         SensorToMechanismRatio = sensorToMechanismRatio
@@ -157,10 +151,10 @@ fun TalonFXConfiguration.alternateFeedbackSensor(encoderID: Int, feedbackSensorS
  *
  * @param sensorToMechanismRatio The ratio of sensor rotations to the mechanism's output. Defaults to 1.
  *
- * @see Feedback
+ * @see TalonFXSConfiguration.Feedback
  */
-fun TalonFXConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double): TalonFXConfiguration {
-    this.Feedback.SensorToMechanismRatio = sensorToMechanismRatio
+fun TalonFXSConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double): TalonFXSConfiguration {
+    this.ExternalFeedback.SensorToMechanismRatio = sensorToMechanismRatio
     return this
 }
 /**
@@ -168,10 +162,10 @@ fun TalonFXConfiguration.sensorToMechanismRatio(sensorToMechanismRatio: Double):
  *
  * @param rotorToSensorRatio The ratio of motor rotor rotations to feedback sensor rotations. Defaults to 1.
  *
- * @see Feedback
+ * @see TalonFXSConfiguration.Feedback
  */
-fun TalonFXConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFXConfiguration {
-    this.Feedback.RotorToSensorRatio = rotorToSensorRatio
+fun TalonFXSConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFXSConfiguration {
+    this.ExternalFeedback.RotorToSensorRatio = rotorToSensorRatio
     return this
 }
 
@@ -182,7 +176,7 @@ fun TalonFXConfiguration.rotorToSensorRatio(rotorToSensorRatio: Double): TalonFX
  *
  * @see ClosedLoopGeneral
  */
-fun TalonFXConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): TalonFXConfiguration {
+fun TalonFXSConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): TalonFXSConfiguration {
     this.ClosedLoopGeneral.ContinuousWrap = continuousWrap
     return this
 }
@@ -199,7 +193,7 @@ fun TalonFXConfiguration.continuousCloseLoopWrap(continuousWrap: Boolean): Talon
  * @see InvertedValue.CounterClockwise_Positive
  * @see InvertedValue.Clockwise_Positive
  */
-fun TalonFXConfiguration.inverted(invert: Boolean): TalonFXConfiguration =
+fun TalonFXSConfiguration.inverted(invert: Boolean): TalonFXSConfiguration =
     this.inverted(if (invert) InvertedValue.Clockwise_Positive else InvertedValue.CounterClockwise_Positive)
 
 
@@ -213,7 +207,7 @@ fun TalonFXConfiguration.inverted(invert: Boolean): TalonFXConfiguration =
  * @see InvertedValue.CounterClockwise_Positive
  * @see InvertedValue.Clockwise_Positive
  */
-fun TalonFXConfiguration.inverted(invertedValue: InvertedValue): TalonFXConfiguration {
+fun TalonFXSConfiguration.inverted(invertedValue: InvertedValue): TalonFXSConfiguration {
     this.MotorOutput.Inverted =  invertedValue
     return this
 }
@@ -221,7 +215,7 @@ fun TalonFXConfiguration.inverted(invertedValue: InvertedValue): TalonFXConfigur
 /**
  * Set motor neutral mode to brake.
  */
-fun TalonFXConfiguration.brakeMode(): TalonFXConfiguration {
+fun TalonFXSConfiguration.brakeMode(): TalonFXSConfiguration {
     this.MotorOutput.NeutralMode = NeutralModeValue.Brake
     return this
 }
@@ -229,7 +223,7 @@ fun TalonFXConfiguration.brakeMode(): TalonFXConfiguration {
 /**
  * Set motor neutral mode to coast.
  */
-fun TalonFXConfiguration.coastMode(): TalonFXConfiguration {
+fun TalonFXSConfiguration.coastMode(): TalonFXSConfiguration {
     this.MotorOutput.NeutralMode = NeutralModeValue.Coast
     return this
 }
@@ -239,12 +233,8 @@ fun TalonFXConfiguration.coastMode(): TalonFXConfiguration {
  *
  * @see Slot0
  */
-fun TalonFXConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.kP = p
-        2 -> this.Slot2.kP = p
-        else -> this.Slot0.kP = p
-    }
+fun TalonFXSConfiguration.p(p: Double): TalonFXSConfiguration {
+    this.Slot0.kP = p
     return this
 }
 
@@ -253,12 +243,8 @@ fun TalonFXConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXConfiguration
  *
  * @see Slot0
  */
-fun TalonFXConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.kD = d
-        2 -> this.Slot2.kD = d
-        else -> this.Slot0.kD = d
-    }
+fun TalonFXSConfiguration.d(d: Double): TalonFXSConfiguration {
+    this.Slot0.kD = d
     return this
 }
 
@@ -267,12 +253,8 @@ fun TalonFXConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXConfiguration
  *
  * @see Slot0
  */
-fun TalonFXConfiguration.i(i: Double, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.kI = i
-        2 -> this.Slot2.kI = i
-        else -> this.Slot0.kI = i
-    }
+fun TalonFXSConfiguration.i(i: Double): TalonFXSConfiguration {
+    this.Slot0.kI = i
     return this
 }
 
@@ -282,11 +264,10 @@ fun TalonFXConfiguration.i(i: Double, slotNumber: Int = 0): TalonFXConfiguration
  * @see StaticFeedforwardSignValue.UseClosedLoopSign
  * @see StaticFeedforwardSignValue.UseVelocitySign
  */
-fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
-        2 -> this.Slot2.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
-        else -> this.Slot0.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
+fun TalonFXSConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue): TalonFXSConfiguration {
+    this.Slot0.apply {
+        kS = s
+        StaticFeedforwardSign = staticFeedforwardSign
     }
     return this
 }
@@ -296,12 +277,8 @@ fun TalonFXConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSi
  *
  * @see Slot0
  */
-fun TalonFXConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.kV = v
-        2 -> this.Slot2.kV = v
-        else -> this.Slot0.kV = v
-    }
+fun TalonFXSConfiguration.v(v: Double): TalonFXSConfiguration {
+    this.Slot0.kV = v
     return this
 }
 
@@ -310,12 +287,8 @@ fun TalonFXConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXConfiguration
  *
  * @see Slot0
  */
-fun TalonFXConfiguration.a(a: Double, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.kA = a
-        2 -> this.Slot2.kA = a
-        else -> this.Slot0.kA = a
-    }
+fun TalonFXSConfiguration.a(a: Double): TalonFXSConfiguration {
+    this.Slot0.kA = a
     return this
 }
 
@@ -325,32 +298,22 @@ fun TalonFXConfiguration.a(a: Double, slotNumber: Int = 0): TalonFXConfiguration
  * @see GravityTypeValue.Elevator_Static
  * @see GravityTypeValue.Arm_Cosine
  */
-fun TalonFXConfiguration.g(g: Double, gravityType: GravityTypeValue, slotNumber: Int = 0): TalonFXConfiguration {
-    when (slotNumber) {
-        1 -> this.Slot1.apply {
-            kG = g
-            GravityType = gravityType
-        }
-        2 -> this.Slot2.apply {
-            kG = g
-            GravityType = gravityType
-        }
-        else -> this.Slot0.apply {
-            kG = g
-            GravityType = gravityType
-        }
+fun TalonFXSConfiguration.g(g: Double, gravityType: GravityTypeValue): TalonFXSConfiguration {
+    this.Slot0.apply {
+        kG = g
+        GravityType = gravityType
     }
     return this
 }
 
 /**
- * Configure the motion magic cruise velocity, acceleration, and optional jerk.
+ * Configure the motion magic cruse velocity, acceleration, and optional jerk.
  *
  * @see MotionMagic
  */
-fun TalonFXConfiguration.motionMagic(cruiseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXConfiguration {
+fun TalonFXSConfiguration.motionMagic(cruseVelocity: Double, acceleration: Double, jerk: Double? = null): TalonFXSConfiguration {
     this.MotionMagic.apply {
-        MotionMagicCruiseVelocity = cruiseVelocity
+        MotionMagicCruiseVelocity = cruseVelocity
         MotionMagicAcceleration = acceleration
         if (jerk != null) MotionMagicJerk = jerk
     }
@@ -365,7 +328,7 @@ fun TalonFXConfiguration.motionMagic(cruiseVelocity: Double, acceleration: Doubl
  * @see MotionMagicConfigs.MotionMagicExpo_kA
  * @see MotionMagicConfigs.MotionMagicCruiseVelocity
  */
-fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelocity: Double? = null): TalonFXConfiguration {
+fun TalonFXSConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelocity: Double? = null): TalonFXSConfiguration {
     this.MotionMagic.apply {
         MotionMagicExpo_kV = expoKV
         MotionMagicExpo_kA = expoKA
@@ -375,15 +338,15 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
 }
 
 /**
- * Applies a factory default configuration to the [CoreTalonFX].
+ * Applies a factory default configuration to the [TalonFXS].
  *
  * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
  *
  * @see modifyConfiguration
  */
-fun CoreTalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
+fun TalonFXS.applyConfiguration(modifications: TalonFXSConfiguration.() -> Unit = {}) {
     // Create a factory default configuration, apply modifications, then apply to the motor.
-    this.configurator.apply(TalonFXConfiguration().apply { modifications() })
+    this.configurator.apply(TalonFXSConfiguration().apply { modifications() })
 }
 
 /**
@@ -393,28 +356,11 @@ fun CoreTalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Uni
  *
  * @see applyConfiguration
  */
-fun CoreTalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
+fun TalonFXS.modifyConfiguration(overrides: TalonFXSConfiguration.() -> Unit) {
     // Get the current motor configuration, apply modifications, then apply to the motor.
-    val oldConfiguration = TalonFXConfiguration()
-    val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
-    if (isSuccessful) {
-        this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
-    } else {
-        DriverStation.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
-        println("Failed to modify configuration for motor id ${this.deviceID}")
-    }
-}
-
-/**
- * Applies a [TalonFXConfiguration] to the [CoreTalonFX] motor.
- *
- * Wrapper function just to simplify code.
- *
- * @see getConfigurator
- * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
- */
-fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
-    this.configurator.apply(configuration)
+    val oldConfiguration = TalonFXSConfiguration()
+    this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
+    this.configurator.apply(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
 }
 
 
@@ -426,7 +372,7 @@ fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
  * @see GlobalScope
  */
 @OptIn(DelicateCoroutinesApi::class)
-fun TalonFX.brakeMode() {
+fun TalonFXS.brakeMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {
@@ -443,7 +389,7 @@ fun TalonFX.brakeMode() {
  * @see GlobalScope
  */
 @OptIn(DelicateCoroutinesApi::class)
-fun TalonFX.coastMode() {
+fun TalonFXS.coastMode() {
     if (isReal) {
         val talon = this
         GlobalScope.launch {

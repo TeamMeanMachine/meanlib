@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.motors.ctre
+package org.team2471.frc.lib.hardware.ctre
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.hardware.CANcoder
