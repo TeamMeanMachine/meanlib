@@ -55,7 +55,7 @@ fun SparkBase.addFollower(follower: SparkBase, invert: Boolean = false) {
  * @param followerID The CAN ID of a [SparkMax] follower motor.
  * @param invert Set the follower to output opposite of the leader.
  */
-fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkMax(followerID, this.motorType), invert)
+fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkMax(this.busId, followerID, this.motorType), invert)
 /**
  * Add a follower to the main motor. Does NOT apply the master's configuration.
  *
@@ -64,7 +64,7 @@ fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFol
  * @param followerID The CAN ID of a [SparkFlex] follower motor.
  * @param invert Set the follower to output opposite of the leader.
  */
-fun SparkFlex.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkFlex(followerID, this.motorType), invert)
+fun SparkFlex.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkFlex(this.busId, followerID, this.motorType), invert)
 
 /**
  * Set motor neutral mode to brake.
