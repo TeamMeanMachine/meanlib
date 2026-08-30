@@ -10,7 +10,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-package org.team2471.frc.lib.ctre
+package org.team2471.frc.lib.hardware.ctre
 
 import com.ctre.phoenix6.StatusCode
 import com.ctre.phoenix6.StatusSignal
