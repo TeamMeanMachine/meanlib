@@ -375,8 +375,6 @@ abstract class SwerveDriveSubsystem(
 //        }
 
         prevTime = currTime
-        //This errors only in replay
-        if (!isReplay) Logger.recordOutput("Drive/State/TelemetryLoop", Timer.getFPGATimestamp() - currTime)
     }
 
     /**
