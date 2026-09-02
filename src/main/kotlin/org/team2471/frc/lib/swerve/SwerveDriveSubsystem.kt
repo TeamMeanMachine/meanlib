@@ -80,6 +80,7 @@ import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.math.kinematics.SwerveModulePosition
 import org.wpilib.math.kinematics.SwerveModuleVelocity
+import org.wpilib.preferences.Preferences
 import org.wpilib.system.Timer
 import org.wpilib.units.LinearAccelerationUnit
 import org.wpilib.units.measure.Angle
@@ -91,7 +92,6 @@ import org.wpilib.units.measure.Time
 import org.wpilib.units.measure.Velocity
 import org.wpilib.units.measure.Voltage
 import org.wpilib.util.Alert
-import org.wpilib.util.Preferences
 import kotlin.math.abs
 import kotlin.math.min
 

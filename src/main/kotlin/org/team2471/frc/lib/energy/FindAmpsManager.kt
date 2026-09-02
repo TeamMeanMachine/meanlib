@@ -33,10 +33,10 @@ object FindAmpsManager {
     // Time we can run max budget before trip
     private const val breakerDangerHorizonSecs = 3.0
     private val budgetWarning = Alert("budgetWarning", "Battery is low, robot performance may be degraded.", Alert.Level.LOW)
-    private val budgetWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
+    private val budgetWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.BOTH)
     private val brownoutWarning = Alert("brownoutWarning", "Brownout detected, drive performance may be degraded.", Alert.Level.MEDIUM)
     private val breakerDamageWarning = Alert("breakerDamageWarning", "Breaker damage is high, please stop using the robot.", Alert.Level.MEDIUM)
-    private val breakerDamageWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.kBoth)
+    private val breakerDamageWarningDebouncer = Debouncer(0.5, Debouncer.DebounceType.BOTH)
 
 
     // MARK: - Members
@@ -46,7 +46,7 @@ object FindAmpsManager {
 
     private var budget = 0.0
     private var driveBudget = 0.0
-    private val brownoutDebouncer = Debouncer(2.0, Debouncer.DebounceType.kFalling)
+    private val brownoutDebouncer = Debouncer(2.0, Debouncer.DebounceType.FALLING)
 
     init {
 

@@ -3,7 +3,7 @@ import groovy.json.JsonSlurper
 plugins {
     id "java"
     id "idea"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6-kilk2"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-7"
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
     id "org.jetbrains.kotlin.kapt" version "2.3.21"
     id "java-library"
@@ -28,10 +28,6 @@ java {
 kotlin {
     jvmToolchain(25)
 }
-
-wpi.maven.useLocal = false
-wpi.maven.useDevelopment = true
-//wpi.versions.wpilibVersion = '2027.0.0-alpha-6-208-gfd9c13128'//'2027.+'
 
 group = "org.team2471.lib"
 

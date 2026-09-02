@@ -351,8 +351,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val interpolatedRotation = interpolatedPose.rotation
         val distance = latestTarget.bestCameraToTarget.translation.norm
         val robotToCam = cam.transform
-        val camToTagTranslation = Pose3d(Translation3d.kZero, Rotation3d(0.0, Math.toRadians(-latestTarget.getPitch()), Math.toRadians(-latestTarget.getYaw())))
-            .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.kZero)).translation
+        val camToTagTranslation = Pose3d(Translation3d.ZERO, Rotation3d(0.0, Math.toRadians(-latestTarget.getPitch()), Math.toRadians(-latestTarget.getYaw())))
+            .transformBy(Transform3d(Translation3d(distance, 0.0, 0.0), Rotation3d.ZERO)).translation
             .rotateBy(Rotation3d(robotToCam.rotation.getX(), robotToCam.rotation.getY(), 0.0)).toTranslation2d()
 
         if (camToTagTranslation.norm < 1e-6) {
@@ -369,11 +369,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
             return
         }
 
-        val fieldToCameraTranslation = Pose2d(tagPose2d.translation, camToTagRotation.plus(Rotation2d.kPi))
-            .transformBy(Transform2d(camToTagTranslation.norm, 0.0, Rotation2d.kZero)).translation
-        val cameraPose = Pose3d.kZero.transformBy(robotToCam)
+        val fieldToCameraTranslation = Pose2d(tagPose2d.translation, camToTagRotation.plus(Rotation2d.PI))
+            .transformBy(Transform2d(camToTagTranslation.norm, 0.0, Rotation2d.ZERO)).translation
+        val cameraPose = Pose3d.ZERO.transformBy(robotToCam)
         var robotPose = Pose2d(fieldToCameraTranslation, interpolatedRotation.plus(cameraPose.toPose2d().rotation))
-            .transformBy(Transform2d(cameraPose.toPose2d(), Pose2d.kZero))
+            .transformBy(Transform2d(cameraPose.toPose2d(), Pose2d.ZERO))
         // Use gyro angle at time for robot rotation
         robotPose = Pose2d(robotPose.translation, interpolatedRotation)
 
