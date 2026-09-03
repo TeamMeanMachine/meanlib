@@ -1085,7 +1085,7 @@ abstract class SwerveDriveSubsystem(
 //                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //            } else {
-        QuixVisionSim.updatePose(pose)
+//        QuixVisionSim.updatePose(pose) TODO: UNCOMMENT Photonvision. Just this line rn
 //            }
         LoopLogger.record("Drive Sim periodic")
     }

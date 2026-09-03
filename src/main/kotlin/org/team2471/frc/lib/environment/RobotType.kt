@@ -3,6 +3,9 @@ package org.team2471.frc.lib.environment
 import org.wpilib.hardware.hal.HALUtil
 import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.RuntimeType
+import org.wpilib.tunable.TunableConfig
+import org.wpilib.tunable.TunableOption
+import org.wpilib.tunable.Tunables
 
 val doReplay: Boolean = false
 val robotType: RobotType = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
