@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre
+package org.team2471.frc.lib.hardware.ctre
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration
 import com.ctre.phoenix6.hardware.Pigeon2

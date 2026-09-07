@@ -39,7 +39,7 @@ public class Autopilot {
     Translation2d offset = toTargetCoordinateFrame(
         target.m_reference.getTranslation().minus(current.getTranslation()), target);
 
-    if (offset.equals(Translation2d.kZero)) {
+    if (offset.equals(Translation2d.ZERO)) {
       return new APResult(
           MetersPerSecond.zero(),
           MetersPerSecond.zero(),
@@ -73,7 +73,7 @@ public class Autopilot {
    * direction of the target's entry angle, if applicable (otherwise no change to angles).
    */
   private Translation2d toTargetCoordinateFrame(Translation2d coords, APTarget target) {
-    Rotation2d entryAngle = target.m_entryAngle.orElse(Rotation2d.kZero);
+    Rotation2d entryAngle = target.m_entryAngle.orElse(Rotation2d.ZERO);
     return coords.rotateBy(entryAngle.unaryMinus());
   }
 
@@ -81,7 +81,7 @@ public class Autopilot {
    * Turns a translation from a target-relative coordinate frame to a global coordinate frame.
    */
   private Translation2d toGlobalCoordinateFrame(Translation2d coords, APTarget target) {
-    Rotation2d entryAngle = target.m_entryAngle.orElse(Rotation2d.kZero);
+    Rotation2d entryAngle = target.m_entryAngle.orElse(Rotation2d.ZERO);
     return coords.rotateBy(entryAngle);
   }
 
@@ -93,8 +93,8 @@ public class Autopilot {
    * @param goal The goal translation to drive to
    */
   private Translation2d correct(Translation2d initial, Translation2d goal) {
-    Rotation2d angleOffset = Rotation2d.kZero;
-    if (!goal.equals(Translation2d.kZero)) {
+    Rotation2d angleOffset = Rotation2d.ZERO;
+    if (!goal.equals(Translation2d.ZERO)) {
       angleOffset = new Rotation2d(goal.getX(), goal.getY());
     }
     Translation2d adjustedGoal = goal.rotateBy(angleOffset.unaryMinus());

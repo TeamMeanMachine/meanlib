@@ -3,7 +3,6 @@ package org.team2471.frc.lib.motion.following
 import org.team2471.frc.lib.environment.demoSpeed
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.units.*
-import org.wpilib.smartdashboard.SmartDashboard
 import org.wpilib.units.measure.AngularVelocity
 import kotlin.math.abs
 
@@ -23,7 +22,7 @@ interface ArcadeDrive {
  * @param hardTurn a raw turn value, added to the left output and subtracted from the right output
  */
 fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double) {
-    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0)
+//    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0) TODO: REPLACE SMART DASHBOARD
     var cappedThrottle = throttle * demoSpeed
     var cappedHardTurn = hardTurn * demoSpeed
     val totalTurn = (softTurn * abs(cappedThrottle)) + cappedHardTurn

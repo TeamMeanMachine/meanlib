@@ -22,7 +22,9 @@ import com.therekrab.autopilot.Autopilot
 import org.littletonrobotics.junction.AutoLogOutput
 import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.commands.MechanismBase.Companion.setDefaultCommandSafe
-import org.team2471.frc.lib.ctre.setCANCoderAngle
+import org.team2471.frc.lib.hardware.ctre.ApplyModuleStates
+import org.team2471.frc.lib.hardware.ctre.setCANCoderAngle
+import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
@@ -49,8 +51,6 @@ import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.command
 import org.team2471.frc.lib.commands.commandUnnamed
-import org.team2471.frc.lib.ctre.ApplyModuleStates
-import org.team2471.frc.lib.ctre.refreshAll
 import org.team2471.frc.lib.environment.isReal
 import org.team2471.frc.lib.environment.isRedAlliance
 import org.team2471.frc.lib.environment.isReplay
@@ -60,14 +60,14 @@ import org.team2471.frc.lib.math.translation
 import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
-import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
+import org.team2471.frc.lib.units.asMetersPerSecondSquared
 import org.team2471.frc.lib.units.seconds
 import org.team2471.frc.lib.units.wrap
 import org.team2471.frc.lib.commands.PeriodicMechanism
-import org.team2471.frc.lib.ctre.brakeMode
-import org.team2471.frc.lib.ctre.coastMode
-import org.team2471.frc.lib.ctre.loggedMotors.LoggedTalonFX
+import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
+import org.team2471.frc.lib.hardware.ctre.brakeMode
+import org.team2471.frc.lib.hardware.ctre.refreshAll
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.driverstation.DriverStationErrors
@@ -80,6 +80,7 @@ import org.wpilib.math.geometry.Translation2d
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.math.kinematics.SwerveModulePosition
 import org.wpilib.math.kinematics.SwerveModuleVelocity
+import org.wpilib.preferences.Preferences
 import org.wpilib.system.Timer
 import org.wpilib.units.LinearAccelerationUnit
 import org.wpilib.units.measure.Angle
@@ -91,7 +92,6 @@ import org.wpilib.units.measure.Time
 import org.wpilib.units.measure.Velocity
 import org.wpilib.units.measure.Voltage
 import org.wpilib.util.Alert
-import org.wpilib.util.Preferences
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -972,7 +972,7 @@ abstract class SwerveDriveSubsystem(
         thetaTolerance: Angle,
         beelineRadius: Distance = 8.0.centimeters
     ): Autopilot {
-        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondPerSecond, maxJerk.asMetersPerSecondCubed))
+        return Autopilot(APProfile(APConstraints(maxVelocity.asMetersPerSecond, maxAcceleration.asMetersPerSecondSquared, maxJerk.asMetersPerSecondCubed))
             .withErrorXY(xyTolerance).withErrorTheta(thetaTolerance).withBeelineRadius(beelineRadius)
         )
     }
@@ -1085,7 +1085,7 @@ abstract class SwerveDriveSubsystem(
 //                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //            } else {
-        QuixVisionSim.updatePose(pose)
+//        QuixVisionSim.updatePose(pose) TODO: UNCOMMENT Photonvision. Just this line rn
 //            }
         LoopLogger.record("Drive Sim periodic")
     }

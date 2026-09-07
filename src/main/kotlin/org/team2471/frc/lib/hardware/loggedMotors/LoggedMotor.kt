@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre.loggedMotors
+package org.team2471.frc.lib.hardware.loggedMotors
 
 import org.wpilib.math.system.DCMotor
 

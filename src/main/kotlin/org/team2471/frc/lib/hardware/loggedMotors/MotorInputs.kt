@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.ctre.loggedMotors
+package org.team2471.frc.lib.hardware.loggedMotors
 
 import org.littletonrobotics.junction.AutoLog
 import org.team2471.frc.lib.units.degrees
