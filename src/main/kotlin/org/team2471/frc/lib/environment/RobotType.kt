@@ -1,10 +1,9 @@
 package org.team2471.frc.lib.environment
 
+import org.team2471.frc.lib.logging.getTunable
 import org.wpilib.hardware.hal.HALUtil
-import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.RuntimeType
 import org.wpilib.tunable.TunableConfig
-import org.wpilib.tunable.TunableOption
 import org.wpilib.tunable.Tunables
 
 val doReplay: Boolean = false
@@ -26,15 +25,9 @@ enum class RobotType {
 
 
 /** Demo Mode */
-private val demoSpeedTopic = NetworkTableInstance.getDefault().getDoubleTopic("DemoSpeed")
-private val demoSpeedEntry = demoSpeedTopic.getEntry(1.0).apply {
-    if (!exists()) {
-        println("DemoSpeed does not exist, setting it to 1.0")
-        set(1.0)
-        demoSpeedTopic.isPersistent = true
-    }
-}
+
+private val demoSpeedTunable = Tunables.getTable().getTunable("DemoSpeed", 1.0, true, TunableConfig().withProperty("min", "0.0").withProperty("max", "1.0"))
 val demoSpeed: Double
-    get() = demoSpeedEntry.get().coerceIn(0.0, 1.0)
+    get() = demoSpeedTunable.get().coerceIn(0.0, 1.0)
 val demoMode: Boolean
     get() = demoSpeed < 1.0

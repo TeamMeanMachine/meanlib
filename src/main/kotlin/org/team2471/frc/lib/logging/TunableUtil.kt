@@ -7,25 +7,46 @@ import org.wpilib.tunable.TunableConfig
 import org.wpilib.tunable.TunableTable
 import org.wpilib.tunable.Tunables
 
-fun <T> TelemetryTable.createTunable(name: String, initialValue: T, persistent: Boolean = false): Tunable<T> {
+fun <T> TelemetryTable.getTunable(name: String, initialValue: T, persistent: Boolean = false, tunableConfig: TunableConfig = TunableConfig(), onTune: (Tunable<T>) -> Unit = {}): Tunable<T> {
     val tunableTable = Tunables.getTable(this.path)
-    return tunableTable.createTunable(name, initialValue, persistent)
+    return tunableTable.getTunable(name, initialValue, persistent, tunableConfig, onTune)
 }
 
-fun <T> TunableTable.createTunable(name: String, initialValue: T, persistent: Boolean = false): Tunable<T> {
-    // Create a tunable with a name and a persistent property
-    var persistentValue: T? = null
-    val ntEntry = NetworkTableInstance.getDefault().getTable("Tunables").getEntry(this.path.substring(1) + name)
-    if (persistent) {
-        try {
-            persistentValue = ntEntry.value.value as T?
-            println("Setting persistent value for ${ntEntry.name}: $persistentValue")
-        } catch (_: Exception) {
-            println("Failed to get persistent value for $name ${ntEntry.name}")
+inline fun <T> TunableTable.getTunable(name: String, initialValue: T, persistent: Boolean = false, tunableConfig: TunableConfig = TunableConfig(), crossinline onTune: (Tunable<T>) -> Unit = {}): Tunable<T> {
+    try {
+        lateinit var tunable: Tunable<T>
+        val config = tunableConfig.withProperty("persistent", persistent.toString()).withOnTune { onTune(tunable) } // Configure persistence and onTune action
+
+        var persistentValue: T? = null
+        val ntEntry = NetworkTableInstance.getDefault().getTable("Tunables").getEntry(this.path.substring(1) + name)
+        if (persistent) {
+            try {
+                persistentValue = ntEntry.value.value as T?
+//                println("Setting persistent value for ${ntEntry.name.substring(1)}: $persistentValue")
+            } catch (_: Exception) {
+                println("Failed to get persistent value for $name ${ntEntry.name}")
+            }
         }
+
+        tunable = Tunable.createConfig(persistentValue ?: initialValue, config)
+
+        this.publish(name, tunable)// Publish the tunable to the table
+        return tunable
+    } catch (e: Exception) {
+        println("Failed to create tunable $name")
+        println(e)
+        throw e
     }
-    val tunable = Tunable.createConfig(persistentValue ?: initialValue, TunableConfig().withProperty("persistent", persistent.toString()))
-    // Publish the tunable to the table
+}
+
+inline fun <reified T> TelemetryTable.getTunable(name: String, noinline getter: () -> T, noinline setter: (T) -> Unit): Tunable<T> {
+    val tunableTable = Tunables.getTable(this.path)
+    return tunableTable.getTunable(name, getter, setter)
+}
+
+inline fun <reified T> TunableTable.getTunable(name: String, noinline getter: () -> T, noinline setter: (T) -> Unit): Tunable<T> {
+    val tunable = Tunable.create(getter, setter, T::class.java)
     this.publish(name, tunable)
     return tunable
 }
+
