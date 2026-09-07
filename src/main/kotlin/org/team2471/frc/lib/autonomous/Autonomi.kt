@@ -96,8 +96,8 @@ abstract class Autonomi {
                 autoRoutine.command,
                 { this.readAutoPaths(); this.warmupFunction() },
                 { autoRoutine.startingPositionSupplier?.invoke()?.let { drivePoseSetter(it) }; autoRoutine.disabledPeriodicFunction?.invoke() }
-        )
-    }
+            )
+        }
 
     /** Convert a [TestRoutine] to a function that returns a [org.team2471.frc.lib.autonomous.test.TestOpMode]. */
     fun createOpModeSupplier(testRoutine: TestRoutine): TestOpModeSupplier =

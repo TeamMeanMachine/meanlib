@@ -12,7 +12,7 @@ import org.wpilib.opmode.OpMode
  *
  * Schedules [testCommand] when enabled and runs it until its disabled or finished.
  */
-class TestOpMode(val name: String, testCommand: Command, initFunction: () -> Unit): OpMode {
+class TestOpMode(name: String, testCommand: Command, initFunction: () -> Unit): OpMode {
     init {
         println("$name test created")
         initFunction()
