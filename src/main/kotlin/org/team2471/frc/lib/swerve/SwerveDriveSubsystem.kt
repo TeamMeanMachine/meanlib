@@ -562,12 +562,22 @@ abstract class SwerveDriveSubsystem(
     // COMMANDS
 
     /**
-     * Drives the robot using the joystick. [getChassisSpeedsFromJoystick]
+     * Drives the robot using the joystick. Velocity control [getChassisSpeedsFromJoystick]
      */
-    fun joystickDrive(): Command {
+    fun joystickVelocityDrive(): Command {
         return run {
             //get chassis speeds and send it
             driveVelocity(getChassisSpeedsFromJoystick())
+        }
+    }
+
+    /**
+     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageSpeeds]
+     */
+    fun joystickPercentageDrive(): Command {
+        return run {
+            //get percentage out speeds and send it
+            drivePercentage(getJoystickPercentageSpeeds())
         }
     }
 
