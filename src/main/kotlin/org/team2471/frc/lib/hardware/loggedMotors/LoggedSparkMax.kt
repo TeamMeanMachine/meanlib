@@ -12,6 +12,7 @@ import org.team2471.frc.lib.units.perSecond
 import org.team2471.frc.lib.units.rotations
 import org.team2471.frc.lib.units.rpm
 import org.team2471.frc.lib.units.volts
+import org.wpilib.hardware.bus.CANPort
 import org.wpilib.math.system.DCMotor
 import org.wpilib.math.system.Models
 import org.wpilib.simulation.DCMotorSim
@@ -27,7 +28,7 @@ import org.wpilib.simulation.DCMotorSim
  * @see SparkMax
  * @see DCMotorSim
  */
-class LoggedSparkMax(id: Int, canBus: Int, type: MotorType): SparkMax(canBus, id, type), LoggedMotor {
+class LoggedSparkMax(id: Int, canBus: CANPort, type: MotorType): SparkMax(canBus, id, type), LoggedMotor {
     private var motor: DCMotor? = null
     private var motorPhysicsSim: DCMotorSim? = null
 

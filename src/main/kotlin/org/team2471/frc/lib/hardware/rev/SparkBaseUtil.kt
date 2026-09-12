@@ -55,7 +55,7 @@ fun SparkBase.addFollower(follower: SparkBase, invert: Boolean = false) {
  * @param followerID The CAN ID of a [SparkMax] follower motor.
  * @param invert Set the follower to output opposite of the leader.
  */
-fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkMax(this.busId, followerID, this.motorType), invert)
+fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkMax(this.canPort, followerID, this.motorType), invert)
 /**
  * Add a follower to the main motor. Does NOT apply the master's configuration.
  *
@@ -64,7 +64,7 @@ fun SparkMax.addFollower(followerID: Int, invert: Boolean = false) = this.addFol
  * @param followerID The CAN ID of a [SparkFlex] follower motor.
  * @param invert Set the follower to output opposite of the leader.
  */
-fun SparkFlex.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkFlex(this.busId, followerID, this.motorType), invert)
+fun SparkFlex.addFollower(followerID: Int, invert: Boolean = false) = this.addFollower(SparkFlex(this.canPort, followerID, this.motorType), invert)
 
 /**
  * Set motor neutral mode to brake.
@@ -328,20 +328,6 @@ fun SparkBaseConfig.positionWrappingEnabled(enabled: Boolean): SparkBaseConfig {
 }
 
 /**
- * Set the input range for PID wrapping with position closed loop control.
- *
- * @param minInput The value of min input for the position
- * @param minInput The value of min input for the position
- *
- * @see positionWrappingEnabled
- */
-fun SparkBaseConfig.positionWrappingInputRange(minInput: Double, maxInput: Double): SparkBaseConfig {
-    this.closedLoop.positionWrappingInputRange(minInput, maxInput)
-    this.closedLoop.positionWrappingEnabled(true)
-    return this
-}
-
-/**
  * Sets the configs that affect the feedback sensor of this motor. Aka: What it will think its own position/velocity is.
  * Useful for eliminating control error between the motor and the mechanism.
  *
@@ -395,28 +381,6 @@ fun SparkBaseConfig.forwardSoftLimit(limit: Double): SparkBaseConfig {
 fun SparkBaseConfig.reverseSoftLimit(limit: Double): SparkBaseConfig {
     this.softLimit.reverseSoftLimit(limit)
     this.softLimit.reverseSoftLimitEnabled(true)
-    return this
-}
-
-/**
- * Set the conversion factor for the position of the encoder.
- * Position is returned in native units of rotations and will be multiplied by this conversion factor.
- *
- * @param factor The conversion factor to multiply the native units by
- */
-fun SparkBaseConfig.positionConversionFactor(factor: Double): SparkBaseConfig {
-    this.encoder.positionConversionFactor(factor)
-    return this
-}
-
-/**
- * Set the conversion factor for the velocity of the encoder.
- * Velocity is returned in native units of rotations per minute and will be multiplied by this conversion factor.
- *
- * @param factor The conversion factor to multiply the native units by
- */
-fun SparkBaseConfig.velocityConversionFactor(factor: Double): SparkBaseConfig {
-    this.encoder.velocityConversionFactor(factor)
     return this
 }
 
