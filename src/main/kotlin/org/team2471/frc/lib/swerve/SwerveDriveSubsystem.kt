@@ -68,7 +68,6 @@ import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.hardware.ctre.brakeMode
 import org.team2471.frc.lib.hardware.ctre.refreshAll
-import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
@@ -92,7 +91,9 @@ import org.wpilib.units.measure.Time
 import org.wpilib.units.measure.Velocity
 import org.wpilib.units.measure.Voltage
 import org.wpilib.util.Alert
+import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.min
 
 /**
@@ -341,6 +342,8 @@ abstract class SwerveDriveSubsystem(
         .withDriveRequestType(DriveRequestType.Velocity)
     /** Swerve request for driving with velocity and PID-ing heading. XY-velocity 𝞱-position */
     private val driveAtAngleRequest = FieldCentricFacingAngle()
+        .withDriveRequestType(DriveRequestType.Velocity)
+    private val pathFollowingDriveRequest = ApplyFieldVelocity()
         .withDriveRequestType(DriveRequestType.Velocity)
 
 
@@ -860,92 +863,91 @@ abstract class SwerveDriveSubsystem(
         resetOdometry: Boolean = false,
         exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
     ): Command = command("DriveAlongChoreoPath", this) {
-//        println("Running DriveAlongChoreoPath") //TODO: UNCOMMENT IN 2027 CHOREO
-//
-//        val totalTime = path.totalTime
-//        val applyFieldSpeedsRequest = ApplyFieldSpeeds().withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-//        val timer = Timer()
-//        timer.start()
-//
-//        if (resetOdometry) {
-//            pose = path.getInitialPose(flipChoreoPaths).get()
-//            val pose = pose
-//            println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
-//        }
-//
-//        Logger.recordOutput("Drive/Path/Name", path.name())
-//        Logger.recordOutput("Drive/Path/TotalTime", totalTime)
-//
-//        while (true) {
-//            val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
-//            LoopLogger.record("DriveAlongPath time")
-//            val percentComplete = t / totalTime
-//            val currentPose = poseSupplier()
-//            LoopLogger.record("DriveAlongPath poseSupplier")
-//            val sample = path.sampleAt(t, flipChoreoPaths).get()
-//            LoopLogger.record("DriveAlongPath sampleAt")
-//            val wantedPose = sample.pose
-//            val error = wantedPose - currentPose
-//            LoopLogger.record("DriveAlongPath pathInfo")
-//
-//            Logger.recordOutput("Drive/Path/Done %", percentComplete)
-//
-//            // Exit Path?
-//            if (exitSupplier(percentComplete, error)) {
-//                println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
-//                break
-//            } else {
-//                val wantedSpeeds = sample.chassisSpeeds
-//                val moduleForcesX = sample.moduleForcesX()
-//                val moduleForcesY = sample.moduleForcesY()
-//
-//                // Add heading and xy error
-//                wantedSpeeds.apply {
-//                    vx += pathXController.calculate(currentPose.x, wantedPose.x)
-//                    vy += pathYController.calculate(currentPose.y, wantedPose.y)
-//                    omega += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
-//                }
-//                LoopLogger.record("DriveAlongPath pid")
-//                setControl(
-//                    applyFieldSpeedsRequest
-//                        .withSpeeds(wantedSpeeds)
-//                        .withWheelForceFeedforwardsX(moduleForcesX)
-//                        .withWheelForceFeedforwardsY(moduleForcesY)
-//                        .withCenterOfRotation(centerOfRotation)
-//                )
-//                LoopLogger.record("DriveAlongPath setControl")
-//
-//                Logger.recordOutput("Drive/Path/Time", t)
-//                Logger.recordOutput("Drive/Path/Pose", wantedPose)
-//                Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-//                Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
-//                Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
-////                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
-////                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
-////                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
-//                LoopLogger.record("DriveAlongPath logger")
-//            }
-//
-//            yield()
-//        }
-//
-//        val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
-//        // Are we stopping?
-//        if (finalSample != null) {
-////            println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
-//            setControl(
-//                ApplyFieldSpeeds().apply {
-//                    Speeds = finalSample.chassisSpeeds
-//                    DriveRequestType = SwerveModule.DriveRequestType.Velocity
-//                }
-//            )
-//        } else {
-//            // Tell drivetrain to apply no output
-//            stop()
-//        }
-//
-//        // Publish empty data to show that the path is done
-//        Logger.recordOutput("Drive/Path/Pose", Pose2d())
+        println("Running DriveAlongChoreoPath")
+
+        val totalTime = path.totalTime
+        val timer = Timer()
+
+        if (resetOdometry) {
+            pose = path.getInitialPose(flipChoreoPaths).get()
+            val pose = pose
+            println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
+        }
+
+        SimpleLogger.recordOutput("Drive/Path/Name", path.name())
+        SimpleLogger.recordOutput("Drive/Path/TotalTime", totalTime)
+
+        timer.start()
+
+        while (true) {
+            val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
+            LoopLogger.record("DriveAlongPath time")
+            val percentComplete = t / totalTime
+            val currentPose = poseSupplier()
+            LoopLogger.record("DriveAlongPath poseSupplier")
+            val sample = path.sampleAt(t, flipChoreoPaths).get()
+            LoopLogger.record("DriveAlongPath sampleAt")
+            val wantedPose = sample.pose
+            val error = wantedPose - currentPose
+            LoopLogger.record("DriveAlongPath pathInfo")
+
+            SimpleLogger.recordOutput("Drive/Path/Done %", percentComplete)
+
+
+            if (exitSupplier(percentComplete, error)) { // Exit path?
+                println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
+                break
+            } else {
+                // Keep running path
+                val wantedSpeeds = sample.chassisSpeeds
+                val moduleForcesX = sample.moduleForcesX()
+                val moduleForcesY = sample.moduleForcesY()
+
+                // Add heading and xy error
+                wantedSpeeds.apply {
+                    vx += pathXController.calculate(currentPose.x, wantedPose.x)
+                    vy += pathYController.calculate(currentPose.y, wantedPose.y)
+                    omega += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
+                }
+                LoopLogger.record("DriveAlongPath pid")
+                setControl(
+                    pathFollowingDriveRequest
+                        .withVelocity(wantedSpeeds)
+                        .withWheelForceFeedforwardsX(moduleForcesX)
+                        .withWheelForceFeedforwardsY(moduleForcesY)
+                        .withCenterOfRotation(centerOfRotation)
+                )
+                LoopLogger.record("DriveAlongPath setControl")
+
+                SimpleLogger.recordOutput("Drive/Path/Time", t)
+                SimpleLogger.recordOutput("Drive/Path/Pose", wantedPose)
+                SimpleLogger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+                SimpleLogger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+                SimpleLogger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
+//                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
+//                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
+//                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
+                LoopLogger.record("DriveAlongPath logger")
+            }
+
+            yield()
+        }
+
+        val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
+        // Are we stopping?
+        if (finalSample != null) {
+//            println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
+            setControl(
+                pathFollowingDriveRequest
+                    .withVelocity(finalSample.chassisSpeeds)
+            )
+        } else {
+            // Tell drivetrain to apply no output
+            stop()
+        }
+
+        // Publish empty data to show that the path is done
+        SimpleLogger.recordOutput("Drive/Path/Pose", Pose2d())
     }
 
     // OTHER

@@ -22,7 +22,6 @@ interface ArcadeDrive {
  * @param hardTurn a raw turn value, added to the left output and subtracted from the right output
  */
 fun ArcadeDrive.hybridDrive(throttle: Double, softTurn: Double, hardTurn: Double) {
-//    if (!SmartDashboard.containsKey("DemoSpeed")) SmartDashboard.setDefaultNumber("DemoSpeed", 1.0) TODO: REPLACE SMART DASHBOARD
     var cappedThrottle = throttle * demoSpeed
     var cappedHardTurn = hardTurn * demoSpeed
     val totalTurn = (softTurn * abs(cappedThrottle)) + cappedHardTurn

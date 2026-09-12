@@ -42,7 +42,6 @@ class PhotonVisionCamera(
         get() = camera.isConnected
 
     class PhotonCameraInputs : LoggableInputs {
-        // TODO: Monitor performance and consider not logging the whole PhotonPipelineResult.
         var pipelineIndex: Int = 0
         var latestResult: PhotonPipelineResult = PhotonPipelineResult()
         var cameraMatrix: Optional<Matrix<N3, N3>> = Optional.empty<Matrix<N3, N3>>()

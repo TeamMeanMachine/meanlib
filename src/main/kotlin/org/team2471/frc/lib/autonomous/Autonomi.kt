@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.autonomous
 
+import choreo.Choreo
 import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
 import org.team2471.frc.lib.autonomous.auto.AutoOpMode
@@ -16,6 +17,7 @@ import org.wpilib.system.Filesystem
 import org.wpilib.system.RobotController
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
+import kotlin.jvm.optionals.getOrNull
 
 /** Manages robot driving paths and auto commands */
 abstract class Autonomi {
@@ -47,15 +49,14 @@ abstract class Autonomi {
         val pathNameAndStartPose = mutableListOf<Pair<String, Pose2d>>()
         val segments = mutableListOf<ChassisVelocities?>()
         paths.forEach {
-//            pathNameAndStartPose.add(Pair(
-//                it.value.name(),
-//                it.value.sampleAt(0.0, true).get().pose
-//            ))
-//            val pathSegment = it.value.totalTime / 10.0
-//            for (i in 0..10) {
-//                segments.add(it.value.sampleAt(i * pathSegment, true).getOrNull()?.chassisSpeeds)
-//            }
-            //TODO: UNCOMMENT WHEN CHOREO UPDATES TO 2027
+            pathNameAndStartPose.add(Pair(
+                it.value.name(),
+                it.value.sampleAt(0.0, true).get().pose
+            ))
+            val pathSegment = it.value.totalTime / 10.0
+            for (i in 0..10) {
+                segments.add(it.value.sampleAt(i * pathSegment, true).getOrNull()?.chassisSpeeds)
+            }
         }
         println("paths: ${pathNameAndStartPose.map { it.first }}")
         println("reading ${paths.size} paths and ${segments.size} samples. Took ${(RobotController.getMeasureMonotonicTime() - startTime).asSeconds.round(4)} seconds.")
@@ -68,12 +69,11 @@ abstract class Autonomi {
             Filesystem.getDeployDirectory().toPath().resolve("choreo").listDirectoryEntries("*.traj").forEach {
                 try {
                     val name = it.name.removeSuffix(".traj")
-//                    val traj = Choreo.loadTrajectory(name).getOrNull()
-//                    if (traj != null) {
-//                        @Suppress("UNCHECKED_CAST")
-//                        map[name] = traj as Trajectory<SwerveSample>
-//                    }
-                    //TODO: UNCOMMENT WHEN CHOREO UPDATES TO 2027
+                    val traj = Choreo.loadTrajectory(name).getOrNull()
+                    if (traj != null) {
+                        @Suppress("UNCHECKED_CAST")
+                        map[name] = traj as Trajectory<SwerveSample>
+                    }
                 } catch (e: Exception) {
                     println("failed to load path at $it")
                     println(e)
