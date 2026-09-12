@@ -624,7 +624,7 @@ abstract class SwerveDriveSubsystem(
     // COMMANDS
 
     /**
-     * Drives the robot using the joystick. [getChassisVelocitiesFromJoystick]
+     * Drives the robot using the joystick. Velocity control [getChassisVelocitiesFromJoystick]
      */
     fun joystickVelocityDrive(): Command = command("joystickVelocityDrive", this) {
         this.periodic {
@@ -632,9 +632,13 @@ abstract class SwerveDriveSubsystem(
         }
     }
 
-    fun joystickPercentageDrive(): Command = command ("joystickPercentageDrive", this) {
+    /**
+     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageSpeeds]
+     */
+    fun joystickPercentageDrive(): Command = command("joystickPercentageDrive") {
         periodic {
-            if (!RobotState.isAutonomous()) drivePercentage(getJoystickPercentageSpeed())
+            //get percentage out speeds and send it
+            drivePercentage(getJoystickPercentageSpeeds())
         }
     }
 
