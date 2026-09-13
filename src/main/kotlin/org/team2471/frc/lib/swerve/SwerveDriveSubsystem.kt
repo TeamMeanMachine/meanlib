@@ -633,21 +633,30 @@ abstract class SwerveDriveSubsystem(
     }
 
     /**
-     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageSpeeds]
+     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageSpeed]
      */
     fun joystickPercentageDrive(): Command = command("joystickPercentageDrive") {
         periodic {
             //get percentage out speeds and send it
-            drivePercentage(getJoystickPercentageSpeeds())
+            drivePercentage(getJoystickPercentageSpeed())
         }
     }
 
     /**
-     * Translates the robot using the joystick, does not turn. [getChassisVelocitiesFromJoystick]
+     * Translates the robot using the joystick, does not turn. Velocity Control [getChassisVelocitiesFromJoystick]
      */
-    fun joystickOnlyTranslationDrive(): Command {
+    fun joystickOnlyTranslationDriveVelocity(): Command {
         return run {
             driveVelocity(getChassisVelocitiesFromJoystick().apply { omega = 0.0 })
+        }.named("JoystickOnlyTranslationDrive")
+    }
+
+    /**
+     * Translates the robot using the joystick, does not turn. Percent Out Control [getChassisVelocitiesFromJoystick]
+     */
+    fun joystickOnlyTranslationDrivePercentage(): Command {
+        return run {
+            drivePercentage(getJoystickPercentageSpeed().apply { omega = 0.0 })
         }.named("JoystickOnlyTranslationDrive")
     }
 
