@@ -341,6 +341,7 @@ abstract class SwerveDriveSubsystem(
     /** Swerve request for driving with velocity and PID-ing heading. XY-velocity 𝞱-position */
     private val driveAtAngleRequest = FieldCentricFacingAngle()
         .withDriveRequestType(DriveRequestType.Velocity)
+    /** Swerve request for Choreo path following. XY-velocity 𝞱-position */
     private val pathFollowingDriveRequest = ApplyFieldVelocity()
         .withDriveRequestType(DriveRequestType.Velocity)
 
@@ -898,8 +899,8 @@ abstract class SwerveDriveSubsystem(
             LoopLogger.record("DriveAlongPath poseSupplier")
             val sample = path.sampleAt(t, flipChoreoPaths).get()
             LoopLogger.record("DriveAlongPath sampleAt")
-            val wantedPose = sample.pose
-            val error = wantedPose - currentPose
+            val pathPose = sample.pose
+            val error = pathPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
 
             SimpleLogger.recordOutput("Drive/Path/Done %", percentComplete)
@@ -910,20 +911,23 @@ abstract class SwerveDriveSubsystem(
                 break
             } else {
                 // Keep running path
-                val wantedSpeeds = sample.chassisSpeeds
+                val pathSpeeds = sample.chassisSpeeds
                 val moduleForcesX = sample.moduleForcesX()
                 val moduleForcesY = sample.moduleForcesY()
 
-                // Add heading and xy error
-                wantedSpeeds.apply {
-                    vx += pathXController.calculate(currentPose.x, wantedPose.x)
-                    vy += pathYController.calculate(currentPose.y, wantedPose.y)
-                    omega += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
-                }
+                // Calculate added power based on translation/rotation errors
+                val translationError = error.translation
+                val translationErrorPower = translationError.normalize() * pathTranslationController.calculate(translationError.norm, 0.0)
+                val thetaErrorPower = pathThetaController.calculate(error.rotation.radians, 0.0)
+                val pidAddedSpeeds = ChassisVelocities(translationErrorPower.x, translationErrorPower.y, thetaErrorPower)
+
+                // Add together path wanted speeds and translation/heading error speeds
+                val appliedSpeeds = pathSpeeds + pidAddedSpeeds
+
                 LoopLogger.record("DriveAlongPath pid")
                 setControl(
                     pathFollowingDriveRequest
-                        .withVelocity(wantedSpeeds)
+                        .withVelocity(appliedSpeeds)
                         .withWheelForceFeedforwardsX(moduleForcesX)
                         .withWheelForceFeedforwardsY(moduleForcesY)
                         .withCenterOfRotation(centerOfRotation)
@@ -931,9 +935,10 @@ abstract class SwerveDriveSubsystem(
                 LoopLogger.record("DriveAlongPath setControl")
 
                 SimpleLogger.recordOutput("Drive/Path/Time", t)
-                SimpleLogger.recordOutput("Drive/Path/Pose", wantedPose)
+                SimpleLogger.recordOutput("Drive/Path/Pose", pathPose)
                 SimpleLogger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-                SimpleLogger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
+                SimpleLogger.recordOutput("Drive/Path/AppliedSpeeds", appliedSpeeds)
+                SimpleLogger.recordOutput("Drive/Path/PathSpeeds", pathSpeeds)
                 SimpleLogger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
 //                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
 //                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
@@ -944,16 +949,18 @@ abstract class SwerveDriveSubsystem(
             yield()
         }
 
+        // Finished path. Check and apply the final sample.
         val finalSample = path.getFinalSample(flipChoreoPaths).getOrNull()
-        // Are we stopping?
         if (finalSample != null) {
 //            println("final sample ${finalSample.chassisSpeeds.translation.norm.round(2)} m/s")
+            // Final sample exists. Apply it to swerve. (For cases where the path doesn't stop when it finishes)
             setControl(
                 pathFollowingDriveRequest
                     .withVelocity(finalSample.chassisSpeeds)
+                    .withCenterOfRotation(centerOfRotation)
             )
         } else {
-            // Tell drivetrain to apply no output
+            // Final sample is null, so stop the robot
             stop()
         }
 
