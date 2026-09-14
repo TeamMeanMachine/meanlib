@@ -121,10 +121,8 @@ abstract class SwerveDriveSubsystem(
      * Better alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct and configure an instance. */
     abstract val autoPilot: Autopilot
 
-    /** Path following x error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added x velocity m/s. */
-    abstract val pathXController: PIDController //= PIDController(7.0, 0.0, 0.0)
-    /** Path following y error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added y velocity m/s. */
-    abstract val pathYController: PIDController //= PIDController(7.0, 0.0, 0.0)
+    /** Path following xy error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added xy velocity m/s. */
+    abstract val pathTranslationController: PIDController //= PIDController(7.0, 0.0, 0.0)
     /** Path following heading error pid controller. Used in [driveAlongChoreoPath]. Error in radians -> added rotational velocity rad/s. */
     abstract val pathThetaController: PIDController //= PIDController(7.0, 0.0, 0.0)
 

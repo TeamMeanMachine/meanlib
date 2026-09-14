@@ -15,7 +15,7 @@ import org.wpilib.math.geometry.Rotation2d
  * @param pose The initial pose of the measurement.
  */
 class Measurement(private val pose: Pose2d) {
-    private val poseSigmas: Pose2d = Pose2d(0.1, 0.1, Rotation2d.fromDegrees(0.1)) // TODO: Don't hardcode // TODO: Actually use this
+    private val poseSigmas: Pose2d = Pose2d(0.1, 0.1, Rotation2d.fromDegrees(0.1)) // TODO: Don't hardcode // TODO: Actually use this inside PF
 
     // Vision measurements
     private val cameraIds: ArrayList<Int> = ArrayList()
