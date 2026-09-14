@@ -23,12 +23,36 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.team2471.frc.lib.coroutines.periodicSuspend
 import org.team2471.frc.lib.environment.isSim
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.math.kinematics.SwerveModuleVelocity
 import java.util.function.Supplier
 
 object PhoenixUtil {
+    private val backingRunnableQueue = mutableListOf<() -> Unit>()
+
+    init {
+        GlobalScope.launch {
+            periodicSuspend(0.01) {
+                backingRunnableQueue.removeFirstOrNull()?.invoke()
+            }
+        }
+    }
+
+    /**
+     * Runs the given action on a background thread.
+     *
+     * Has a Queue. Multiple calls to this method will run the action in the order they were called.
+     * May have to wait for other actions to finish before the action is run.
+     *
+     * @param action The action to run.
+     */
+    fun runOnBackgroundThread(action: () -> Unit) {
+        backingRunnableQueue.add(action)
+    }
 
     val positionControlModes = listOf(
         ControlModeValue.PositionVoltage, ControlModeValue.PositionVoltageFOC,
@@ -55,6 +79,8 @@ object PhoenixUtil {
         }
         return true
     }
+
+
 }
 
 /**

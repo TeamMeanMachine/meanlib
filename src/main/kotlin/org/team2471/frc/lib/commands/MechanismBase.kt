@@ -15,7 +15,7 @@ open class MechanismBase(val mechanismName: String): PeriodicMechanism {
 
     init {
         // If a default command has been specified, apply it to the mechanism.
-        if (hasOverride("defaultCommand")) setDefaultCommandSafe(defaultCommand())
+        if (javaClass.getMethod("defaultCommand").declaringClass != MechanismBase::class.java) setDefaultCommandSafe(defaultCommand())
     }
 
     /** The default command for this mechanism. Runs when no running commands are actively requiring this mechanism.
@@ -25,11 +25,6 @@ open class MechanismBase(val mechanismName: String): PeriodicMechanism {
      * Internally, this sets the [Mechanism.setDefaultCommand] variable
      */
     open fun defaultCommand(): Command = idle()
-
-    private fun hasOverride(methodName: String): Boolean {
-        val method = javaClass.getMethod(methodName)
-        return method.declaringClass != MechanismBase::class.java
-    }
 
     companion object {
         /**

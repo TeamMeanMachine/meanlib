@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.hardware.ctre
 
+import com.ctre.phoenix6.StatusCode
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXSConfiguration
@@ -16,7 +17,6 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import org.wpilib.driverstation.DriverStationErrors
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.team2471.frc.lib.environment.isReal
 
 /**
@@ -37,7 +37,8 @@ fun TalonFXS.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = 
     try {
         val follower = TalonFXS(followerID, network)
         val masterConfig = TalonFXSConfiguration()
-        this.configurator.refresh(masterConfig)
+        val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(masterConfig) } // Get motor configuration parameters
+        if (!isSuccessful) throw Exception("Failed to add follower, could not refresh config for id ${this.deviceID}")
         follower.configurator.apply(masterConfig)
         follower.setControl(Follower(deviceID, motorAlignment))
     } catch (e: Exception) {
@@ -235,8 +236,12 @@ fun TalonFXSConfiguration.coastMode(): TalonFXSConfiguration {
  *
  * @see Slot0
  */
-fun TalonFXSConfiguration.p(p: Double): TalonFXSConfiguration {
-    this.Slot0.kP = p
+fun TalonFXSConfiguration.p(p: Double, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kP = p
+        2 -> this.Slot2.kP = p
+        else -> this.Slot0.kP = p
+    }
     return this
 }
 
@@ -245,8 +250,12 @@ fun TalonFXSConfiguration.p(p: Double): TalonFXSConfiguration {
  *
  * @see Slot0
  */
-fun TalonFXSConfiguration.d(d: Double): TalonFXSConfiguration {
-    this.Slot0.kD = d
+fun TalonFXSConfiguration.d(d: Double, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kD = d
+        2 -> this.Slot2.kD = d
+        else -> this.Slot0.kD = d
+    }
     return this
 }
 
@@ -255,8 +264,12 @@ fun TalonFXSConfiguration.d(d: Double): TalonFXSConfiguration {
  *
  * @see Slot0
  */
-fun TalonFXSConfiguration.i(i: Double): TalonFXSConfiguration {
-    this.Slot0.kI = i
+fun TalonFXSConfiguration.i(i: Double, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kI = i
+        2 -> this.Slot2.kI = i
+        else -> this.Slot0.kI = i
+    }
     return this
 }
 
@@ -266,10 +279,11 @@ fun TalonFXSConfiguration.i(i: Double): TalonFXSConfiguration {
  * @see StaticFeedforwardSignValue.UseClosedLoopSign
  * @see StaticFeedforwardSignValue.UseVelocitySign
  */
-fun TalonFXSConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue): TalonFXSConfiguration {
-    this.Slot0.apply {
-        kS = s
-        StaticFeedforwardSign = staticFeedforwardSign
+fun TalonFXSConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardSignValue, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
+        2 -> this.Slot2.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
+        else -> this.Slot0.apply{ kS = s; StaticFeedforwardSign = staticFeedforwardSign }
     }
     return this
 }
@@ -279,8 +293,12 @@ fun TalonFXSConfiguration.s(s: Double, staticFeedforwardSign: StaticFeedforwardS
  *
  * @see Slot0
  */
-fun TalonFXSConfiguration.v(v: Double): TalonFXSConfiguration {
-    this.Slot0.kV = v
+fun TalonFXSConfiguration.v(v: Double, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kV = v
+        2 -> this.Slot2.kV = v
+        else -> this.Slot0.kV = v
+    }
     return this
 }
 
@@ -289,8 +307,12 @@ fun TalonFXSConfiguration.v(v: Double): TalonFXSConfiguration {
  *
  * @see Slot0
  */
-fun TalonFXSConfiguration.a(a: Double): TalonFXSConfiguration {
-    this.Slot0.kA = a
+fun TalonFXSConfiguration.a(a: Double, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.kA = a
+        2 -> this.Slot2.kA = a
+        else -> this.Slot0.kA = a
+    }
     return this
 }
 
@@ -300,10 +322,20 @@ fun TalonFXSConfiguration.a(a: Double): TalonFXSConfiguration {
  * @see GravityTypeValue.Elevator_Static
  * @see GravityTypeValue.Arm_Cosine
  */
-fun TalonFXSConfiguration.g(g: Double, gravityType: GravityTypeValue): TalonFXSConfiguration {
-    this.Slot0.apply {
-        kG = g
-        GravityType = gravityType
+fun TalonFXSConfiguration.g(g: Double, gravityType: GravityTypeValue, slotNumber: Int = 0): TalonFXSConfiguration {
+    when (slotNumber) {
+        1 -> this.Slot1.apply {
+            kG = g
+            GravityType = gravityType
+        }
+        2 -> this.Slot2.apply {
+            kG = g
+            GravityType = gravityType
+        }
+        else -> this.Slot0.apply {
+            kG = g
+            GravityType = gravityType
+        }
     }
     return this
 }
@@ -340,33 +372,6 @@ fun TalonFXSConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVel
 }
 
 /**
- * Applies a factory default configuration to the [TalonFXS].
- *
- * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
- *
- * @see modifyConfiguration
- */
-fun TalonFXS.applyConfiguration(modifications: TalonFXSConfiguration.() -> Unit = {}) {
-    // Create a factory default configuration, apply modifications, then apply to the motor.
-    this.configurator.apply(TalonFXSConfiguration().apply { modifications() })
-}
-
-/**
- * Modifies the configuration currently on the motor.
- *
- * @param overrides provide a block to modify the configuration before it gets sent to the device.
- *
- * @see applyConfiguration
- */
-fun TalonFXS.modifyConfiguration(overrides: TalonFXSConfiguration.() -> Unit) {
-    // Get the current motor configuration, apply modifications, then apply to the motor.
-    val oldConfiguration = TalonFXSConfiguration()
-    this.configurator.refresh(oldConfiguration) // Get motor configuration parameters
-    this.configurator.apply(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
-}
-
-
-/**
  * A backing safe call to set the brake mode of the motor.
  * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
  * Preferably do not put this in a loop.
@@ -376,9 +381,8 @@ fun TalonFXS.modifyConfiguration(overrides: TalonFXSConfiguration.() -> Unit) {
 @OptIn(DelicateCoroutinesApi::class)
 fun TalonFXS.brakeMode() {
     if (isReal) {
-        val talon = this
-        GlobalScope.launch {
-            talon.configNeutralMode(NeutralModeValue.Brake)
+        PhoenixUtil.runOnBackgroundThread {
+            this.configNeutralMode(NeutralModeValue.Brake)
         }
     }
 }
@@ -393,10 +397,25 @@ fun TalonFXS.brakeMode() {
 @OptIn(DelicateCoroutinesApi::class)
 fun TalonFXS.coastMode() {
     if (isReal) {
-        val talon = this
-        GlobalScope.launch {
-            talon.configNeutralMode(NeutralModeValue.Coast)
+        PhoenixUtil.runOnBackgroundThread {
+            this.configNeutralMode(NeutralModeValue.Coast)
         }
+    }
+}
+
+/**
+ * A backing safe call to set the current limits of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ *
+ * Preferably do not put this in a loop, this launches a new thread.
+ * @see modifyCurrentLimits
+ * @see GlobalScope
+ * @see CurrentLimitsConfigs
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun CoreTalonFXS.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
+    PhoenixUtil.runOnBackgroundThread {
+        modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)
     }
 }
 
@@ -417,17 +436,69 @@ fun CoreTalonFXS.modifyCurrentLimits(continuousLimit: Double? = null, peakCurren
 }
 
 /**
- * A backing safe call to set the current limits of the motor.
- * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Modifies the configuration currently on the motor.
  *
- * Preferably do not put this in a loop, this launches a new thread.
- * @see modifyCurrentLimits
- * @see GlobalScope
- * @see CurrentLimitsConfigs
+ * Async version is non-backing, runs on a background thread.
+ *
+ * @param overrides provide a block to modify the configuration before it gets sent to the device.
+ *
+ * @see applyConfiguration
  */
-@OptIn(DelicateCoroutinesApi::class)
-fun CoreTalonFXS.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
-    GlobalScope.launch {
-        modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)
+fun CoreTalonFXS.modifyConfigurationAsync(overrides: TalonFXSConfiguration.() -> Unit) {
+    PhoenixUtil.runOnBackgroundThread {
+        this.modifyConfiguration(overrides)
     }
 }
+
+/**
+ * Modifies the configuration currently on the motor.
+ *
+ * @param overrides provide a block to modify the configuration before it gets sent to the device.
+ *
+ * @see applyConfiguration
+ */
+fun CoreTalonFXS.modifyConfiguration(overrides: TalonFXSConfiguration.() -> Unit) {
+    // Get the current motor configuration, apply modifications, then apply to the motor.
+    val oldConfiguration = TalonFXSConfiguration()
+    val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
+    if (isSuccessful) {
+        this.applyConfiguration(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
+    } else {
+        DriverStationErrors.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
+        println("Failed to modify configuration for motor id ${this.deviceID}")
+    }
+}
+
+/**
+ * Applies a [TalonFXSConfiguration] to the [CoreTalonFXS] motor in a background thread.
+ *
+ * @see getConfigurator
+ * @see com.ctre.phoenix6.configs.TalonFXSConfigurator.apply
+ * @see PhoenixUtil.runOnBackgroundThread
+ */
+fun CoreTalonFXS.applyConfigurationAsync(configuration: TalonFXSConfiguration) {
+    PhoenixUtil.runOnBackgroundThread {
+        this.applyConfiguration(configuration)
+    }
+}
+
+/**
+ * Applies a factory default configuration to the [CoreTalonFXS].
+ *
+ * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
+ *
+ * @see modifyConfiguration
+ */
+fun CoreTalonFXS.applyConfiguration(modifications: TalonFXSConfiguration.() -> Unit = {}) =
+    this.applyConfiguration(TalonFXSConfiguration().apply(modifications))
+
+/**
+ * Applies a [TalonFXSConfiguration] to the [CoreTalonFXS] motor.
+ *
+ * Wrapper function just to simplify code.
+ *
+ * @see getConfigurator
+ * @see com.ctre.phoenix6.configs.TalonFXSConfigurator.apply
+ */
+fun CoreTalonFXS.applyConfiguration(configuration: TalonFXSConfiguration): StatusCode =
+    this.configurator.apply(configuration)

@@ -1,4 +1,4 @@
-package org.team2471.frc.lib.motion.following
+package org.team2471.frc.lib.tank
 
 import org.team2471.frc.lib.environment.demoSpeed
 import org.team2471.frc.lib.math.deadband

@@ -17,26 +17,13 @@ import org.wpilib.system.Watchdog
  * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, or an exception is thrown.
  * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
  * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
- *
- * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
- *
- * If the [body] takes longer than the [period] to complete, a warning is printed. This can
- * be disabled by setting the [watchOverrun] parameter to false.
  */
 inline fun Coroutine.periodic(
-    watchOverrunName: String? = null,
     crossinline body: PeriodicScope.() -> Unit
 ) {
     val scope = PeriodicScope()
 
-    val watchdog = if (watchOverrunName != null) {
-        Watchdog(0.01) { DriverStationErrors.reportWarning("Periodic loop $watchOverrunName overrun > 0.01", true) }
-    } else {
-        null
-    }
-
     while (true) {
-        watchdog?.reset()
         val dt = measureTimeMonotonic {
             body(scope)
         }
@@ -45,15 +32,21 @@ inline fun Coroutine.periodic(
     }
 }
 
+/**
+ * Runs the provided [body] of code periodically per loop.
+ *
+ * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, an exception is thrown, or [timeout] seconds is reached.
+ * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
+ * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
+ */
 inline fun Coroutine.periodicTimeout(
     timeout: Double,
-    watchOverrunName: String? = null,
     crossinline body: PeriodicScope.(Double) -> Unit
 ): Boolean {
     val timer = Timer()
     var timedOut = false
     timer.start()
-    periodic(watchOverrunName) {
+    periodic {
         val t = timer.get()
         if (timer.get() > timeout) {
             timedOut = true

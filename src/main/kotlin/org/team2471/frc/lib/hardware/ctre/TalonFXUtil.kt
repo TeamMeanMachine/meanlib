@@ -1,5 +1,6 @@
 package org.team2471.frc.lib.hardware.ctre
 
+import com.ctre.phoenix6.StatusCode
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs
 import com.ctre.phoenix6.configs.MotionMagicConfigs
 import com.ctre.phoenix6.configs.TalonFXConfiguration
@@ -15,8 +16,8 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue
 import org.wpilib.driverstation.DriverStationErrors
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.team2471.frc.lib.environment.isReal
+
 
 /**
  * Add a follower to the main motor and applies the master's configuration.
@@ -37,14 +38,9 @@ fun TalonFX.addFollower(followerID: Int, motorAlignment: MotorAlignmentValue = M
         val follower = TalonFX(followerID, network)
         val masterConfig = TalonFXConfiguration()
         val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(masterConfig) } // Get motor configuration parameters
-        if (isSuccessful) {
-            follower.configurator.apply(masterConfig)
-            follower.setControl(Follower(deviceID, motorAlignment))
-        } else {
-            println("Failed to add follower, could not refresh config for id ${this.deviceID}")
-            throw Exception("Failed to add follower, could not refresh config for id ${this.deviceID}")
-        }
-
+        if (!isSuccessful) throw Exception("Failed to add follower, could not refresh config for id ${this.deviceID}")
+        follower.configurator.apply(masterConfig)
+        follower.setControl(Follower(deviceID, motorAlignment))
     } catch (e: Exception) {
         DriverStationErrors.reportError("Failed to add follower to $deviceID: ${e.message}", true)
     }
@@ -376,50 +372,6 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
 }
 
 /**
- * Applies a factory default configuration to the [CoreTalonFX].
- *
- * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
- *
- * @see modifyConfiguration
- */
-fun CoreTalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) {
-    // Create a factory default configuration, apply modifications, then apply to the motor.
-    this.configurator.apply(TalonFXConfiguration().apply { modifications() })
-}
-
-/**
- * Modifies the configuration currently on the motor.
- *
- * @param overrides provide a block to modify the configuration before it gets sent to the device.
- *
- * @see applyConfiguration
- */
-fun CoreTalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
-    // Get the current motor configuration, apply modifications, then apply to the motor.
-    val oldConfiguration = TalonFXConfiguration()
-    val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
-    if (isSuccessful) {
-        this.configurator.apply(oldConfiguration.apply { overrides() }) // Apply overrides to the config and send config to motor.
-    } else {
-        DriverStationErrors.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
-        println("Failed to modify configuration for motor id ${this.deviceID}")
-    }
-}
-
-/**
- * Applies a [TalonFXConfiguration] to the [CoreTalonFX] motor.
- *
- * Wrapper function just to simplify code.
- *
- * @see getConfigurator
- * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
- */
-fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
-    this.configurator.apply(configuration)
-}
-
-
-/**
  * A backing safe call to set the brake mode of the motor.
  * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
  * Preferably do not put this in a loop.
@@ -429,9 +381,8 @@ fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration) {
 @OptIn(DelicateCoroutinesApi::class)
 fun TalonFX.brakeMode() {
     if (isReal) {
-        val talon = this
-        GlobalScope.launch {
-            talon.configNeutralMode(NeutralModeValue.Brake)
+        PhoenixUtil.runOnBackgroundThread {
+            this.configNeutralMode(NeutralModeValue.Brake)
         }
     }
 }
@@ -446,10 +397,25 @@ fun TalonFX.brakeMode() {
 @OptIn(DelicateCoroutinesApi::class)
 fun TalonFX.coastMode() {
     if (isReal) {
-        val talon = this
-        GlobalScope.launch {
-            talon.configNeutralMode(NeutralModeValue.Coast)
+        PhoenixUtil.runOnBackgroundThread {
+            this.configNeutralMode(NeutralModeValue.Coast)
         }
+    }
+}
+
+/**
+ * A backing safe call to set the current limits of the motor.
+ * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ *
+ * Preferably do not put this in a loop, this launches a new thread.
+ * @see modifyCurrentLimits
+ * @see GlobalScope
+ * @see CurrentLimitsConfigs
+ */
+@OptIn(DelicateCoroutinesApi::class)
+fun CoreTalonFX.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
+    PhoenixUtil.runOnBackgroundThread {
+        modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)
     }
 }
 
@@ -470,17 +436,69 @@ fun CoreTalonFX.modifyCurrentLimits(continuousLimit: Double? = null, peakCurrent
 }
 
 /**
- * A backing safe call to set the current limits of the motor.
- * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
+ * Modifies the configuration currently on the motor.
  *
- * Preferably do not put this in a loop, this launches a new thread.
- * @see modifyCurrentLimits
- * @see GlobalScope
- * @see CurrentLimitsConfigs
+ * Async version is non-backing, runs on a background thread.
+ *
+ * @param overrides provide a block to modify the configuration before it gets sent to the device.
+ *
+ * @see applyConfiguration
  */
-@OptIn(DelicateCoroutinesApi::class)
-fun CoreTalonFX.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
-    GlobalScope.launch {
-        modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)
+fun CoreTalonFX.modifyConfigurationAsync(overrides: TalonFXConfiguration.() -> Unit) {
+    PhoenixUtil.runOnBackgroundThread {
+        this.modifyConfiguration(overrides)
     }
 }
+
+/**
+ * Modifies the configuration currently on the motor.
+ *
+ * @param overrides provide a block to modify the configuration before it gets sent to the device.
+ *
+ * @see applyConfiguration
+ */
+fun CoreTalonFX.modifyConfiguration(overrides: TalonFXConfiguration.() -> Unit) {
+    // Get the current motor configuration, apply modifications, then apply to the motor.
+    val oldConfiguration = TalonFXConfiguration()
+    val isSuccessful = PhoenixUtil.tryUntilOk(5) { this.configurator.refresh(oldConfiguration) } // Get motor configuration parameters
+    if (isSuccessful) {
+        this.applyConfiguration(oldConfiguration.apply(overrides)) // Apply overrides to the config and send config to motor.
+    } else {
+        DriverStationErrors.reportError("Failed to modify configuration for motor id ${this.deviceID}", true)
+        println("Failed to modify configuration for motor id ${this.deviceID}")
+    }
+}
+
+/**
+ * Applies a [TalonFXConfiguration] to the [CoreTalonFX] motor in a background thread.
+ *
+ * @see getConfigurator
+ * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
+ * @see PhoenixUtil.runOnBackgroundThread
+ */
+fun CoreTalonFX.applyConfigurationAsync(configuration: TalonFXConfiguration) {
+    PhoenixUtil.runOnBackgroundThread {
+        this.applyConfiguration(configuration)
+    }
+}
+
+/**
+ * Applies a factory default configuration to the [CoreTalonFX].
+ *
+ * @param modifications optionally provide a block to modify the configuration before it gets sent to the motor.
+ *
+ * @see modifyConfiguration
+ */
+fun CoreTalonFX.applyConfiguration(modifications: TalonFXConfiguration.() -> Unit = {}) =
+    this.applyConfiguration(TalonFXConfiguration().apply(modifications))
+
+/**
+ * Applies a [TalonFXConfiguration] to the [CoreTalonFX] motor.
+ *
+ * Wrapper function just to simplify code.
+ *
+ * @see getConfigurator
+ * @see com.ctre.phoenix6.configs.TalonFXConfigurator.apply
+ */
+fun CoreTalonFX.applyConfiguration(configuration: TalonFXConfiguration): StatusCode =
+    this.configurator.apply(configuration)
