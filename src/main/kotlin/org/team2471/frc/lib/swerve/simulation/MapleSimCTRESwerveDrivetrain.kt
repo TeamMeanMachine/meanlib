@@ -38,8 +38,8 @@ class MapleSimCTRESwerveDrivetrain(robotMass: Mass, bumperLengthX: Distance, bum
                 robotMass,
                 bumperLengthX,
                 bumperWidthY,
-                moduleConstants.first().LocationX.meters,
-                moduleConstants.first().LocationY.meters,
+                moduleConstants[0].LocationX.meters.absoluteValue() + moduleConstants[1].LocationX.meters.absoluteValue(),
+                moduleConstants[0].LocationY.meters.absoluteValue() + moduleConstants[2].LocationY.meters.absoluteValue(),
                 COTS.ofPigeon2(),
                 SwerveModuleSimulationConfig(
                     when (moduleConstants.first().DriveMotorType) {
