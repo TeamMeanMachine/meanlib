@@ -17,7 +17,7 @@ import org.wpilib.opmode.OpMode
 class AutoOpMode(name: String, autoCommand: Command, warmupFunction: () -> Unit, private val disabledPeriodicFunction: () -> Unit): OpMode {
 
     init {
-        println("$name auto created")
+        println("$name auto selected")
         warmupFunction()
         println("$name auto warmup complete.")
         // Binds a trigger to the enabled state of the robot.

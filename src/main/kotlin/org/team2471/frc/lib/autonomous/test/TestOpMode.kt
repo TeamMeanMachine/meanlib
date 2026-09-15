@@ -14,7 +14,7 @@ import org.wpilib.opmode.OpMode
  */
 class TestOpMode(name: String, testCommand: Command, initFunction: () -> Unit): OpMode {
     init {
-        println("$name test created")
+        println("$name test selected")
         initFunction()
         // Binds a trigger to the enabled state of the robot.
         // Acts as if "enabled" is a joystick button. When true, it will schedule the command, when false, it will cancel it.

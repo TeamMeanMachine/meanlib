@@ -8,7 +8,6 @@ import org.wpilib.tunable.Tunables
 
 val doReplay: Boolean = false
 val robotType: RobotType = when (RuntimeType.getValue(HALUtil.getHALRuntimeType())) {
-    RuntimeType.SYSTEMCORE -> RobotType.REAL
     RuntimeType.SIMULATION -> if (doReplay) RobotType.REPLAY else RobotType.SIM
     else -> RobotType.REAL
 }.also { println("robotMode = $it") }
