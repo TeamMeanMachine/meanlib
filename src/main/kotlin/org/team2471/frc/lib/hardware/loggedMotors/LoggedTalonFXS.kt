@@ -26,10 +26,10 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
 
     val loggedInputs = MotorInputsAutoLogged()
 
-    private val positionStatusSignal = position
-    private val velocityStatusSignal = velocity
-    private val accelerationStatusSignal = acceleration
-    private val supplyVoltageStatusSignal = supplyVoltage
+    private val positionStatusSignal = getPosition(false) // Refresh = false to avoid an initial CAN error in sim. Gets refreshed in periodic.
+    private val velocityStatusSignal = getVelocity(false)
+    private val accelerationStatusSignal = getAcceleration(false)
+    private val supplyVoltageStatusSignal = getSupplyVoltage(false)
     private val loggingStatusSignals = listOf(positionStatusSignal, velocityStatusSignal, accelerationStatusSignal, supplyVoltageStatusSignal)
 
     init {
