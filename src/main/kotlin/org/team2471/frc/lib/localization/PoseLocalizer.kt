@@ -129,6 +129,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         singleTagOdometryBuffer.addSample(currentTime, pose)
         visionOdometryBuffer.addSample(currentTime, pose)
         lastOdometryUpdateTime = currentTime
+
+        timeToMeasurementMap[currentTime] = Measurement(pose) // Using odometry pose for the particle filter odometry reference
     }
 
     fun resetRotation(rotation: Rotation2d) {
@@ -143,12 +145,16 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         singleTagOdometryBuffer.addSample(currentTime, Pose2d(storedSingleTagTranslation, rotation))
         visionOdometryBuffer.addSample(currentTime, Pose2d(storedVisionOdometryTranslation, rotation))
         lastOdometryUpdateTime = currentTime
+
+        timeToMeasurementMap[currentTime] = Measurement(Pose2d(storedRawOdomTranslation, rotation)) // Using odometry pose for the particle filter odometry reference
     }
 
     private fun clearAllBuffers() {
         odometryPoseBuffer.clear()
         singleTagOdometryBuffer.clear()
         visionOdometryBuffer.clear()
+        timeToMeasurementMap.clear()
+        idToTimeMap.clear()
     }
 
     /**
@@ -220,8 +226,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
         chassisSpeedsBuffer.addSample(odometryTimestamp, InterpolatableChassisSpeeds.fromChassisSpeeds(chassisSpeeds))
 
-        timeToMeasurementMap[odometryTimestamp] =
-            Measurement(currOdomPose) // Using odometry pose for the particle filter odometry reference
+        timeToMeasurementMap[odometryTimestamp] = Measurement(currOdomPose) // Using odometry pose for the particle filter odometry reference
 
         LoopLogger.record("After adding odom samples")
 
