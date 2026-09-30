@@ -422,7 +422,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         println("Created PoseLocalizer with ${allTargets.size} targets and ${cameras.size} cameras")
 
         if (isSim) {
-//            QuixVisionSim.setTargets(allTargets) TODO: UNCOMMENT PV 2027
+            QuixVisionSim.setTargets(allTargets)
         }
 
         networkTable.publishTargets(allTargets)

@@ -68,6 +68,7 @@ import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.hardware.ctre.brakeMode
 import org.team2471.frc.lib.hardware.ctre.refreshAll
+import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
@@ -1105,7 +1106,7 @@ abstract class SwerveDriveSubsystem(
 //                QuixVisionSim.updatePose(mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //                Logger.recordOutput("Drive/MapleSim/ActualPose", mapleSimDrivetrain!!.actualPoseInSimulationWorld)
 //            } else {
-//        QuixVisionSim.updatePose(pose) TODO: UNCOMMENT Photonvision. Just this line rn
+        QuixVisionSim.updatePose(pose)
 //            }
         LoopLogger.record("Drive Sim periodic")
     }
