@@ -121,8 +121,10 @@ abstract class SwerveDriveSubsystem(
      * Better alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct and configure an instance. */
     abstract val autoPilot: Autopilot
 
-    /** Path following xy error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added xy velocity m/s. */
-    abstract val pathTranslationController: PIDController //= PIDController(7.0, 0.0, 0.0)
+    /** Path following x error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added x velocity m/s. */
+    abstract val pathXController: PIDController //= PIDController(7.0, 0.0, 0.0)
+    /** Path following y error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added y velocity m/s. */
+    abstract val pathYController: PIDController //= PIDController(7.0, 0.0, 0.0)
     /** Path following heading error pid controller. Used in [driveAlongChoreoPath]. Error in radians -> added rotational velocity rad/s. */
     abstract val pathThetaController: PIDController //= PIDController(7.0, 0.0, 0.0)
 
@@ -850,16 +852,13 @@ abstract class SwerveDriveSubsystem(
             val moduleForcesX = sample.moduleForcesX()
             val moduleForcesY = sample.moduleForcesY()
             error = wantedPose - currentPose
-            val errorDirectionNorm = error.translation.normalize()
             LoopLogger.record("DriveAlongPath pathInfo")
 
-            val translationErrorPower = pathTranslationController.calculate(error.translation.norm, 0.0)
-            val thetaErrorPower = pathThetaController.calculate(error.rotation.radians, 0.0)
-            // Add PID controller powers
+            // Add heading and xy error
             wantedSpeeds.apply {
-                vxMetersPerSecond += errorDirectionNorm.x * translationErrorPower
-                vyMetersPerSecond += errorDirectionNorm.y * translationErrorPower
-                omegaRadiansPerSecond += thetaErrorPower
+                vxMetersPerSecond += pathXController.calculate(currentPose.x, wantedPose.x)
+                vyMetersPerSecond += pathYController.calculate(currentPose.y, wantedPose.y)
+                omegaRadiansPerSecond += pathThetaController.calculate(currentPose.rotation.radians, sample.heading)
             }
             LoopLogger.record("DriveAlongPath pid")
             setControl(
@@ -875,7 +874,9 @@ abstract class SwerveDriveSubsystem(
             Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
             Logger.recordOutput("Drive/Path/AppliedSpeeds", wantedSpeeds)
             Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay).metersPerSecondPerSecond)
-            Logger.recordOutput("Drive/Path/Pose Error", error.translation.norm.meters)
+//            Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
+//            Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
+//            Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
             LoopLogger.record("DriveAlongPath logger")
         }.onlyRunWhileFalse {
             val percentComplete = t / totalTime
