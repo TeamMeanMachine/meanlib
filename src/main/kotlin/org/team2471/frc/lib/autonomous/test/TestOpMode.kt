@@ -10,7 +10,7 @@ import org.wpilib.opmode.OpMode
  *
  * When selected will call the [initFunction] in the OpMode's scope.
  *
- * Schedules [testCommand] when enabled and runs it until its disabled or finished.
+ * Schedules [testCommand] when enabled and runs it until it's disabled or finished.
  */
 class TestOpMode(name: String, testCommand: Command, initFunction: () -> Unit): OpMode {
     init {

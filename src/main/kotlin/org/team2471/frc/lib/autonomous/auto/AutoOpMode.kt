@@ -12,7 +12,7 @@ import org.wpilib.opmode.OpMode
  *
  * Then will periodically run the [disabledPeriodicFunction] until enabled
  *
- * Schedules [autoCommand] when enabled and runs it until its disabled or finished.
+ * Schedules [autoCommand] when enabled and runs it until it's disabled or finished.
  */
 class AutoOpMode(name: String, autoCommand: Command, warmupFunction: () -> Unit, private val disabledPeriodicFunction: () -> Unit): OpMode {
 

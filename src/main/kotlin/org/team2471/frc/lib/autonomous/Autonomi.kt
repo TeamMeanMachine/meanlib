@@ -19,7 +19,7 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
 
-/** Manages robot driving paths and auto commands */
+/** Manages Choreo paths and auto commands */
 abstract class Autonomi {
     /** All Choreo paths */
     val paths: MutableMap<String, Trajectory<SwerveSample>> = findChoreoPaths()
@@ -86,6 +86,8 @@ abstract class Autonomi {
         }
     }
 
+    // OpMode Creation
+
     /** Converts an [AutoRoutine] to a [AutoOpModeSupplier]. Uses the [drivePoseSetter] and [warmupFunction] from Autonomi to set up the [org.team2471.frc.lib.autonomous.auto.AutoOpMode]. */
     fun createOpModeSupplier(autoRoutine: AutoRoutine): AutoOpModeSupplier =
         AutoOpModeSupplier(
@@ -99,7 +101,7 @@ abstract class Autonomi {
             )
         }
 
-    /** Convert a [TestRoutine] to a function that returns a [org.team2471.frc.lib.autonomous.test.TestOpMode]. */
+    /** Convert a [TestRoutine] to a [TestOpModeSupplier]. */
     fun createOpModeSupplier(testRoutine: TestRoutine): TestOpModeSupplier =
         TestOpModeSupplier(
             testRoutine.name
@@ -113,6 +115,6 @@ abstract class Autonomi {
 
     /** Maps a list of [AutoRoutine]s to a list of [AutoOpModeSupplier]. For clean syntax*/
     fun List<AutoRoutine>.toAutoOpModeSuppliers(): List<AutoOpModeSupplier> = map { createOpModeSupplier(it) }
-    /** Maps a list of [TestRoutine]s to a list of functions that return a [TestOpMode]. for clean syntax*/
+    /** Maps a list of [TestRoutine]s to a list of [TestOpModeSupplier]. For clean syntax*/
     fun List<TestRoutine>.toTestOpModeSuppliers(): List<TestOpModeSupplier> = map { createOpModeSupplier(it) }
 }
