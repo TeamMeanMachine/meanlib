@@ -254,12 +254,16 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
                 for (target in vision.targets) {
                     if (tagsToTrack.contains(target.getFiducialId())) {
                         // Use AprilTag corners.
-                        for (cornerID in target.getDetectedCorners().indices) {
+                        val detectedCorners= target.getDetectedCorners()
+                        if (detectedCorners.isEmpty()) {
+                            println("Camera: $cameraID sees tags but no tag corners! Upload a 3D camera calibration or select the correct resolution inside PV GUI.")
+                        }
+                        for (cornerID in detectedCorners.indices) {
                             existingMeasurement.addVisionMeasurement(
                                 cameraID,
                                 target.getFiducialId(),
                                 cornerID,
-                                target.getDetectedCorners()[cornerID]
+                                detectedCorners[cornerID]
                             )
                         }
                         if (target.getFiducialId() <= allTargets.size) {
