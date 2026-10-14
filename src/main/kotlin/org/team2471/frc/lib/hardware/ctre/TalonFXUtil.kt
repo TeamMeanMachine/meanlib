@@ -80,6 +80,18 @@ fun TalonFXConfiguration.currentLimits(continuousLimit: Double, peakLimit: Doubl
 }
 
 /**
+ * Set the supply current peak limit only.
+ * @param peakLimit the maximum possible current the motor can draw.
+ */
+fun TalonFXConfiguration.currentLimits(peakLimit: Double): TalonFXConfiguration {
+    this.CurrentLimits.apply {
+        SupplyCurrentLimit = peakLimit
+        SupplyCurrentLimitEnable = true
+    }
+    return this
+}
+
+/**
  * Set the stator current limits.
  * @param peakLimit the maximum possible current the motor can draw.
  */
