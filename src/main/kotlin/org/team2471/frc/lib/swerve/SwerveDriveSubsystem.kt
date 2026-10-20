@@ -300,11 +300,6 @@ abstract class SwerveDriveSubsystem(
 
         println("drivetrain max speed is ${maxSpeed.asFeetPerSecond.round(2)} f/s and ${maxAngularSpeed.asDegreesPerSecond.round(2)} deg/s")
 
-        if (!SmartDashboard.containsKey("DemoSpeed")) {
-            println("DemoSpeed does not exist, setting it to 1.0")
-            SmartDashboard.getEntry("DemoSpeed").setDouble(1.0)
-            SmartDashboard.setPersistent("DemoSpeed")
-        }
 
         // Register the telemetry loop function to be called during the odometry thread.
         registerTelemetry(::telemetryLoop)
