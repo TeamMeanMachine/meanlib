@@ -86,11 +86,13 @@ import org.team2471.frc.lib.control.LoopLogger
 import org.team2471.frc.lib.hardware.ctre.brakeMode
 import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
+import org.team2471.frc.lib.math.findClosestPointOnCircle
 import org.team2471.frc.lib.swerve.simulation.MapleSimCTRESwerveDrivetrain
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asMetersPerSecondCubed
 import org.team2471.frc.lib.units.asMetersPerSecondPerSecond
 import org.team2471.frc.lib.units.pounds
+import org.team2471.frc.lib.util.angleTo
 import org.team2471.frc.lib.util.fieldToRobotCentric
 import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
@@ -696,6 +698,60 @@ abstract class SwerveDriveSubsystem(
 
 
     /**
+     * Drives the robot to the closest point on a circle but also lets the driver control the robot along it. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
+     *
+     * @param centerSupplier A function that returns the center of the circle.
+     * @param radius The radius of the circle.
+     * @param headingSupplier A function that returns the wanted heading of the robot to align to. The default value doesn't restrict the heading and allows joystick rotation control.
+     * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
+     * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
+     *
+     * @see driveToPoint
+     * @see joystickDriveAlongLine
+     */
+    fun joystickDriveAlongCircle(
+        centerSupplier: () -> Translation2d,
+        radius: Distance,
+        headingSupplier: () -> Rotation2d? = { null },
+        poseSupplier: () -> Pose2d = { pose },
+        lineTolerance: Distance = 0.5.inches,
+        maxVelocity: LinearVelocity = maxSpeed
+    ): Command {
+        return run {
+            val center = centerSupplier()
+            val currentPose = poseSupplier()
+            val tangentAngle = (currentPose.translation.angleTo(center) + 90.0.degrees).asRotation2d
+            val circlePoint = findClosestPointOnCircle(center, radius, currentPose.translation)
+            val translationToPose = circlePoint.minus(currentPose.translation)
+            val distanceToPose = translationToPose.norm.deadband(lineTolerance.asMeters)
+            val driveToPointPower = min(abs(teleopDriveToPointController.calculate(distanceToPose, 0.0)), maxVelocity.asMetersPerSecond)
+
+            val driveToPointVelocity = translationToPose.normalize() * driveToPointPower
+            val teleopChassisSpeeds = getChassisSpeedsFromJoystick().apply {
+                // Limit joystick speeds to be along the line
+                val modifiedTranslation = translation.rotateBy(-tangentAngle)
+                val lineCentricTranslation = Translation2d(modifiedTranslation.x, 0.0).rotateBy(tangentAngle)
+                vxMetersPerSecond = lineCentricTranslation.x
+                vyMetersPerSecond = lineCentricTranslation.y
+            }
+
+            val currentHeading = headingSupplier()
+            if (currentHeading == null) {
+                val driveToPointChassisSpeeds = ChassisSpeeds(driveToPointVelocity.x, driveToPointVelocity.y, 0.0)
+                val wantedChassisSpeeds = driveToPointChassisSpeeds + teleopChassisSpeeds
+                driveVelocity(wantedChassisSpeeds)
+            } else {
+                val wantedVelocity = teleopChassisSpeeds.translation + driveToPointVelocity
+                driveAtAngle(currentHeading, wantedVelocity)
+            }
+
+        }.finallyRun {
+            stop()
+        }.withName("JoystickDriveAlongCircle")
+    }
+
+
+    /**
      * Drives the robot to the closest point along a line but also lets the driver control the robot along it. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
      *
      * @param pointOne The first line endpoint.
@@ -705,6 +761,7 @@ abstract class SwerveDriveSubsystem(
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
      * @see driveToPoint
+     * @see joystickDriveAlongCircle
      */
     fun joystickDriveAlongLine(
         pointOne: Translation2d,
@@ -764,6 +821,8 @@ abstract class SwerveDriveSubsystem(
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
      * @see driveToPoint
+     * @see joystickDriveAlongLine
+     * @see joystickDriveAlongCircle
      */
     fun driveToLine(
         pointOne: Translation2d,
