@@ -20,12 +20,12 @@ import com.therekrab.autopilot.APProfile
 import com.therekrab.autopilot.APTarget
 import com.therekrab.autopilot.Autopilot
 import org.littletonrobotics.junction.AutoLogOutput
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.commands.MechanismBase
 import org.team2471.frc.lib.commands.MechanismBase.Companion.setDefaultCommandSafe
 import org.team2471.frc.lib.hardware.ctre.ApplyModuleStates
 import org.team2471.frc.lib.hardware.ctre.setCANCoderAngle
 import org.team2471.frc.lib.hardware.loggedMotors.LoggedTalonFX
-import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.findClosestPointOnLine
 import org.team2471.frc.lib.math.normalize
 import org.team2471.frc.lib.math.round
@@ -47,15 +47,12 @@ import org.team2471.frc.lib.units.meters
 import org.team2471.frc.lib.units.metersPerSecond
 import org.team2471.frc.lib.units.radiansPerSecond
 import org.team2471.frc.lib.logging.LoopLogger
-import org.team2471.frc.lib.commands.named
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.command
 import org.team2471.frc.lib.commands.commandUnnamed
 import org.team2471.frc.lib.environment.isReal
 import org.team2471.frc.lib.environment.isRedAlliance
-import org.team2471.frc.lib.environment.isReplay
 import org.team2471.frc.lib.environment.isSim
-import org.team2471.frc.lib.logging.SimpleLogger
 import org.team2471.frc.lib.math.translation
 import org.team2471.frc.lib.units.Gs
 import org.team2471.frc.lib.units.amps
@@ -460,7 +457,6 @@ abstract class SwerveDriveSubsystem(
 
         prevTime = currTime
         // This errors in replay
-        if (!isReplay) SimpleLogger.recordOutput("Drive/State/TelemetryLoop", Timer.getMonotonicTimestamp() - currTime)
     }
 
     // STATE METHODS
@@ -523,7 +519,7 @@ abstract class SwerveDriveSubsystem(
      */
     fun driveVelocity(velocity: ChassisVelocities) {
 //        println("drive velocity")
-        SimpleLogger.recordOutput("Drive/Wanted ChassisSpeeds", velocity.toRobotRelative(heading))
+        Logger.recordOutput("Drive/Wanted ChassisSpeeds", velocity.toRobotRelative(heading))
         setControl(
             fieldCentricVelocityDriveRequest
                 .withVelocity(velocity)
@@ -610,8 +606,8 @@ abstract class SwerveDriveSubsystem(
      * Uses the [driveAtAnglePIDController] to drive the robot with a field-centric angle and translation.
      */
     fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
-        SimpleLogger.recordOutput("Drive/DriveAtAngle/Angle", angle)
-        SimpleLogger.recordOutput("Drive/DriveAtAngle/Translation", translation)
+        Logger.recordOutput("Drive/DriveAtAngle/Angle", angle)
+        Logger.recordOutput("Drive/DriveAtAngle/Translation", translation)
         setControl(
             driveAtAngleRequest
                 .withVelocityX(translation.x)
@@ -690,9 +686,9 @@ abstract class SwerveDriveSubsystem(
             val headingError = (wantedPose().rotation - poseSupplier().rotation).measure.absoluteValue()
 
             // Log errors
-            SimpleLogger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
-            SimpleLogger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
-            SimpleLogger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
+            Logger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
+            Logger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
+            Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
 
             if (exitSupplier(distanceError, headingError)) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
@@ -707,7 +703,7 @@ abstract class SwerveDriveSubsystem(
         }
 
         stop() // Stop driving
-        SimpleLogger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
+        Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
     }.named("DriveToPoint")
 
     fun driveToAutopilotPoint(
@@ -756,15 +752,15 @@ abstract class SwerveDriveSubsystem(
 
                 driveAtAngle(output.targetAngle(), velocity)
 
-                SimpleLogger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
-                SimpleLogger.recordOutput("Drive/AutoPilot/Target", targetPose)
+                Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
+                Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
             }
 
             yield()
         }
 
         stop()
-        SimpleLogger.recordOutput("Drive/AutoPilot/Target", Pose2d())
+        Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
     }.named("DriveToAutopilotPoint")
 
 
@@ -883,8 +879,8 @@ abstract class SwerveDriveSubsystem(
     ): Command = commandUnnamed(this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
-        SimpleLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
-        SimpleLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
 
         if (exitSupplier == null) {
             await(driveToPoint(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
@@ -892,8 +888,8 @@ abstract class SwerveDriveSubsystem(
             await(driveToPoint(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
         }
 
-        SimpleLogger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
-        SimpleLogger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
+        Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
+        Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
     }.named("DriveToLine")
 
     /**
@@ -921,8 +917,8 @@ abstract class SwerveDriveSubsystem(
             println("Resetting odometry. (${pose.translation.x}, ${pose.translation.y}, ${pose.rotation.degrees})")
         }
 
-        SimpleLogger.recordOutput("Drive/Path/Name", path.name())
-        SimpleLogger.recordOutput("Drive/Path/TotalTime", totalTime)
+        Logger.recordOutput("Drive/Path/Name", path.name())
+        Logger.recordOutput("Drive/Path/TotalTime", totalTime)
 
         timer.start()
 
@@ -938,7 +934,7 @@ abstract class SwerveDriveSubsystem(
             val error = pathPose - currentPose
             LoopLogger.record("DriveAlongPath pathInfo")
 
-            SimpleLogger.recordOutput("Drive/Path/Done %", percentComplete)
+            Logger.recordOutput("Drive/Path/Done %", percentComplete)
 
 
             if (exitSupplier(percentComplete, error)) { // Exit path?
@@ -969,12 +965,12 @@ abstract class SwerveDriveSubsystem(
                 )
                 LoopLogger.record("DriveAlongPath setControl")
 
-                SimpleLogger.recordOutput("Drive/Path/Time", t)
-                SimpleLogger.recordOutput("Drive/Path/Pose", pathPose)
-                SimpleLogger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
-                SimpleLogger.recordOutput("Drive/Path/AppliedSpeeds", appliedSpeeds)
-                SimpleLogger.recordOutput("Drive/Path/PathSpeeds", pathSpeeds)
-                SimpleLogger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
+                Logger.recordOutput("Drive/Path/Time", t)
+                Logger.recordOutput("Drive/Path/Pose", pathPose)
+                Logger.recordOutput("Drive/Path/Speeds", sample.chassisSpeeds)
+                Logger.recordOutput("Drive/Path/AppliedSpeeds", appliedSpeeds)
+                Logger.recordOutput("Drive/Path/PathSpeeds", pathSpeeds)
+                Logger.recordOutput("Drive/Path/Path Acceleration", hypot(sample.ax, sample.ay))
 //                Logger.recordOutput("Drive/Path/Module Forces X", moduleForcesX)
 //                Logger.recordOutput("Drive/Path/Module Forces Y", moduleForcesY)
 //                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
@@ -1000,7 +996,7 @@ abstract class SwerveDriveSubsystem(
         }
 
         // Publish empty data to show that the path is done
-        SimpleLogger.recordOutput("Drive/Path/Pose", Pose2d())
+        Logger.recordOutput("Drive/Path/Pose", Pose2d())
     }
 
     // OTHER

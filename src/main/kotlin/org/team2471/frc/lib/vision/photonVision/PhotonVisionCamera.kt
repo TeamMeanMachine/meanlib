@@ -14,7 +14,6 @@ import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
 import org.team2471.frc.lib.environment.isReal
 import org.team2471.frc.lib.environment.isSim
-import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.linalg.Matrix
 import org.wpilib.math.numbers.N1
@@ -141,7 +140,7 @@ class PhotonVisionCamera(
             }
 
             val endTimestamp = Timer.getMonotonicTimestamp()
-            SimpleLogger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
+            Logger.recordOutput("$loggingName/GetLatestMeasurementSeconds", (endTimestamp - startTimestamp))
 
             return PipelineVisionPacket(
                 hasTargets,

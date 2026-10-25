@@ -12,7 +12,6 @@ import org.photonvision.simulation.PhotonCameraSim
 import org.photonvision.targeting.PhotonPipelineResult
 import org.photonvision.targeting.PhotonTrackedTarget
 import org.photonvision.targeting.TargetCorner
-import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.math.geometry.Transform3d
 import org.wpilib.math.linalg.Matrix
 import org.wpilib.math.numbers.N1
@@ -124,7 +123,7 @@ class LimelightCamera(
             }
 
             val endTimestamp = Timer.getMonotonicTimestamp()
-            SimpleLogger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
+            Logger.recordOutput("$loggingName/GetLatestMeasurementMs", (endTimestamp - startTimestamp) * 1000.0)
 
             return PipelineVisionPacket(
                 hasTargets,

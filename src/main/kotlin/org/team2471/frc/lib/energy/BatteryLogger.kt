@@ -1,6 +1,6 @@
 package org.team2471.frc.lib.energy
 
-import org.team2471.frc.lib.logging.SimpleLogger
+import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.units.amps
 import org.team2471.frc.lib.units.asAmps
 import org.team2471.frc.lib.units.asWatts
@@ -41,19 +41,19 @@ object BatteryLogger {
     }
 
     fun logData() {
-        SimpleLogger.recordOutput("Battery/Battery Voltage", batteryVoltage)
+        Logger.recordOutput("Battery/Battery Voltage", batteryVoltage)
         var totalPowerReport = PowerReport()
         mechanismPowerReports.forEach { (m, report) ->
             totalPowerReport += report
-            SimpleLogger.recordOutput("Battery/${m}/Current", report.current)
-            SimpleLogger.recordOutput("Battery/${m}/Power", report.power)
-            SimpleLogger.recordOutput("Battery/${m}/AmpHours", report.ampHours)
-            SimpleLogger.recordOutput("Battery/${m}/WattHours", report.wattHours)
+            Logger.recordOutput("Battery/${m}/Current", report.current)
+            Logger.recordOutput("Battery/${m}/Power", report.power)
+            Logger.recordOutput("Battery/${m}/AmpHours", report.ampHours)
+            Logger.recordOutput("Battery/${m}/WattHours", report.wattHours)
         }
-        SimpleLogger.recordOutput("Battery/Total/Current", totalPowerReport.current)
-        SimpleLogger.recordOutput("Battery/Total/Power", totalPowerReport.power)
-        SimpleLogger.recordOutput("Battery/Total/AmpHours", totalPowerReport.ampHours)
-        SimpleLogger.recordOutput("Battery/Total/WattHours", totalPowerReport.wattHours)
+        Logger.recordOutput("Battery/Total/Current", totalPowerReport.current)
+        Logger.recordOutput("Battery/Total/Power", totalPowerReport.power)
+        Logger.recordOutput("Battery/Total/AmpHours", totalPowerReport.ampHours)
+        Logger.recordOutput("Battery/Total/WattHours", totalPowerReport.wattHours)
     }
 
 

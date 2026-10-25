@@ -18,7 +18,6 @@ import org.photonvision.targeting.PhotonTrackedTarget
 import org.team2471.frc.lib.logging.LoopLogger
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.team2471.frc.lib.environment.isSim
-import org.team2471.frc.lib.logging.SimpleLogger
 import org.wpilib.system.Timer
 import java.util.ArrayList
 import java.util.HashMap
@@ -150,8 +149,8 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
         // Only incorporate estimate if it is new.
         if (idToTimeMap.isEmpty() || estimate.id == lastUpdatedId || idToTimeMap[estimate.id] == null || estimate.pose == null) {
-            SimpleLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
-            SimpleLogger.recordOutput("Localizer/visionCorrection (m)", 0.0)
+            Logger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
+            Logger.recordOutput("Localizer/visionCorrection (m)", 0.0)
             return
         }
         lastUpdatedId = estimate.id
@@ -172,11 +171,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         val odometryPoseOffset = estimate.pose.minus(odometryAtEstimateTime)
         visionOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, visionEstimateTime)
 
-        SimpleLogger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
+        Logger.recordOutput("Localizer/UpdateWithLatestPoseEstimate seconds", (Timer.getMonotonicTimestamp() - startTimestamp))
 
         // Log magnitude of correction
         val postCorrectionPose = this.pose
-        SimpleLogger.recordOutput("Localizer/visionCorrection (m)", postCorrectionPose.minus(preCorrectionPose).translation.norm)
+        Logger.recordOutput("Localizer/visionCorrection (m)", postCorrectionPose.minus(preCorrectionPose).translation.norm)
     }
 
     fun update(odometryMeasurement: OdometryMeasurement, visionPackets: List<PipelineVisionPacket>, chassisVelocities: ChassisVelocities, wheelSlipFactor: Double = 0.0) {
@@ -214,12 +213,12 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
             val measurementTime = vision.captureTimestamp
             if (measurementTime > 0.0) {
-                SimpleLogger.recordOutput("Localizer/measurementLatency[$cameraID]", currentTime - measurementTime)
+                Logger.recordOutput("Localizer/measurementLatency[$cameraID]", currentTime - measurementTime)
             }
 
             if (!vision.hasTargets) {
                 val array = arrayOf<Translation3d>()
-                SimpleLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array)
+                Logger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *array)
                 continue
             }
 
@@ -273,7 +272,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
                     }
                 }
             }
-            SimpleLogger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *detectedTags.toTypedArray())
+            Logger.recordOutput<Translation3d>("Localizer/detectedTags[$cameraID]", *detectedTags.toTypedArray())
         }
         LoopLogger.record("After camera for loop")
         publishImmutableEntries()
@@ -346,11 +345,11 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         }
 
         if (latestTarget == null || cam == null) {
-            SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+            Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
             return
         }
         if (odometryPoseBuffer.internalBuffer.firstKey() > latestTimestamp) {
-            SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+            Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
 //            println("single tag result is too far in the past")
             return
         }
@@ -374,7 +373,7 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
 
         val tagPose2d = allTargets[latestTarget.fiducialId - 1].pose.toPose2d()
         if (tagPose2d == null) {
-            SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+            Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
             return
         }
 
@@ -386,20 +385,20 @@ class PoseLocalizer(val allTargets: Array<Fiducial>, val cameras: List<QuixVisio
         // Use gyro angle at time for robot rotation
         robotPose = Pose2d(robotPose.translation, interpolatedRotation)
 
-        SimpleLogger.recordOutput("Swerve/SingleTagPoseRaw", robotPose)
+        Logger.recordOutput("Swerve/SingleTagPoseRaw", robotPose)
 
 
         val odometryAtEstimateTime = singleTagOdometryBuffer.getSample(latestTimestamp).getOrNull()
         if (odometryAtEstimateTime == null) {
             println("single tag odometryAtEstimateTime is null")
-            SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
+            Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf<Translation2d>())
             return
         }
         val odometryPoseOffset = robotPose.minus(odometryAtEstimateTime)
         // Update single tag buffer
         singleTagOdometryBuffer.internalBuffer.offsetFutureSamplesBy(odometryPoseOffset, latestTimestamp)
 
-        SimpleLogger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
+        Logger.recordOutput("Localizer/DetectedSingleTag", *arrayOf(tagPose2d.translation))
         LoopLogger.record("computeSingleTagPose()")
     }
 
