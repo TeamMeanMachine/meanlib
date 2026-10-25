@@ -780,23 +780,23 @@ abstract class SwerveDriveSubsystem(
      * @see driveToPoint
      * @see joystickDriveAlongLineSegment
      */
-    fun joystickDriveAlongCircle(
-        centerSupplier: () -> Translation2d,
-        radius: Distance,
-        headingSupplier: () -> Rotation2d? = { null },
-        poseSupplier: () -> Pose2d = { pose },
-        lineTolerance: Distance = 0.5.inches,
-        maxVelocity: LinearVelocity = maxSpeed
-    ): Command {
-        return joystickDriveAlongLine(
-            { findClosestPointOnCircle(centerSupplier(), radius, poseSupplier().translation) },
-            { (poseSupplier().translation.angleTo(centerSupplier()) + 90.0.degrees).asRotation2d },
-            headingSupplier,
-            poseSupplier,
-            lineTolerance,
-            maxVelocity
-        ).withName("JoystickDriveAlongCircle")
-    }
+//    fun joystickDriveAlongCircle( // TODO Uncomment and fix by transferring code from 2026 branch
+//        centerSupplier: () -> Translation2d,
+//        radius: Distance,
+//        headingSupplier: () -> Rotation2d? = { null },
+//        poseSupplier: () -> Pose2d = { pose },
+//        lineTolerance: Distance = 0.5.inches,
+//        maxVelocity: LinearVelocity = maxSpeed
+//    ): Command {
+//        return joystickDriveAlongLine(
+//            { findClosestPointOnCircle(centerSupplier(), radius, poseSupplier().translation) },
+//            { (poseSupplier().translation.angleTo(centerSupplier()) + 90.0.degrees).asRotation2d },
+//            headingSupplier,
+//            poseSupplier,
+//            lineTolerance,
+//            maxVelocity
+//        ).withName("JoystickDriveAlongCircle")
+//    }
 
     // TODO Copy over and rewrite linesegment commands from frc2026 branch
     /**
@@ -811,53 +811,53 @@ abstract class SwerveDriveSubsystem(
      * @see driveToPoint
      * @see joystickDriveAlongCircle
      */
-    fun joystickDriveAlongLineSegment(
-        pointOne: Translation2d,
-        pointTwo: Translation2d,
-        heading: Rotation2d? = null,
-        poseSupplier: () -> Pose2d = { pose },
-        lineTolerance: Distance = 0.5.inches,
-        maxVelocity: LinearVelocity = maxSpeed
-    ): Command = commandUnnamed(this) {
-        val lineAngle = (pointTwo - pointOne).angle.get()
-
-        while (true) {
-            val currentPose = poseSupplier()
-            val linePoint = closestPointSupplier()
-            val translationToPose = linePoint.minus(currentPose.translation)
-            val distanceToPose = translationToPose.norm.deadband(lineTolerance.asMeters)
-            val driveToPointPower = min(abs(teleopDriveToPointController.calculate(distanceToPose, 0.0)), maxVelocity.asMetersPerSecond)
-
-            val driveToPointVelocity = translationToPose.normalize() * driveToPointPower
-            val teleopChassisSpeeds = getChassisVelocitiesFromJoystick().apply {
-                // Limit joystick speeds to be along the line
-                val modifiedTranslation = translation.rotateBy(-lineAngle)
-                val lineCentricTranslation = Translation2d(modifiedTranslation.x, 0.0).rotateBy(lineAngle)
-                vx = lineCentricTranslation.x
-                vy = lineCentricTranslation.y
-            }
-
-            SimpleLogger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
-            SimpleLogger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
-            SimpleLogger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
-
-
-            if (heading == null) {
-                val driveToPointChassisSpeeds = ChassisVelocities(driveToPointVelocity.x, driveToPointVelocity.y, 0.0)
-                val wantedChassisSpeeds = driveToPointChassisSpeeds + teleopChassisSpeeds
-                driveVelocity(wantedChassisSpeeds)
-            } else {
-                val wantedVelocity = teleopChassisSpeeds.translation + driveToPointVelocity
-                driveAtAngle(currentHeading, wantedVelocity)
-            }
-
-            yield()
-        }
-    }.named("JoystickDriveAlongLine") {
-        stop()
-        SimpleLogger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
-        SimpleLogger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
-    }
+//    fun joystickDriveAlongLineSegment(
+//        pointOne: Translation2d,
+//        pointTwo: Translation2d,
+//        heading: Rotation2d? = null,
+//        poseSupplier: () -> Pose2d = { pose },
+//        lineTolerance: Distance = 0.5.inches,
+//        maxVelocity: LinearVelocity = maxSpeed
+//    ): Command = commandUnnamed(this) {
+//        val lineAngle = (pointTwo - pointOne).angle.get()
+//
+//        while (true) {
+//            val currentPose = poseSupplier()
+//            val linePoint = closestPointSupplier()
+//            val translationToPose = linePoint.minus(currentPose.translation)
+//            val distanceToPose = translationToPose.norm.deadband(lineTolerance.asMeters)
+//            val driveToPointPower = min(abs(teleopDriveToPointController.calculate(distanceToPose, 0.0)), maxVelocity.asMetersPerSecond)
+//
+//            val driveToPointVelocity = translationToPose.normalize() * driveToPointPower
+//            val teleopChassisSpeeds = getChassisVelocitiesFromJoystick().apply {
+//                // Limit joystick speeds to be along the line
+//                val modifiedTranslation = translation.rotateBy(-lineAngle)
+//                val lineCentricTranslation = Translation2d(modifiedTranslation.x, 0.0).rotateBy(lineAngle)
+//                vx = lineCentricTranslation.x
+//                vy = lineCentricTranslation.y
+//            }
+//
+//            SimpleLogger.recordOutput("Drive/AlongLine/line", *arrayOf(pointOne, pointTwo))
+//            SimpleLogger.recordOutput("Drive/AlongLine/closestPoint", linePoint.toPose2d())
+//            SimpleLogger.recordOutput("Drive/AlongLine/translation2Pose", translationToPose.toPose2d())
+//
+//
+//            if (heading == null) {
+//                val driveToPointChassisSpeeds = ChassisVelocities(driveToPointVelocity.x, driveToPointVelocity.y, 0.0)
+//                val wantedChassisSpeeds = driveToPointChassisSpeeds + teleopChassisSpeeds
+//                driveVelocity(wantedChassisSpeeds)
+//            } else {
+//                val wantedVelocity = teleopChassisSpeeds.translation + driveToPointVelocity
+//                driveAtAngle(currentHeading, wantedVelocity)
+//            }
+//
+//            yield()
+//        }
+//    }.named("JoystickDriveAlongLine") {
+//        stop()
+//        SimpleLogger.recordOutput("Drive/AlongLine/line", *arrayOf<Translation2d>())
+//        SimpleLogger.recordOutput("Drive/AlongLine/closestPoint", Pose2d())
+//    }
 
 
     /**

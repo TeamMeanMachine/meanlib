@@ -1,5 +1,7 @@
 package org.team2471.frc.lib.math
 
+import org.team2471.frc.lib.units.asMeters
+import org.team2471.frc.lib.units.asRotation2d
 import org.wpilib.math.geometry.Pose2d
 import org.wpilib.math.geometry.Rotation2d
 import org.wpilib.math.geometry.Transform2d
@@ -8,6 +10,7 @@ import org.wpilib.math.geometry.Twist2d
 import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.math.util.MathUtil
 import org.wpilib.units.measure.Angle
+import org.wpilib.units.measure.Distance
 import kotlin.math.*
 
 @JvmName("squareOf")
