@@ -30,7 +30,7 @@ class LimelightCamera(
 ): QuixVisionCamera {
     private val pipelineConfigs = arrayOf(PipelineConfig())
     override val cameraSim: PhotonCameraSim =
-        PhotonCameraSim(PhotonCamera(cameraName), pipelineConfigs[0].simCameraProp)
+        PhotonCameraSim(PhotonCamera(cameraName)/*, pipelineConfigs[0].simCameraProp*/) // TODO Uncomment PV
 
     private val loggingName: String = "Inputs/LimelightCamera [$cameraName]"
 

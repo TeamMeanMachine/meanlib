@@ -4,6 +4,7 @@ import choreo.trajectory.SwerveSample
 import choreo.trajectory.Trajectory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
+import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignalCollection
 import com.ctre.phoenix6.configs.CANcoderConfiguration
 import com.ctre.phoenix6.configs.TalonFXConfiguration
@@ -65,8 +66,11 @@ import org.team2471.frc.lib.hardware.ctre.coastMode
 import org.team2471.frc.lib.energy.BatteryLogger
 import org.team2471.frc.lib.hardware.ctre.brakeMode
 import org.team2471.frc.lib.hardware.ctre.refreshAll
+import org.team2471.frc.lib.units.asVolts
+import org.team2471.frc.lib.units.volts
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
+import org.wpilib.command3.sysid.SysIdRoutine
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.driverstation.RobotState
 import org.wpilib.math.controller.PIDController
@@ -78,8 +82,10 @@ import org.wpilib.math.kinematics.ChassisVelocities
 import org.wpilib.math.kinematics.SwerveModulePosition
 import org.wpilib.math.kinematics.SwerveModuleVelocity
 import org.wpilib.preferences.Preferences
+import org.wpilib.sysid.SysIdRoutineLog
 import org.wpilib.system.Timer
 import org.wpilib.units.LinearAccelerationUnit
+import org.wpilib.units.Units
 import org.wpilib.units.measure.Angle
 import org.wpilib.units.measure.AngularVelocity
 import org.wpilib.units.measure.Distance
@@ -1031,86 +1037,104 @@ abstract class SwerveDriveSubsystem(
     // SysID Routines
 
     /** Used to find drive motor PID and SVA constants. */
-//    private val translationSysIdRoutine = SysIdRoutine(
-//        SysIdRoutine.Config(
-//            null,
-//            7.0.volts,
-//            2.0.seconds
-//        ) { state: SysIdRoutineLog.State ->
-//            SignalLogger.writeString("SysIdTranslation_State", state.toString())
-//            Logger.recordOutput("SysIdTranslation_State", state.toString())
-//          },
-//        Mechanism({ output: Voltage ->
-//            modules.forEachIndexed { i, m ->
-//                Logger.recordOutput("SysID/Translation/motor${i}Position", m.driveMotor.position.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-//                Logger.recordOutput("SysID/Translation/motor${i}Velocity", m.driveMotor.velocity.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-//                Logger.recordOutput("SysID/Translation/motor${i}Volts Applied", m.driveMotor.motorVoltage.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-//            }
-//            setControl(SysIdSwerveTranslation().withVolts(output))
-//        }, null, this)
-//    )
-//    /** Used to find [driveAtAnglePIDController] PID values. */
-//    private val rotationSysIdRoutine = SysIdRoutine(
-//        SysIdRoutine.Config(
-//            Units.Volts.of(Math.PI / 6).per(Units.Second),
-//            Math.PI.volts,
-//            5.0.seconds
-//        ) { state: SysIdRoutineLog.State ->
-//            SignalLogger.writeString("SysIdRotation_State", state.toString())
-//            Logger.recordOutput("SysIdRotation_State", state.toString())
-//          },
-//        Mechanism({ output: Voltage ->
-//            /* output is actually radians per second, but SysId only supports "volts" */
-//            setControl(SysIdSwerveRotation().withRotationalRate(output.asVolts))
-//            /* also log the requested output for SysId */
-//            // Adding randomness because values need to constantly be updating for sysid to pick up new samples
-//            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
-//            Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
-//            Logger.recordOutput("SysID/Rotation/yaw", gyro.yaw.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-//            Logger.recordOutput("SysID/Rotation/yawRate", gyro.angularVelocityZWorld.valueAsDouble + (Math.random() - 0.5) * 0.0001)
-//        }, null, this)
-//    )
-//    /** Used to find steer motor PID and SVA constants. */
-//    private val steerSysIdRoutine = SysIdRoutine(
-//        SysIdRoutine.Config(
-//            null,
-//            7.0.volts,
-//            null
-//        ) { state: SysIdRoutineLog.State ->
-//            SignalLogger.writeString("SysIdSteer_State", state.toString())
-//            Logger.recordOutput("SysIdSteer_State", state.toString())
-//          },
-//        Mechanism({ volts: Voltage? -> setControl(SysIdSwerveSteerGains().withVolts(volts)) }, null, this)
-//    )
-//
-//    // SysID Commands
-//
-//    fun sysIDTranslationDynamic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction).beforeWait(1.0)
-//    fun sysIDTranslationQuasistatic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-//    fun sysIDRotationDynamic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction).beforeWait(1.0)
-//    fun sysIDRotationQuasistatic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-//    fun sysIDSteerDynamic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction).beforeWait(1.0)
-//    fun sysIDSteerQuasistatic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction).beforeWait(1.0)
-//
-//    // Full SysID test commands
-//    fun sysIDTranslationAll() = sequenceCommand(
-//        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kForward),
-//        sysIDTranslationQuasistatic(SysIdRoutine.Direction.kReverse),
-//        sysIDTranslationDynamic(SysIdRoutine.Direction.kForward),
-//        sysIDTranslationDynamic(SysIdRoutine.Direction.kReverse)
-//    )
-//    fun sysIDRotationAll() = sequenceCommand(
-//        sysIDRotationQuasistatic(SysIdRoutine.Direction.kForward),
-//        sysIDRotationQuasistatic(SysIdRoutine.Direction.kReverse),
-//        sysIDRotationDynamic(SysIdRoutine.Direction.kForward),
-//        sysIDRotationDynamic(SysIdRoutine.Direction.kReverse),
-//    )
-//    fun sysIDSteerAll() = sequenceCommand(
-//        sysIDSteerQuasistatic(SysIdRoutine.Direction.kForward),
-//        sysIDSteerQuasistatic(SysIdRoutine.Direction.kReverse),
-//        sysIDSteerDynamic(SysIdRoutine.Direction.kForward),
-//        sysIDSteerDynamic(SysIdRoutine.Direction.kReverse),
-//    )
+    private val translationSysIdRoutine = SysIdRoutine(
+        SysIdRoutine.Config(
+            null,
+            7.0.volts,
+            2.0.seconds
+        ) { state: SysIdRoutineLog.State ->
+            SignalLogger.writeString("SysIdTranslation_State", state.toString())
+            Logger.recordOutput("SysIdTranslation_State", state.toString())
+        },
+        SysIdRoutine.SysIdMechanism({ output: Voltage ->
+            modules.forEachIndexed { i, m ->
+                Logger.recordOutput(
+                    "SysID/Translation/motor${i}Position",
+                    m.driveMotor.position.valueAsDouble + (Math.random() - 0.5) * 0.0001
+                )
+                Logger.recordOutput(
+                    "SysID/Translation/motor${i}Velocity",
+                    m.driveMotor.velocity.valueAsDouble + (Math.random() - 0.5) * 0.0001
+                )
+                Logger.recordOutput(
+                    "SysID/Translation/motor${i}Volts Applied",
+                    m.driveMotor.motorVoltage.valueAsDouble + (Math.random() - 0.5) * 0.0001
+                )
+            }
+            setControl(SysIdSwerveTranslation().withVolts(output))
+        }, null, this)
+    )
+    /** Used to find [driveAtAnglePIDController] PID values. */
+    private val rotationSysIdRoutine = SysIdRoutine(
+        SysIdRoutine.Config(
+            Units.Volts.of(Math.PI / 6).per(Units.Second),
+            Math.PI.volts,
+            5.0.seconds
+        ) { state: SysIdRoutineLog.State ->
+            SignalLogger.writeString("SysIdRotation_State", state.toString())
+            Logger.recordOutput("SysIdRotation_State", state.toString())
+          },
+        SysIdRoutine.SysIdMechanism({ output: Voltage ->
+            /* output is actually radians per second, but SysId only supports "volts" */
+            setControl(SysIdSwerveRotation().withRotationalRate(output.asVolts))
+            /* also log the requested output for SysId */
+            // Adding randomness because values need to constantly be updating for sysid to pick up new samples
+            SignalLogger.writeDouble("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("Rotational_Rate", output.asVolts + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("SysID/Rotation/yaw", gyro.yaw.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+            Logger.recordOutput("SysID/Rotation/yawRate", gyro.angularVelocityZWorld.valueAsDouble + (Math.random() - 0.5) * 0.0001)
+        }, null, this)
+    )
+    /** Used to find steer motor PID and SVA constants. */
+    private val steerSysIdRoutine = SysIdRoutine(
+        SysIdRoutine.Config(
+            null,
+            7.0.volts,
+            null
+        ) { state: SysIdRoutineLog.State ->
+            SignalLogger.writeString("SysIdSteer_State", state.toString())
+            Logger.recordOutput("SysIdSteer_State", state.toString())
+          },
+        SysIdRoutine.SysIdMechanism({ volts: Voltage? -> setControl(SysIdSwerveSteerGains().withVolts(volts)) }, null, this)
+    )
+
+    // SysID Commands
+
+    fun sysIDTranslationDynamic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction)
+    fun sysIDTranslationQuasistatic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction)
+    fun sysIDRotationDynamic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction)
+    fun sysIDRotationQuasistatic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction)
+    fun sysIDSteerDynamic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction)
+    fun sysIDSteerQuasistatic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction)
+
+    // Full SysID test commands
+    fun sysIDTranslationAll() = Command.requiring(this).executing {
+        it.await(sysIDTranslationQuasistatic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDTranslationQuasistatic(SysIdRoutine.Direction.REVERSE))
+        it.wait(1.0.seconds)
+        it.await(sysIDTranslationDynamic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDTranslationDynamic(SysIdRoutine.Direction.REVERSE))
+    }
+    fun sysIDRotationAll() = Command.requiring(this).executing {
+        it.await(sysIDRotationQuasistatic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDRotationQuasistatic(SysIdRoutine.Direction.REVERSE))
+        it.wait(1.0.seconds)
+        it.await(sysIDRotationDynamic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDRotationDynamic(SysIdRoutine.Direction.REVERSE))
+    }
+    fun sysIDSteerAll() = Command.requiring(this).executing {
+        it.await(sysIDSteerQuasistatic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDSteerQuasistatic(SysIdRoutine.Direction.REVERSE))
+        it.wait(1.0.seconds)
+        it.await(sysIDSteerDynamic(SysIdRoutine.Direction.FORWARD))
+        it.wait(1.0.seconds)
+        it.await(sysIDSteerDynamic(SysIdRoutine.Direction.REVERSE))
+    }
 
     // SIM
 //    var mapleSimDrivetrain: MapleSimCTRESwerveDrivetrain? = if (isReal || !useMapleSim) null else MapleSimCTRESwerveDrivetrain(150.0.pounds, 34.25.inches, 34.25.inches, pose, pigeon2.simState, *moduleConstants) TODO MAPLESIM
