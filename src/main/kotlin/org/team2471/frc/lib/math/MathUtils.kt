@@ -112,6 +112,14 @@ fun findClosestPointOnLine(linePointOne: Translation2d, linePointTwo: Translatio
     return closestPointOnLine
 }
 
+/**
+ * Finds the closest point along a circle defined by [center] and [radius] to the provided [referencePoint]
+ */
+fun findClosestPointOnCircle(center: Translation2d, radius: Distance, referencePoint: Translation2d): Translation2d {
+    val angleFrom = center.angleTo(referencePoint).asRotation2d
+    return center + Translation2d(radius.asMeters, angleFrom)
+}
+
 fun Double.coerceInDynamic(oneLimit: Double, twoLimit: Double) = this.coerceIn(min(oneLimit, twoLimit), max(oneLimit, twoLimit))
 
 fun interpTo(from: Double, to: Double, speed: Double, dt: Double = 0.02): Double {

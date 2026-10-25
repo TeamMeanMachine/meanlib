@@ -769,7 +769,38 @@ abstract class SwerveDriveSubsystem(
 
 
     /**
-     * Drives the robot to the closest point along a line but also lets the driver control the robot along it. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
+     * Drives the robot to the closest point on a circle but also lets the driver control the robot along it. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
+     *
+     * @param centerSupplier A function that returns the center of the circle.
+     * @param radius The radius of the circle.
+     * @param headingSupplier A function that returns the wanted heading of the robot to align to. The default value doesn't restrict the heading and allows joystick rotation control.
+     * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
+     * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
+     *
+     * @see driveToPoint
+     * @see joystickDriveAlongLineSegment
+     */
+    fun joystickDriveAlongCircle(
+        centerSupplier: () -> Translation2d,
+        radius: Distance,
+        headingSupplier: () -> Rotation2d? = { null },
+        poseSupplier: () -> Pose2d = { pose },
+        lineTolerance: Distance = 0.5.inches,
+        maxVelocity: LinearVelocity = maxSpeed
+    ): Command {
+        return joystickDriveAlongLine(
+            { findClosestPointOnCircle(centerSupplier(), radius, poseSupplier().translation) },
+            { (poseSupplier().translation.angleTo(centerSupplier()) + 90.0.degrees).asRotation2d },
+            headingSupplier,
+            poseSupplier,
+            lineTolerance,
+            maxVelocity
+        ).withName("JoystickDriveAlongCircle")
+    }
+
+    // TODO Copy over and rewrite linesegment commands from frc2026 branch
+    /**
+     * Drives the robot to the closest point along a line segment but also lets the driver control the robot along it. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
      *
      * @param pointOne The first line endpoint.
      * @param pointTwo The second line endpoint.
@@ -778,8 +809,9 @@ abstract class SwerveDriveSubsystem(
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
      * @see driveToPoint
+     * @see joystickDriveAlongCircle
      */
-    fun joystickDriveAlongLine(
+    fun joystickDriveAlongLineSegment(
         pointOne: Translation2d,
         pointTwo: Translation2d,
         heading: Rotation2d? = null,
@@ -791,7 +823,7 @@ abstract class SwerveDriveSubsystem(
 
         while (true) {
             val currentPose = poseSupplier()
-            val linePoint = findClosestPointOnLine(pointOne, pointTwo, currentPose.translation)
+            val linePoint = closestPointSupplier()
             val translationToPose = linePoint.minus(currentPose.translation)
             val distanceToPose = translationToPose.norm.deadband(lineTolerance.asMeters)
             val driveToPointPower = min(abs(teleopDriveToPointController.calculate(distanceToPose, 0.0)), maxVelocity.asMetersPerSecond)
@@ -816,7 +848,7 @@ abstract class SwerveDriveSubsystem(
                 driveVelocity(wantedChassisSpeeds)
             } else {
                 val wantedVelocity = teleopChassisSpeeds.translation + driveToPointVelocity
-                driveAtAngle(heading, wantedVelocity)
+                driveAtAngle(currentHeading, wantedVelocity)
             }
 
             yield()
@@ -838,6 +870,8 @@ abstract class SwerveDriveSubsystem(
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
      * @see driveToPoint
+     * @see joystickDriveAlongLineSegment
+     * @see joystickDriveAlongCircle
      */
     fun driveToLine(
         pointOne: Translation2d,
