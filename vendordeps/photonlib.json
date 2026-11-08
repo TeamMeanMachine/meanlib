@@ -1,7 +1,7 @@
 {
   "fileName": "photonlib.json",
   "name": "photonlib",
-  "version": "dev-v2027.0.0-alpha-2-86-gda55d785",
+  "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004",
   "wpilibYear": "2027_alpha7",
   "mavenUrls": [
@@ -13,7 +13,7 @@
     {
       "groupId": "org.photonvision",
       "artifactId": "photontargeting-cpp",
-      "version": "dev-v2027.0.0-alpha-2-86-gda55d785",
+      "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50",
       "skipInvalidPlatforms": true,
       "isJar": false,
       "validPlatforms": [
@@ -41,7 +41,7 @@
     {
       "groupId": "org.photonvision",
       "artifactId": "photonlib-cpp",
-      "version": "dev-v2027.0.0-alpha-2-86-gda55d785",
+      "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50",
       "libName": "photonlib",
       "headerClassifier": "headers",
       "sharedLibrary": true,
@@ -56,7 +56,7 @@
     {
       "groupId": "org.photonvision",
       "artifactId": "photontargeting-cpp",
-      "version": "dev-v2027.0.0-alpha-2-86-gda55d785",
+      "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50",
       "libName": "photontargeting",
       "headerClassifier": "headers",
       "sharedLibrary": true,
@@ -73,12 +73,12 @@
     {
       "groupId": "org.photonvision",
       "artifactId": "photonlib-java",
-      "version": "dev-v2027.0.0-alpha-2-86-gda55d785"
+      "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50"
     },
     {
       "groupId": "org.photonvision",
       "artifactId": "photontargeting-java",
-      "version": "dev-v2027.0.0-alpha-2-86-gda55d785"
+      "version": "dev-v2027.0.0-alpha-2-89-g4b8d9b50"
     }
   ]
 }
