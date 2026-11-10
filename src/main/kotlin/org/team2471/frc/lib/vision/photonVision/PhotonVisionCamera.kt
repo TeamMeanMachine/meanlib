@@ -28,7 +28,7 @@ class PhotonVisionCamera(
     private val pipelineConfigs: Array<PipelineConfig>
 ) : QuixVisionCamera {
     override val cameraSim: PhotonCameraSim =
-        PhotonCameraSim(PhotonCamera(cameraName)/*, pipelineConfigs[0].simCameraProp*/) //TODO PV
+        PhotonCameraSim(PhotonCamera(cameraName), pipelineConfigs[0].simCameraProp)
 
     private val loggingName: String = "Cameras/PhotonVisionCamera [$cameraName]"
     private val camera: PhotonCamera = if (isReal) PhotonCamera(cameraName) else cameraSim.camera

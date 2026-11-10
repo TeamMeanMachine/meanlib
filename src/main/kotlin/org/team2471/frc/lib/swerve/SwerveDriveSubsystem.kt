@@ -68,6 +68,7 @@ import org.team2471.frc.lib.hardware.ctre.brakeMode
 import org.team2471.frc.lib.hardware.ctre.refreshAll
 import org.team2471.frc.lib.units.asVolts
 import org.team2471.frc.lib.units.volts
+import org.team2471.frc.lib.units.voltsPerSecond
 import org.team2471.frc.lib.vision.QuixVisionSim
 import org.wpilib.command3.Command
 import org.wpilib.command3.sysid.SysIdRoutine
@@ -1039,7 +1040,7 @@ abstract class SwerveDriveSubsystem(
     /** Used to find drive motor PID and SVA constants. */
     private val translationSysIdRoutine = SysIdRoutine(
         SysIdRoutine.Config(
-            null,
+            1.0.voltsPerSecond,
             7.0.volts,
             2.0.seconds
         ) { state: SysIdRoutineLog.State ->
@@ -1088,9 +1089,9 @@ abstract class SwerveDriveSubsystem(
     /** Used to find steer motor PID and SVA constants. */
     private val steerSysIdRoutine = SysIdRoutine(
         SysIdRoutine.Config(
-            null,
+            1.0.voltsPerSecond,
             7.0.volts,
-            null
+            10.0.seconds
         ) { state: SysIdRoutineLog.State ->
             SignalLogger.writeString("SysIdSteer_State", state.toString())
             Logger.recordOutput("SysIdSteer_State", state.toString())

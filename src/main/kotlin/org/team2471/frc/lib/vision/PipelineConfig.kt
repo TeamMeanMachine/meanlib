@@ -21,13 +21,13 @@ class PipelineConfig(
     val imageHeight: Int = 800,
 
     //used for sim only
-//    val simCameraProp: SimCameraProperties = SimCameraProperties().apply { //TODO PV
-//        setCalibration(resWidth, resHeight, 70.2.degrees.asRotation2d)
-//        setCalibError(0.001, 0.005) // Values from docs. Should change
-//        fps = 20.0
-//        avgLatencyMs = 20.0
-//        latencyStdDevMs = 3.0
-//    },
+    val simCameraProp: SimCameraProperties = SimCameraProperties().apply {
+        setCalibration(resWidth, resHeight, 70.2.degrees.asRotation2d)
+        setCalibError(0.001, 0.005) // Values from docs. Should change
+        fps = 20.0
+        avgLatencyMs = 20.0
+        latencyStdDevMs = 3.0
+    },
     val camIntrinsics: Matrix<N3, N3> = MatBuilder.fill(N3(), N3(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //simCameraProp.intrinsics, TODO PV
     // used for sim only
     val distCoeffs: Matrix<N8, N1> = MatBuilder.fill(N8(), N1(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) //simCameraProp.distCoeffs TODO PV
