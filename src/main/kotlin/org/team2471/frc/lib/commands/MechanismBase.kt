@@ -7,7 +7,7 @@ import org.wpilib.driverstation.DriverStationErrors
 /**
  * A [PeriodicMechanism] with a default command.
  *
- * Adds an overwritable [defaultCommand] which can be easily used to set a defualt command.
+ * Adds an overwritable [defaultCommand] which can be easily used to set a default command.
  */
 open class MechanismBase(val mechanismName: String): PeriodicMechanism {
 
@@ -37,7 +37,10 @@ open class MechanismBase(val mechanismName: String): PeriodicMechanism {
                 DriverStationErrors.reportError("Default command MUST require this mechanism [$name].", true)
                 throw IllegalArgumentException("Default command MUST require this mechanism [$name]. Did you put 'command(this) {}'? ")
             }
-            val defaultCommandCopy = commandUnnamed(*dCommand.requirements().toTypedArray(), body = dCommand::run).named("$name Default", Command.LOWEST_PRIORITY, dCommand::onCancel)
+            val defaultCommandCopy = commandUnnamed(*dCommand.requirements().toTypedArray(), body = dCommand::run)
+                .withPriority(Command.LOWEST_PRIORITY)
+                .whenCanceled(dCommand::onCancel)
+                .named("$name Default")
             defaultCommand = defaultCommandCopy
         }
     }

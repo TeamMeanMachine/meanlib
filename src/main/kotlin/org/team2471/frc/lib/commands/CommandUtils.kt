@@ -6,18 +6,11 @@ import org.wpilib.command3.Mechanism
 import org.wpilib.command3.NeedsExecutionBuilderStage
 import org.wpilib.command3.NeedsNameBuilderStage
 
-class PeriodicScope {
-    @PublishedApi
-    internal var isDone = false
-
-    fun stop() {
-        isDone = true
-    }
-}
-
-var unnamedCommandCount = 0
-
-
+/**
+ * A typealias for a command that hasn't finished it's building. This command
+ * cannot be scheduled and `.named` must be called.
+ */
+typealias UnnamedCommand = NeedsNameBuilderStage
 
 // Partial Command Composers
 /**
@@ -26,84 +19,38 @@ var unnamedCommandCount = 0
  *
  * @param mechanisms required mechanisms for the command to execute.
  * @param body the executed [Coroutine] action.
- * @return a [NeedsNameBuilderStage] that must be [named] to be a valid [Command].
+ * @return a [UnnamedCommand] that must be [named] to be a valid [Command].
  * @see Command.requiring
  * @see NeedsExecutionBuilderStage.executing
  */
-fun commandUnnamed(vararg mechanisms: Mechanism, body: Coroutine.() -> Unit): NeedsNameBuilderStage =
-    Command.requiring(setOf(*mechanisms)).executing(body)
+inline fun commandUnnamed(vararg mechanisms: Mechanism, crossinline body: Coroutine.() -> Unit): UnnamedCommand =
+    Command.requiring(setOf(*mechanisms)).executing { it.body() }
 
 // Full Command Composers
+
 /**
- * Composes a [Command] with a [body] using the provided [Mechanism]s
+ * Composes a [Command] with a [body] requireing the provided [Mechanism]s
  *
  * @param name name of the command.
  * @param mechanisms required mechanisms for the command to execute.
  * @param body the executed [Coroutine] action.
- * @param onCancel the function to run when the command gets canceled, doesn't run if the command completes naturally.
  * @see Command.requiring
  * @see NeedsExecutionBuilderStage.executing
  * @see NeedsNameBuilderStage.named
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun command(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
-    commandUnnamed(*mechanisms, body = body).named(name, onCancel = onCancel)
-/**
- * Composes a [Command] with an action using provided [Mechanism]s
- *
- * @param name the name of the command.
- * @param mechanisms required mechanisms for the command to execute.
- * @param body the executed [Coroutine] action.
- * @see Command.requiring
- * @see NeedsExecutionBuilderStage.executing
- * @see NeedsNameBuilderStage.named
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun command(name: String, vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
+inline fun command(name: String, vararg mechanisms: Mechanism, crossinline body: Coroutine.() -> Unit): Command =
     commandUnnamed(*mechanisms, body = body).named(name)
 
 /**
- * Composes a [Command] with an action using provided [Mechanism]s
- * Automatically names the command using the name of the method that called this function.
- *
- * @param mechanisms required mechanisms for the command to execute.
- * @param body the executed [Coroutine] action.
- * @see Command.requiring
- * @see NeedsExecutionBuilderStage.executing
- * @see NeedsNameBuilderStage.named
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun command(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit): Command =
-    commandUnnamed(*mechanisms, body = body).named(try {object {}.javaClass.enclosingMethod.name} catch (_: Exception) { "lambda unnamed $unnamedCommandCount".also { unnamedCommandCount++ } })
-
-/**
- * Composes a [Command] with a [body] using the provided [Mechanism]s
- * Automatically names the command using the name of the method that called this function.
- *
- * @param mechanisms required mechanisms for the command to execute.
- * @param body the executed [Coroutine] action.
- * @param onCancel the function to run when the command gets canceled, doesn't run if the command completes naturally.
- * @see Command.requiring
- * @see NeedsExecutionBuilderStage.executing
- * @see NeedsNameBuilderStage.named
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun command(vararg mechanisms: Mechanism, noinline body: Coroutine.() -> Unit, noinline onCancel: () -> Unit): Command =
-    commandUnnamed(*mechanisms, body = body).named(object {}.javaClass.enclosingMethod.name, onCancel = onCancel)
-
-/**
- * Finishes composing a command by naming it. Also, can apply an [onCancel] action.
- * [onCancel] will not run if the command completes naturally.
+ * Finishes composing a command by naming it. Also, can apply a [priority].
  *
  * @param name the name of the command.
- * @param onCancel the function to run when the command gets canceled, doesn't run if the command completes naturally.
+ * @param priority the priority of the command.
  * @return a composed [Command].
- * @see NeedsNameBuilderStage.named
- * @see NeedsNameBuilderStage.whenCanceled
+ * @see NeedsNameBuilderStage.withPriority
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun NeedsNameBuilderStage.named(name: String = object {}.javaClass.enclosingMethod.name, priority: Int? = null, noinline onCancel: () -> Unit = {}): Command =
-    (if (priority != null) withPriority(priority) else this).whenCanceled(onCancel).named(name)
+fun UnnamedCommand.named(name: String, priority: Int): Command =
+    withPriority(priority).named(name)
 
 /**
  * Adds an action onto an existing commands' [onCancelAction] action.

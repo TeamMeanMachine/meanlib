@@ -78,6 +78,7 @@ fun SparkBase.coastMode() = modifyConfiguration { coastMode() }
 /**
  * Set motor neutral mode to brake.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.brakeMode(): SparkBaseConfig {
     idleMode(SparkBaseConfig.IdleMode.kBrake)
     return this
@@ -86,6 +87,7 @@ fun SparkBaseConfig.brakeMode(): SparkBaseConfig {
 /**
  * Set motor neutral mode to brake.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.coastMode(): SparkBaseConfig {
     idleMode(SparkBaseConfig.IdleMode.kCoast)
     return this
@@ -99,6 +101,7 @@ fun SparkBaseConfig.coastMode(): SparkBaseConfig {
  * @param d The derivative gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.pid(p: Double, i: Double, d: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.pid(p, i, d, slotFromInt(slotNumber))
     return this
@@ -110,6 +113,7 @@ fun SparkBaseConfig.pid(p: Double, i: Double, d: Double, slotNumber: Int = 0): S
  * @param p The proportional gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.p(p: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.p(p, slotFromInt(slotNumber))
     return this
@@ -121,6 +125,7 @@ fun SparkBaseConfig.p(p: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param d The derivative gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.d(d: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.d(d, slotFromInt(slotNumber))
     return this
@@ -132,6 +137,7 @@ fun SparkBaseConfig.d(d: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param i The integral gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.i(i: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.i(i, slotFromInt(slotNumber))
     return this
@@ -143,6 +149,7 @@ fun SparkBaseConfig.i(i: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param a The acceleration feedforward gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.a(a: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.feedForward.kA(a, slotFromInt(slotNumber))
     return this
@@ -160,6 +167,7 @@ fun SparkBaseConfig.a(a: Double, slotNumber: Int = 0): SparkBaseConfig {
  *
  * @see SparkBaseConfig.kCos
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.g(g: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.feedForward.kG(g, slotFromInt(slotNumber))
     return this
@@ -172,6 +180,7 @@ fun SparkBaseConfig.g(g: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param v The velocity feedforward gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.v(v: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.feedForward.kV(v, slotFromInt(slotNumber))
     return this
@@ -183,6 +192,7 @@ fun SparkBaseConfig.v(v: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param s The static feedforward gain
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.s(s: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.feedForward.kS(s, slotFromInt(slotNumber))
     return this
@@ -200,6 +210,7 @@ fun SparkBaseConfig.s(s: Double, slotNumber: Int = 0): SparkBaseConfig {
  * @param slotNumber The slot number to set the gains for. Defaults to 0.
  *
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.kCos(kCos: Double, kCosRatio: Double = 1.0, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.feedForward.kCos(kCos, slotFromInt(slotNumber))
     this.closedLoop.feedForward.kCosRatio(kCosRatio, slotFromInt(slotNumber))
@@ -209,6 +220,7 @@ fun SparkBaseConfig.kCos(kCos: Double, kCosRatio: Double = 1.0, slotNumber: Int 
 /**
  * Configure the max motion cruise velocity and acceleration.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxMotion(cruseVelocity: Double, maxAcceleration: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxMotion.cruiseVelocity(cruseVelocity, slotFromInt(slotNumber))
     this.closedLoop.maxMotion.maxAcceleration(maxAcceleration, slotFromInt(slotNumber))
@@ -218,6 +230,7 @@ fun SparkBaseConfig.maxMotion(cruseVelocity: Double, maxAcceleration: Double, sl
 /**
  * Configure the max motion cruise velocity.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxMotionCruiseVelocity(cruiseVelocity: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxMotion.cruiseVelocity(cruiseVelocity, slotFromInt(slotNumber))
     return this
@@ -226,6 +239,7 @@ fun SparkBaseConfig.maxMotionCruiseVelocity(cruiseVelocity: Double, slotNumber: 
 /**
  * Configure the max motion acceleration.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxMotionMaxAcceleration(maxAcceleration: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxMotion.maxAcceleration(maxAcceleration, slotFromInt(slotNumber))
     return this
@@ -236,6 +250,7 @@ fun SparkBaseConfig.maxMotionMaxAcceleration(maxAcceleration: Double, slotNumber
  *
  * @see MAXMotionConfig.MAXMotionPositionMode
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxMotionPositionMode(positionMode: MAXMotionConfig.MAXMotionPositionMode, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxMotion.positionMode(positionMode, slotFromInt(slotNumber))
     return this
@@ -247,6 +262,7 @@ fun SparkBaseConfig.maxMotionPositionMode(positionMode: MAXMotionConfig.MAXMotio
  *
  * @see MAXMotionConfig.MAXMotionPositionMode
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxMotionAllowedProfileError(allowedError: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxMotion.allowedProfileError(allowedError, slotFromInt(slotNumber))
     return this
@@ -258,6 +274,7 @@ fun SparkBaseConfig.maxMotionAllowedProfileError(allowedError: Double, slotNumbe
  *
  * @see MAXMotionConfig.MAXMotionPositionMode
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.allowedClosedLoopError(allowedError: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.allowedClosedLoopError(allowedError, slotFromInt(slotNumber))
     return this
@@ -266,6 +283,7 @@ fun SparkBaseConfig.allowedClosedLoopError(allowedError: Double, slotNumber: Int
 /**
  * Set the derivative filter of the controller for a specific closed loop slot.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.dFilter(dFilter: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.dFilter(dFilter, slotFromInt(slotNumber))
     return this
@@ -275,6 +293,7 @@ fun SparkBaseConfig.dFilter(dFilter: Double, slotNumber: Int = 0): SparkBaseConf
  * Set the maximum I accumulator of the controller.
  * This value is used to constrain the I accumulator to help manage integral wind-up.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.iMaxAccum(iMaxAccum: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.iMaxAccum(iMaxAccum, slotFromInt(slotNumber))
     return this
@@ -283,6 +302,7 @@ fun SparkBaseConfig.iMaxAccum(iMaxAccum: Double, slotNumber: Int = 0): SparkBase
 /**
  * Set the integral zone of the controller.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.iZone(iZone: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.iZone(iZone, slotFromInt(slotNumber))
     return this
@@ -291,6 +311,7 @@ fun SparkBaseConfig.iZone(iZone: Double, slotNumber: Int = 0): SparkBaseConfig {
 /**
  * Set the maximum output of the controller in the range [-1, 1]
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.maxOutput(maxOutput: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.maxOutput(maxOutput, slotFromInt(slotNumber))
     return this
@@ -299,6 +320,7 @@ fun SparkBaseConfig.maxOutput(maxOutput: Double, slotNumber: Int = 0): SparkBase
 /**
  * Set the minimum output of the controller in the range [-1, 1]
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.minOutput(minOutput: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.minOutput(minOutput, slotFromInt(slotNumber))
     return this
@@ -310,6 +332,7 @@ fun SparkBaseConfig.minOutput(minOutput: Double, slotNumber: Int = 0): SparkBase
  * @param minOutput The minimum output of the controller in the range [-1, 1]
  * @param maxOutput The maximum output of the controller in the range [-1, 1]
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.outputRange(minOutput: Double, maxOutput: Double, slotNumber: Int = 0): SparkBaseConfig {
     this.closedLoop.outputRange(minOutput, maxOutput, slotFromInt(slotNumber))
     return this
@@ -322,6 +345,7 @@ fun SparkBaseConfig.outputRange(minOutput: Double, maxOutput: Double, slotNumber
  *
  * @see positionWrappingInputRange
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.positionWrappingEnabled(enabled: Boolean): SparkBaseConfig {
     this.closedLoop.positionWrappingEnabled(enabled)
     return this
@@ -333,6 +357,7 @@ fun SparkBaseConfig.positionWrappingEnabled(enabled: Boolean): SparkBaseConfig {
  *
  * @param sensor the type of feedback device.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor): SparkBaseConfig {
     this.closedLoop.feedbackSensor(sensor)
     return this
@@ -345,6 +370,7 @@ fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor): SparkBaseCo
  * @param sensor the type of feedback device.
  * @param detachedEncoderDeviceId the CAN ID of the feedback device on the same CAN bus as the motor.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor, detachedEncoderDeviceId: Int): SparkBaseConfig {
     this.closedLoop.feedbackSensor(sensor, detachedEncoderDeviceId)
     return this
@@ -357,6 +383,7 @@ fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor, detachedEnco
  * @param sensor the type of feedback device.
  * @param detachedEncoder the device on the same CAN bus as the motor.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor, detachedEncoder: DetachedEncoder): SparkBaseConfig {
     this.closedLoop.feedbackSensor(sensor, detachedEncoder)
     return this
@@ -367,6 +394,7 @@ fun SparkBaseConfig.alternateFeedbackSensor(sensor: FeedbackSensor, detachedEnco
  * This will disable motor actuation in the forward direction past this position.
  * This value should have the position conversion factor applied to it.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.forwardSoftLimit(limit: Double): SparkBaseConfig {
     this.softLimit.forwardSoftLimit(limit)
     this.softLimit.forwardSoftLimitEnabled(true)
@@ -378,6 +406,7 @@ fun SparkBaseConfig.forwardSoftLimit(limit: Double): SparkBaseConfig {
  * This will disable motor actuation in the reverse direction past this position.
  * This value should have the position conversion factor applied to it.
  */
+@IgnorableReturnValue
 fun SparkBaseConfig.reverseSoftLimit(limit: Double): SparkBaseConfig {
     this.softLimit.reverseSoftLimit(limit)
     this.softLimit.reverseSoftLimitEnabled(true)

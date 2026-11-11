@@ -11,6 +11,16 @@ import org.wpilib.system.Watchdog
 /** Utility functions for [Coroutine]s. Which are used inside [Command] actions, and allow for muti-threading "like" features. Ex: yield() await() */
 // Different from [kotlinx.coroutines] which are also installed. (Those use the "suspend" keyword)
 
+
+class PeriodicScope {
+    @PublishedApi
+    internal var isDone = false
+
+    fun stop() {
+        isDone = true
+    }
+}
+
 /**
  * Runs the provided [body] of code periodically per loop.
  *
@@ -39,6 +49,7 @@ inline fun Coroutine.periodic(
  * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
  * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
  */
+@IgnorableReturnValue
 inline fun Coroutine.periodicTimeout(
     timeout: Double,
     crossinline body: PeriodicScope.(Double) -> Unit

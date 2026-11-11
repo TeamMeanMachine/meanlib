@@ -56,6 +56,7 @@ object PhoenixUtil {
     fun ControlModeValue.isPositionControlMode() = positionControlModes.contains(this)
 
     /** Attempts to run the command until no error is produced.  */
+    @IgnorableReturnValue
     fun tryUntilOk(maxAttempts: Int, command: Supplier<StatusCode>): Boolean {
         for (i in 0..<maxAttempts) {
             val error = command.get()
@@ -78,6 +79,7 @@ object PhoenixUtil {
  *
  * @see StatusSignalCollection.refreshAll
  */
+@IgnorableReturnValue
 fun <S: StatusSignal<*>> Collection<S>.refreshAll() = StatusSignalCollection(this).refreshAll()
 
 /**
@@ -87,6 +89,7 @@ fun <S: StatusSignal<*>> Collection<S>.refreshAll() = StatusSignalCollection(thi
  *
  * @see StatusSignalCollection.refreshAll
  */
+@IgnorableReturnValue
 fun <S: StatusSignal<*>> Array<S>.refreshAll() = StatusSignalCollection(*this).refreshAll()
 
 
@@ -96,6 +99,7 @@ fun <S: StatusSignal<*>> Array<S>.refreshAll() = StatusSignalCollection(*this).r
  * If no value is passed in, the modules are set to their current angle with 0 speed
  */
 class ApplyModuleStates(vararg val moduleStates: SwerveModuleVelocity? = arrayOf()): SwerveRequest {
+    @IgnorableReturnValue
     override fun apply(
         parameters: SwerveControlParameters?,
         vararg modulesToApply: SwerveModule<*, *, *>
@@ -125,6 +129,7 @@ class ApplyModuleStatesVoltage(vararg val moduleStates: SwerveModuleVelocity? = 
     /** Local reference to a position torque current request for the steer motors  */
     private val steerRequestTorqueCurrent = PositionTorqueCurrentFOC(0.0)
 
+    @IgnorableReturnValue
     override fun apply(
         parameters: SwerveControlParameters?,
         vararg modulesToApply: SwerveModule<*, *, *>?

@@ -11,6 +11,7 @@ import org.team2471.frc.lib.units.rotations
 import org.wpilib.units.measure.Angle
 
 /** Grabs the MagnetOffset from the [CANcoder]. */
+@IgnorableReturnValue
 fun CANcoder.getMagnetSensorOffset(): Angle {
     if (!this.isConnected || isSim) return 0.0.degrees
     val initialConfigs = CANcoderConfiguration()
@@ -38,6 +39,7 @@ fun CANcoder.setMagnetSensorOffset(offset: Angle) {
  * Sets the [CANcoder]s MagnetOffset config so its current position equals the specified angle.
  * This is probably a backing call
  */
+@IgnorableReturnValue
 fun CANcoder.setCANCoderAngle(angle: Angle): Angle {
     val initialPosition = this.absolutePosition.valueAsDouble.rotations
     val initialOffset = getMagnetSensorOffset()
@@ -51,12 +53,14 @@ fun CANcoder.setCANCoderAngle(angle: Angle): Angle {
     return newOffset
 }
 
+@IgnorableReturnValue
 fun CANcoderConfiguration.inverted(inverted: Boolean): CANcoderConfiguration {
     return this.apply {
         MagnetSensor.SensorDirection = if (inverted) SensorDirectionValue.Clockwise_Positive else SensorDirectionValue.CounterClockwise_Positive
     }
 }
 
+@IgnorableReturnValue
 fun CANcoderConfiguration.magnetSensorOffset(magnetOffsetRotations: Double): CANcoderConfiguration {
     return this.apply {
         MagnetSensor.MagnetOffset = magnetOffsetRotations

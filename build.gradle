@@ -26,6 +26,9 @@ java {
 
 kotlin {
     jvmToolchain(25)
+    compilerOptions {
+        freeCompilerArgs.add("-Xreturn-value-checker=full")
+    }
 }
 
 // Automatically download documentation from libraries
