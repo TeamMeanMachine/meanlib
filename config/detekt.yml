@@ -1,0 +1,14 @@
+console-reports:
+  active: true
+  exclude:
+    - 'ProjectStatisticsReport'
+    - 'ComplexityReport'
+    - 'IssuesReport'
+    - 'FileBasedIssuesReport'
+
+potential-bugs:
+  IgnoredReturnValue:
+    active: true
+    restrictToConfig: true
+    returnValueTypes:
+      - 'org.wpilib.command3.Command'

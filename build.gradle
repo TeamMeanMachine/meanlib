@@ -6,6 +6,7 @@ plugins {
     id "org.wpilib.GradleRIO" version "2027.0.0-alpha-8"
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
     id "org.jetbrains.kotlin.kapt" version "2.3.21"
+    id "dev.detekt" version "2.0.0-alpha.3"
 }
 // Disable all simulation and deploy tasks since meanlib is a library
 gradle.afterProject { proj ->
@@ -42,6 +43,8 @@ idea {
 group = "org.team2471.lib"
 
 dependencies {
+    detektPlugins(project(":meanlib:detekt-command-message"))
+
     // using 'api' so other projects inherit the same libraries
     kapt wpi.java.deps.wpilibAnnotations()
     api wpi.java.deps.wpilib()
@@ -62,6 +65,17 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+}
+
+detekt {
+    buildUponDefaultConfig = false
+    allRules = false
+    config.setFrom(files("config/detekt.yml"))
+    ignoreFailures = false
+}
+
+tasks.withType(JavaExec).configureEach {
+    dependsOn(tasks.named("detektMain"))
 }
 
 tasks.withType(JavaCompile).configureEach {

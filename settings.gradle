@@ -38,3 +38,4 @@ Properties props = System.getProperties()
 props.setProperty("org.gradle.internal.native.headers.unresolved.dependencies.ignore", "true")
 
 rootProject.name = 'meanlib'
+include(":meanlib:detekt-command-message")
