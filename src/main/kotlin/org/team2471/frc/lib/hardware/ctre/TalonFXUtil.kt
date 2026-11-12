@@ -412,7 +412,6 @@ fun TalonFXConfiguration.motionMagicExpo(expoKV: Double, expoKA: Double, maxVelo
  * @see configNeutralMode
  * @see GlobalScope
  */
-@OptIn(DelicateCoroutinesApi::class)
 fun TalonFX.brakeMode() {
     if (isReal) {
         PhoenixUtil.runOnBackgroundThread {
@@ -428,7 +427,6 @@ fun TalonFX.brakeMode() {
  * @see configNeutralMode
  * @see GlobalScope
  */
-@OptIn(DelicateCoroutinesApi::class)
 fun TalonFX.coastMode() {
     if (isReal) {
         PhoenixUtil.runOnBackgroundThread {
@@ -446,7 +444,6 @@ fun TalonFX.coastMode() {
  * @see GlobalScope
  * @see CurrentLimitsConfigs
  */
-@OptIn(DelicateCoroutinesApi::class)
 fun CoreTalonFX.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {
     PhoenixUtil.runOnBackgroundThread {
         modifyCurrentLimits(continuousLimit, peakCurrentLimit, peakCurrentDuration)

@@ -1,12 +1,9 @@
 package org.team2471.frc.lib.commands
 
 import org.team2471.frc.lib.coroutines.measureTimeMonotonic
-import org.team2471.frc.lib.units.seconds
 import org.wpilib.command3.Command
 import org.wpilib.command3.Coroutine
-import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.system.Timer
-import org.wpilib.system.Watchdog
 
 /** Utility functions for [Coroutine]s. Which are used inside [Command] actions, and allow for muti-threading "like" features. Ex: yield() await() */
 // Different from [kotlinx.coroutines] which are also installed. (Those use the "suspend" keyword)

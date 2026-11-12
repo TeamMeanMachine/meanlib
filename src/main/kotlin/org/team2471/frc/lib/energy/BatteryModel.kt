@@ -7,7 +7,6 @@
 package org.team2471.frc.lib.energy
 
 import org.littletonrobotics.junction.Logger
-import org.wpilib.math.util.MathUtil
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.pow

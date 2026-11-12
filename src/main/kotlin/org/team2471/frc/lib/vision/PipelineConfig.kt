@@ -3,14 +3,10 @@ package org.team2471.frc.lib.vision
 import org.team2471.frc.lib.units.asRotation2d
 import org.team2471.frc.lib.units.degrees
 import org.photonvision.simulation.SimCameraProperties
-import org.wpilib.math.linalg.MatBuilder
 import org.wpilib.math.linalg.Matrix
 import org.wpilib.math.numbers.N1
 import org.wpilib.math.numbers.N3
 import org.wpilib.math.numbers.N8
-import org.wpilib.math.util.Nat.N1
-import org.wpilib.math.util.Nat.N3
-import org.wpilib.math.util.Nat.N8
 
 /** Describes a given vision camera pipeline configuration.  */
 class PipelineConfig(

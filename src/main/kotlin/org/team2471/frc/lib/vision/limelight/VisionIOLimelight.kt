@@ -1,8 +1,5 @@
 package org.team2471.frc.lib.vision.limelight
 
-//import org.littletonrobotics.junction.LogTable
-//import org.littletonrobotics.junction.Logger
-//import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
@@ -14,7 +11,6 @@ import org.wpilib.math.geometry.Translation2d
 import org.wpilib.networktables.NetworkTableInstance
 import org.wpilib.system.Timer
 import org.wpilib.units.measure.Angle
-import kotlin.math.sqrt
 
 
 class VisionIOLimelight(val name: String, val useMegatag2: Boolean = true, val headingSupplier: () -> Angle): VisionIO {

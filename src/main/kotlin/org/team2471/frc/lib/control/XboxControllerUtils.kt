@@ -2,7 +2,6 @@ package org.team2471.frc.lib.control
 
 import org.wpilib.command3.button.CommandXboxController
 import org.wpilib.driverstation.POVDirection
-import org.wpilib.driverstation.XboxController
 
 /** Extension functions for raw button values. */
 

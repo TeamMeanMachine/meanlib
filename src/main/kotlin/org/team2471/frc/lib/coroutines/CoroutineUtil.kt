@@ -6,6 +6,8 @@ import org.team2471.frc.lib.commands.PeriodicScope
 import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.system.Timer
 import org.wpilib.system.Watchdog
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -62,4 +64,4 @@ inline fun measureTimeMonotonic(body: () -> Unit): Double {
  *
  * @see kotlinx.coroutines.delay
  */
-suspend inline fun delay(time: Double) = delay((time * 1000).toLong())
+suspend inline fun delay(time: Double) = delay(time.seconds)
