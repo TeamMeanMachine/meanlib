@@ -28,7 +28,7 @@ class PipelineConfig(
         avgLatencyMs = 20.0
         latencyStdDevMs = 3.0
     },
-    val camIntrinsics: Matrix<N3, N3> = MatBuilder.fill(N3(), N3(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0), //simCameraProp.intrinsics, TODO PV
+    val camIntrinsics: Matrix<N3, N3> = simCameraProp.intrinsics,
     // used for sim only
-    val distCoeffs: Matrix<N8, N1> = MatBuilder.fill(N8(), N1(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) //simCameraProp.distCoeffs TODO PV
+    val distCoeffs: Matrix<N8, N1> = simCameraProp.distCoeffs
 )
