@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveModuleConstants
 import com.ctre.phoenix6.swerve.SwerveRequest
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodicSuspend
@@ -19,6 +20,7 @@ import org.wpilib.driverstation.DriverStationErrors
 import org.wpilib.math.kinematics.SwerveModuleVelocity
 import java.util.function.Supplier
 
+@OptIn(DelicateCoroutinesApi::class)
 object PhoenixUtil {
     private val backingRunnableQueue = mutableListOf<() -> Unit>()
 

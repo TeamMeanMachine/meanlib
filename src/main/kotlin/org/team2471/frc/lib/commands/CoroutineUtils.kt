@@ -8,6 +8,7 @@ import org.wpilib.system.Timer
 /** Utility functions for [Coroutine]s. Which are used inside [Command] actions, and allow for muti-threading "like" features. Ex: yield() await() */
 // Different from [kotlinx.coroutines] which are also installed. (Those use the "suspend" keyword)
 
+// TODO: Figure out delay function. Perhaps "extend" or wrap [Coroutine] and use @RestrictsSuspension
 
 class PeriodicScope {
     @PublishedApi
@@ -31,9 +32,7 @@ inline fun Coroutine.periodic(
     val scope = PeriodicScope()
 
     while (true) {
-        val dt = measureTimeMonotonic {
-            body(scope)
-        }
+        body(scope)
         if (scope.isDone) break
         yield()
     }
@@ -66,14 +65,9 @@ inline fun Coroutine.periodicTimeout(
     return timedOut
 }
 
-fun Coroutine.parallel(
-    vararg commands: Command
-) {
-    awaitAll(*commands)
-}
+@IgnorableReturnValue
+fun Coroutine.parallel(vararg commands: Command) = awaitAll(*commands)!!
 
-fun Coroutine.parallel(
-    vararg blocks: Coroutine.() -> Unit
-) {
+@IgnorableReturnValue
+fun Coroutine.parallel(vararg blocks: Coroutine.() -> Unit) =
     parallel(*blocks.mapIndexed { index, coroutine -> command("unnamedParallel$index") { coroutine() }}.toTypedArray())
-}
