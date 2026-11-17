@@ -31,6 +31,19 @@ inline fun commandUnnamed(vararg mechanisms: Mechanism, crossinline body: Corout
 /**
  * Composes a [Command] with a [body] requireing the provided [Mechanism]s
  *
+ * ```
+ * // Command with name that requires Drive, Intake, and Shooter
+ * fun myCoolAutoCommand() = command("myCoolAuto", Drive, Intake, Shooter) {
+ *     println("Starting cool auto")
+ *     await(driveForwardAndIntakeCommand(10.0.feet)) // Must await when running sequential commands
+ *     println("Finished Intaking. Now aiming")
+ *     Shooter.rampUpIdle() // Non-command methods don't use await
+ *     await(Drive.aimAtGoalCommand())
+ *     await(Shooter.shootCommand())
+ *     println("Bye!")
+ * }
+ * ```
+ *
  * @param name name of the command.
  * @param mechanisms required mechanisms for the command to execute.
  * @param body the executed [Coroutine] action.
@@ -53,23 +66,72 @@ fun UnnamedCommand.named(name: String, priority: Int): Command =
     withPriority(priority).named(name)
 
 /**
- * Adds an action onto an existing commands' [onCancelAction] action.
- * Both actions will run when the command is canceled.
- * [onCancelAction] will not run if the command completes naturally.
+ * Creates a duplicate [UnnamedCommand] from a command with the same requirements, action, priority, and exit actions.
  *
- * @param onCancelAction the action to perform when the command is canceled.
- * @return the modified command.
- * @see NeedsNameBuilderStage.whenCanceled
+ * Must be renamed to become a [Command]. This doesn't duplicate the [name] or .until
+ *
+ * @return a [UnnamedCommand] of the command.
  */
-fun Command.onCancel(onCancelAction: () -> Unit): Command = Command.requiring(this.requirements()).executing(this::run).whenCanceled { this.onCancel(); onCancelAction() }.named("${this.name()}WithOnCancel")
+fun Command.unnamedCommand(): UnnamedCommand = Command
+    .requiring(this.requirements())
+    .executing(this::run)
+    .whenCanceled(this::onCancel)
+    .whenExited(this::onExit)
+    .withPriority(this.priority())
 
 /**
- * Replaces an existing commands' [onCancel] action to a new action.
- * The onCancel action provided here will override whatever onCancel action was already set.
- * [onCancel] will not run if the command completes naturally.
+ * Adds an action onto an existing commands' [onCancel] action.
  *
- * @param onCancel the action to perform when the command is canceled.
+ * [onCancel] actions will run when the command is canceled, NOT when the command finishes naturally. See [onExit]
+ *
+ * @param addOnCancel the action to perform when the command is canceled.
+ * @return the modified command.
+ * @see NeedsNameBuilderStage.whenCanceled
+ * @see onExit
+ */
+fun Command.onCancel(addOnCancel: () -> Unit): Command = this.replaceOnCancel { this.onCancel(); addOnCancel() }
+
+/**
+ * Adds an action onto an existing commands' [onExit] action.
+ *
+ * [onExit] will run when the command ends naturally or is canceled. See [onCancel]
+ *
+ * @param addOnExit the action to perform when the command finishes naturally or is canceled.
+ * @return the modified command.
+ * @see NeedsNameBuilderStage.whenExited
+ * @see onCancel
+ */
+fun Command.onExit(addOnExit: () -> Unit): Command = this.replaceOnExit { this.onExit(); addOnExit() }
+
+/**
+ * Replaces an existing command's onCancel action with [newOnCancel].
+ * The onCancel action provided here will override whatever onCancel action was already set.
+ * [newOnCancel] will not run if the command completes naturally.
+ *
+ * @param newOnCancel the action to perform when the command is canceled.
  * @return the modified command.
  * @see NeedsNameBuilderStage.whenCanceled
  */
-fun Command.replaceOnCancel(onCancel: () -> Unit): Command = Command.requiring(this.requirements()).executing(this::run).whenCanceled(onCancel).named("${this.name()}WithOnCancel")
+fun Command.replaceOnCancel(newOnCancel: () -> Unit): Command = this.unnamedCommand().whenCanceled(newOnCancel).named(name())
+
+/**
+ * Replaces an existing commands' onExit action with a new action.
+ * The onExit action provided here will override whatever onExit action was already set.
+ * [newOnExit] will run when the command ends naturally or is canceled.
+ *
+ * @param newOnExit the action to perform when the command finishes naturally or is canceled.
+ * @return the modified command.
+ * @see NeedsNameBuilderStage.whenExited
+ */
+fun Command.replaceOnExit(newOnExit: () -> Unit): Command = this.unnamedCommand().whenExited(newOnExit).named(name())
+
+/**
+ * Replaces an existing commands' priority. Default `0`
+ *
+ * @param newPriority the new priority for the command. [[Int.MIN_VALUE] - [Int.MAX_VALUE]]
+ * @return the modified command.
+ * @see NeedsNameBuilderStage.withPriority
+ */
+fun Command.priority(newPriority: Int): Command = this.unnamedCommand().withPriority(newPriority).named(name())
+
+
