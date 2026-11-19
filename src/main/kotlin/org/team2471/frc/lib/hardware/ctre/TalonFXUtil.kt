@@ -424,7 +424,6 @@ fun TalonFX.brakeMode() {
  * This function will finish instantly, but the motor will take longer (>100 ms) to apply the change.
  * Preferably do not put this in a loop.
  * @see configNeutralMode
- * @see GlobalScope
  */
 fun TalonFX.coastMode() {
     if (isReal) {
@@ -440,7 +439,6 @@ fun TalonFX.coastMode() {
  *
  * Preferably do not put this in a loop, this launches a new thread.
  * @see modifyCurrentLimits
- * @see GlobalScope
  * @see CurrentLimitsConfigs
  */
 fun CoreTalonFX.modifyCurrentLimitsAsync(continuousLimit: Double? = null, peakCurrentLimit: Double? = null, peakCurrentDuration: Double? = null) {

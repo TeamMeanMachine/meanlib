@@ -50,7 +50,6 @@ import org.team2471.frc.lib.units.radiansPerSecond
 import org.team2471.frc.lib.logging.LoopLogger
 import org.team2471.frc.lib.commands.periodic
 import org.team2471.frc.lib.commands.command
-import org.team2471.frc.lib.commands.commandUnnamed
 import org.team2471.frc.lib.environment.isReal
 import org.team2471.frc.lib.environment.isRedAlliance
 import org.team2471.frc.lib.environment.isSim
@@ -120,20 +119,20 @@ abstract class SwerveDriveSubsystem(
 ), PeriodicMechanism {
 
     /** Percentage of max speed to drive using the joysticks. */
-    abstract fun getJoystickPercentageSpeed(): ChassisVelocities
+    abstract fun getJoystickPercentageVelocities(): ChassisVelocities
 
     /** Autopilot limits velocity, acceleration, and jerk when driving to a point. It can also respect an approach angle.
-     * Better alternative to [driveToPoint], use [driveToAutopilotPoint] instead. Use [createAPObject] to construct and configure an instance. */
+     * Better alternative to [driveToPointCmd], use [driveToAutopilotPointCmd] instead. Use [createAPObject] to construct and configure an instance. */
     abstract val autoPilot: Autopilot
 
-    /** Path following xy error pid controller. Used in [driveAlongChoreoPath]. Error in meters -> added xy velocity m/s. */
+    /** Path following xy error pid controller. Used in [driveAlongChoreoPathCmd]. Error in meters -> added xy velocity m/s. */
     abstract val pathTranslationController: PIDController //= PIDController(7.0, 0.0, 0.0)
-    /** Path following heading error pid controller. Used in [driveAlongChoreoPath]. Error in radians -> added rotational velocity rad/s. */
+    /** Path following heading error pid controller. Used in [driveAlongChoreoPathCmd]. Error in radians -> added rotational velocity rad/s. */
     abstract val pathThetaController: PIDController //= PIDController(7.0, 0.0, 0.0)
 
-    /** [driveToPoint] pid controller in auto. Error in meters -> applied speed m/s. */
+    /** [driveToPointCmd] pid controller in auto. Error in meters -> applied speed m/s. */
     abstract val autoDriveToPointController: PIDController //= PIDController(3.0, 0.0, 0.1)
-    /** [driveToPoint] pid controller in teleop. Error in meters -> applied speed m/s. */
+    /** [driveToPointCmd] pid controller in teleop. Error in meters -> applied speed m/s. */
     abstract val teleopDriveToPointController: PIDController //= PIDController(3.0, 0.0, 0.1)
 
     /** [driveAtAngle] pid controller, used in anything that the robot automatically moves heading excluding path following. Error in radians -> applied rotational speed rad/s. */
@@ -164,7 +163,7 @@ abstract class SwerveDriveSubsystem(
     abstract var heading: Rotation2d
 
     /**
-     * Point on the robot where it rotates from.
+     * Point where the robot rotates from.
      */
     abstract var centerOfRotation: Translation2d
 
@@ -592,27 +591,19 @@ abstract class SwerveDriveSubsystem(
 
     /**
      * Returns the wanted chassis speeds from the joystick.
-     * @see getJoystickPercentageSpeed
+     * @see getJoystickPercentageVelocities
      * @see maxSpeed
      */
-    fun getChassisVelocitiesFromJoystick(): ChassisVelocities = getJoystickPercentageSpeed().apply {
+    fun getChassisVelocitiesFromJoystick(): ChassisVelocities = getJoystickPercentageVelocities().apply {
         vx *= maxSpeed.asMetersPerSecond
         vy *= maxSpeed.asMetersPerSecond
         omega *= maxAngularSpeed.asRadiansPerSecond
     }
 
-    // All of these driveAtAngle function variations exist to make syntax good when calling the function
-    fun driveAtAngle(angle: Rotation2d) = driveAtAngle { angle }
-    fun driveAtAngle(angle: () -> Rotation2d) = driveAtAngle(angle) { getChassisVelocitiesFromJoystick().translation }
-    fun driveAtAngle(
-        angle: () -> Rotation2d,
-        translation: () -> Translation2d = { getChassisVelocitiesFromJoystick().translation }
-    ) = driveAtAngle(angle(), translation())
-
     /**
      * Uses the [driveAtAnglePIDController] to drive the robot with a field-centric angle and translation.
      */
-    fun driveAtAngle(angle: Rotation2d, translation: Translation2d) {
+    fun driveAtAngle(angle: Rotation2d, translation: Translation2d = getChassisVelocitiesFromJoystick().translation) {
         Logger.recordOutput("Drive/DriveAtAngle/Angle", angle)
         Logger.recordOutput("Drive/DriveAtAngle/Translation", translation)
         setControl(
@@ -627,49 +618,49 @@ abstract class SwerveDriveSubsystem(
     // COMMANDS
 
     /**
-     * Drives the robot using the joystick. Velocity control [getChassisVelocitiesFromJoystick]
+     * Drives the robot using the joystick. Velocity control [getChassisVelocitiesFromJoystick] Typically used for auto.
      */
-    fun joystickVelocityDrive(): Command = command("joystickVelocityDrive", this) {
-        this.periodic {
+    fun joystickVelocityDrive() = command("joystickVelocityDrive", this) {
+        periodic {
             if (!RobotState.isAutonomous()) driveVelocity(getChassisVelocitiesFromJoystick())
         }
     }
 
     /**
-     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageSpeed]
+     * Drives the robot using the joystick. Percent Out control [getJoystickPercentageVelocities] Typically used for teleop.
      */
-    fun joystickPercentageDrive(): Command = command("joystickPercentageDrive") {
+    fun joystickPercentageDrive() = command("joystickPercentageDrive", this) {
         periodic {
             //get percentage out speeds and send it
-            drivePercentage(getJoystickPercentageSpeed())
+            drivePercentage(getJoystickPercentageVelocities())
         }
     }
 
     /**
      * Translates the robot using the joystick, does not turn. Velocity Control [getChassisVelocitiesFromJoystick]
      */
-    fun joystickOnlyTranslationDriveVelocity(): Command {
-        return run {
+    fun joystickOnlyTranslationDriveVelocity() = command("JoystickOnlyTranslationDriveVelocity", this) {
+        periodic {
             driveVelocity(getChassisVelocitiesFromJoystick().apply { omega = 0.0 })
-        }.named("JoystickOnlyTranslationDrive")
+        }
     }
 
     /**
      * Translates the robot using the joystick, does not turn. Percent Out Control [getChassisVelocitiesFromJoystick]
      */
-    fun joystickOnlyTranslationDrivePercentage(): Command {
-        return run {
-            drivePercentage(getJoystickPercentageSpeed().apply { omega = 0.0 })
-        }.named("JoystickOnlyTranslationDrive")
+    fun joystickOnlyTranslationDrivePercentage()= command("JoystickOnlyTranslationDrivePercentage", this) {
+        periodic {
+            drivePercentage(getJoystickPercentageVelocities().apply { omega = 0.0 })
+        }
     }
 
 
-    fun driveToPoint(
+    fun driveToPointCmd(
         wantedPose: Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = driveToPoint({ wantedPose }, poseSupplier, exitSupplier, maxVelocity)
+    ) = driveToPointCmd({ wantedPose }, poseSupplier, exitSupplier, maxVelocity)
 
     /**
      * Drives the robot to a [wantedPose]. Uses the [autoDriveToPointController] or [teleopDriveToPointController]
@@ -679,14 +670,15 @@ abstract class SwerveDriveSubsystem(
      * @param exitSupplier A function that returns true if the command should abort. The default value ends when the robot is within 0.75 inches of the target.
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      */
-    fun driveToPoint(
+    fun driveToPointCmd(
         wantedPose: () -> Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: (Distance, Angle) -> Boolean = { error, headingError -> error < 0.75.inches && headingError < 1.0.degrees },
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = commandUnnamed(this) {
+    ) = command("driveToPoint", this) {
         println("running driveToPoint")
-        while (true) {
+
+        periodic {
             // Calculate pose error
             val translationToPose = wantedPose().translation.minus(poseSupplier().translation)
             val distanceError = translationToPose.norm.meters
@@ -699,27 +691,26 @@ abstract class SwerveDriveSubsystem(
 
             if (exitSupplier(distanceError, headingError)) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
-                break
+                stop()
             } else {
                 val pidController = if (RobotState.isAutonomous()) autoDriveToPointController else teleopDriveToPointController
                 val velocityOutput = min(abs(pidController.calculate(distanceError.asMeters, 0.0)), maxVelocity.asMetersPerSecond)
                 val wantedVelocity = translationToPose.normalize() * velocityOutput
                 driveAtAngle(wantedPose().rotation, wantedVelocity)
             }
-            yield()
         }
 
         stop() // Stop driving
         Logger.recordOutput("Drive/DriveToPoint/Point", Pose2d())
-    }.named("DriveToPoint")
+    }
 
-    fun driveToAutopilotPoint(
+    fun driveToAutopilotPointCmd(
         wantedPose: Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot = autoPilot,
         earlyExit: (Pose2d, APTarget) -> Boolean = { robotPose, target -> autopilotSupplier.atTarget(robotPose, target)  }
-    ) = driveToAutopilotPoint({ wantedPose }, poseSupplier, entryAngleSupplier, autopilotSupplier, earlyExit)
+    ) = driveToAutopilotPointCmd({ wantedPose }, poseSupplier, entryAngleSupplier, autopilotSupplier, earlyExit)
 
     /**
      * Drives the robot to a [wantedPose] using [Autopilot]. Uses [autoPilot] to control the robot.
@@ -730,15 +721,15 @@ abstract class SwerveDriveSubsystem(
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
      * @param entryAngleSupplier The angle [Autopilot] will try to enter the wantedPose at. The default value is null.
      */
-    fun driveToAutopilotPoint(
+    fun driveToAutopilotPointCmd(
         wantedPose: () -> Pose2d,
         poseSupplier: () -> Pose2d = { pose },
         entryAngleSupplier: () -> Angle? = { null },
         autopilotSupplier: Autopilot = autoPilot,
         exitSupplier: (Pose2d, APTarget) -> Boolean = { robotPose, target -> autopilotSupplier.atTarget(robotPose, target) }
-    ): Command = commandUnnamed(this) {
+    ) = command("DriveToAutopilotPoint",this) {
         println("running driveToAutopilotPoint")
-        while (true) {
+        periodic {
             val pose = poseSupplier()
             val targetPose = wantedPose()
             val entryAngle = entryAngleSupplier()
@@ -751,7 +742,7 @@ abstract class SwerveDriveSubsystem(
             // Exit or Continue
             if (exitSupplier(pose, target)) {
                 println("Stopping driveToAutopilotPoint error meters/rad: ${pose - targetPose}")
-                break
+                stop()
             } else {
                 // Calculate Output
                 val output = autopilotSupplier.calculate(pose, robotRelativeChassisVelocity, target)
@@ -762,13 +753,11 @@ abstract class SwerveDriveSubsystem(
                 Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
                 Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
             }
-
-            yield()
         }
 
         stop()
         Logger.recordOutput("Drive/AutoPilot/Target", Pose2d())
-    }.named("DriveToAutopilotPoint")
+    }
 
 
     /**
@@ -780,7 +769,7 @@ abstract class SwerveDriveSubsystem(
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
-     * @see driveToPoint
+     * @see driveToPointCmd
      * @see joystickDriveAlongLineSegment
      */
 //    fun joystickDriveAlongCircle( // TODO Uncomment and fix by transferring code from 2026 branch
@@ -811,7 +800,7 @@ abstract class SwerveDriveSubsystem(
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
-     * @see driveToPoint
+     * @see driveToPointCmd
      * @see joystickDriveAlongCircle
      */
 //    fun joystickDriveAlongLineSegment(
@@ -872,32 +861,32 @@ abstract class SwerveDriveSubsystem(
      * @param poseSupplier A function that returns the pose of the robot. The default value is the swerve odometry.
      * @param maxVelocity The maximum velocity of the robot. The default value is [maxSpeed] from constants.
      *
-     * @see driveToPoint
+     * @see driveToPointCmd
      * @see joystickDriveAlongLineSegment
      * @see joystickDriveAlongCircle
      */
-    fun driveToLine(
+    fun driveToLineCmd(
         pointOne: Translation2d,
         pointTwo: Translation2d,
         heading: Rotation2d,
         poseSupplier: () -> Pose2d = { pose },
         exitSupplier: ((Distance, Angle) -> Boolean)? = null,
         maxVelocity: LinearVelocity = maxSpeed
-    ): Command = commandUnnamed(this) {
+    ) = command("DriveToLine",this) {
         println("running driveToLine")
         val closestPoseOnLine = findClosestPointOnLine(pointOne, pointTwo, poseSupplier().translation).toPose2d(heading)
         Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf(pointOne, pointTwo))
         Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", closestPoseOnLine)
 
         if (exitSupplier == null) {
-            await(driveToPoint(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
+            await(driveToPointCmd(closestPoseOnLine, poseSupplier, maxVelocity = maxVelocity))
         } else {
-            await(driveToPoint(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
+            await(driveToPointCmd(closestPoseOnLine, poseSupplier, exitSupplier, maxVelocity))
         }
 
         Logger.recordOutput("Drive/ToPointOnLine/Points", *arrayOf<Translation2d>())
         Logger.recordOutput("Drive/ToPointOnLine/ClosestPose", *arrayOf<Pose2d>())
-    }.named("DriveToLine")
+    }
 
     /**
      * Drives the robot along a path from Choreo. Uses the [pathXController], [pathYController], and [pathThetaController] to control the robot.
@@ -907,12 +896,12 @@ abstract class SwerveDriveSubsystem(
      * @param resetOdometry Whether to reset the odometry to the start of the path. The default value is false.
      * @param exitSupplier A function that returns true if the command should abort. The default value ends when the path duration finishes.
      */
-    fun driveAlongChoreoPath(
+    fun driveAlongChoreoPathCmd(
         path: Trajectory<SwerveSample>,
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
         exitSupplier: (Double, Transform2d) -> Boolean = { percentage, error -> percentage >= 1.0 }
-    ): Command = command("DriveAlongChoreoPath", this) {
+    ) = command("DriveAlongChoreoPath", this) {
         println("Running DriveAlongChoreoPath")
 
         val totalTime = path.totalTime
@@ -929,7 +918,7 @@ abstract class SwerveDriveSubsystem(
 
         timer.start()
 
-        while (true) {
+        periodic {
             val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
             LoopLogger.record("DriveAlongPath time")
             val percentComplete = t / totalTime
@@ -943,10 +932,9 @@ abstract class SwerveDriveSubsystem(
 
             Logger.recordOutput("Drive/Path/Done %", percentComplete)
 
-
             if (exitSupplier(percentComplete, error)) { // Exit path?
                 println("Finished driveAlongChoreoPath at ${(t / totalTime * 100.0).round(2)}% done")
-                break
+                stop()
             } else {
                 // Keep running path
                 val pathSpeeds = sample.chassisSpeeds
@@ -983,8 +971,6 @@ abstract class SwerveDriveSubsystem(
 //                Logger.recordOutput("Drive/Path/Pose Error", (wantedPose - currentPose).translation.norm.meters)
                 LoopLogger.record("DriveAlongPath logger")
             }
-
-            yield()
         }
 
         // Finished path. Check and apply the final sample.
@@ -1101,40 +1087,40 @@ abstract class SwerveDriveSubsystem(
 
     // SysID Commands
 
-    fun sysIDTranslationDynamic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction)
-    fun sysIDTranslationQuasistatic(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction)
-    fun sysIDRotationDynamic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction)
-    fun sysIDRotationQuasistatic(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction)
-    fun sysIDSteerDynamic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction)
-    fun sysIDSteerQuasistatic(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction)
+    fun sysIDTranslationDynamicCmd(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.dynamic(direction)
+    fun sysIDTranslationQuasistaticCmd(direction: SysIdRoutine.Direction): Command = translationSysIdRoutine.quasistatic(direction)
+    fun sysIDRotationDynamicCmd(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.dynamic(direction)
+    fun sysIDRotationQuasistaticCmd(direction: SysIdRoutine.Direction): Command = rotationSysIdRoutine.quasistatic(direction)
+    fun sysIDSteerDynamicCmd(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.dynamic(direction)
+    fun sysIDSteerQuasistaticCmd(direction: SysIdRoutine.Direction): Command = steerSysIdRoutine.quasistatic(direction)
 
     // Full SysID test commands
-    fun sysIDTranslationAll() = Command.requiring(this).executing {
-        it.await(sysIDTranslationQuasistatic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDTranslationQuasistatic(SysIdRoutine.Direction.REVERSE))
-        it.wait(1.0.seconds)
-        it.await(sysIDTranslationDynamic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDTranslationDynamic(SysIdRoutine.Direction.REVERSE))
+    fun sysIDTranslationAll() = command("sysIDTranslationAll", this) {
+        await(sysIDTranslationQuasistaticCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDTranslationQuasistaticCmd(SysIdRoutine.Direction.REVERSE))
+        wait(1.0.seconds)
+        await(sysIDTranslationDynamicCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDTranslationDynamicCmd(SysIdRoutine.Direction.REVERSE))
     }
-    fun sysIDRotationAll() = Command.requiring(this).executing {
-        it.await(sysIDRotationQuasistatic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDRotationQuasistatic(SysIdRoutine.Direction.REVERSE))
-        it.wait(1.0.seconds)
-        it.await(sysIDRotationDynamic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDRotationDynamic(SysIdRoutine.Direction.REVERSE))
+    fun sysIDRotationAll() = command("sysIDRotationAll", this) {
+        await(sysIDRotationQuasistaticCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDRotationQuasistaticCmd(SysIdRoutine.Direction.REVERSE))
+        wait(1.0.seconds)
+        await(sysIDRotationDynamicCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDRotationDynamicCmd(SysIdRoutine.Direction.REVERSE))
     }
-    fun sysIDSteerAll() = Command.requiring(this).executing {
-        it.await(sysIDSteerQuasistatic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDSteerQuasistatic(SysIdRoutine.Direction.REVERSE))
-        it.wait(1.0.seconds)
-        it.await(sysIDSteerDynamic(SysIdRoutine.Direction.FORWARD))
-        it.wait(1.0.seconds)
-        it.await(sysIDSteerDynamic(SysIdRoutine.Direction.REVERSE))
+    fun sysIDSteerAll() = command("sysIDSteerAll", this) {
+        await(sysIDSteerQuasistaticCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDSteerQuasistaticCmd(SysIdRoutine.Direction.REVERSE))
+        wait(1.0.seconds)
+        await(sysIDSteerDynamicCmd(SysIdRoutine.Direction.FORWARD))
+        wait(1.0.seconds)
+        await(sysIDSteerDynamicCmd(SysIdRoutine.Direction.REVERSE))
     }
 
     // SIM

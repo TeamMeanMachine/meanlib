@@ -14,6 +14,7 @@ class PeriodicScope {
     @PublishedApi
     internal var isDone = false
 
+    /** Ends a periodic scope */
     fun stop() {
         isDone = true
     }

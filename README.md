@@ -60,9 +60,9 @@ hoodEncoder.setCANCoderAngle(0.0.degrees)
     - Settable path PID controllers and Autopilot constants
     - Module and gyro disconnection Alerts
     - Commands:
-        - `driveToPoint` `driveToAutopilotPoint`
-        - `driveAlongChoreoPath`
-        - `driveToLine` `joystickDriveAlongLine`
+        - `driveToPointCmd` `driveToAutopilotPointCmd`
+        - `driveAlongChoreoPathCmd`
+        - `driveToLineCmd` `joystickDriveAlongLine`
 
 
 - **Assortment of Kotlin/WpiLib extension functions:**
