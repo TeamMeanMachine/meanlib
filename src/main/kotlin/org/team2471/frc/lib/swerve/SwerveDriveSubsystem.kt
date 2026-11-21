@@ -97,6 +97,7 @@ import org.team2471.frc.lib.util.isReal
 import org.team2471.frc.lib.util.isRedAlliance
 import org.team2471.frc.lib.util.isSim
 import org.team2471.frc.lib.util.robotToFieldCentric
+import org.team2471.frc.lib.util.toChassisSpeedsK
 import org.team2471.frc.lib.util.translation
 import org.team2471.frc.lib.vision.QuixVisionSim
 import kotlin.jvm.optionals.getOrNull
@@ -176,10 +177,16 @@ abstract class SwerveDriveSubsystem(
     val speeds: ChassisSpeeds
         get() = robotRelativeSpeeds.robotToFieldCentric(pose.rotation)
 
+    val wantedSpeeds: ChassisSpeeds
+        get() = kinematics.toChassisSpeedsK(moduleTargets).robotToFieldCentric(pose.rotation)
+
     @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: UTranslation2d<LinearVelocityUnit>
         get() = speeds.translation.metersPerSecond
     private var prevVelocity = velocity
+
+    val wantedVelocity: Translation2d
+        get() = wantedSpeeds.translation
 
     @get:AutoLogOutput(key = "Drive/State/Acceleration")
     var acceleration = Translation2d(0.0, 0.0).feetPerSecondPerSecond
@@ -686,7 +693,8 @@ abstract class SwerveDriveSubsystem(
             val pose = poseSupplier()
             val result = earlyExit(pose, target)
             if (result) {
-                println("Stopping driveToAutopilotPoint error meters/rad: ${pose - wantedPose()}")
+                val error = wantedPose() - pose
+                println("Stopping driveToAutopilotPoint error meters: ${error.translation.norm} degrees: ${error.rotation.degrees}")
             }
             result
         }.finallyRun {
