@@ -1,6 +1,5 @@
 package org.team2471.frc.lib.commands
 
-import org.team2471.frc.lib.coroutines.measureTimeMonotonic
 import org.wpilib.command3.Command
 import org.wpilib.command3.Coroutine
 import org.wpilib.system.Timer
@@ -23,18 +22,22 @@ class PeriodicScope {
 /**
  * Runs the provided [body] of code periodically per loop.
  *
+ * @param loopCount Number of times to run the body. -1 for infinite.
+ *
  * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, or an exception is thrown.
- * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
+ * Note that if [PeriodicScope.stop] is called, the body will continue to run to the end of the loop. If your
  * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
  */
 inline fun Coroutine.periodic(
-    crossinline body: PeriodicScope.() -> Unit
+    loopCount: Int = -1,
+    crossinline body: PeriodicScope.(Int) -> Unit
 ) {
     val scope = PeriodicScope()
-
-    while (true) {
-        body(scope)
+    var loopIndex = 0
+    while (loopCount == -1 || loopIndex < loopCount) {
+        scope.body(loopIndex)
         if (scope.isDone) break
+        loopIndex++
         yield()
     }
 }
@@ -43,7 +46,7 @@ inline fun Coroutine.periodic(
  * Runs the provided [body] of code periodically per loop.
  *
  * The provided [body] loop will continue to loop until [PeriodicScope.stop] is called, an exception is thrown, or [timeout] seconds is reached.
- * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
+ * Note that if [PeriodicScope.stop] is called, the body will continue to run to the end of the loop. If your
  * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
  */
 @IgnorableReturnValue
@@ -56,7 +59,7 @@ inline fun Coroutine.periodicTimeout(
     timer.start()
     periodic {
         val t = timer.get()
-        if (timer.get() > timeout) {
+        if (t > timeout) {
             timedOut = true
             stop()
         } else {
