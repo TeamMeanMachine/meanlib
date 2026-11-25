@@ -194,9 +194,15 @@ abstract class SwerveDriveSubsystem(
     val chassisVelocities: ChassisVelocities
         get() = robotRelativeChassisVelocity.toFieldRelative(pose.rotation)
 
+    val wantedSpeeds: ChassisSpeeds
+        get() = kinematics.toChassisSpeedsK(moduleTargets).robotToFieldCentric(pose.rotation)
+
     /** Field-centric drivetrain xy velocity. */
     @get:AutoLogOutput(key = "Drive/State/Velocity")
     val velocity: Translation2d get() = chassisVelocities.translation
+
+    val wantedVelocity: Translation2d
+        get() = wantedSpeeds.translation
 
     /** Field-centric drivetrain xy acceleration. */
     @get:AutoLogOutput(key = "Drive/State/Acceleration")
