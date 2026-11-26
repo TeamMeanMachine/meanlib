@@ -7,6 +7,9 @@ import org.team2471.frc.lib.units.volts
 import org.littletonrobotics.junction.Logger
 import org.team2471.frc.lib.environment.isReplay
 import org.team2471.frc.lib.environment.isSim
+import org.team2471.frc.lib.units.radians
+import org.team2471.frc.lib.units.radiansPerSecond
+import org.team2471.frc.lib.units.radiansPerSecondSquared
 import org.wpilib.math.system.DCMotor
 import org.wpilib.math.system.Models
 import org.wpilib.simulation.DCMotorSim
@@ -59,9 +62,9 @@ class LoggedTalonFX(id: Int, canBus: CANBus = CANBus()): TalonFX(id, canBus), Lo
                 motorPhysicsSim!!.inputVoltage = simState.motorVoltage
                 motorPhysicsSim!!.update(0.02)
                 // Apply to talonFXSim
-                simState.setRawRotorPosition(motorPhysicsSim!!.angularPosition)
-                simState.setRotorVelocity(motorPhysicsSim!!.angularVelocity)
-                simState.setRotorAcceleration(motorPhysicsSim!!.angularAcceleration)
+                simState.setRawRotorPosition(motorPhysicsSim!!.angularPosition.radians)
+                simState.setRotorVelocity(motorPhysicsSim!!.angularVelocity.radiansPerSecond)
+                simState.setRotorAcceleration(motorPhysicsSim!!.angularAcceleration.radiansPerSecondSquared)
                 simState.setSupplyVoltage(12.0.volts) // We have no battery sim
             }
 
