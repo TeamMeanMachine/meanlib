@@ -445,9 +445,9 @@ abstract class SwerveDriveSubsystem(
         // Refresh drive motor acceleration data
         driveAccelerationStatusSignals.refreshAll()
         // To have accurate acceleration, we grab directly from the drive motor.
-        acceleration = kinematics.toChassisVelocities(*moduleStates.mapIndexed { i, m -> m.apply {
-            velocity = driveAccelerationStatusSignals[i].valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius
-        } }.toTypedArray()).translation
+        acceleration = kinematics.toChassisVelocities(*moduleStates.mapIndexed { i, m ->
+            SwerveModuleVelocity(driveAccelerationStatusSignals[i].valueAsDouble * moduleConstants[i].DriveMotorGearRatio * moduleConstants[i].WheelRadius, m.angle)
+        }.toTypedArray()).translation
 
         jerk = ((acceleration - prevAcceleration) / deltaTime)
 
