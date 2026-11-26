@@ -6,9 +6,9 @@ interface LoggedMotor {
     /**
      * Configure the simulation to have accurate values.
      * @param motor The type of [DCMotor] motor to sim.
-     * @param jKgMetersSquared The moment of inertia of the motor.
+     * @param moi The moment of inertia of the motor.
      * @see DCMotor
      */
-    fun configSim(motor: DCMotor, jKgMetersSquared: Double)
+    fun configSim(motor: DCMotor, moi: Double)
     fun periodic()
 }

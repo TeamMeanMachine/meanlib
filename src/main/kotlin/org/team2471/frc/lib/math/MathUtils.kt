@@ -125,7 +125,7 @@ fun findClosestPointOnCircle(center: Translation2d, radius: Distance, referenceP
 
 fun Double.coerceInDynamic(oneLimit: Double, twoLimit: Double) = this.coerceIn(min(oneLimit, twoLimit), max(oneLimit, twoLimit))
 
-fun interpTo(from: Double, to: Double, speed: Double, dt: Double = 0.02): Double {
+fun interpTo(from: Double, to: Double, speed: Double, dt: Double = 0.01): Double {
     return from + (to - from) * dt * speed
 }
 

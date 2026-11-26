@@ -48,7 +48,7 @@ class BreakerModel internal constructor(niceness: Double) {
     }
 
     fun update(current: Double) {
-        val dt = 0.02
+        val dt = 0.01
         val normalizedI = current / I_RATED
 
         val cooling: Boolean

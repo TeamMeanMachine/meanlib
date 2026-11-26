@@ -194,8 +194,8 @@ abstract class SwerveDriveSubsystem(
     val chassisVelocities: ChassisVelocities
         get() = robotRelativeChassisVelocity.toFieldRelative(pose.rotation)
 
-    val wantedSpeeds: ChassisSpeeds
-        get() = kinematics.toChassisSpeedsK(moduleTargets).robotToFieldCentric(pose.rotation)
+    val wantedSpeeds: ChassisVelocities
+        get() = kinematics.toChassisVelocities(*moduleTargets).toFieldRelative(pose.rotation)
 
     /** Field-centric drivetrain xy velocity. */
     @get:AutoLogOutput(key = "Drive/State/Velocity")
@@ -214,7 +214,7 @@ abstract class SwerveDriveSubsystem(
     var jerk = Translation2d(0.0, 0.0)
         private set
 
-    private var prevTime = -0.02
+    private var prevTime = -0.01
 
     /** Stores the velocity and angle of each swerve module. */
     @get:AutoLogOutput(key = "Drive/State/Modules/ModuleStates")
@@ -902,7 +902,7 @@ abstract class SwerveDriveSubsystem(
      * @param resetOdometry Whether to reset the odometry to the start of the path. The default value is false.
      * @param exitSupplier A function that returns true if the command should abort. The default value ends when the path duration finishes.
      */
-    fun driveAlongChoreoPathCmd(
+    fun driveAlongChoreoPathCmd( // TODO: TEST THIS CUZ MAYBE NO WORK. Test other cmds too
         path: Trajectory<SwerveSample>,
         poseSupplier: () -> Pose2d = ::pose,
         resetOdometry: Boolean = false,
@@ -925,7 +925,7 @@ abstract class SwerveDriveSubsystem(
         timer.start()
 
         periodic {
-            val t = min(timer.get() + 0.02, totalTime) //added 0.02 to start moving 1 frame faster
+            val t = min(timer.get() + 0.01, totalTime) //added 0.01 to start moving 1 frame faster
             LoopLogger.record("DriveAlongPath time")
             val percentComplete = t / totalTime
             val currentPose = poseSupplier()

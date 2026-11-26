@@ -51,7 +51,7 @@ class BatteryModel {
      * @param measuredVoltage Terminal voltage from the PDP/PDH.
      */
     fun update(current: Double, measuredVoltage: Double) {
-        val dt = 0.02
+        val dt = 0.01
 
         // Coloumb counting with peukert correction
         var effectiveAmps = current

@@ -16,7 +16,7 @@ import org.wpilib.math.kinematics.ChassisVelocities;import org.wpilib.units.meas
 public class Autopilot {
   private APProfile profile;
 
-  private final double dt = 0.020;
+  private final double dt = 0.010;
 
   /**
    * Constructs an Autopilot from a given profile. This is the profile that the autopilot will use

@@ -95,7 +95,7 @@ object FindAmpsManager {
                 if (calculatedBudget < driveBudget) {
                     calculatedBudget
                 } else {
-                    calculatedBudget.coerceAtMost(driveBudget + 50.0 * 0.02)
+                    calculatedBudget.coerceAtMost(driveBudget + 50.0 * 0.01)
                 }
         }
         driveBudget = max(0.0, driveBudget)

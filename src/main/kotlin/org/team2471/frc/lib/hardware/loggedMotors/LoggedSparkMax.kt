@@ -40,10 +40,10 @@ class LoggedSparkMax(id: Int, canBus: CANPort, type: MotorType): SparkMax(canBus
         MasterMotor.addMotor(this)
     }
 
-    override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
+    override fun configSim(motor: DCMotor, moi: Double) {
         if (isSim) {
             this.motor = motor
-            motorPhysicsSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(this.motor, jKgMetersSquared, 1.0), this.motor).apply {
+            motorPhysicsSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(this.motor, moi, 1.0), this.motor).apply {
                 setState(0.0, 0.0)
             }
             sparkMaxSim = SparkMaxSim(this, motor)
@@ -61,9 +61,9 @@ class LoggedSparkMax(id: Int, canBus: CANPort, type: MotorType): SparkMax(canBus
             if (motorPhysicsSim != null) {
                 // Update motor sim
                 motorPhysicsSim!!.inputVoltage = sparkMaxSim.appliedOutput * sparkMaxSim.busVoltage
-                motorPhysicsSim!!.update(0.02)
+                motorPhysicsSim!!.update(0.01)
 
-                sparkMaxSim.iterate(motorPhysicsSim!!.angularVelocity, 12.0, 0.02)
+                sparkMaxSim.iterate(motorPhysicsSim!!.angularVelocity, 12.0, 0.01)
             }
 
             // Log motor outputs

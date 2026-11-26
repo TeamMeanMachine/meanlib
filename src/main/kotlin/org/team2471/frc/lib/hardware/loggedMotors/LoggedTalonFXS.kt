@@ -39,10 +39,10 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
         MasterMotor.addMotor(this)
     }
 
-    override fun configSim(motor: DCMotor, jKgMetersSquared: Double) {
+    override fun configSim(motor: DCMotor, moi: Double) {
         if (isSim) {
             this.motor = motor
-            motorPhysicsSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(this.motor, jKgMetersSquared, 1.0), this.motor).apply {
+            motorPhysicsSim = DCMotorSim(Models.singleJointedArmFromPhysicalConstants(this.motor, moi, 1.0), this.motor).apply {
                 setState(0.0, 0.0)
             }
         }
@@ -60,7 +60,7 @@ class LoggedTalonFXS(id: Int, canBus: CANBus = CANBus()): TalonFXS(id, canBus), 
             if (motorPhysicsSim != null) {
                 // Update motor sim
                 motorPhysicsSim!!.inputVoltage = simState.motorVoltage
-                motorPhysicsSim!!.update(0.02)
+                motorPhysicsSim!!.update(0.01)
                 // Apply to talonFXSim
                 simState.setRawRotorPosition(motorPhysicsSim!!.angularPosition.radians)
                 simState.setRotorVelocity(motorPhysicsSim!!.angularVelocity.radiansPerSecond)

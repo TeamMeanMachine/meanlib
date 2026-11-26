@@ -16,13 +16,13 @@ import kotlin.time.Duration.Companion.seconds
  * Note that if [PeriodicScope.stop] is called the body will continue to run to the end of the loop. If your
  * intention is to exit the code early, insert a return after calling [PeriodicScope.stop].
  *
- * The [period] parameter defaults to 0.02 seconds, or 20 milliseconds.
+ * The [period] parameter defaults to 0.01 seconds, or 10 milliseconds.
  *
  * If the [body] takes longer than the [period] to complete, a warning is printed. This can
  * be disabled by setting the [watchOverrun] parameter to false.
  */
 suspend inline fun periodicSuspend(
-    period: Double = 0.02,
+    period: Double = 0.01,
     watchOverrun: Boolean = false,
     crossinline body: PeriodicScope.() -> Unit
 ) {
