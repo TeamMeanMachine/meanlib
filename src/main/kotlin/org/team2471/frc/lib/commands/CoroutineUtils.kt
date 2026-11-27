@@ -7,8 +7,6 @@ import org.wpilib.system.Timer
 /** Utility functions for [Coroutine]s. Which are used inside [Command] actions, and allow for muti-threading "like" features. Ex: yield() await() */
 // Different from [kotlinx.coroutines] which are also installed. (Those use the "suspend" keyword)
 
-// TODO: Figure out delay function. Perhaps "extend" or wrap [Coroutine] and use @RestrictsSuspension
-
 class PeriodicScope {
     @PublishedApi
     internal var isDone = false
@@ -69,9 +67,62 @@ inline fun Coroutine.periodicTimeout(
     return timedOut
 }
 
+/**
+ * Awaits completion of all given commands and runs all of them in parallel. If any command is not currently scheduled or running, it will be scheduled.
+ *
+ * Same as [Coroutine.awaitAll]
+ *
+ * @see Coroutine.awaitAll
+ */
 @IgnorableReturnValue
 fun Coroutine.parallel(vararg commands: Command) = awaitAll(*commands)!!
 
+/**
+ * Awaits completion of all given commands and runs all of them in parallel. If any command is not currently scheduled or running, it will be scheduled.
+ *
+ * Same as [Coroutine.awaitAll]
+ *
+ * @see Coroutine.awaitAll
+ */
 @IgnorableReturnValue
 fun Coroutine.parallel(vararg blocks: Coroutine.() -> Unit) =
     parallel(*blocks.mapIndexed { index, coroutine -> command("unnamedParallel$index") { coroutine() }}.toTypedArray())
+
+
+/**
+ * Shortcut to await completion of a command. Same as [Coroutine.await]
+ *
+ * ```
+ * +myCoolCommand()
+ * await(myCoolCommand()) // Same thing
+ * ```
+ */
+@IgnorableReturnValue
+context(coroutine: Coroutine)
+operator fun Command.unaryPlus() = coroutine.await(this)
+
+/**
+ * Shortcut to await completion of multiple commands at once. Same as [Coroutine.parallel] and [Coroutine.awaitAll]
+ *
+ * ```
+ * val myCommands = listOf(cmdOne(), cmdTwo(), cmdThree())
+ * +myCommands
+ * awaitAll(myCommands) // Same thing
+ * ```
+ */
+@IgnorableReturnValue
+context(coroutine: Coroutine)
+operator fun List<Command>.unaryPlus() = coroutine.awaitAll(this)
+
+/**
+ * Shortcut to await completion of multiple commands at once. Same as [Coroutine.parallel] and [Coroutine.awaitAll]
+ *
+ * ```
+ * val myCommands = arrayOf(cmdOne(), cmdTwo(), cmdThree())
+ * +myCommands
+ * awaitAll(*myCommands) // Same thing
+ * ```
+ */
+@IgnorableReturnValue
+context(coroutine: Coroutine)
+operator fun Array<Command>.unaryPlus() = coroutine.awaitAll(*this)

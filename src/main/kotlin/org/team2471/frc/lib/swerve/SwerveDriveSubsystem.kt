@@ -683,27 +683,31 @@ abstract class SwerveDriveSubsystem(
         maxVelocity: LinearVelocity = maxSpeed
     ) = command("driveToPoint", this) {
         println("running driveToPoint")
+        val pidController = if (RobotState.isAutonomous()) autoDriveToPointController else teleopDriveToPointController
 
         periodic {
             // Calculate pose error
-            val translationToPose = wantedPose().translation.minus(poseSupplier().translation)
-            val distanceError = translationToPose.norm.meters
-            val headingError = (wantedPose().rotation - poseSupplier().rotation).measure.absoluteValue()
+            val wantedPose = wantedPose()
+            val currentPose = poseSupplier()
+            val poseError = wantedPose.minus(currentPose)
+            val translationError = poseError.translation
+            val distanceError = translationError.norm.meters
+            val headingError = poseError.rotation.measure
 
             // Log errors
             Logger.recordOutput("Drive/DriveToPoint/DistanceErrorM", distanceError.asMeters)
             Logger.recordOutput("Drive/DriveToPoint/HeadingErrorD", headingError.asDegrees)
-            Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose())
+            Logger.recordOutput("Drive/DriveToPoint/Point", wantedPose)
 
-            if (exitSupplier(distanceError, headingError)) {
+            if (exitSupplier(distanceError, headingError.absoluteValue())) {
                 println("stopping driveToPoint. Distance error ${distanceError.asInches.round(2)}in. Heading error ${headingError.asDegrees.round(2)}deg.")
-                stop()
-            } else {
-                val pidController = if (RobotState.isAutonomous()) autoDriveToPointController else teleopDriveToPointController
-                val velocityOutput = min(abs(pidController.calculate(distanceError.asMeters, 0.0)), maxVelocity.asMetersPerSecond)
-                val wantedVelocity = translationToPose.normalize() * velocityOutput
-                driveAtAngle(wantedPose().rotation, wantedVelocity)
+                stop() // Stop periodic
+                return@periodic // Stop doesn't end periodic immediately, must call return to stop the singular loop.
             }
+
+            val velocityOutput = min(abs(pidController.calculate(distanceError.asMeters, 0.0)), maxVelocity.asMetersPerSecond)
+            val wantedVelocity = translationError.normalize() * velocityOutput
+            driveAtAngle(wantedPose.rotation, wantedVelocity)
         }
 
         stop() // Stop driving
@@ -736,29 +740,30 @@ abstract class SwerveDriveSubsystem(
     ) = command("DriveToAutopilotPoint",this) {
         println("running driveToAutopilotPoint")
         periodic {
+            val wantedPose = wantedPose()
             val pose = poseSupplier()
-            val targetPose = wantedPose()
             val entryAngle = entryAngleSupplier()
             val target = if (entryAngle != null) {
-                APTarget(targetPose).withEntryAngle(entryAngle.asRotation2d)
+                APTarget(wantedPose).withEntryAngle(entryAngle.asRotation2d)
             } else {
-                APTarget(targetPose)
+                APTarget(wantedPose)
             }
 
             // Exit or Continue
             if (exitSupplier(pose, target)) {
-                println("Stopping driveToAutopilotPoint error meters/rad: ${pose - targetPose}")
+                println("Stopping driveToAutopilotPoint error meters/rad: ${pose - wantedPose}")
                 stop()
-            } else {
-                // Calculate Output
-                val output = autopilotSupplier.calculate(pose, robotRelativeChassisVelocity, target)
-                val velocity = Translation2d(output.vx.asMetersPerSecond, output.vy.asMetersPerSecond)
-
-                driveAtAngle(output.targetAngle(), velocity)
-
-                Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
-                Logger.recordOutput("Drive/AutoPilot/Target", targetPose)
+                return@periodic
             }
+
+            // Calculate Output
+            val output = autopilotSupplier.calculate(pose, robotRelativeChassisVelocity, target)
+            val velocity = Translation2d(output.vx.asMetersPerSecond, output.vy.asMetersPerSecond)
+
+            driveAtAngle(output.targetAngle(), velocity)
+
+            Logger.recordOutput("Drive/AutoPilot/Velocity", velocity.norm)
+            Logger.recordOutput("Drive/AutoPilot/Target", wantedPose)
         }
 
         stop()
